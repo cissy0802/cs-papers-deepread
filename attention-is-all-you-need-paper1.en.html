@@ -2,109 +2,175 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Attention Is All You Need (Transformer) — CS Papers Deep-Read Paper 1</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Georgia,"Noto Serif SC","Songti SC",serif;background:#14171a;color:#cdd4d1;line-height:1.85}
-.container{max-width:720px;margin:0 auto;padding:30px 22px 80px}
-.top{font-size:0.8rem;color:#5fb0a3;letter-spacing:1px;margin-bottom:8px}
-h1{font-size:1.7rem;font-weight:800;color:#bfe3db;line-height:1.4;margin-bottom:8px}
-.sub{color:#8aa39d;font-size:0.92rem;font-style:italic;margin-bottom:6px}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#d3d7de;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
 .langbar{margin:14px 0 0;font-size:0.85rem}
-.langbar a{color:#5fb0a3;text-decoration:none;border:1px solid #2f5d57;border-radius:14px;padding:3px 12px}
-h2{font-size:1.18rem;color:#6fc3b4;margin:40px 0 6px;padding-bottom:6px;border-bottom:1px solid #242a2e}
-h3{font-size:1.04rem;color:#bfe3db;margin:24px 0 4px}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#eaeef3;margin:22px 0 4px}
 p{margin:11px 0}
 strong{color:#fff;font-weight:700}
-.lead{color:#dfe6e2;font-size:1.05rem}
-em{color:#9fcabf;font-style:normal}
-code{background:#1b2229;color:#bfe3db;padding:1px 6px;border-radius:4px;font-size:0.92em;font-family:"SF Mono",Menlo,Consolas,monospace}
+.lead{color:#e6eaef;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
 ul{margin:8px 0 8px 1.2em}
 li{margin:7px 0}
-.tl{background:#1b2f2b;border-left:3px solid #3f8b7f;border-radius:6px;padding:14px 18px;margin-top:10px}
-footer{margin-top:50px;padding-top:16px;border-top:1px solid #242a2e;font-size:0.82rem;color:#5c6663}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 1</p>
 <h1>Attention Is All You Need (Transformer)</h1>
-<p class="sub">Attention Is All You Need · Vaswani et al. · Google · NeurIPS 2017</p>
+<p class="sub">Vaswani et al. · Google · NeurIPS 2017</p>
 <p class="langbar"><a href="attention-is-all-you-need-paper1.html">中文 →</a></p>
 
 <h2>In one sentence</h2>
-<p class="lead">This paper introduces the <strong>Transformer</strong>: an architecture that <strong>throws away recurrence (RNNs) and convolution (CNNs) entirely and processes sequences using attention alone</strong>. It lets the model see every word in a sentence at once and compute, in parallel, what each word should attend to — so it both trains fast and captures relationships between distant words in a single step. Built in 2017 for machine translation, it went on to become <strong>the shared foundation of BERT, GPT, and essentially every large model today</strong>.</p>
+<p class="lead">This paper introduces the <strong>Transformer</strong>: an architecture that <strong>drops recurrence (RNNs) and convolution (CNNs) entirely and processes sequences with attention alone</strong>. It lets the model see the whole sentence at once and compute, in parallel, what each word should attend to — so it trains fast and captures relationships between distant words in one step. Built in 2017 for machine translation, it became <strong>the shared foundation of BERT, GPT, and essentially every large model today</strong>.</p>
 
 <h2>Where it sits</h2>
-<p>The eight authors were at Google Brain and Google Research; the paper appeared at NeurIPS 2017. Before it, sequence modeling was ruled by <strong>recurrent neural networks (RNNs)</strong> — especially LSTMs — usually paired with the <em>attention</em> mechanism that Bahdanau et al. had introduced in 2014–2015 as an add-on component. The radical move here was to promote attention from supporting actor to <strong>the sole lead</strong> — the title <em>Attention Is All You Need</em> is itself the manifesto. It inherits the seq2seq and attention lines of work, and launches every pre-trained large model that followed. Worth noting: "drop recurrence" was not an obvious call at the time — RNNs had ruled sequence modeling for nearly three decades, and betting that attention alone could carry the load is where the paper's real audacity lies.</p>
+<p>The eight authors were at Google; the paper appeared at NeurIPS 2017. Before it, sequence modeling was ruled by <strong>recurrent neural networks (RNNs)</strong> — especially LSTMs — usually paired with the <em>attention</em> mechanism Bahdanau et al. introduced in 2014 as an add-on. The nerve of this paper was to promote attention from supporting actor to <strong>sole lead</strong> — the title is the manifesto. "Dropping recurrence" was far from obvious: RNNs had ruled sequence modeling for nearly three decades.</p>
 
 <h2>The problem and the motivation</h2>
-<p>To see its value, look at RNNs' two dead ends. <strong>First, they can't parallelize.</strong> An RNN must process one word at a time: the hidden state at step <code>t</code> depends on the state at <code>t-1</code>, like dominoes that must fall in order. The longer the sentence, the longer this chain, the slower the training — and it never fully exploits the "compute a big batch at once" parallelism of a GPU.</p>
-<p><strong>Second, they lose long-range dependencies.</strong> Which noun does "it" refer to, dozens of words back? In an RNN that information must travel step by step along the timeline; the path is long, gradients tend to vanish or explode over long paths, and distant associations get diluted. CNNs parallelize, but connecting two far-apart positions requires stacking many convolutional layers to reach across.</p>
-<p>In fact <strong>attention itself had existed since 2014</strong> — Bahdanau et al. bolted it onto seq2seq translation, letting the decoder "glance back" at the most relevant part of the source when producing each output word, easing the bottleneck of cramming a long sentence into one fixed vector. But back then attention was just <strong>an add-on hanging off an RNN backbone</strong>; the main body was still recurrent, and the sequential shackle stayed on. This paper's nerve was to flip it: <strong>if attention is what actually does the work, can we throw the RNN out entirely and keep only attention?</strong></p>
-<p>So the core question emerges: <strong>can we have an architecture that parallelizes like a CNN, yet lets any two words in a sentence connect "directly, in one hop" — a path length of O(1) no matter how far apart?</strong> The Transformer's answer: yes, and attention is all you need to do it.</p>
+<p>RNNs have two dead ends. <strong>One, they can't parallelize</strong>: they process word by word, state at step <code>t</code> depending on step <code>t-1</code>, like dominoes falling in order — slower the longer the sentence, and never fully feeding a GPU's parallelism. <strong>Two, they lose long-range dependencies</strong>: which noun does "it" refer to, dozens of words back? That signal must travel step by step; the path is long, gradients vanish, distant associations get diluted.</p>
+<p>Attention existed by 2014, but only as an <strong>add-on bolted to an RNN backbone</strong>; the body was still recurrent, and the sequential shackle stayed on. This paper flipped it: <strong>if attention does the real work, can we throw the RNN out and keep only attention?</strong> The goal — an architecture that parallelizes like a CNN yet lets any two words connect in one hop.</p>
 
-<h2>The core ideas, explained through</h2>
+<figure>
+<svg viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="20" y="26" fill="#e8794b" font-size="14" font-weight="700">RNN: information passed in sequence, fades with distance</text>
+<g>
+<rect x="34" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="61" y="72" fill="#d3d7de" font-size="12" text-anchor="middle">w1</text>
+<rect x="154" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="181" y="72" fill="#d3d7de" font-size="12" text-anchor="middle">w2</text>
+<rect x="274" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="301" y="72" fill="#d3d7de" font-size="12" text-anchor="middle">w3</text>
+<rect x="394" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="421" y="72" fill="#d3d7de" font-size="12" text-anchor="middle">w4</text>
+<rect x="514" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="541" y="72" fill="#d3d7de" font-size="12" text-anchor="middle">w5</text>
+<line x1="90" y1="67" x2="150" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="210" y1="67" x2="270" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="330" y1="67" x2="390" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="450" y1="67" x2="510" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="300" y="104" fill="#7c8593" font-size="11.5" text-anchor="middle">w1 → w5 takes 4 hops · path length O(n) · no parallelism</text>
+</g>
+<text x="20" y="150" fill="#f0b429" font-size="14" font-weight="700">Self-attention: any two words connect in one hop</text>
+<g>
+<rect x="34" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="61" y="196" fill="#d3d7de" font-size="12" text-anchor="middle">w1</text>
+<rect x="154" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="181" y="196" fill="#d3d7de" font-size="12" text-anchor="middle">w2</text>
+<rect x="274" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.22)" stroke="#f0b429" stroke-width="2"/><text x="301" y="196" fill="#fff" font-size="12" text-anchor="middle">w3</text>
+<rect x="394" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="421" y="196" fill="#d3d7de" font-size="12" text-anchor="middle">w4</text>
+<rect x="514" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="541" y="196" fill="#d3d7de" font-size="12" text-anchor="middle">w5</text>
+<path d="M295,176 Q180,136 67,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
+<path d="M296,176 Q238,140 181,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
+<path d="M306,176 Q363,140 421,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
+<path d="M307,176 Q424,136 541,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
+<text x="300" y="230" fill="#7c8593" font-size="11.5" text-anchor="middle">w3 reaches every word in one hop · O(1) · whole sentence in parallel</text>
+</g>
+</svg>
+<figcaption>Fig 1 · RNN's sequential passing vs self-attention's all-pairs links: path length drops from O(n) to O(1), and it parallelizes.</figcaption>
+</figure>
 
-<h3>Self-attention: each word asks "who here is relevant to me?"</h3>
-<p>This is the heart of the paper. Every word produces three vectors — a <em>Query</em>, a <em>Key</em>, and a <em>Value</em>. Picture it this way: the Query is "what I'm looking for," the Key is "what I am / how I can be found," and the Value is "the actual information I offer once found." These three vectors are not the word itself but <strong>three faces of the same word vector, projected out by three learnable weight matrices</strong> — training is precisely learning "how to project so that the words that should be relevant become relevant."</p>
-<p>To update its representation, a word takes its Query and dot-products it against the Keys of <strong>every word in the sentence (itself included)</strong>, producing a set of "relevance scores"; a higher score means that word is more relevant to me. Those scores pass through a <em>softmax</em> (normalizing them into weights that sum to 1), and those weights are used to take a weighted sum of everyone's Values — yielding the word's new representation. In the famous formula:</p>
-<p><code>Attention(Q, K, V) = softmax(QKᵀ / √dₖ) V</code></p>
-<p>In plain terms: <strong>each word pulls in information from the whole sentence, weighted by relevance.</strong> The revolutionary part is that any two words, however far apart, are now <strong>connected directly</strong> through this one matrix operation — a constant path length of 1, no more trudging along the timeline as in an RNN. And because it's one big matrix multiply, it parallelizes naturally on a GPU.</p>
-<p>Here's the classic example: "<em>The animal didn't cross the street because it was too tired.</em>" Does "it" refer to the animal or the street? A human knows instantly: the animal. Self-attention has "it" send its Query against every word's Key, and it assigns a high weight to "animal" and a low one to "street" — <strong>so the model learns that, when updating the representation of "it," it should draw mostly from "animal."</strong> Even better: change the reason to "it was too wide," and the same mechanism swings "it" over to "street." This <strong>"each word dynamically decides whom to listen to"</strong> is the power of attention — and something an RNN's fixed sequential passing cannot do.</p>
-<p>That unassuming <code>√dₖ</code> (dividing by the square root of the key dimension) can't be dropped either: at higher dimensions the dot products grow large, pushing softmax into a saturated "almost all-1 or all-0" regime where the gradient is near zero and training barely moves. <strong>Dividing by √dₖ scales the variance back to a normal range and keeps training stable</strong> — a tiny detail, but the difference between training and not.</p>
+<h2>The core ideas</h2>
 
-<h3>Multi-head attention: several "viewpoints" at once</h3>
-<p>The authors don't do attention once but <em>h</em> times (h=8 in the paper). Concretely, Q, K, and V are each projected into 8 lower-dimensional (64-dim) subspaces, each subspace <strong>runs attention independently</strong>, and the 8 results are concatenated and projected back. That is <em>multi-head attention</em>.</p>
-<p>Why? Because <strong>a single attention "head" can only learn one pattern of attending</strong> — say, focusing on syntactically adjacent words. But language has many kinds of relationships: coreference, syntactic dependency, semantic collocation. Multiple heads let the model <strong>attend to different types of relationships in different representation subspaces simultaneously</strong>. Like viewing a painting with one eye on composition and another on color — together you understand more.</p>
-<p>The paper visualizes these heads and finds they really do specialize on their own: some heads connect a verb to its object, some link a pronoun back to the noun it refers to, others track the sentence's separators and boundaries. <strong>No one hand-assigns who learns what; the division of labor grows out of training itself.</strong></p>
+<h3>Self-attention: each word asks "who is relevant to me?"</h3>
+<p>Every word makes three vectors — a <em>Query</em>, a <em>Key</em>, a <em>Value</em>. Picture the Query as "what I'm looking for," the Key as "what I am / how I'm found," the Value as "the information I offer once found." All three are projections of the same word vector through three learnable matrices — three faces of one word.</p>
+<p>To update itself, a word takes its Query and scores it against <strong>every word's Key</strong> (a dot product; more alike, higher the score), passes the scores through a <em>softmax</em> into weights summing to 1, and takes a weighted sum over every Value. That's the famous <code>Attention(Q,K,V)=softmax(QKᵀ/√dₖ)V</code> — in plain terms, <strong>each word pulls in the whole sentence's information weighted by relevance</strong>, with any two words one matrix-multiply apart and naturally parallel.</p>
 
-<h3>Positional encoding: giving order back to an order-blind mechanism</h3>
-<p>Pure attention has a side effect: it is <strong>inherently blind to word order</strong>. It computes a weighted sum over a set — shuffle the input words and the outputs just shuffle along; the model can't tell "dog bites man" from "man bites dog." An RNN carries order via its timeline, a CNN via local windows; pure attention has neither.</p>
-<p>The fix is <em>positional encoding</em>: manufacture a vector for each position and add it to the word vector, injecting "which slot you're in" directly. The authors generate these vectors from <strong>sine and cosine functions at different frequencies</strong>. Why trigonometric functions? First, superimposed waves of different frequencies let the model read off position from the numbers. Second, <strong>relative positions can be expressed linearly via trig identities</strong>, making it easy to learn relations like "k words apart." Third, it can in principle extrapolate to sentences longer than those seen in training. This vector is <strong>added</strong> onto the word vector (same dimension, not concatenated); picture each position wearing a unique "barcode" of waves at different frequencies, so the vector now carries both "what word I am" and "which slot I'm in."</p>
+<figure>
+<svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="20" y="30" width="46" height="28" rx="6" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="43" y="49" fill="#fff" font-size="13" text-anchor="middle">Q</text>
+<rect x="20" y="88" width="46" height="28" rx="6" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="43" y="107" fill="#fff" font-size="13" text-anchor="middle">K</text>
+<rect x="20" y="150" width="46" height="28" rx="6" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="43" y="169" fill="#fff" font-size="13" text-anchor="middle">V</text>
+<rect x="104" y="52" width="82" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="145" y="77" fill="#d3d7de" font-size="12" text-anchor="middle">QKᵀ score</text>
+<rect x="210" y="52" width="60" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="240" y="77" fill="#d3d7de" font-size="12" text-anchor="middle">÷√dₖ</text>
+<rect x="294" y="52" width="96" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="342" y="72" fill="#d3d7de" font-size="12" text-anchor="middle">softmax</text><text x="342" y="87" fill="#7c8593" font-size="10.5" text-anchor="middle">→ weights</text>
+<rect x="418" y="96" width="120" height="40" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="478" y="121" fill="#fff" font-size="12" text-anchor="middle">×V weighted sum</text>
+<line x1="66" y1="46" x2="102" y2="64" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="66" y1="100" x2="102" y2="80" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="186" y1="72" x2="208" y2="72" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="270" y1="72" x2="292" y2="72" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="390" y1="80" x2="440" y2="94" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="66" y1="164" x2="440" y2="128" stroke="#e8794b" stroke-dasharray="4 3" marker-end="url(#a2)"/>
+<text x="561" y="120" fill="#f0b429" font-size="13" text-anchor="middle">→ z</text>
+<line x1="538" y1="116" x2="552" y2="116" stroke="#7c8593" marker-end="url(#a2)"/>
+</svg>
+<figcaption>Fig 2 · Scaled dot-product attention: Q scores against all K → scale → softmax to weights → weighted sum over V → the word's new representation z.</figcaption>
+</figure>
 
-<h3>Encoder–decoder: two stacks of blocks</h3>
-<p>The whole Transformer is a classic <em>encoder–decoder</em>. The <strong>encoder</strong> is 6 identical layers stacked, each holding two things: a multi-head self-attention (letting source words look at one another) and a position-wise feed-forward network. The <strong>decoder</strong> is also 6 layers, but each has one extra piece — <em>encoder–decoder attention</em> — letting the model look back at the relevant parts of the source while generating the translation (exactly the job of the original Bahdanau attention, now absorbed into one unified framework).</p>
-<p>The decoder's self-attention has one crucial tweak: it is <strong>masked</strong>. Because translation is generated left to right, one word at a time, generating word <code>t</code> must not peek at word <code>t+1</code> (an answer not yet produced). The mask forces the scores at "future" positions to negative infinity, so after softmax their weights are zero — guaranteeing that <strong>autoregressive generation doesn't cheat</strong>.</p>
-<p>Why stack 6 layers? Because <strong>stacking buys layered abstraction</strong>: lower layers mostly handle surface word-to-word adjacency, and the higher you go, the more attention composes that into phrase-, syntax-, and semantic-level structure — the same intuition as a CNN going deeper to assemble edges into objects and then scenes. Here depth buys you a hierarchy of representations.</p>
+<p>That unassuming <code>√dₖ</code> can't be dropped: at high dimensions the dot products grow large, pushing softmax into a saturated "all-1 or all-0" regime where the gradient is near zero and training stalls. <strong>Dividing by √dₖ rescales the variance and keeps training stable</strong> — a tiny detail, but the difference between training and not.</p>
+<p>Why does it actually capture meaning? The classic example: "<em>The animal didn't cross the street because it was too tired</em>" — does "it" mean the animal or the street? Self-attention has "it" score against the whole sentence and assigns "animal" a high weight, "street" a low one — <strong>so the model learns to draw mostly from "animal" when updating "it."</strong> Change the reason to "too wide" and the same mechanism swings "it" to "street." That dynamic "each word decides whom to listen to" is the power.</p>
 
-<h3>Two humble but indispensable parts: residual + layer norm, and the position-wise FFN</h3>
-<p>Every sub-layer is wrapped in a <em>residual connection</em> plus <em>layer normalization</em>: the residual simply "adds the input back onto the output" (inheriting the ResNet idea), giving gradients a shortcut back so even dozens of layers train stably; layer norm keeps each layer's activation distribution steady. Each layer also has a <em>position-wise feed-forward network (FFN)</em> — a small two-layer network (512→2048→512) applied independently at each position, adding <strong>nonlinear transformation capacity</strong>. Attention moves information between words; the FFN processes information within each word. A clean division of labor. An often-overlooked fact: <strong>most of a Transformer's parameters actually live in these FFN layers</strong> (that inner layer is a wide 2048 dimensions), while attention itself holds relatively few — so when someone says "attention is all you need," don't forget that the big warehouse of knowledge is the FFN.</p>
+<h3>Multi-head attention: several viewpoints at once</h3>
+<p>Attention runs not once but 8 times (<em>multi-head</em>): Q/K/V are projected into 8 lower-dimensional subspaces, each runs attention independently, and the results are concatenated. Because <strong>a single head learns only one pattern of attending</strong> (say, syntactic adjacency), while language has coreference, syntax, semantics — multiple heads <strong>attend to different kinds of relationship in different subspaces at once</strong>. The paper's visualizations show heads self-specializing: some link verb to object, some link a pronoun to its noun.</p>
 
-<h3>A quick tally: why it's both fast and far-reaching</h3>
-<p>The paper has a comparison table that makes the Transformer's edge obvious at a glance. Two quantities matter: <strong>the compute per layer</strong>, and the <strong>"maximum path length" — the fewest steps information must travel to get from one end of the sentence to the other</strong> (the smaller this number, the easier long-range dependencies are to learn).</p>
-<ul>
-<li><strong>RNN</strong>: maximum path length <code>O(n)</code> — two positions n words apart pass information one cell at a time across n steps, with no parallelism.</li>
-<li><strong>Self-attention</strong>: maximum path length <code>O(1)</code> — any two words connect in one hop; compute per layer is about <code>O(n²·d)</code> (n = sentence length, d = dimension), since it scores every pair of positions.</li>
-</ul>
-<p>Here's the key trade-off: when sentence length n is smaller than the dimension d (usually the case in translation — dozens of words, dimension 512), <strong>self-attention costs about the same per layer as an RNN, yet collapses the path length from O(n) to O(1)</strong> — that's the "fast and far-reaching" bargain. The price is that compute is quadratic in n, so it strains on long sentences — foreshadowing the O(n²) entry under "limitations" below.</p>
+<h3>Positional encoding: giving order to an order-blind mechanism</h3>
+<p>Pure attention has a catch: it is <strong>order-blind</strong> (a weighted sum over a set — shuffle the input and outputs just shuffle too; it can't tell "dog bites man" from "man bites dog"). The fix is <em>positional encoding</em>: sine/cosine functions at different frequencies make a vector per position, <strong>added</strong> to the word vector — like each position wearing a unique "barcode" of waves, so the vector carries both "which word" and "which slot." Trig has a bonus: relative positions can be expressed linearly, easing "k words apart."</p>
+
+<h3>The whole architecture: encoder + decoder</h3>
+<p>The Transformer is a classic <em>encoder–decoder</em>. The <strong>encoder</strong> stacks 6 identical layers, each = multi-head self-attention + feed-forward. The <strong>decoder</strong> is also 6 layers, each with one extra "encoder–decoder attention" (attending back to the source while generating), and its self-attention is <strong>masked</strong> — generating word <code>t</code> forces "future" scores to negative infinity so, after softmax, they weigh zero, guaranteeing <strong>it can't peek at the answer</strong>. Stacking 6 layers buys <strong>layered abstraction</strong>: lower layers handle surface adjacency, higher ones compose phrases, syntax, meaning.</p>
+
+<figure>
+<svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a3g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="34" y="118" width="212" height="212" rx="10" fill="none" stroke="rgba(240,180,41,0.3)" stroke-dasharray="5 4"/>
+<text x="140" y="110" fill="#f0b429" font-size="12" text-anchor="middle" font-family="monospace">Encoder × 6</text>
+<rect x="60" y="340" width="160" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="140" y="361" fill="#d3d7de" font-size="11" text-anchor="middle">Input + positional enc.</text>
+<rect x="60" y="256" width="160" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="140" y="277" fill="#eaeef3" font-size="11" text-anchor="middle">Multi-head self-attn</text>
+<rect x="60" y="176" width="160" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="140" y="197" fill="#d3d7de" font-size="11" text-anchor="middle">Feed-forward (FFN)</text>
+<line x1="140" y1="340" x2="140" y2="292" stroke="#7c8593" marker-end="url(#a3)"/>
+<line x1="140" y1="256" x2="140" y2="212" stroke="#7c8593" marker-end="url(#a3)"/>
+<rect x="394" y="70" width="212" height="288" rx="10" fill="none" stroke="rgba(232,121,75,0.3)" stroke-dasharray="5 4"/>
+<text x="500" y="62" fill="#e8794b" font-size="12" text-anchor="middle" font-family="monospace">Decoder × 6</text>
+<rect x="420" y="340" width="164" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="502" y="361" fill="#d3d7de" font-size="10.5" text-anchor="middle">Output (shifted) + pos. enc.</text>
+<rect x="420" y="284" width="164" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="502" y="305" fill="#eaeef3" font-size="10.5" text-anchor="middle">Masked multi-head self-attn</text>
+<rect x="420" y="228" width="164" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="502" y="249" fill="#eaeef3" font-size="10.5" text-anchor="middle">Encoder–decoder attention</text>
+<rect x="420" y="172" width="164" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="502" y="193" fill="#d3d7de" font-size="10.5" text-anchor="middle">Feed-forward (FFN)</text>
+<rect x="420" y="98" width="164" height="40" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="502" y="114" fill="#fff" font-size="11" text-anchor="middle">Linear + Softmax</text><text x="502" y="129" fill="#f5c451" font-size="10.5" text-anchor="middle">→ next word</text>
+<line x1="502" y1="340" x2="502" y2="320" stroke="#7c8593" marker-end="url(#a3)"/>
+<line x1="502" y1="284" x2="502" y2="264" stroke="#7c8593" marker-end="url(#a3)"/>
+<line x1="502" y1="228" x2="502" y2="208" stroke="#7c8593" marker-end="url(#a3)"/>
+<line x1="502" y1="172" x2="502" y2="140" stroke="#7c8593" marker-end="url(#a3)"/>
+<path d="M220,193 C300,193 330,245 418,245" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#a3g)"/>
+<text x="320" y="235" fill="#f0b429" font-size="10.5" text-anchor="middle" font-family="monospace">source repr.</text>
+</svg>
+<figcaption>Fig 3 · The whole Transformer: the encoder reads the source; the decoder generates word by word with masking, attending back to the source via encoder–decoder attention.</figcaption>
+</figure>
+
+<p>Two humble but indispensable parts remain. Every sub-layer is wrapped in a <em>residual connection + layer norm</em>: the residual adds the input onto the output (the ResNet idea), giving gradients a shortcut so dozens of layers train stably. Each layer also has a <em>feed-forward network (FFN)</em> processing each position independently — <strong>attention moves information between words, the FFN refines it within each word</strong>. Aside: most of a Transformer's parameters live in the FFN, so "attention is all you need" forgets that the warehouse of knowledge is the FFN.</p>
 
 <h2>Key results</h2>
-<p>The paper delivers hard evidence on machine translation. On <strong>WMT 2014 English-to-German</strong>, the big model scored <strong>28.4 BLEU</strong> (BLEU is the standard translation-quality score; higher is better), a new state of the art — more than 2 BLEU above the previous best, ensembles included. On <strong>English-to-French</strong> it reached <strong>41.8 BLEU</strong>, again a single-model high.</p>
-<p>The paper ships two sizes: a base model (~65M parameters) for fast iteration and a big one to chase the top score. Even more striking is the <strong>cost</strong>: that big model trained in just 3.5 days on 8 P100 GPUs — far cheaper than the top models of the day, which often trained for weeks. Where do the savings come from? Exactly the tally above: <strong>shedding sequential dependency lets a whole sentence be fed in and computed in parallel, keeping the GPU fully fed, so wall-clock time drops sharply.</strong> The authors also confirmed it generalizes beyond translation by applying it to English constituency parsing. <strong>Better + faster + cheaper, all together, is the direct reason the whole field adopted it so quickly.</strong></p>
+<p>On <strong>WMT 2014 English→German</strong>, the big model scored <strong>28.4 BLEU</strong> (BLEU = translation quality, higher better), a new SOTA — over 2 BLEU above the prior best, ensembles included; <strong>English→French hit 41.8 BLEU</strong>, a single-model high. And the cost: the big model trained in 3.5 days on 8 P100 GPUs, far below contemporaries that trained for weeks. The savings come from shedding sequential dependency — the whole sentence computes in parallel, keeping the GPU fed. <strong>Better + faster + cheaper together is why the field adopted it so fast.</strong></p>
 
 <h2>Why it mattered</h2>
-<p>This was not an incremental tweak but a paradigm shift. Tellingly, later models split this encoder–decoder into <strong>three families</strong>, each pushing one part: <strong>encoder-only</strong> models (the BERT line) excel at understanding and classification, reading a whole sentence with bidirectional attention; <strong>decoder-only</strong> models (the GPT line) excel at generation, writing one word at a time with masked self-attention; <strong>encoder–decoder</strong> models (T5, translation systems) excel at "read a span, output a span" transduction. <strong>The whole era of "pre-train one big model, then fine-tune or prompt it to a task" starts from this architecture.</strong></p>
-<p>The deeper point is <strong>parallelizable → scalable</strong>. Precisely because the Transformer shed the RNN's sequential shackle, it became engineering-feasible to scale models and data all the way to hundreds of billions of parameters — paving the road to the scaling era. It also spilled beyond language: vision (Vision Transformer), speech, protein-structure prediction (AlphaFold leans heavily on attention), multimodality. <strong>Today the heart of nearly every frontier AI system is the building block from this paper.</strong></p>
-<p>At a deeper level it brought a <strong>startling unification</strong>: as long as you can slice something into a string of "tokens" (words, image patches, audio snippets, amino acids, even moves in a game), you can feed it to the same Transformer. Where each field once had its own specialized architecture (RNNs for text, CNNs for images, yet another stack for speech), all of it got largely absorbed into <strong>one general-purpose sequence modeler</strong>. That "one architecture fits all" is a big part of why, in the past few years, a handful of teams could push AI to the frontier so fast.</p>
+<p>A paradigm shift. Later models split this encoder–decoder into <strong>three families</strong>: <strong>encoder-only</strong> (the BERT line) for understanding with bidirectional attention; <strong>decoder-only</strong> (the GPT line) for generation, masked and left-to-right; <strong>encoder–decoder</strong> (T5, translation) for "read a span, output a span." The whole "pre-train one big model, then fine-tune or prompt" era starts here.</p>
+<p>Deeper still: <strong>parallelizable → scalable</strong>. Shedding the sequential shackle made scaling to hundreds of billions of parameters feasible. And a <strong>startling unification</strong>: slice anything into "tokens" (words, image patches, audio, amino acids, game moves) and feed the same Transformer; fields that once had bespoke architectures got absorbed into one general sequence model. <strong>Today the heart of nearly every frontier AI system is this building block.</strong></p>
 
 <h2>Limitations and criticism</h2>
 <ul>
-<li><strong>O(n²) complexity (the one to know)</strong>: self-attention computes a similarity between every pair of positions, so both compute and memory grow <strong>quadratically</strong> with sequence length. Long documents and high-resolution images strain it badly. This directly spawned a wave of "efficient attention" variants (Longformer, Performer, and engineering wins like FlashAttention) to cut that bill.</li>
-<li><strong>Positional encoding is a stopgap</strong>: the original sinusoidal encoding actually extrapolates poorly, and was progressively replaced by relative position encodings, RoPE (rotary embeddings), ALiBi, and others.</li>
-<li><strong>Data- and compute-hungry</strong>: the Transformer has almost none of the built-in <em>inductive bias (prior assumptions like locality or translation-invariance)</em> that CNNs/RNNs carry. The upside is flexibility and a high ceiling; the cost is that <strong>it needs more data to learn well</strong>, and won't necessarily beat convolution on small datasets. A telling case: carrying the Transformer into vision (ViT) required pre-training on a giant dataset like JFT-300M (hundreds of millions of images) before it clearly surpassed comparable CNNs; without enough data, the missing inductive bias turns into a liability.</li>
-<li><strong>The title oversells</strong>: "attention is all you need" is a great slogan — but as above, the feed-forward layers, residuals, layer norm, and positional encoding are <strong>all indispensable</strong>; attention alone is not enough. The field has ribbed it good-naturedly on this ever since.</li>
-<li><strong>"Attention weights = interpretability" is disputed</strong>: early on, people read attention weights as "where the model is looking"; later work argued that <strong>attention weights are not the same as feature importance</strong>, so treating them as explanations calls for caution.</li>
+<li><strong>O(n²) complexity (the one to know)</strong>: attention scores every pair of positions, so compute and memory grow <strong>quadratically</strong> with length — long documents and high-res images strain it, spawning "efficient attention" variants (Longformer, Performer, FlashAttention).</li>
+<li><strong>Positional encoding is a stopgap</strong>: sinusoidal encoding extrapolates poorly, later replaced by relative encodings, RoPE, ALiBi.</li>
+<li><strong>Data-hungry</strong>: it lacks the built-in <em>inductive bias (priors like locality)</em> of CNNs/RNNs; higher ceiling, but <strong>needs more data</strong>. Case in point: vision's ViT needed hundreds of millions of images to clearly beat comparable CNNs.</li>
+<li><strong>The title oversells</strong>: feed-forward, residuals, layer norm, positional encoding are <strong>all indispensable</strong> — attention alone isn't enough.</li>
+<li><strong>"Attention weights = interpretability" is disputed</strong>: they aren't the same as feature importance, so treat them as explanations with care.</li>
 </ul>
 
-<h2>The essence in ten sentences</h2>
+<h2>The essentials</h2>
 <div class="tl">
-<p>① The Transformer in one line: <strong>drop RNNs and convolution, use attention alone</strong> for sequences — parallel to train, and any two words connect in a single hop.</p>
-<p>② The pain it solves: RNNs must compute sequentially and can't parallelize, and long-range dependencies must travel step by step and get lost.</p>
-<p>③ The mechanism of self-attention: each word makes a Query/Key/Value, and <code>softmax(QKᵀ/√dₖ)V</code> pulls in the whole sentence weighted by relevance, with a path length of 1 between any two words.</p>
-<p>④ That <code>√dₖ</code> is not decoration: it rescales the dot-product variance to keep softmax out of the near-zero-gradient saturated regime that stalls training.</p>
-<p>⑤ Multi-head attention lets the model <strong>attend to different kinds of relationships (coreference, syntax, semantics) in several subspaces at once</strong>; one head learns only one pattern.</p>
-<p>⑥ Pure attention is order-blind, so sinusoidal <strong>positional encoding</strong> injects "which slot"; the decoder's self-attention is also <strong>masked</strong> so generation can't peek at the future.</p>
-<p>⑦ Residual + layer norm make dozens of layers stably trainable; the position-wise FFN does nonlinear per-word processing — attention moves information, the FFN refines it.</p>
-<p>⑧ The result is better + faster + cheaper: 28.4 BLEU on En→De sets a new SOTA, trained in 3.5 days on 8 GPUs, far below the cost of contemporaries.</p>
-<p>⑨ The impact is paradigm-level: <strong>BERT and GPT are both built on it</strong>, parallelism enabled scaling, and it spilled into vision, speech, proteins, and multimodality — the shared foundation of modern AI.</p>
-<p>⑩ Keep the limits honest: attention is <strong>O(n²)</strong> and strains on long sequences; positional encoding is a stopgap; it's data-hungry; and the title oversells — <strong>feed-forward, residuals, normalization, and positional encoding are all indispensable; attention alone is not enough.</strong></p>
+<p>① In one line: <strong>drop RNNs and convolution, use attention alone</strong> — parallel to train, any two words one hop apart.</p>
+<p>② The pain: RNNs compute sequentially and can't parallelize; long-range dependencies travel step by step and get lost.</p>
+<p>③ Mechanism: each word makes Q/K/V; <code>softmax(QKᵀ/√dₖ)V</code> pulls in the sentence by relevance; <code>√dₖ</code> keeps softmax out of saturation and stabilizes training.</p>
+<p>④ Multi-head = several relationship types in several subspaces; positional encoding injects order; the decoder masks self-attention so it can't peek.</p>
+<p>⑤ Attention moves information, the FFN refines it; residual + layer norm make dozens of layers trainable.</p>
+<p>⑥ Results: 28.4 BLEU on En→De sets SOTA, trained in 3.5 days on 8 GPUs — better, faster, cheaper.</p>
+<p>⑦ Impact: BERT/GPT build on it; parallelism enabled scaling; "tokenize anything" unified fields — the foundation of modern AI.</p>
+<p>⑧ Limits: <strong>O(n²)</strong> on long sequences, positional encoding a stopgap, data-hungry, title oversells — feed-forward/residuals/norm/positional encoding are all indispensable.</p>
 </div>
-<footer>CS Papers Deep-Read · Reading this page ≈ grasping the paper's core ideas and mechanisms; for the full derivations, hyperparameters, and ablations, go to the original.</footer>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full derivations and ablations, go to the original.</footer>
 </div>
 </body></html>
