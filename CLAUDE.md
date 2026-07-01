@@ -40,7 +40,8 @@
 ## 3. 文件约定 / 发布（同所有 routine 站）
 - 文件名 `{slug}-paper{N}.html` + `{slug}-paper{N}.en.html`，放仓库根目录。
 - 发布前更新 `index.html`（在 `<!-- entries -->` 前插入新条目）+ `index.en.html`（插入 `.en` 条目）。
-- **不要**手动加 `comments.js` / `search.js` / `index-button.js`（GitHub Action 自动注入）；也别硬写 `← Hub`。**本站不做 TTS**——别加 `i18n-tts.js`、别加 `data-tts` 属性、别建 audio 目录。
+- **不要**手动在内容页里加 `comments.js` / `search.js` / `index-button.js` / `i18n-tts.js`（GitHub Action 自动注入，含右上角中英切换药丸 + TTS 朗读）；也别硬写 `← Hub`。（index 页可硬写这四个脚本，与姊妹站一致。）
+- **TTS 走浏览器 Web Speech，不做 Azure 烘焙**：`i18n-tts.js` 没有 mp3 时会自动回退成读 `h1/h2/h3/p` 的浏览器语音——所以**别加 `data-tts` 属性、别建 `audio/` 目录、别恢复 `bake-tts.py`/`bake-tts.yml`**。朗读效果由浏览器语音决定，够用即可。
 - 用 `./publish.sh` 发布：自动 add/commit/push 到 `main`，并校验体量、index 引用、div 平衡、重复编号、TOPICS 未被改等。
 - git：`user.name=BigCat` / `user.email=chengchen0802@gmail.com`。
 
