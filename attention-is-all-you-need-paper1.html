@@ -21,10 +21,10 @@ li{margin:7px 0}
 figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
 figure svg{width:100%;height:auto;display:block}
 figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
-.pre{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
-.pre-h{color:#f0b429;font-size:0.9rem;font-weight:700;margin-bottom:4px;font-family:"SF Mono",Menlo,monospace}
-.pre ul{margin:6px 0 0 1.1em}
-.pre li{margin:5px 0;font-size:0.96rem}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary-h{color:#f0b429;font-size:0.9rem;font-weight:700;margin-bottom:4px;font-family:"SF Mono",Menlo,monospace}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
 </style></head><body>
@@ -37,8 +37,8 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <h2>一句话</h2>
 <p class="lead">这篇论文提出了 <strong>Transformer</strong>：一个<strong>彻底丢掉循环（RNN）和卷积（CNN）、只靠「注意力」一种机制</strong>处理序列的架构。它让模型一次看到整句话、并行算出每个词该关注谁，于是既训得快、又能一步抓住相距很远的词之间的关系。这个 2017 年为机器翻译而生的架构，后来成了 <strong>BERT、GPT 乃至今天几乎所有大模型的共同地基</strong>。</p>
 
-<div class="pre">
-<p class="pre-h">开始前 · 几个词的大白话（有基础可跳过）</p>
+<div class="glossary">
+<p class="glossary-h">Glossary · 术语表</p>
 <ul>
 <li><strong>神经网络（neural network）</strong>：一个能从大量例子里自己学出规律的数学模型，可以先粗略理解成「一个会照着数据自我调参的函数」。</li>
 <li><strong>RNN（循环神经网络）</strong>：专门处理序列（一句话、一段语音）的神经网络，特点是<strong>从左到右一个词一个词地读</strong>，读每个词时带着前面攒下的「记忆」。</li>
