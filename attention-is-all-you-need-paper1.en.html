@@ -21,6 +21,10 @@ li{margin:7px 0}
 figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
 figure svg{width:100%;height:auto;display:block}
 figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.pre{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.pre-h{color:#f0b429;font-size:0.9rem;font-weight:700;margin-bottom:4px;font-family:"SF Mono",Menlo,monospace}
+.pre ul{margin:6px 0 0 1.1em}
+.pre li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
 </style></head><body>
@@ -33,11 +37,22 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <h2>In one sentence</h2>
 <p class="lead">This paper introduces the <strong>Transformer</strong>: an architecture that <strong>drops recurrence (RNNs) and convolution (CNNs) entirely and processes sequences with attention alone</strong>. It lets the model see the whole sentence at once and compute, in parallel, what each word should attend to — so it trains fast and captures relationships between distant words in one step. Built in 2017 for machine translation, it became <strong>the shared foundation of BERT, GPT, and essentially every large model today</strong>.</p>
 
+<div class="pre">
+<p class="pre-h">Before we start · a few terms in plain words (skip if you know them)</p>
+<ul>
+<li><strong>Neural network</strong>: a mathematical model that learns patterns from lots of examples on its own — think of it loosely as "a function that tunes itself to fit data."</li>
+<li><strong>RNN (recurrent neural network)</strong>: a neural network for sequences (a sentence, a stretch of speech); it <strong>reads left to right, one word at a time</strong>, carrying a running "memory" of what came before.</li>
+<li><strong>LSTM</strong>: an improved RNN that uses "gates" to decide what to remember or forget, easing plain RNNs' trouble holding on to distant information.</li>
+<li><strong>CNN (convolutional neural network)</strong>: a network great at images, sliding small windows over the input to catch local features; here just know it's fast but needs many layers to "reach" far-apart information.</li>
+<li><strong>Word embedding</strong>: representing a word as a list of numbers (a vector), where similar-meaning words get similar numbers — so the network can actually compute over words.</li>
+</ul>
+</div>
+
 <h2>Where it sits</h2>
 <p>The eight authors were at Google; the paper appeared at NeurIPS 2017. Before it, sequence modeling was ruled by <strong>recurrent neural networks (RNNs)</strong> — especially LSTMs — usually paired with the <em>attention</em> mechanism Bahdanau et al. introduced in 2014 as an add-on. The nerve of this paper was to promote attention from supporting actor to <strong>sole lead</strong> — the title is the manifesto. "Dropping recurrence" was far from obvious: RNNs had ruled sequence modeling for nearly three decades.</p>
 
 <h2>The problem and the motivation</h2>
-<p>RNNs have two dead ends. <strong>One, they can't parallelize</strong>: they process word by word, state at step <code>t</code> depending on step <code>t-1</code>, like dominoes falling in order — slower the longer the sentence, and never fully feeding a GPU's parallelism. <strong>Two, they lose long-range dependencies</strong>: which noun does "it" refer to, dozens of words back? That signal must travel step by step; the path is long, gradients vanish, distant associations get diluted.</p>
+<p>RNNs have two dead ends. <strong>One, they can't parallelize</strong>: they process word by word, state at step <code>t</code> depending on step <code>t-1</code>, like dominoes falling in order — slower the longer the sentence, and never fully feeding a GPU's parallelism. <strong>Two, they lose long-range dependencies</strong>: which noun does "it" refer to, dozens of words back? That signal must travel step by step; the path is long, <strong>gradients vanish</strong> (the correction signal sent back during training gets weaker and weaker until it's near zero, so the model can't learn distant relationships), and distant associations get diluted.</p>
 <p>Attention existed by 2014, but only as an <strong>add-on bolted to an RNN backbone</strong>; the body was still recurrent, and the sequential shackle stayed on. This paper flipped it: <strong>if attention does the real work, can we throw the RNN out and keep only attention?</strong> The goal — an architecture that parallelizes like a CNN yet lets any two words connect in one hop.</p>
 
 <figure>
