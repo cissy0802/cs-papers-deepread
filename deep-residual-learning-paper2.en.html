@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Deep Residual Learning (ResNet) — CS Papers Deep-Read Paper 2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 2</p>
+<h1>Deep Residual Learning (ResNet)</h1>
+<p class="sub">He et al. · Microsoft Research · CVPR 2016</p>
+<p class="langbar"><a href="deep-residual-learning-paper2.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2015 a team at Microsoft Research Asia (Kaiming He and colleagues) proposed <strong>ResNet (residual networks)</strong>. With one tiny change, it took neural networks from "about 20 layers at most" to <strong>hundreds of layers that keep getting better</strong>. It won that year's ImageNet image-recognition contest with an error rate as low as 3.57%. Today almost every deep network — including the previous paper's Transformer, and ChatGPT — uses this little change.</p>
+
+<h2>First, a puzzle</h2>
+<p>Intuitively, a deeper network should be smarter (it can see more levels of pattern). Yet people found the opposite: <strong>stack too many layers and it gets worse</strong>. The strange part is that this wasn't "memorizing the training questions" (overfitting) — it <strong>couldn't even do the training questions well</strong>. That's doubly counterintuitive: a deeper network should be no worse, since the extra layers could just do nothing and pass information through. But it couldn't even learn to "do nothing."</p>
+
+<h2>The tiny change</h2>
+<p>ResNet's idea is wonderfully plain: <strong>don't ask each layer to "repaint the whole picture" — ask it only "what to change," then add that change back onto the original.</strong> Give each small stretch of the network a <strong>"bypass lane" (a skip connection)</strong>: the original information flows through the bypass untouched, and the layers in between only learn a small <strong>tweak</strong>, which is added back onto the original at the end.</p>
+<p>An analogy: editing a document — you don't recopy the whole page, you just mark "add a line here, delete a word there" on the original. Small edits, and you never lose the original text. ResNet has each layer learn only that set of edits (the edits are called the <em>residual</em>).</p>
+<p>The payoff is immediate: <strong>if a stretch needs no change, it just learns "blank edits," and the original flows through the bypass intact — so adding layers can never make things worse.</strong> And "learn to output nothing" is far easier than "learn to copy the input exactly from scratch," so the puzzle is solved.</p>
+
+<h2>So how does it actually help?</h2>
+<p>Two wins. First, <strong>adding layers is no longer risky</strong>: learn a tweak if needed, or let the bypass pass things through if not — so the network can <strong>safely stack to hundreds of layers</strong> and keep improving. Second, <strong>the learning signal flows better</strong>: to train, a "correction signal" must travel from the last layer all the way back to the front to adjust the weights; in a very deep network that signal fades the farther it goes (so the front layers can't learn). The bypass gives that signal a <strong>"highway"</strong> straight back to the early layers.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Give each stretch of the network a "bypass" so the original flows through untouched, and have the layers learn only a "what to change" tweak added back on top — so adding layers never hurts, you can stack hundreds of them, and the correction signal flows freely. This "skip connection" is now standard in almost every deep network (including the Transformer).</p>
+</div>
+
+<p class="switch-hint">Want the block diagram, the formula, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">ResNet uses a nearly parameter-free <strong>skip connection</strong> to have each stretch of the network learn "the difference between the target and the input" (the <strong>residual</strong>) instead of the target directly. This solves the <strong>degradation problem</strong> — where deeper networks have <em>higher</em> training error — and trained convolutional nets stably to hundreds of layers for the first time, winning ImageNet 2015 (3.57% top-5 error). Its skip connection later became a basic building block of nearly every deep network, including the Transformer.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Neural network / depth</strong>: a model built by stacking many "layers" that learn patterns from data; "depth" is the number of layers — more layers express more complex patterns, but are harder to train.</li>
+<li><strong>CNN (convolutional neural network)</strong>: a network great at images, sliding small windows over a picture to extract features layer by layer, from edges to objects. ResNet is a very deep CNN.</li>
+<li><strong>Training vs test error</strong>: the error rate on "questions it has seen" vs "questions it hasn't." High training error = it never learned; test error far above training error = overfitting.</li>
+<li><strong>Overfitting</strong>: the model memorized the training data but can't generalize — low training error, high test error.</li>
+<li><strong>Vanishing gradient</strong>: the signal (gradient) used to adjust weights during training fades layer by layer in a very deep network until it's near zero, so early layers can't learn.</li>
+<li><strong>Identity mapping</strong>: a mapping that outputs the input unchanged. ResNet's key trick is making "change nothing" easy to learn.</li>
+<li><strong>ImageNet / ILSVRC</strong>: a benchmark and annual contest of a million-plus images across 1000 classes — the "Olympics" for vision models of that era.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun, at Microsoft Research Asia; the paper appeared at CVPR 2016 (released late 2015). It inherits the "make networks ever deeper" line of AlexNet (2012) and VGG (2014), but squarely answered the roadblock of the day — <strong>why you can't just naively go deeper</strong>. It launches nearly every deep network that followed: residual/skip connections became a universal block, and even the "residual connection" around each Transformer sub-layer is the very same idea.</p>
+
+<h2>The problem and the motivation</h2>
+<p>From 2012 on, deeper seemed to always mean stronger (AlexNet's 8 layers → VGG's 19). But going deeper hits two walls. The first is <em>vanishing/exploding gradients</em> — largely eased by good initialization and normalization. The truly stubborn one is the second: <strong>degradation</strong>.</p>
+<p>The authors observed something counterintuitive: going from 20 to 56 layers, the <strong>training error goes up, not down</strong> — note, <strong>training</strong> error, so this isn't overfitting; a deeper network is simply harder to optimize. That's especially odd because a deeper network <strong>has a "no worse" solution</strong>: let the extra layers learn an <em>identity mapping</em> (output the input unchanged), and it reduces to the shallower network. In practice, though, the optimizer struggles to make a stack of nonlinear layers learn "copy the input exactly." <strong>The problem isn't expressive power — it's that optimization can't find it.</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="40" x2="70" y2="205" stroke="#7c8593"/>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"/>
+<text x="70" y="28" fill="#7c8593" font-size="11.5" text-anchor="middle">training error</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">training progresses →</text>
+<path d="M88,66 C180,150 340,176 508,184" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<path d="M88,56 C180,116 340,140 508,150" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<text x="504" y="177" fill="#f0b429" font-size="12" text-anchor="end">20 layers</text>
+<text x="504" y="143" fill="#e8794b" font-size="12" text-anchor="end">56 layers</text>
+<text x="300" y="104" fill="#e7ebf1" font-size="12.5" text-anchor="middle">deeper → higher training error</text>
+</svg>
+<figcaption>Fig 1 · Degradation: a plain network's training error rises going from 20 to 56 layers — not overfitting, just harder to optimize when deeper.</figcaption>
+</figure>
+
+<h2>The core idea</h2>
+
+<h3>Residual learning: learn the "difference," not the whole thing</h3>
+<p>If learning an identity mapping is hard, then <strong>hand the identity to the network for free</strong>. Say a stretch of layers is meant to learn a target mapping <code>H(x)</code>; instead of learning H(x) directly, ResNet has those layers learn the <strong>residual</strong> <code>F(x) = H(x) − x</code>, then adds the input <code>x</code> back via a <em>skip connection</em>: <code>output = F(x) + x</code>.</p>
+<p>In plain terms: <strong>the original x flows through the bypass unchanged, and the layers in between learn only "how much to change x."</strong> If the optimum is close to identity (no change needed), they just push F(x) toward 0 — far easier than learning to "copy exactly" from scratch. Identity is provided as a "free fallback," so <strong>adding layers is at least never worse</strong>, and the puzzle is cured.</p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="r2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="r2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="230" y="34" fill="#e7ebf1" font-size="15" text-anchor="middle" font-weight="700">x</text>
+<line x1="230" y1="42" x2="230" y2="64" stroke="#7c8593" marker-end="url(#r2)"/>
+<rect x="150" y="66" width="160" height="36" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="230" y="89" fill="#e7ebf1" font-size="12" text-anchor="middle">3×3 conv → ReLU</text>
+<line x1="230" y1="102" x2="230" y2="118" stroke="#7c8593" marker-end="url(#r2)"/>
+<rect x="150" y="120" width="160" height="36" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="230" y="143" fill="#e7ebf1" font-size="12" text-anchor="middle">3×3 conv</text>
+<text x="332" y="116" fill="#f0b429" font-size="11.5">F(x): the "residual" these layers learn</text>
+<line x1="230" y1="156" x2="230" y2="186" stroke="#7c8593" marker-end="url(#r2)"/>
+<circle cx="230" cy="202" r="15" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="230" y="207" fill="#e7ebf1" font-size="16" text-anchor="middle">+</text>
+<path d="M230,44 C402,44 432,120 432,202 L249,202" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#r2g)"/>
+<text x="444" y="120" fill="#f0b429" font-size="11.5">skip</text>
+<text x="444" y="136" fill="#7c8593" font-size="11">adds x back</text>
+<line x1="230" y1="217" x2="230" y2="236" stroke="#7c8593" marker-end="url(#r2)"/>
+<rect x="192" y="238" width="76" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="230" y="258" fill="#b9c0ca" font-size="12" text-anchor="middle">ReLU</text>
+<line x1="230" y1="268" x2="230" y2="283" stroke="#7c8593" marker-end="url(#r2)"/>
+<text x="230" y="298" fill="#e7ebf1" font-size="13" text-anchor="middle">output = F(x) + x</text>
+</svg>
+<figcaption>Fig 2 · Residual block: the two layers on the main path learn only the residual F(x); the skip connection adds input x back, giving F(x)+x. Need no change? Just push F(x) to 0.</figcaption>
+</figure>
+
+<p>The skip connection simply adds the input <strong>element-wise</strong> onto the output — <strong>no extra parameters, almost no extra compute</strong>. When the two ends differ in dimension, a single 1×1 convolution projects x to line them up.</p>
+
+<h3>Bottleneck blocks: making "very deep" affordable</h3>
+<p>To stack to 50/101/152 layers without exploding the cost, deeper variants use <em>bottleneck blocks</em>: a 1×1 conv narrows the channels, a 3×3 conv does the work, and a 1×1 conv restores them — concentrating compute in the narrow middle. Thanks to this, ResNet-152 is 8× deeper than VGG yet has <strong>lower computational complexity</strong>.</p>
+<p>A widely held intuition too: the skip connection gives gradients a <strong>"highway"</strong> — during backprop the correction signal returns to the early layers along the bypass with almost no decay, which is key to training very deep nets. (This "gradient flows freely" story is the community's common explanation; the paper's own core argument is the "easier optimization / free identity fallback" above.)</p>
+
+<h2>Key results</h2>
+<p>On ImageNet, a 152-layer ResNet reached <strong>3.57% top-5 error</strong> (ensemble) and won <strong>ILSVRC 2015</strong> classification, sweeping detection, localization, and COCO tasks too. The controlled experiments are convincing: a 34-layer <strong>plain</strong> network has higher training error than an 18-layer one (degradation reproduced), whereas with skip connections the 34-layer ResNet clearly beats the 18-layer, and deeper keeps helping. The authors even trained past <strong>a thousand layers</strong> on CIFAR-10. <strong>"Deeper really does mean better" — a conclusion that should have held but had temporarily broken — was restored.</strong></p>
+
+<h2>Why it mattered</h2>
+<p>It reopened the road to "deep," with a tool that's extremely general. <strong>Skip connections are now everywhere</strong>: later vision backbones (ResNeXt, DenseNet, etc.), nearly every modern deep net, and even <strong>the residual connection around each Transformer sub-layer</strong> use the same idea. You could say that our ability today to stack models hundreds or thousands of layers deep, to hundreds of billions of parameters, rests on residual connections as one of its foundations. It also made He and colleagues among the most influential researchers in deep learning.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Diminishing returns from depth</strong>: gains from dozens to ~150 layers are clear, but pushing to a thousand-plus (e.g., CIFAR's 1202-layer) helps little or hurts — more depth isn't always better.</li>
+<li><strong>It may behave more like an "ensemble of shallow nets"</strong>: later work (Veit et al. 2016) argued residual nets act like an <em>ensemble</em> of many paths of varying depth, and dropping some layers barely hurts — not quite the picture of "one genuinely very deep network."</li>
+<li><strong>Why it works is still debated</strong>: the exact cause of degradation, and whether skip connections help via "easier optimization," "free gradient flow," or "a smoother loss landscape" (a later visualization result), get complementary rather than settled answers.</li>
+<li><strong>The original wasn't optimal</strong>: the first design applies the activation after the addition; later ResNet v2 (pre-activation) reshaped the block to let identity information flow more freely, performing better — so the original still had room to improve.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: add a skip connection to each stretch so it learns only the "residual F(x)=H(x)−x," then add x back — solving deep networks' degradation problem.</p>
+<p>② The pain: deeper networks show <strong>rising training error</strong> (degradation, not overfitting); in theory "extra layers learning identity is no worse," but the optimizer can't learn identity.</p>
+<p>③ Mechanism: <code>output = F(x) + x</code> hands identity for free — need no change, push F to 0, far easier than learning to copy from scratch; skip connections add no parameters and almost no compute.</p>
+<p>④ Deeper variants use bottleneck blocks (1×1→3×3→1×1) to save compute; ResNet-152 is 8× deeper than VGG yet lower in complexity.</p>
+<p>⑤ Bonus intuition: skip connections give gradients a "highway" so the correction signal flows freely back.</p>
+<p>⑥ Results: 3.57% top-5 error on ImageNet, ILSVRC 2015 winner; controlled experiments reproduce degradation and show residuals fix it; trainable past a thousand layers on CIFAR.</p>
+<p>⑦ Impact: skip connections became a standard foundation of nearly every deep network (including the Transformer's residual connections).</p>
+<p>⑧ Limits: diminishing returns when very deep; may act more like a "multi-path ensemble"; why it works is still debated; pre-activation and others show the original wasn't optimal.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full network configs and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

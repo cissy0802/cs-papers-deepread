@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Deep Residual Learning（ResNet）— IT 论文精读 Paper 2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 2</p>
+<h1>Deep Residual Learning（ResNet）</h1>
+<p class="sub">He 等 · Microsoft Research · CVPR 2016</p>
+<p class="langbar"><a href="deep-residual-learning-paper2.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2015 年，微软亚洲研究院一队人（何恺明等）提出了 <strong>ResNet（残差网络）</strong>，靠一个极小的改动，让神经网络从「最多堆二十几层」一下能堆到<strong>上百层、还越堆越强</strong>。它拿下当年 ImageNet 图像识别大赛冠军，错误率低到 3.57%。今天几乎每个深度网络——包括上一篇的 Transformer、以及 ChatGPT——都在用它这个小改动。</p>
+
+<h2>先说个怪事</h2>
+<p>直觉上，网络越深应该越聪明（能看的层次更多）。可当时人们发现：<strong>层数堆多了，效果反而变差</strong>。奇怪的是，这不是「学得太细、把训练题背下来」那种情况——而是<strong>连训练题都做不好了</strong>。这更反直觉：一个更深的网络，哪怕多出来的层啥也不干、把信息原样往下传，也不该比浅网络差啊。可它偏偏学不会「啥也不干」这件事。</p>
+
+<h2>那个小改动</h2>
+<p>ResNet 的点子特别朴素：<strong>别让每一层去「重画整张画」，只让它说「要改哪儿」，再把这点改动加回原图上。</strong>做法是给每一小段网络架一条<strong>「旁路」（跳跃连接 skip connection）</strong>：原始信息顺着旁路原封不动地流过去，中间那几层只负责学一个「<strong>微调</strong>」，最后把微调加回到原始信息上。</p>
+<p>打个比方：改一份文稿，你不用把整页重抄一遍，只在原稿上<strong>批注「这里加一句、那里删一词」</strong>——改动小、又不会把原文弄丢。ResNet 就是让每层只学这份「修改批注」（这份批注就叫<em>残差</em>）。</p>
+<p>好处立刻来了：<strong>如果某段其实不需要改动，它只要把「批注」学成空白，原始信息就顺着旁路完好流过——于是多加层永远不会让结果变差。</strong>而「学出一片空白」比「从零学会把原样照抄一遍」容易太多了，前面那个怪事就此解决。</p>
+
+<h2>那它到底怎么帮上忙？</h2>
+<p>两个好处。一是<strong>加层不再有风险</strong>：需要就学个微调、不需要就让旁路原样过，网络于是可以<strong>放心堆到几百层</strong>，还越堆越强。二是<strong>学习信号更顺</strong>：网络训练时，要靠一股「纠错信号」从最后一层一路传回最前面来调参；网络太深时这股信号会越传越弱（前面的层就学不动了）。而那条旁路等于给纠错信号修了一条<strong>「高速公路」</strong>，让它畅通地传回底层。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>给网络每一小段架一条「旁路」让原始信息原样流过，中间几层只学一个「要改哪儿」的微调、再加回去——于是「多加层」永远不会更差、能一口气堆到上百层，纠错信号也畅通。这条「跳跃连接」如今是几乎所有深度网络（含 Transformer）的标配。</p>
+</div>
+
+<p class="switch-hint">想看残差块的结构图、公式和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>一句话</h2>
+<p class="lead">ResNet 用一个几乎不花额外参数的「<strong>跳跃连接（skip connection）</strong>」，让每一小段网络只学「目标与输入之差」（<strong>残差</strong>）、而不是直接学目标，从而解决了「网络越深、训练误差反而越高」的<strong>退化问题</strong>，第一次把卷积网络稳定地训到上百层，拿下 2015 年 ImageNet 冠军（top-5 错误率 3.57%）。它的跳跃连接后来成了几乎所有深度网络（包括 Transformer）的基本构件。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>神经网络 / 深度</strong>：由许多「层」堆叠而成、从数据里学规律的模型；「深度」就是层数，层越多越能表达复杂模式，但也越难训。</li>
+<li><strong>卷积网络（CNN，convolutional neural network）</strong>：擅长图像的神经网络，用小窗口滑过图片、层层提取从边缘到物体的特征。ResNet 就是一种很深的 CNN。</li>
+<li><strong>训练误差 vs 测试误差</strong>：模型在「见过的题」上的错误率 vs 在「没见过的题」上的错误率。前者高 = 根本没学会；后者远高于前者 = 过拟合。</li>
+<li><strong>过拟合（overfitting）</strong>：把训练数据背下来了、却不会举一反三，表现为训练误差低、但测试误差高。</li>
+<li><strong>梯度消失（vanishing gradient）</strong>：训练时用来调参的信号（梯度）在很深的网络里逐层变弱、几乎归零，导致靠前的层学不动。</li>
+<li><strong>恒等映射（identity mapping）</strong>：输入原样输出、什么都不改的映射。ResNet 的关键就是让网络「不改」变得很容易。</li>
+<li><strong>ImageNet / ILSVRC</strong>：一个上百万张图、1000 类的图像识别基准与年度大赛，是当年衡量视觉模型的「奥运会」。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者是何恺明（Kaiming He）、张祥雨、任少卿、孙剑，来自微软亚洲研究院，论文发在 CVPR 2016（2015 年底放出）。它上承 AlexNet（2012）、VGG（2014）「把网络越做越深」的路线，却正面回答了当时的拦路问题——<strong>为什么不能无脑加深</strong>；下启之后几乎所有深网络：残差 / 跳跃连接成了通用积木，连 Transformer 每个子层外的「残差连接」也是同一个东西。</p>
+
+<h2>问题与动机</h2>
+<p>2012 年起，让网络更深似乎总能更强（AlexNet 8 层 → VGG 19 层）。但继续加深会撞上两堵墙。第一堵是<em>梯度消失 / 爆炸</em>——已被合适的初始化与归一化大体缓解。真正棘手的是第二堵：<strong>退化（degradation）</strong>。</p>
+<p>作者观察到一个反直觉现象：把网络从 20 层加到 56 层，<strong>训练误差不降反升</strong>——注意是<strong>训练</strong>误差，所以这不是过拟合，而是「更深的网络反而更难优化」。这尤其奇怪，因为理论上更深的网络<strong>存在一个「不会更差」的解</strong>：让多出来的层学成<em>恒等映射</em>（原样输出），它就等价于那个浅网络。可实践中，优化器很难让一堆非线性层学出「原样照抄」。<strong>问题不在表达能力，而在「优化学不出来」。</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="40" x2="70" y2="205" stroke="#7c8593"/>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"/>
+<text x="70" y="28" fill="#7c8593" font-size="11.5" text-anchor="middle">训练误差</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">训练进行 →</text>
+<path d="M88,66 C180,150 340,176 508,184" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<path d="M88,56 C180,116 340,140 508,150" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<text x="504" y="177" fill="#f0b429" font-size="12" text-anchor="end">20 层</text>
+<text x="504" y="143" fill="#e8794b" font-size="12" text-anchor="end">56 层</text>
+<text x="300" y="104" fill="#e7ebf1" font-size="12.5" text-anchor="middle">更深 → 训练误差反而更高</text>
+</svg>
+<figcaption>图 1 · 退化问题：普通网络从 20 层加到 56 层，训练误差不降反升——不是过拟合，是更深反而更难优化。</figcaption>
+</figure>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>残差学习：只学「差值」，不学整体</h3>
+<p>既然让层学出恒等映射很难，那就<strong>把恒等映射「送」给它</strong>。设一小段网络本来要学的目标是映射 <code>H(x)</code>；ResNet 不直接学 H(x)，而是让这几层去学<strong>残差</strong> <code>F(x) = H(x) − x</code>，再通过一条<em>跳跃连接</em>把输入 <code>x</code> 加回来：<code>输出 = F(x) + x</code>。</p>
+<p>白话说：<strong>原始信息 x 顺着旁路原样流过，中间几层只学「该在 x 上改动多少」。</strong>如果最优解接近恒等（不用改），只需把 F(x) 学成接近 0——这比从零学会「原样照抄」容易得多。恒等这个「保底解」被免费提供，所以<strong>加层至少不会更差</strong>，怪事被治好了。</p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="r2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="r2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="230" y="34" fill="#e7ebf1" font-size="15" text-anchor="middle" font-weight="700">x</text>
+<line x1="230" y1="42" x2="230" y2="64" stroke="#7c8593" marker-end="url(#r2)"/>
+<rect x="150" y="66" width="160" height="36" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="230" y="89" fill="#e7ebf1" font-size="12" text-anchor="middle">3×3 卷积 → ReLU</text>
+<line x1="230" y1="102" x2="230" y2="118" stroke="#7c8593" marker-end="url(#r2)"/>
+<rect x="150" y="120" width="160" height="36" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="230" y="143" fill="#e7ebf1" font-size="12" text-anchor="middle">3×3 卷积</text>
+<text x="332" y="116" fill="#f0b429" font-size="11.5">F(x)：这两层学的「残差」</text>
+<line x1="230" y1="156" x2="230" y2="186" stroke="#7c8593" marker-end="url(#r2)"/>
+<circle cx="230" cy="202" r="15" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="230" y="207" fill="#e7ebf1" font-size="16" text-anchor="middle">+</text>
+<path d="M230,44 C402,44 432,120 432,202 L249,202" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#r2g)"/>
+<text x="444" y="120" fill="#f0b429" font-size="11.5">跳跃连接</text>
+<text x="444" y="136" fill="#7c8593" font-size="11">把 x 原样加过来</text>
+<line x1="230" y1="217" x2="230" y2="236" stroke="#7c8593" marker-end="url(#r2)"/>
+<rect x="192" y="238" width="76" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="230" y="258" fill="#b9c0ca" font-size="12" text-anchor="middle">ReLU</text>
+<line x1="230" y1="268" x2="230" y2="283" stroke="#7c8593" marker-end="url(#r2)"/>
+<text x="230" y="298" fill="#e7ebf1" font-size="13" text-anchor="middle">输出 = F(x) + x</text>
+</svg>
+<figcaption>图 2 · 残差块：主路两层只学「残差」F(x)，跳跃连接把输入 x 原样加回来，输出 F(x)+x；不用改动时把 F(x) 学成 0 即可。</figcaption>
+</figure>
+
+<p>这条跳跃连接就是把输入<strong>逐元素相加</strong>到输出上，<strong>不引入额外参数、几乎不增加计算</strong>。当旁路两端维度不一致时，用一个 1×1 卷积做一次线性投影对齐即可。</p>
+
+<h3>瓶颈块：让「很深」也算得起</h3>
+<p>为把网络堆到 50 / 101 / 152 层还不至于太贵，深层版本用<em>瓶颈块（bottleneck）</em>：先用 1×1 卷积把通道压窄、再用 3×3 卷积处理、最后用 1×1 卷积还原——把计算集中在窄的中间层，省下算力。靠它，ResNet-152 比 VGG 深 8 倍，<strong>计算复杂度却更低</strong>。</p>
+<p>还有一个被广泛接受的直觉：跳跃连接给了梯度一条<strong>「高速公路」</strong>——反向传播时纠错信号能顺着旁路几乎无衰减地回到底层，这也是深网络能训起来的关键。（这条「梯度畅通」是社区常用的解释；论文本身的核心论证则是上面的「优化更容易 / 恒等保底」。）</p>
+
+<h2>关键结果</h2>
+<p>在 ImageNet 上，152 层 ResNet 拿到 <strong>top-5 错误率 3.57%</strong>（集成），赢得 <strong>ILSVRC 2015</strong> 分类冠军，并横扫检测、定位与 COCO 多项任务。对照实验很有说服力：34 层<strong>普通</strong>网络的训练误差比 18 层还高（退化重现），而加上跳跃连接后，34 层 ResNet 明显优于 18 层、且更深更好。作者还在 CIFAR-10 上试到<strong>上千层</strong>仍能训练。<strong>「加深真的带来更好」——这个本该成立、却一度失灵的结论，被它重新兑现。</strong></p>
+
+<h2>为什么重要 / 影响</h2>
+<p>它把「深」这条路重新打通，且给出的工具极其通用。<strong>跳跃连接从此无处不在</strong>：后续的视觉骨干（ResNeXt、DenseNet 等）、几乎所有现代深网，乃至 <strong>Transformer 每个子层外的残差连接</strong>，用的都是同一个想法。可以说，今天能把模型堆到成百上千层、上千亿参数，残差连接是绕不开的地基之一。它也让何恺明等成为深度学习最有影响力的研究者之列。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>「深」的边际收益递减</strong>：从几十层到一百多层收益明显，但堆到上千层（如 CIFAR 的 1202 层）提升很小甚至变差——深度不是越多越好。</li>
+<li><strong>它可能更像「浅网络的集成」</strong>：后续研究（Veit 等 2016）指出，残差网络的行为很像许多条深浅不一路径的<em>集成</em>，去掉某些层影响也不大——这与「训练出了一个真正很深的网络」的直观图景不完全一致。</li>
+<li><strong>为什么有效仍有争论</strong>：退化的确切成因，以及跳跃连接到底靠「优化更易」「梯度畅通」还是「让损失曲面更平滑」（后续可视化工作的解释）起效，学界给的是互补答案、而非唯一定论。</li>
+<li><strong>原版并非最优</strong>：原始设计里相加后再过激活；后续 ResNet v2（预激活）等把结构调得更利于恒等信息流动，性能更好——说明原版仍有改进空间。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：给每小段网络加一条跳跃连接、让它只学「残差 F(x)=H(x)−x」再加回 x，解决深网络的退化问题。</p>
+<p>② 痛点：网络加深后<strong>训练误差反升</strong>（退化，不是过拟合）；理论上「多余层学成恒等就不会更差」，但优化器学不出恒等。</p>
+<p>③ 机制：<code>输出 = F(x) + x</code>，恒等被免费提供——不用改就把 F 学成 0，比从零学会照抄容易得多；跳跃连接不加参数、几乎不加算力。</p>
+<p>④ 深层用瓶颈块（1×1→3×3→1×1）省算力；ResNet-152 比 VGG 深 8 倍却复杂度更低。</p>
+<p>⑤ 直觉加成：跳跃连接给梯度一条「高速公路」，纠错信号畅通回传。</p>
+<p>⑥ 结果：ImageNet top-5 错误率 3.57%，ILSVRC 2015 冠军；对照实验重现退化、并证明残差能救；CIFAR 试到上千层可训。</p>
+<p>⑦ 影响：跳跃连接成为几乎所有深网络（含 Transformer 的残差连接）的标配地基。</p>
+<p>⑧ 局限：很深后收益递减；可能更像「多路径集成」；有效原因仍有争论；预激活等后续改进说明原版非最优。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整网络配置与实验细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
