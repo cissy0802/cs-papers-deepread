@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>AlexNet — IT 论文精读 Paper 3</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 3</p>
+<h1>AlexNet — 用深度卷积网络认图</h1>
+<p class="sub">Krizhevsky, Sutskever, Hinton · 多伦多大学 · NeurIPS 2012</p>
+<p class="langbar"><a href="alexnet-paper3.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2012 年，多伦多大学三个人（Krizhevsky、Sutskever、他们的导师 Hinton）造了一个叫 <strong>AlexNet</strong> 的神经网络，参加了图像识别界最权威的比赛（认出一张图里是猫、是狗、还是某种蘑菇，共 1000 类）。结果它<strong>断崖式地赢了</strong>——错误率几乎只有第二名的一半。这一战，直接点燃了往后十几年的<strong>深度学习革命</strong>：今天的人脸解锁、相册自动分类、自动驾驶看路，源头都能追到这一篇。</p>
+
+<h2>旧世界是怎么认图的</h2>
+<p>在这之前，让电脑认图，靠的是<strong>专家手工写规则</strong>：人先绞尽脑汁设计一套「怎样算是一条边、一个角、一块纹理」的公式，把图片榨成一串数字，再交给机器去分类。麻烦在于——<strong>这套规则是人拍脑袋定的</strong>，换个任务往往就不灵，遇到猫的千百种姿势、光线、遮挡就露怯。多少年过去，机器认图的水平一直卡着上不去。</p>
+
+<h2>新在哪</h2>
+<p>AlexNet 的路子反过来：<strong>不再由人来写规则，而是让机器自己从一百多万张图里「看」出规律。</strong>它是一个很深的网络，一层层地看：底层自己学会看出边缘和色块，中层拼出眼睛、轮子这样的部件，高层再拼成「这是一只猫」。整套「怎么认」的本事，全是它自己从海量图片里练出来的，没有一条是人手写的。</p>
+
+<h2>它是怎么做到的</h2>
+<p>三个关键让这件事第一次真的跑起来：</p>
+<p><strong>① 用打游戏的显卡来训练。</strong>这么大的网络算量惊人，用普通处理器要算到天荒地老。他们改用<strong>显卡（GPU）</strong>——显卡本是为游戏画面而生，天生擅长「成千上万个小计算一起做」，正好对上神经网络的胃口，把原本要几个月的训练压到几天。</p>
+<p><strong>② 一个更爽利的「开关」。</strong>网络里每个单元都要决定「这个信号放不放行」。老办法反应迟钝、越深越学不动；他们换成一个极简的开关——<strong>负的就关掉、正的原样放行</strong>，干脆利落，让训练快了好几倍。</p>
+<p><strong>③ 防死记硬背的两招。</strong>网络太强，容易把训练图<strong>背下来</strong>、换新图就抓瞎。一招是训练时<strong>随机让一部分单元「请假」</strong>，逼剩下的都练出真本事、别互相依赖；另一招是把每张图翻转、平移、微调颜色，<strong>凭空造出更多训练图</strong>。</p>
+
+<h2>带来了什么</h2>
+<p>它把机器认图的错误率一口气砍掉一大截，让所有人看清：<strong>与其请专家写规则，不如把数据和算力喂给一个足够深的网络，让它自己学。</strong>这句话成了此后整个 AI 行业的共识。说句诚实的：AlexNet 靠的<strong>不是什么全新理论</strong>，而是把几个已有的老点子、海量数据和显卡算力恰好凑到了一起——是一场「规模」的胜利，代价是它很吃数据、也很吃算力。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>AlexNet 让一个很深的网络自己从百万张图里学会「怎么认图」，靠显卡训练、爽利的开关和防背题的两招第一次真正跑通，在 2012 年图像大赛上断崖式夺冠——从此 AI 走上「深度学习」这条路。</p>
+</div>
+
+<p class="switch-hint">想看网络结构图、ReLU 曲线和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>一句话</h2>
+<p class="lead">AlexNet 是一个 <strong>8 层</strong>的深度卷积网络（convolutional neural network，CNN），在 2012 年 ImageNet 大规模图像分类比赛上把 top-5 错误率从上一年的约 26% 降到 <strong>15.3%</strong>，以巨大优势夺冠。它没有全新理论，而是把 <strong>GPU 训练、ReLU 激活、Dropout、数据增强</strong>等要素凑齐、跑通了一个规模空前的深网络——<strong>用一次干净利落的胜利，宣告了「特征让机器自己学」的时代到来</strong>，直接点燃了此后的深度学习浪潮。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>神经网络（neural network）</strong>：由许多简单「单元」分层连成的模型，靠调节单元间的连接权重，从数据里学出输入到输出的映射。「深」= 层多。</li>
+<li><strong>卷积网络（CNN，convolutional neural network）</strong>：专为图像设计的神经网络，用一个个小窗口（卷积核）滑过整张图找局部图案；同一个核在全图共享，参数少、还自带「换个位置也认得」的能力。</li>
+<li><strong>特征（feature）</strong>：从原始像素里提炼出的、对识别有用的信息（如边缘、纹理、部件）。旧方法靠人<em>手工设计</em>特征，AlexNet 让网络<em>自动学</em>特征。</li>
+<li><strong>激活函数（activation function）</strong>：每个单元算完加权和后，再套一个非线性函数决定「输出多少」；没有它，再多层也只等于一层。</li>
+<li><strong>全连接层（fully-connected layer）</strong>：每个单元和上一层<em>所有</em>单元都相连的层，常用在网络末端做最终分类。</li>
+<li><strong>Softmax</strong>：把网络最后一排数字压成一组「加起来为 1」的概率，对应 1000 个类别各自的可能性。</li>
+<li><strong>过拟合（overfitting）</strong>：把训练图「背下来」却不会举一反三，表现为训练准、换新图就差。</li>
+<li><strong>GPU</strong>：图形处理器（显卡），本为游戏渲染而造，擅长海量同类计算并行做，正好适合神经网络。</li>
+<li><strong>ImageNet / ILSVRC</strong>：一个上千万张图、按上万类标注的图像库，及其每年一度的分类大赛（用其中 1000 类、约 120 万张训练图），是当年视觉模型的「奥运会」。</li>
+<li><strong>top-5 错误率</strong>：模型给出概率最高的 5 个猜测里，只要有一个对就算答对；这 5 个全错的比例就是 top-5 错误率。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者是 Alex Krizhevsky、Ilya Sutskever、Geoffrey Hinton，来自多伦多大学，论文发表于 NeurIPS 2012。它上承 LeCun 等人 1990 年代的卷积网络（如识别手写数字的 LeNet），却第一次在<strong>自然图像、千类、百万量级</strong>的难题上证明了深度 CNN 的碾压性；下启此后所有深度视觉模型——VGG、GoogLeNet、上一篇的 ResNet 都是沿它这条路走下去。它常被视为<strong>「深度学习复兴」的引爆点</strong>。</p>
+
+<h2>问题与动机</h2>
+<p>2012 年之前，图像识别的主流是<strong>「手工特征 + 浅层分类器」</strong>：研究者先人工设计一套提取特征的算法（如 SIFT、HOG，把图像转成一串描述边缘、纹理的数字），再把这些特征喂给 SVM 之类的分类器。这条路的天花板很低——<strong>特征是人拍脑袋设计的</strong>，对真实世界里千变万化的姿态、光照、遮挡、背景很脆弱，换个任务常常要重新设计。当时 ImageNet 这种「1000 类、上百万张自然图」的难度，远超手工特征能应付的范围，最好成绩的 top-5 错误率也在 26% 上下徘徊。</p>
+<p>另一条路——让网络<strong>自己从数据里学特征</strong>（CNN）——理论上更有前途，但一直没能在大规模自然图像上兑现：网络一深就<strong>训不动、也训不起</strong>（算力不够、还极易过拟合）。AlexNet 要回答的正是：<strong>能不能把 CNN 做得又深又大，并真的在这种硬骨头上训练成功？</strong></p>
+
+<h2>核心思想 / 方法</h2>
+<p>AlexNet 的贡献不是单个新公式，而是<strong>把一套让「大而深的 CNN 真正训得动」的组合拳凑齐并跑通</strong>。核心结构 + 四个关键要素如下。</p>
+
+<h3>结构：5 层卷积 + 3 层全连接</h3>
+<p>网络吃进一张 <code>224×224×3</code> 的图，先过 <strong>5 层卷积</strong>逐级提取特征（前面的层看边缘色块、后面的层看部件与整体），再过 <strong>3 层全连接</strong>把特征汇总，最后用 <em>softmax</em> 输出 1000 类的概率。整张网络约 <strong>6000 万个参数</strong>、65 万个神经元。关键直觉：<strong>特征不再由人设计，而是这 5 层卷积在训练中自己长出来的</strong>——底层学出的滤波器，事后一看竟自动是各种朝向的边缘和色斑，和生物视觉皮层惊人地像。</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<!-- input -->
+<rect x="14" y="52" width="26" height="128" rx="3" fill="rgba(255,255,255,0.04)" stroke="#7c8593"/>
+<text x="27" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">输入</text>
+<text x="27" y="210" fill="#7c8593" font-size="9" text-anchor="middle">224²×3</text>
+<line x1="42" y1="116" x2="56" y2="116" stroke="#7c8593" marker-end="url(#a3)"/>
+<!-- conv1..5 -->
+<rect x="58" y="62" width="22" height="108" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="69" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c1</text><text x="69" y="210" fill="#7c8593" font-size="9" text-anchor="middle">96</text>
+<rect x="90" y="78" width="20" height="76" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="100" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c2</text><text x="100" y="210" fill="#7c8593" font-size="9" text-anchor="middle">256</text>
+<rect x="120" y="90" width="18" height="52" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="129" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c3</text><text x="129" y="210" fill="#7c8593" font-size="9" text-anchor="middle">384</text>
+<rect x="146" y="90" width="18" height="52" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="155" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c4</text><text x="155" y="210" fill="#7c8593" font-size="9" text-anchor="middle">384</text>
+<rect x="172" y="90" width="18" height="52" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="181" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c5</text><text x="181" y="210" fill="#7c8593" font-size="9" text-anchor="middle">256</text>
+<text x="124" y="42" fill="#f0b429" font-size="11" text-anchor="middle">5 层卷积 · 自动提取特征</text>
+<line x1="192" y1="116" x2="224" y2="116" stroke="#7c8593" marker-end="url(#a3)"/>
+<!-- FC -->
+<rect x="226" y="66" width="12" height="100" rx="2" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+<rect x="248" y="66" width="12" height="100" rx="2" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+<rect x="270" y="86" width="12" height="60" rx="2" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+<text x="238" y="184" fill="#7c8593" font-size="9" text-anchor="middle">4096</text>
+<text x="260" y="184" fill="#7c8593" font-size="9" text-anchor="middle">4096</text>
+<text x="282" y="184" fill="#7c8593" font-size="9" text-anchor="middle">1000</text>
+<text x="254" y="46" fill="#e8794b" font-size="11" text-anchor="middle">3 层全连接 · 分类</text>
+<line x1="284" y1="116" x2="316" y2="116" stroke="#7c8593" marker-end="url(#a3)"/>
+<!-- softmax + output bars -->
+<text x="360" y="70" fill="#f0b429" font-size="11" text-anchor="middle">softmax</text>
+<rect x="326" y="80" width="90" height="12" rx="2" fill="rgba(240,180,41,0.5)"/><text x="424" y="90" fill="#e7ebf1" font-size="10">猫 0.92</text>
+<rect x="326" y="98" width="26" height="12" rx="2" fill="rgba(240,180,41,0.28)"/><text x="424" y="108" fill="#b9c0ca" font-size="10">豹 0.04</text>
+<rect x="326" y="116" width="14" height="12" rx="2" fill="rgba(240,180,41,0.18)"/><text x="424" y="126" fill="#7c8593" font-size="10">虎 0.01</text>
+<text x="368" y="150" fill="#7c8593" font-size="10" text-anchor="middle">1000 类概率</text>
+</svg>
+<figcaption>图 1 · AlexNet 结构：一张图经 5 层卷积（自动提取特征，特征图越来越小、通道越来越多）+ 3 层全连接，最后 softmax 输出 1000 类概率。</figcaption>
+</figure>
+
+<h3>要素一：ReLU —— 一个不饱和的激活函数</h3>
+<p>过去激活函数常用 <code>tanh</code> 或 <code>sigmoid</code>，它们在输入很大或很小时会「<em>饱和</em>」——曲线压平、梯度趋近 0，网络越深越学不动、收敛极慢。AlexNet 改用 <strong>ReLU</strong>：<code>f(x) = max(0, x)</code>，即<strong>负的归零、正的原样输出</strong>。它在正区间梯度恒为 1、永不饱和，让深网络的训练<strong>快了好几倍</strong>——论文报告在同样精度下 ReLU 比 tanh 快约 6 倍。这个又简单又关键的改动，此后成了几乎所有网络的默认激活。</p>
+
+<figure>
+<svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="60" y1="30" x2="60" y2="165" stroke="#7c8593"/>
+<line x1="30" y1="130" x2="270" y2="130" stroke="#7c8593"/>
+<text x="266" y="148" fill="#7c8593" font-size="10" text-anchor="end">输入</text>
+<!-- ReLU -->
+<path d="M60,130 L150,130 L245,52" fill="none" stroke="#f0b429" stroke-width="2.4"/>
+<text x="210" y="60" fill="#f0b429" font-size="11">ReLU = max(0, x)</text>
+<text x="95" y="124" fill="#7c8593" font-size="10">负 → 归零</text>
+<!-- sigmoid saturating -->
+<path d="M320,158 C380,156 400,120 420,90 C440,60 460,42 520,40" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<line x1="320" y1="165" x2="320" y2="30" stroke="#7c8593"/>
+<line x1="300" y1="100" x2="530" y2="100" stroke="#7c8593"/>
+<text x="470" y="58" fill="#e8794b" font-size="11">sigmoid / tanh</text>
+<text x="500" y="34" fill="#7c8593" font-size="9.5" text-anchor="end">两端压平 → 梯度≈0（饱和）</text>
+</svg>
+<figcaption>图 2 · ReLU（左）负区间归零、正区间不饱和，梯度恒定、训练快；sigmoid/tanh（右）两端饱和、梯度趋零，深网络难训。</figcaption>
+</figure>
+
+<h3>要素二：用两块 GPU 训练</h3>
+<p>这么大的网络在当时的 CPU 上根本训不起。作者把整个网络<strong>拆到两块 GTX 580 显卡</strong>（各只有 3GB 显存）上并行训练，并手写了高效的 GPU 卷积代码。训练在约 <strong>120 万张图</strong>上跑了<strong>五到六天</strong>。正是「把 GPU 用起来」这一步，让训练大而深的网络<strong>从不可能变成几天的事</strong>——这条工程路线，成了此后整个领域的标配。</p>
+
+<h3>要素三 & 四：Dropout 与数据增强 —— 压住过拟合</h3>
+<p>6000 万参数极易把训练集<strong>背下来</strong>。两招对治：</p>
+<p><strong>Dropout：</strong>训练时在全连接层里<strong>随机把一半单元的输出临时置零</strong>（每次前向都换一批），逼网络别依赖某几个单元的「小圈子」、而要学出稳健、冗余的特征；相当于低成本地训练并平均了海量个「子网络」。<strong>数据增强（data augmentation）：</strong>对每张训练图做随机<strong>平移、水平翻转</strong>，并按图像主色调的统计规律<strong>微扰 RGB 颜色</strong>，等于凭空扩出多得多的训练样本。两招合起来，把过拟合压到可用水平。</p>
+<p>（此外还有两个较小的设计：<em>重叠池化</em>——下采样窗口相互重叠一点点，略降错误率；<em>局部响应归一化 LRN</em>——让相邻通道相互抑制。后者影响很小，很快被后续工作弃用。）</p>
+
+<h2>关键结果</h2>
+<p>在 ILSVRC-2012 上，AlexNet 取得 <strong>top-5 错误率 15.3%</strong>（多模型平均），远超第二名的 <strong>26.2%</strong>——<strong>近乎腰斩</strong>的差距，在以往逐年零点几个百分点挪动的比赛里堪称地震。单模型也有约 <strong>18.2%</strong> 的 top-5。作者的消融也很干脆：去掉任何一个卷积层，成绩都会明显下滑，说明<strong>「深」本身在起作用</strong>；把 tanh 换成 ReLU，收敛快数倍。它可视化出的第一层滤波器，自发地长成各种朝向的边缘、色块检测器，直观印证了「特征是学出来的」。</p>
+
+<h2>为什么重要 / 影响</h2>
+<p>AlexNet 是<strong>深度学习复兴的引爆点</strong>。它用一次无可争议的胜利，让整个学术界和工业界在一两年内集体转向：<strong>与其手工设计特征，不如给足数据和算力、让深网络自己学。</strong>此后 ImageNet 错误率逐年被 VGG、GoogLeNet、ResNet 一路刷到超过人类水平；<strong>ReLU、Dropout、GPU 训练、数据增强</strong>成了训练深网络的通用套路；而「GPU 是深度学习的引擎」这一认识，也直接推动了 NVIDIA 等的崛起与整条 AI 算力产业。可以说，从计算机视觉到今天的大模型，那条以数据和算力换智能的主线，是从这一篇正式开始的。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>创新更多在工程与规模，而非理论</strong>：CNN（LeCun）、ReLU（Nair & Hinton 2010）等零件都非首创，AlexNet 的功劳是把它们组装并在大规模上跑通——是「规模与工程」的胜利，理论新意有限。</li>
+<li><strong>不少设计后来被淘汰</strong>：LRN 被证明几乎无用，很快被弃；11×11 的大卷积核被 VGG 的多层 3×3 小核取代；两块 GPU 的分组是显存所迫的工程妥协，并非原理。</li>
+<li><strong>参数臃肿在全连接层</strong>：6000 万参数绝大多数堆在末端的全连接层，既重又易过拟合；后来 NIN / GoogLeNet 用全局平均池化基本替换掉它。</li>
+<li><strong>极吃数据与算力</strong>：没有 ImageNet 这种百万级标注数据和 GPU，这套方法根本无从谈起；也因此更像「大数据 + 大算力」时代的产物，而非小数据场景的通用解。</li>
+<li><strong>深度仍浅、可解释性差</strong>：8 层在今天看只是「浅深网络」；且它为何有效、学到了什么，当时（乃至现在）都缺乏充分的理论解释。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：一个 8 层深度 CNN，在 2012 ImageNet 上把 top-5 错误率降到 15.3% 夺冠，引爆深度学习革命。</p>
+<p>② 痛点：旧方法靠<strong>人工设计特征</strong> + 浅分类器，天花板低、脆弱；深 CNN 理论更优却一直训不动、训不起。</p>
+<p>③ 核心：让 <strong>5 层卷积自己从百万张图里学特征</strong>（不再人工设计）+ 3 层全连接分类 + softmax，共约 6000 万参数。</p>
+<p>④ 要素一 ReLU：<code>max(0,x)</code> 不饱和、梯度恒定，训练快约 6 倍，成为默认激活。</p>
+<p>⑤ 要素二 GPU：拆到两块 GTX 580 上训练五六天，让大深网络从不可能变可行。</p>
+<p>⑥ 要素三/四：Dropout（训练时随机置零一半单元）+ 数据增强（翻转/平移/调色）压住过拟合。</p>
+<p>⑦ 结果：top-5 15.3% vs 第二名 26.2%，近乎腰斩；消融证明「深」在起作用；第一层滤波器自学成边缘检测器。</p>
+<p>⑧ 影响：确立「数据+算力+深网络自学特征」范式，催生 VGG/ResNet 等与整条 GPU 算力产业。</p>
+<p>⑨ 局限：胜在工程与规模而非理论；LRN、大卷积核、双 GPU 分组等后被淘汰；参数臃肿于全连接层；极吃数据算力。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整网络配置与实验细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

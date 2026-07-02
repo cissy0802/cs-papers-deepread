@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AlexNet — CS Papers Deep-Read Paper 3</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 3</p>
+<h1>AlexNet — Seeing with Deep Convolutional Nets</h1>
+<p class="sub">Krizhevsky, Sutskever, Hinton · University of Toronto · NeurIPS 2012</p>
+<p class="langbar"><a href="alexnet-paper3.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2012, three people at the University of Toronto (Krizhevsky, Sutskever, and their advisor Hinton) built a neural network called <strong>AlexNet</strong> and entered it in the most prestigious image-recognition contest (name what's in a photo — a cat, a dog, or some kind of mushroom — across 1000 classes). It <strong>won by a landslide</strong>, with an error rate nearly half of the runner-up's. That single result lit the fuse on more than a decade of <strong>the deep learning revolution</strong>: today's face unlock, auto photo tagging, and self-driving perception all trace back here.</p>
+
+<h2>How the old world recognized images</h2>
+<p>Before this, getting a computer to recognize images relied on <strong>experts hand-writing rules</strong>: people first racked their brains to design formulas for "what counts as an edge, a corner, a texture," squeezed the image into a string of numbers, and handed that to a classifier. The trouble: <strong>those rules were a human's best guess</strong>, they often broke on a new task, and they buckled at the thousand poses, lighting conditions, and occlusions a real cat comes in. For years, machine image recognition was stuck.</p>
+
+<h2>What was new</h2>
+<p>AlexNet flipped it around: <strong>instead of humans writing the rules, let the machine "see" the patterns itself from over a million images.</strong> It's a deep network that looks layer by layer: the bottom layers learn to spot edges and color patches, the middle layers assemble parts like eyes and wheels, the top layers put together "this is a cat." The entire skill of "how to recognize" was trained out of the data by the network — not one line of it hand-written.</p>
+
+<h2>How it pulled this off</h2>
+<p>Three things made it actually run for the first time:</p>
+<p><strong>① Train on gaming graphics cards.</strong> A network this big takes staggering amounts of computation — forever on an ordinary processor. They switched to <strong>GPUs</strong> — chips built for game graphics, naturally good at "doing thousands of small calculations at once," exactly what a neural network craves — cutting a months-long training run down to days.</p>
+<p><strong>② A snappier "switch."</strong> Every unit in the network must decide "let this signal through or not." The old switches were sluggish and got harder to train the deeper you went; they swapped in a dead-simple one — <strong>block anything negative, pass anything positive through untouched</strong> — which sped up training several times over.</p>
+<p><strong>③ Two tricks against rote memorization.</strong> A network this powerful tends to <strong>memorize</strong> the training images and then flounder on new ones. One trick: during training, <strong>randomly send some units "on leave,"</strong> forcing the rest to learn real skills and not lean on each other. The other: flip, shift, and slightly recolor each image to <strong>conjure up many more training images</strong>.</p>
+
+<h2>What it brought</h2>
+<p>It slashed image-recognition error in one stroke, and made it clear to everyone: <strong>rather than asking experts to write rules, feed data and compute to a deep-enough network and let it learn on its own.</strong> That sentence became the shared belief of the whole AI field afterward. And one honest note: AlexNet rested on <strong>no brand-new theory</strong> — it fused a few existing old ideas with massive data and GPU horsepower at just the right moment. It was a victory of <strong>scale</strong>, at the cost of being hungry for both data and compute.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>AlexNet let a deep network learn "how to recognize images" by itself from a million pictures — made it run for the first time via GPU training, a snappy switch, and two anti-memorization tricks — and won the 2012 image contest by a landslide. From there, AI took the "deep learning" road.</p>
+</div>
+
+<p class="switch-hint">Want the architecture diagram, the ReLU curve, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">AlexNet is an <strong>8-layer</strong> deep convolutional neural network (CNN) that, on the 2012 ImageNet large-scale image-classification contest, cut top-5 error from the prior year's ~26% to <strong>15.3%</strong>, winning by a huge margin. It introduced no brand-new theory; it assembled and got working — at unprecedented scale — a deep net using <strong>GPU training, ReLU activations, Dropout, and data augmentation</strong>. With one clean, decisive win it <strong>announced the era of "let the machine learn its own features,"</strong> lighting the fuse on the deep learning wave that followed.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Neural network</strong>: a model built from many simple "units" wired in layers; by tuning the connection weights it learns a mapping from input to output. "Deep" = many layers.</li>
+<li><strong>CNN (convolutional neural network)</strong>: a network built for images, sliding small windows (kernels) across the whole picture to find local patterns; the same kernel is shared everywhere, so it has few parameters and recognizes a pattern no matter where it appears.</li>
+<li><strong>Feature</strong>: information distilled from raw pixels that is useful for recognition (edges, textures, parts). Old methods <em>hand-designed</em> features; AlexNet has the network <em>learn</em> them automatically.</li>
+<li><strong>Activation function</strong>: after a unit computes its weighted sum, a nonlinear function decides "how much to output"; without it, any stack of layers collapses to a single layer.</li>
+<li><strong>Fully-connected layer</strong>: a layer where each unit connects to <em>every</em> unit of the previous layer, typically used near the end for the final classification.</li>
+<li><strong>Softmax</strong>: squashes the network's final row of numbers into a set of probabilities summing to 1 — one for each of the 1000 classes.</li>
+<li><strong>Overfitting</strong>: memorizing the training images without generalizing — accurate on training data, poor on new images.</li>
+<li><strong>GPU</strong>: a graphics processor (graphics card), built for game rendering, great at doing huge numbers of similar calculations in parallel — a perfect fit for neural nets.</li>
+<li><strong>ImageNet / ILSVRC</strong>: a library of over ten million images labeled across tens of thousands of classes, and its annual classification contest (using 1000 of those classes, ~1.2M training images) — the "Olympics" for vision models of the era.</li>
+<li><strong>top-5 error</strong>: the model's 5 highest-probability guesses count as correct if any one is right; the fraction where all 5 miss is the top-5 error.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Alex Krizhevsky, Ilya Sutskever, and Geoffrey Hinton at the University of Toronto; the paper appeared at NeurIPS 2012. It inherits the convolutional networks of LeCun et al. from the 1990s (e.g., LeNet for handwritten digits), but for the first time proved a deep CNN's dominance on the hard problem of <strong>natural images, a thousand classes, at the million scale</strong>. It launched every deep vision model that followed — VGG, GoogLeNet, and the previous paper's ResNet all walk down the road it opened. It's widely regarded as <strong>the spark that ignited the "deep learning renaissance."</strong></p>
+
+<h2>The problem and the motivation</h2>
+<p>Before 2012, image recognition ran on <strong>"hand-crafted features + a shallow classifier"</strong>: researchers first designed a feature-extraction algorithm by hand (e.g., SIFT, HOG, turning an image into a string of numbers describing edges and textures), then fed those features to a classifier like an SVM. This road had a low ceiling — <strong>the features were a human's best guess</strong>, brittle to the real world's endless variation in pose, lighting, occlusion, and background, and often needed redesigning for each new task. A challenge like ImageNet — "1000 classes, over a million natural images" — was far beyond what hand-crafted features could handle, and the best top-5 error hovered around 26%.</p>
+<p>The other road — letting a network <strong>learn features from data itself</strong> (a CNN) — was in principle more promising, but had never delivered on large-scale natural images: go deep and it became <strong>impossible to train — and impossible to afford</strong> (not enough compute, and severe overfitting). The very question AlexNet set out to answer: <strong>can a CNN be made both deep and large, and actually trained to succeed on a problem this hard?</strong></p>
+
+<h2>The core idea</h2>
+<p>AlexNet's contribution isn't a single new formula; it's <strong>assembling and getting working the combination that finally lets a big, deep CNN train</strong>. The core architecture plus four key ingredients follow.</p>
+
+<h3>Architecture: 5 conv layers + 3 fully-connected</h3>
+<p>The network takes a <code>224×224×3</code> image, passes it through <strong>5 convolutional layers</strong> that extract features stage by stage (early layers see edges and color patches, later layers see parts and wholes), then <strong>3 fully-connected layers</strong> that pool the features, and finally a <em>softmax</em> outputs probabilities over 1000 classes. The whole net has about <strong>60 million parameters</strong> and 650,000 neurons. The key intuition: <strong>features are no longer designed by humans — they grow out of these 5 conv layers during training.</strong> Inspect the learned bottom-layer filters and they turn out, on their own, to be edge and blob detectors at various orientations — strikingly like the biological visual cortex.</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="14" y="52" width="26" height="128" rx="3" fill="rgba(255,255,255,0.04)" stroke="#7c8593"/>
+<text x="27" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">input</text>
+<text x="27" y="210" fill="#7c8593" font-size="9" text-anchor="middle">224²×3</text>
+<line x1="42" y1="116" x2="56" y2="116" stroke="#7c8593" marker-end="url(#a3)"/>
+<rect x="58" y="62" width="22" height="108" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="69" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c1</text><text x="69" y="210" fill="#7c8593" font-size="9" text-anchor="middle">96</text>
+<rect x="90" y="78" width="20" height="76" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="100" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c2</text><text x="100" y="210" fill="#7c8593" font-size="9" text-anchor="middle">256</text>
+<rect x="120" y="90" width="18" height="52" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="129" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c3</text><text x="129" y="210" fill="#7c8593" font-size="9" text-anchor="middle">384</text>
+<rect x="146" y="90" width="18" height="52" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="155" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c4</text><text x="155" y="210" fill="#7c8593" font-size="9" text-anchor="middle">384</text>
+<rect x="172" y="90" width="18" height="52" rx="3" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="181" y="198" fill="#b9c0ca" font-size="10" text-anchor="middle">c5</text><text x="181" y="210" fill="#7c8593" font-size="9" text-anchor="middle">256</text>
+<text x="124" y="42" fill="#f0b429" font-size="11" text-anchor="middle">5 conv layers · learn features</text>
+<line x1="192" y1="116" x2="224" y2="116" stroke="#7c8593" marker-end="url(#a3)"/>
+<rect x="226" y="66" width="12" height="100" rx="2" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+<rect x="248" y="66" width="12" height="100" rx="2" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+<rect x="270" y="86" width="12" height="60" rx="2" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+<text x="238" y="184" fill="#7c8593" font-size="9" text-anchor="middle">4096</text>
+<text x="260" y="184" fill="#7c8593" font-size="9" text-anchor="middle">4096</text>
+<text x="282" y="184" fill="#7c8593" font-size="9" text-anchor="middle">1000</text>
+<text x="254" y="46" fill="#e8794b" font-size="11" text-anchor="middle">3 FC layers · classify</text>
+<line x1="284" y1="116" x2="316" y2="116" stroke="#7c8593" marker-end="url(#a3)"/>
+<text x="360" y="70" fill="#f0b429" font-size="11" text-anchor="middle">softmax</text>
+<rect x="326" y="80" width="90" height="12" rx="2" fill="rgba(240,180,41,0.5)"/><text x="424" y="90" fill="#e7ebf1" font-size="10">cat 0.92</text>
+<rect x="326" y="98" width="26" height="12" rx="2" fill="rgba(240,180,41,0.28)"/><text x="424" y="108" fill="#b9c0ca" font-size="10">leopard 0.04</text>
+<rect x="326" y="116" width="14" height="12" rx="2" fill="rgba(240,180,41,0.18)"/><text x="424" y="126" fill="#7c8593" font-size="10">tiger 0.01</text>
+<text x="368" y="150" fill="#7c8593" font-size="10" text-anchor="middle">1000-class probs</text>
+</svg>
+<figcaption>Fig 1 · AlexNet architecture: an image passes 5 conv layers (learning features; maps shrink spatially as channels grow) + 3 FC layers, then softmax outputs probabilities over 1000 classes.</figcaption>
+</figure>
+
+<h3>Ingredient 1: ReLU — a non-saturating activation</h3>
+<p>Activations used to be <code>tanh</code> or <code>sigmoid</code>, which "<em>saturate</em>" for very large or very small inputs — the curve flattens, the gradient goes near zero, so deeper nets learn slowly or not at all. AlexNet used <strong>ReLU</strong>: <code>f(x) = max(0, x)</code>, i.e., <strong>zero out negatives, pass positives through unchanged</strong>. Its gradient is a constant 1 on the positive side and it never saturates, making deep-net training <strong>several times faster</strong> — the paper reports ReLU reaching the same accuracy about 6× faster than tanh. This tiny yet pivotal change became the default activation nearly everywhere.</p>
+
+<figure>
+<svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="60" y1="30" x2="60" y2="165" stroke="#7c8593"/>
+<line x1="30" y1="130" x2="270" y2="130" stroke="#7c8593"/>
+<text x="266" y="148" fill="#7c8593" font-size="10" text-anchor="end">input</text>
+<path d="M60,130 L150,130 L245,52" fill="none" stroke="#f0b429" stroke-width="2.4"/>
+<text x="210" y="60" fill="#f0b429" font-size="11">ReLU = max(0, x)</text>
+<text x="90" y="124" fill="#7c8593" font-size="10">neg → zero</text>
+<path d="M320,158 C380,156 400,120 420,90 C440,60 460,42 520,40" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<line x1="320" y1="165" x2="320" y2="30" stroke="#7c8593"/>
+<line x1="300" y1="100" x2="530" y2="100" stroke="#7c8593"/>
+<text x="470" y="58" fill="#e8794b" font-size="11">sigmoid / tanh</text>
+<text x="500" y="34" fill="#7c8593" font-size="9.5" text-anchor="end">flat ends → grad≈0 (saturates)</text>
+</svg>
+<figcaption>Fig 2 · ReLU (left) zeros negatives, doesn't saturate on the positive side, constant gradient, fast training; sigmoid/tanh (right) saturate at both ends, gradients vanish, hard to train deep.</figcaption>
+</figure>
+
+<h3>Ingredient 2: training on two GPUs</h3>
+<p>A network this big simply couldn't be trained on the CPUs of the day. The authors <strong>split the whole net across two GTX 580 cards</strong> (only 3GB memory each) to train in parallel, hand-writing efficient GPU convolution code. Training ran over roughly <strong>1.2 million images</strong> for <strong>five to six days</strong>. It was this "put the GPU to work" step that turned training a big deep network <strong>from impossible into a matter of days</strong> — an engineering path that became standard for the whole field.</p>
+
+<h3>Ingredients 3 & 4: Dropout and data augmentation — taming overfitting</h3>
+<p>60 million parameters can easily <strong>memorize</strong> the training set. Two countermeasures:</p>
+<p><strong>Dropout:</strong> during training, <strong>randomly zero out half the units' outputs</strong> in the fully-connected layers (a fresh subset each forward pass), forcing the network not to rely on a "clique" of specific units but to learn robust, redundant features — effectively training and averaging a vast number of "sub-networks" cheaply. <strong>Data augmentation:</strong> apply random <strong>translations and horizontal flips</strong> to each training image, and <strong>perturb the RGB colors</strong> according to the statistics of the image's dominant hues — conjuring far more training samples from thin air. Together the two pushed overfitting down to a usable level.</p>
+<p>(Two smaller designs also feature: <em>overlapping pooling</em> — downsampling windows overlap slightly, shaving error a touch; and <em>local response normalization (LRN)</em> — neighboring channels suppress each other. The latter had little effect and was soon abandoned by later work.)</p>
+
+<h2>Key results</h2>
+<p>On ILSVRC-2012, AlexNet reached <strong>15.3% top-5 error</strong> (averaging multiple models), far ahead of the runner-up's <strong>26.2%</strong> — a <strong>near-halving</strong> that, in a contest that had crept forward by fractions of a percent each year, was an earthquake. A single model hit about <strong>18.2%</strong> top-5. The ablations are blunt too: remove any one conv layer and the score drops noticeably, showing that <strong>depth itself matters</strong>; swap tanh for ReLU and it converges several times faster. Its visualized first-layer filters spontaneously became oriented edge and color-blob detectors — direct evidence that "features are learned."</p>
+
+<h2>Why it mattered</h2>
+<p>AlexNet was <strong>the spark of the deep learning renaissance</strong>. With one indisputable win, academia and industry pivoted within a year or two: <strong>rather than hand-crafting features, give enough data and compute and let a deep net learn on its own.</strong> ImageNet error was then driven down year after year by VGG, GoogLeNet, and ResNet past human level; <strong>ReLU, Dropout, GPU training, and data augmentation</strong> became the standard recipe for training deep nets; and the realization that "the GPU is the engine of deep learning" directly propelled the rise of NVIDIA and the whole AI-compute industry. From computer vision to today's large models, the through-line of trading data and compute for intelligence began, formally, right here.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Innovation was in engineering and scale, not theory</strong>: the parts — CNNs (LeCun), ReLU (Nair & Hinton 2010) — weren't first here; AlexNet's merit was assembling them and getting them to run at scale — a win of "scale and engineering," with limited theoretical novelty.</li>
+<li><strong>Several designs were later dropped</strong>: LRN was shown to be nearly useless and quickly abandoned; the 11×11 large convolution kernels were replaced by VGG's stacks of small 3×3 kernels; the two-GPU split was an engineering compromise forced by memory, not a principle.</li>
+<li><strong>Parameter bloat in the FC layers</strong>: the vast majority of the 60M parameters sit in the final fully-connected layers — heavy and prone to overfitting; later work (NIN / GoogLeNet) largely replaced them with global average pooling.</li>
+<li><strong>Very hungry for data and compute</strong>: without ImageNet's million-scale labels and GPUs, the approach is a non-starter; it's more a product of the "big data + big compute" era than a general fix for small-data settings.</li>
+<li><strong>Still shallow, poorly understood</strong>: 8 layers is only a "shallow deep net" by today's standards; and why it works and what it learns lacked — then and largely still — a full theoretical account.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: an 8-layer deep CNN that cut top-5 error to 15.3% and won ImageNet 2012, igniting the deep learning revolution.</p>
+<p>② The pain: old methods used <strong>hand-crafted features</strong> + a shallow classifier — low ceiling, brittle; deep CNNs were better in principle but couldn't be trained or afforded.</p>
+<p>③ Core: let <strong>5 conv layers learn features themselves from a million images</strong> (no hand-design) + 3 FC layers + softmax, ~60M parameters.</p>
+<p>④ Ingredient 1, ReLU: <code>max(0,x)</code>, non-saturating, constant gradient, ~6× faster training, becoming the default activation.</p>
+<p>⑤ Ingredient 2, GPU: split across two GTX 580s, trained for five-to-six days, turning big deep nets from impossible into feasible.</p>
+<p>⑥ Ingredients 3/4: Dropout (randomly zero half the units in training) + data augmentation (flip/shift/recolor) tame overfitting.</p>
+<p>⑦ Results: 15.3% top-5 vs the runner-up's 26.2%, a near-halving; ablations show depth matters; first-layer filters self-learn into edge detectors.</p>
+<p>⑧ Impact: established the "data + compute + a deep net learning its own features" paradigm, spawning VGG/ResNet and the whole GPU-compute industry.</p>
+<p>⑨ Limits: a win of engineering and scale, not theory; LRN, large kernels, and the two-GPU split were later dropped; parameter bloat in FC layers; very hungry for data and compute.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full network configs and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
