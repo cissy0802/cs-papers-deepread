@@ -24,6 +24,12 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
 .glossary ul{margin:6px 0 0 1.1em}
 .glossary li{margin:5px 0;font-size:0.96rem}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
 </style></head><body>
@@ -32,6 +38,36 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <h1>Attention Is All You Need（Transformer）</h1>
 <p class="sub">Vaswani 等 · Google · NeurIPS 2017</p>
 <p class="langbar"><a href="attention-is-all-you-need-paper1.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2017 年，Google 一队人提出了一个叫 <strong>Transformer</strong> 的新「大脑结构」。你今天听说的 ChatGPT、各种 AI 聊天和绘画，几乎全都长在这个结构上——这篇论文就是它的出生证明。</p>
+
+<h2>先打个比方</h2>
+<p>读这句话：「小猫没过马路，因为<strong>它</strong>太累了。」你一眼就知道「它」指小猫、不是马路——因为读到「它」的时候，你会<strong>回头扫一眼整句话</strong>，判断谁跟「它」最相关。</p>
+<p>Transformer 干的就是这件事：<strong>让句子里每个词，都回头扫一眼全句、自己决定该重点看谁</strong>。这个「按相关度分配注意力」的动作，就叫<strong>注意力（attention）</strong>——论文标题说「注意力就是你需要的全部」，正是这个意思。</p>
+
+<h2>它到底新在哪？</h2>
+<p>在它之前，机器读句子像<strong>排队传话</strong>：一个词一个词地读，前面的信息一站站往后传。句子一长，前头说了啥就传糊了、传丢了；而且必须一个接一个，快不起来。</p>
+<p>Transformer 把「排队传话」换成了<strong>开会</strong>：所有词一次性摆上桌，每个词同时看向所有词、一步就能跟最远的词对上话。于是两个好处：<strong>① 快</strong>（大家并行地看，不用排队）、<strong>② 记性好</strong>（再远的词也一步够到，不会传丢）。</p>
+
+<h2>这带来了什么？</h2>
+<p>因为又快又记得住，人们发现只要把这个结构<strong>堆得更大、喂更多数据</strong>，它就越来越聪明——于是有了 BERT、GPT，一路长成今天会聊天、会写代码、会画画的大模型。可以说，<strong>今天几乎每个厉害的 AI，心脏里都是这篇论文的这套「开会」机制</strong>。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>让句子里每个词都回头扫一眼全句、自己决定重点听谁——用这个「注意力」动作，取代老式的「排队传话」，于是 AI 读得又快、又记得住远处的关系。这套结构后来长成了几乎所有大模型。</p>
+</div>
+
+<p class="switch-hint">想深入到机制、公式和示意图？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
 
 <h2>一句话</h2>
 <p class="lead">这篇论文提出了 <strong>Transformer</strong>：一个<strong>彻底丢掉循环（RNN）和卷积（CNN）、只靠「注意力」一种机制</strong>处理序列的架构。它让模型一次看到整句话、并行算出每个词该关注谁，于是既训得快、又能一步抓住相距很远的词之间的关系。这个 2017 年为机器翻译而生的架构，后来成了 <strong>BERT、GPT 乃至今天几乎所有大模型的共同地基</strong>。</p>
@@ -185,10 +221,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <p>⑦ 影响：BERT/GPT 全建在它上面；可并行带来可规模化；「万物 token 化」统一了各领域——当代 AI 的共同地基。</p>
 <p>⑧ 局限：<strong>O(n²)</strong> 长序列吃紧、位置编码是权宜、数据饥渴、标题夸张——前馈/残差/归一化/位置编码一个都不能少。</p>
 </div>
+</div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整推导与消融实验，再去翻原文。</footer>
 </div>
 <script src="https://cissy0802.github.io/comments.js" defer></script>
 <script src="https://cissy0802.github.io/search.js" defer></script>
 <script src="https://cissy0802.github.io/index-button.js" defer></script>
 <script src="https://cissy0802.github.io/i18n-tts.js" defer></script>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
 </body></html>

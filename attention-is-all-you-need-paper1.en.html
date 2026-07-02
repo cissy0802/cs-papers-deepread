@@ -24,6 +24,12 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
 .glossary ul{margin:6px 0 0 1.1em}
 .glossary li{margin:5px 0;font-size:0.96rem}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
 </style></head><body>
@@ -32,6 +38,36 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <h1>Attention Is All You Need (Transformer)</h1>
 <p class="sub">Vaswani et al. · Google · NeurIPS 2017</p>
 <p class="langbar"><a href="attention-is-all-you-need-paper1.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2017 a team at Google proposed a new "brain layout" called the <strong>Transformer</strong>. Almost every AI you've heard of — ChatGPT, AI chat, AI image generators — is built on it. This paper is its birth certificate.</p>
+
+<h2>An analogy first</h2>
+<p>Read this: "The cat didn't cross the street because <strong>it</strong> was tired." You instantly know "it" = the cat, not the street — because when you hit "it," you <strong>glance back over the whole sentence</strong> and judge what's most related.</p>
+<p>That's exactly what the Transformer does: <strong>it lets every word glance back over the whole sentence and decide for itself what to focus on</strong>. That "share attention by relevance" move is called <strong>attention</strong> — which is what the title means by "attention is all you need."</p>
+
+<h2>What's actually new?</h2>
+<p>Before it, machines read a sentence like <strong>passing a message down a line</strong>: one word at a time, information relayed step by step. A long sentence → the early stuff gets garbled or lost, and it can't go fast because it's strictly one-after-another.</p>
+<p>The Transformer swaps "passing down a line" for <strong>a meeting</strong>: all the words on the table at once, each looking at every other word, reaching the farthest word in a single step. Two wins: <strong>① fast</strong> (everyone looks in parallel, no queue) and <strong>② good memory</strong> (even distant words are one step away, nothing lost).</p>
+
+<h2>What did it lead to?</h2>
+<p>Because it's both fast and retentive, people found that just making it <strong>bigger and feeding it more data</strong> makes it smarter — giving us BERT, GPT, and today's models that chat, code, and draw. <strong>The heart of nearly every powerful AI today is this "meeting" mechanism from this paper.</strong></p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Let every word glance over the whole sentence and decide what to focus on — this "attention" move replaces the old "passing a message down a line," so AI reads fast and remembers distant relationships. This structure grew into almost every large model.</p>
+</div>
+
+<p class="switch-hint">Want the mechanism, formulas, and diagrams? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
 
 <h2>In one sentence</h2>
 <p class="lead">This paper introduces the <strong>Transformer</strong>: an architecture that <strong>drops recurrence (RNNs) and convolution (CNNs) entirely and processes sequences with attention alone</strong>. It lets the model see the whole sentence at once and compute, in parallel, what each word should attend to — so it trains fast and captures relationships between distant words in one step. Built in 2017 for machine translation, it became <strong>the shared foundation of BERT, GPT, and essentially every large model today</strong>.</p>
@@ -185,10 +221,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <p>⑦ Impact: BERT/GPT build on it; parallelism enabled scaling; "tokenize anything" unified fields — the foundation of modern AI.</p>
 <p>⑧ Limits: <strong>O(n²)</strong> on long sequences, positional encoding a stopgap, data-hungry, title oversells — feed-forward/residuals/norm/positional encoding are all indispensable.</p>
 </div>
+</div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full derivations and ablations, go to the original.</footer>
 </div>
 <script src="https://cissy0802.github.io/comments.js" defer></script>
 <script src="https://cissy0802.github.io/search.js" defer></script>
 <script src="https://cissy0802.github.io/index-button.js" defer></script>
 <script src="https://cissy0802.github.io/i18n-tts.js" defer></script>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
 </body></html>
