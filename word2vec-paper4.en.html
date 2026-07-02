@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Word2Vec — CS Papers Deep-Read Paper 4</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 4</p>
+<h1>Word2Vec (Word Embeddings)</h1>
+<p class="sub">Mikolov et al. · Google · ICLR Workshop 2013</p>
+<p class="langbar"><a href="word2vec-paper4.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2013, Tomas Mikolov's team at Google released <strong>Word2Vec</strong>: a method that lets a computer read mountains of text on its own and assign every word a <strong>"meaning coordinate."</strong> The magic is that these coordinates can do arithmetic: <strong>"king − man + woman ≈ queen."</strong> The search and recommendation systems you use today — and the very first step ChatGPT takes to understand your words, "turn each word into a vector" — all became mainstream through this paper.</p>
+
+<h2>First, a puzzle</h2>
+<p>Before this, words were just <strong>ID numbers</strong> to a computer: "cat" is #4102, "dog" is #9527, "fridge" is #233. To the machine, the relationship between "cat" and "dog" was <strong>exactly the same as between "cat" and "fridge" — none at all</strong>. To teach it that cats and dogs are both pets, humans had to write dictionary entries by hand: never finished, always behind on new words, and useless in another language.</p>
+
+<h2>The idea</h2>
+<p>Word2Vec's idea could be called <strong>"birds of a feather"</strong>: a word's meaning hides in <strong>which words it tends to hang out with</strong>. "Cat" and "dog" both show up next to "feed," "shedding," and "vet," so their meanings are close; "fridge" keeps company with "fresh" and "plug in." So give every word a home on a giant <strong>"map of meaning"</strong> — <strong>words with similar neighbors live close together</strong>. And nobody has to draw this map by hand: the machine draws it itself, just by reading.</p>
+
+<h2>How is the map drawn?</h2>
+<p>Through a game of <strong>fill-in-the-blank played billions of times</strong>. Cover up one word in a sentence and have the machine guess it from the surrounding words. <strong>When it guesses wrong, nudge the relevant words to slightly different spots on the map</strong> so the next guess comes easier. Sentence after sentence, nudge after nudge — after billions of words, words used in similar ways have been pushed together. Even better, <strong>directions</strong> on the map take on meaning: the path from "man" to "woman" points the same way, for the same distance, as the path from "king" to "queen" — which is exactly why that famous arithmetic works.</p>
+
+<h2>What it brought</h2>
+<p>From then on, <strong>"turn anything into coordinates"</strong> became AI's universal move: words, sentences, products, users, songs — each gets a home on its own map, and "find similar things" becomes "measure distances." Search, translation, and recommendation all jumped a level, and this is the starting point of the road that leads to BERT and ChatGPT. One honest caveat: each word gets <strong>only one fixed spot</strong> on the map, so "apple" the fruit and "Apple" the company are stuck in the same place — a problem left for later models to solve.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Have a machine read mountains of text playing fill-in-the-blank, and give every word a home on a map of meaning: similar words live close, relationships become directions, and even "king − man + woman ≈ queen" computes. The era of "everything can be coordinates" starts here.</p>
+</div>
+
+<p class="switch-hint">Want the CBOW / Skip-gram diagrams, negative sampling, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">Word2Vec proposes two <strong>ultra-simple models with the hidden layer removed</strong> — CBOW (guess the center word from its context) and Skip-gram (guess the context from the center word) — plus efficient approximations (hierarchical softmax, negative sampling), so that a single machine can learn high-quality <strong>word embeddings</strong> from over a billion words in a day: similar words end up close in the vector space, semantic and syntactic relations become stable directions, and vector arithmetic like <code>king − man + woman ≈ queen</code> works. It turned the "embedding" into a universal building block of AI.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Neural network</strong>: a layered model that learns patterns from data; here you only need to know it learns by a loop of "predict → err → adjust parameters."</li>
+<li><strong>Word vector / embedding</strong>: representing a word as a list of real numbers (say 300), i.e. the word's coordinates in a high-dimensional space; this paper is a method for learning those coordinates.</li>
+<li><strong>One-hot encoding</strong>: the old representation — a vector as long as the vocabulary, with a single 1 in the word's own slot; any two words are perpendicular, so no notion of "closer" or "farther."</li>
+<li><strong>Language model</strong>: a model that scores "which word belongs in this position," e.g. predicting a sentence's next word.</li>
+<li><strong>Softmax</strong>: a function that turns a set of scores into probabilities summing to 1; it must normalize over the whole vocabulary — the very cost this paper works around.</li>
+<li><strong>Dot product / cosine similarity</strong>: measures how much two vectors point the same way — the larger, the more aligned; "similar meaning" between word vectors is measured with it.</li>
+<li><strong>Corpus</strong>: the large body of real text used for training, e.g. news or Wikipedia.</li>
+<li><strong>Self-supervised</strong>: no human labels needed — the text itself (cover a word, guess it) provides the exercises.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Tomas Mikolov, Kai Chen, Greg Corrado, and Jeff Dean at Google; the paper appeared at the ICLR 2013 workshop, and a NIPS 2013 companion paper, "Distributed Representations of Words and Phrases and their Compositionality," added key speedups like negative sampling. It inherits Bengio's 2003 neural language model and linguistics' <strong>distributional hypothesis</strong> ("you shall know a word by the company it keeps"), and launches GloVe and fastText, making "pretrained word vectors" the NLP default — until contextual embeddings of the BERT era took over.</p>
+
+<h2>The problem and the motivation</h2>
+<p>Mainstream NLP then treated words as <strong>atomic symbols</strong> (one-hot): with a million-word vocabulary, each word is a million-dimensional vector with a single 1. In this representation <strong>any two words are perpendicular</strong> — "cat" is exactly as far from "dog" as from "fridge." Similarity had to come from hand-built dictionaries (like WordNet) or raw co-occurrence counts: sparse, expensive to maintain, and unable to generalize — whatever a model learns from "the cat is cute" helps not at all with "the dog is cute."</p>
+<p>Neural language models (Bengio et al. 2003) had already shown that a network predicting the next word learns <strong>dense word vectors as a by-product</strong>, and good ones. But they were too expensive — every step runs a nonlinear hidden layer and then a softmax over the whole vocabulary, so training on a few hundred million words took weeks, and billions were out of reach. Word vectors of the day were therefore trained on modest corpora at only 50–100 dimensions.</p>
+<p>Mikolov and colleagues made a blunt call: <strong>the bottleneck on vector quality is data volume, not model complexity.</strong> Rather than grinding a small corpus with a complex model, cut the model to the bone so it can swallow corpora orders of magnitude larger — betting that "simple model × massive data" beats "complex model × little data." The whole paper is the engineering and validation of that bet.</p>
+
+<h2>The core ideas</h2>
+
+<h3>Idea one: turn "meaning comes from neighbors" into a trainable fill-in-the-blank</h3>
+<p>The distributional hypothesis is an old result in linguistics: a word's meaning is determined by the contexts it appears in. Word2Vec operationalizes it as a <strong>self-supervised task</strong>: sweep through the corpus and, at every position, play fill-in-the-blank — either guess the middle word from its surroundings, or the reverse. No human labels; billions of words are billions of free exercises.</p>
+<p>The key is <strong>why filling blanks forces semantics out</strong>: the model's cheapest way to answer well is to map words with similar context distributions to nearby vectors — since "cat" and "dog" appear in similar contexts, sharing nearby coordinates lets one piece of knowledge serve both. <strong>Semantics isn't taught; it's squeezed out by the economy of prediction.</strong></p>
+
+<h3>Idea two: cut the model down to "table lookup + dot product"</h3>
+<p>The paper offers two architectures (Fig 1). <strong>CBOW</strong> (continuous bag-of-words): <strong>average</strong> the vectors of the context words in a window and use that average to predict the center word. <strong>Skip-gram</strong>: the reverse — use the center word's vector to <strong>predict each context word</strong> in the window, one by one. What they share is aggressive subtraction: <strong>no hidden layer, no nonlinearity</strong>; a prediction is one table lookup, one dot product, one softmax: <code>p(o|c) ∝ exp(u_o · v_c)</code> — in plain terms, the larger the dot product of two words' vectors, the more the model believes they belong in the same window.</p>
+<p>Why dare to drop the nonlinearity? Because the goal isn't an accurate language model — it's <strong>good vectors</strong>, and the authors' experience was that vector quality is insensitive to model complexity but hungry for data. The model is "dumb" — all it can do is measure alignment — but precisely because it's dumb, each training step is fast enough to be fed massive data. Trade-offs: CBOW is faster (one prediction per window); Skip-gram is kinder to rare words (every word gets repeated training as a center word) and stronger on semantic tasks.</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="w1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="140" y="32" fill="#f0b429" font-size="14" text-anchor="middle" font-weight="700">CBOW</text>
+<text x="420" y="32" fill="#f0b429" font-size="14" text-anchor="middle" font-weight="700">Skip-gram</text>
+<line x1="280" y1="44" x2="280" y2="230" stroke="rgba(240,180,41,0.2)" stroke-dasharray="4 4"/>
+<rect x="22" y="52" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="70" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₋₂</text>
+<rect x="22" y="92" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="110" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₋₁</text>
+<rect x="22" y="132" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="150" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₊₁</text>
+<rect x="22" y="172" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="190" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₊₂</text>
+<text x="52" y="222" fill="#7c8593" font-size="11" text-anchor="middle">context words</text>
+<line x1="82" y1="65" x2="126" y2="115" stroke="#7c8593" marker-end="url(#w1)"/>
+<line x1="82" y1="105" x2="126" y2="121" stroke="#7c8593" marker-end="url(#w1)"/>
+<line x1="82" y1="145" x2="126" y2="129" stroke="#7c8593" marker-end="url(#w1)"/>
+<line x1="82" y1="185" x2="126" y2="135" stroke="#7c8593" marker-end="url(#w1)"/>
+<circle cx="148" cy="125" r="20" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="148" y="130" fill="#e7ebf1" font-size="10" text-anchor="middle">avg</text>
+<line x1="168" y1="125" x2="188" y2="125" stroke="#7c8593" marker-end="url(#w1)"/>
+<rect x="190" y="110" width="76" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="228" y="130" fill="#e7ebf1" font-size="11" text-anchor="middle">predict center</text>
+<rect x="300" y="110" width="76" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="338" y="130" fill="#e7ebf1" font-size="11" text-anchor="middle">center word w</text>
+<line x1="376" y1="118" x2="450" y2="66" stroke="#7c8593" marker-end="url(#w1)"/>
+<line x1="376" y1="123" x2="450" y2="105" stroke="#7c8593" marker-end="url(#w1)"/>
+<line x1="376" y1="130" x2="450" y2="146" stroke="#7c8593" marker-end="url(#w1)"/>
+<line x1="376" y1="136" x2="450" y2="186" stroke="#7c8593" marker-end="url(#w1)"/>
+<rect x="452" y="52" width="86" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="495" y="70" fill="#e7ebf1" font-size="11" text-anchor="middle">predict w₋₂</text>
+<rect x="452" y="92" width="86" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="495" y="110" fill="#e7ebf1" font-size="11" text-anchor="middle">predict w₋₁</text>
+<rect x="452" y="132" width="86" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="495" y="150" fill="#e7ebf1" font-size="11" text-anchor="middle">predict w₊₁</text>
+<rect x="452" y="172" width="86" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="495" y="190" fill="#e7ebf1" font-size="11" text-anchor="middle">predict w₊₂</text>
+</svg>
+<figcaption>Fig 1 · The two architectures: CBOW averages the context vectors to guess the center word; Skip-gram uses the center word to guess each context word. No hidden layer — a prediction is just lookup + dot product.</figcaption>
+</figure>
+
+<h3>Idea three: get around the softmax wall</h3>
+<p>However simple the model, softmax still normalizes over the whole vocabulary (a million words) — doing that every step cancels the savings. The paper routes around it two ways. <strong>Hierarchical softmax</strong>: hang the vocabulary on a binary tree, so predicting a word becomes a chain of binary choices from root to leaf — cost drops from "whole vocabulary" to "tree depth" (about 20 steps for a million words). <strong>Negative sampling</strong> (from the NIPS companion): skip normalization entirely and recast the task as binary classification — given a center word, tell its true neighbor apart from a handful of randomly drawn "fake neighbors," updating only those dozen-odd vectors per step. Add <strong>subsampling of frequent words</strong> ("the," "is," and other low-information words are skipped probabilistically, saving useless exercises). Together, <strong>one machine trains on 1.6 billion words in under a day</strong> — an order-of-magnitude leap for neural methods of the time.</p>
+
+<h3>The happy surprise: directions carry meaning</h3>
+<p>The learned space offers more than "close = similar" — it shows <strong>linear regularities</strong>: <code>vector("King") − vector("Man") + vector("Woman")</code> lands closest to <code>vector("Queen")</code>; Paris − France + Italy ≈ Rome; plurals, tenses, and comparatives each correspond to stable directions too (Fig 2). The intuition: the "male → female" relation produces <strong>the same systematic difference</strong> in the contexts of thousands of word pairs (king/queen, uncle/aunt, actor/actress), and the model's cheapest encoding is to compress that shared difference into a single displacement vector — <strong>relations get encoded as geometry</strong>.</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="w2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<line x1="60" y1="215" x2="520" y2="215" stroke="rgba(124,133,147,0.4)"/>
+<line x1="60" y1="215" x2="60" y2="30" stroke="rgba(124,133,147,0.4)"/>
+<circle cx="170" cy="180" r="5" fill="#e8794b"/><text x="170" y="202" fill="#e7ebf1" font-size="12.5" text-anchor="middle">man</text>
+<circle cx="340" cy="140" r="5" fill="#e8794b"/><text x="340" y="162" fill="#e7ebf1" font-size="12.5" text-anchor="middle">woman</text>
+<circle cx="230" cy="90" r="5" fill="#f0b429"/><text x="230" y="78" fill="#e7ebf1" font-size="12.5" text-anchor="middle">king</text>
+<circle cx="400" cy="50" r="5" fill="#f0b429"/><text x="400" y="38" fill="#e7ebf1" font-size="12.5" text-anchor="middle">queen</text>
+<line x1="178" y1="177" x2="330" y2="143" stroke="#f0b429" stroke-width="1.8" marker-end="url(#w2)"/>
+<line x1="238" y1="87" x2="390" y2="53" stroke="#f0b429" stroke-width="1.8" marker-end="url(#w2)"/>
+<text x="256" y="130" fill="#f0b429" font-size="11.5" transform="rotate(-12 256 130)">same "gender" direction</text>
+<text x="290" y="240" fill="#7c8593" font-size="12" text-anchor="middle" font-family="Menlo,monospace">king − man + woman ≈ queen</text>
+</svg>
+<figcaption>Fig 2 · Semantic arithmetic in vector space: "man → woman" and "king → queen" are nearly the same displacement, so king − man + woman lands near queen.</figcaption>
+</figure>
+
+<h2>Key results</h2>
+<p>The authors built a <strong>Semantic-Syntactic analogy test set</strong> (19,544 questions of the form "Athens is to Greece as Oslo is to ?"), which became the standard benchmark for word vectors. Under a controlled comparison — same data, same 640-dimensional vectors — <strong>Skip-gram reached about 55% accuracy on semantic analogies</strong>, more than double the earlier feedforward neural language model (about 23%) and far above the recurrent model; <strong>CBOW was strongest on syntactic questions (about 64%) and fastest to train</strong>. On efficiency, training cost fell from the old models' "weeks" to <strong>"1.6 billion words in under a day."</strong> The NIPS companion showed negative sampling to be both faster and better than hierarchical softmax; and the vectors Google released with the code — <strong>300-dimensional, 3 million words and phrases</strong>, trained on roughly 100 billion words of Google News — became the community's default starting point for years.</p>
+
+<h2>Why it mattered</h2>
+<p>It took the "embedding" from a paper concept to an industry staple. <strong>"Everything can be a vector"</strong>: after words came sentences, documents, products, users, graph nodes, proteins — "find similar" uniformly became "measure distance," which is exactly the paradigm behind today's search, recommendation, and the vector retrieval inside LLM RAG systems.</p>
+<p>It was also the herald of <strong>"pretrain + reuse"</strong>: harvest a general-purpose representation from unlabeled text for free, then carry it into any downstream task. GloVe (2014) and fastText (2016) are direct successors; ELMo and BERT upgraded "one vector per word" to "one vector per word <em>in context</em>" — but the main line, "represent meaning as vectors, learn them by self-supervised prediction," was established right here. The token-embedding layer at the input of every large model today is its direct descendant.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>One vector per word</strong>: "apple" (fruit/company) and "bank" (money/river) are squashed into a single point, mixing senses. This is the core problem ELMo/BERT's contextual vectors set out to solve — and what eventually pushed static word vectors to the sidelines.</li>
+<li><strong>The analogy arithmetic was partly oversold</strong>: the standard evaluation excludes the three input words from the candidates — without that exclusion, the "nearest neighbor" is often one of the inputs; later analysis (Levy &amp; Goldberg and others) also showed that Skip-gram with negative sampling is implicitly factorizing a word-context PMI (pointwise mutual information — how much two words co-occur beyond chance) matrix, making it no more "magical" than well-tuned traditional count-based methods.</li>
+<li><strong>It faithfully copies corpus bias</strong>: the famous example is man : programmer ≈ woman : homemaker (Bolukbasi et al. 2016) — the vectors turn social bias into geometry, and using them downstream amplifies discrimination.</li>
+<li><strong>Closed vocabulary</strong>: unseen words (new coinages, typos) get no vector; fastText later patched this with subword composition.</li>
+<li><strong>No word order within the window</strong>: "dog bites man" and "man bites dog" contribute identical co-occurrence signals — syntax is out of reach.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: two shallow models with the hidden layer removed (CBOW / Skip-gram) plus efficient approximations, self-learning high-quality word vectors from massive unlabeled text.</p>
+<p>② The pain: one-hot treats every word as an island with no notion of distance; neural language models learn good vectors but are too costly for big corpora.</p>
+<p>③ The bet: vector quality feeds on data volume, not model complexity — "simple model × massive corpus" wins.</p>
+<p>④ Mechanism: fill-in-the-blank self-supervision; a prediction = lookup + dot product (<code>p(o|c) ∝ exp(u_o·v_c)</code>); the economy of prediction forces similarly-used words to share nearby coordinates.</p>
+<p>⑤ Speedups: hierarchical softmax (full normalization → ~20 binary choices on a tree), negative sampling (just tell true neighbors from a few random fakes), frequent-word subsampling — 1.6 billion words a day on one machine.</p>
+<p>⑥ The phenomenon: linear structure emerges; king − man + woman ≈ queen; relations become stable directions.</p>
+<p>⑦ Results and impact: several times the old models' accuracy on the 19,544-question analogy set; embeddings became AI's universal building block, leading straight to GloVe / fastText / BERT and today's vector retrieval.</p>
+<p>⑧ Limits: one vector can't hold multiple senses; analogy scores partly rest on evaluation conventions; corpus biases are copied; unknown words and word order are out of scope — contextual models took the baton.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full training configs and all comparison tables, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
