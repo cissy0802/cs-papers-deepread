@@ -56,6 +56,11 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <p>Before it, machines read a sentence like <strong>passing a message down a line</strong>: one word at a time, information relayed step by step. A long sentence → the early stuff gets garbled or lost, and it can't go fast because it's strictly one-after-another.</p>
 <p>The Transformer swaps "passing down a line" for <strong>a meeting</strong>: all the words on the table at once, each looking at every other word, reaching the farthest word in a single step. Two wins: <strong>① fast</strong> (everyone looks in parallel, no queue) and <strong>② good memory</strong> (even distant words are one step away, nothing lost).</p>
 
+<h2>So how does it decide "who to listen to"?</h2>
+<p>Every word carries two little tags: one says "<strong>what I'm looking for</strong>" (e.g., "it" is looking for a noun mentioned earlier), the other says "<strong>what I am</strong>" (e.g., "cat" is an animal noun). A word takes its "what I'm looking for" and <strong>checks it against every other word's "what I am"</strong> — the better the match, the more it listens to that word. "It"'s "looking for a noun" matches "cat"'s "is a noun," so it mostly listens to "cat." <strong>That's the whole trick: attention shared by how well things match, nothing mystical.</strong></p>
+<p>And it doesn't look just one way: it uses <strong>several sets of tags at once, from several angles</strong> (one tracking grammar, one tracking who-refers-to-whom, one tracking tone…), then combines them — that's <strong>multi-head</strong> attention. And since all the words sit "on the table at once" with no built-in order, the model also gives each one a "<strong>seat number</strong>" so it knows what comes before what.</p>
+<p>There's a cost too: with more words, every pair has to look at each other, so <strong>the compute grows fast</strong> — very long texts strain it, which is exactly what a lot of later work tries to fix.</p>
+
 <h2>What did it lead to?</h2>
 <p>Because it's both fast and retentive, people found that just making it <strong>bigger and feeding it more data</strong> makes it smarter — giving us BERT, GPT, and today's models that chat, code, and draw. <strong>The heart of nearly every powerful AI today is this "meeting" mechanism from this paper.</strong></p>
 
