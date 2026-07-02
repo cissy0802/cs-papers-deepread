@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>An Image is Worth 16×16 Words（ViT）— IT 论文精读 Paper 5</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 5</p>
+<h1>An Image is Worth 16×16 Words（ViT）</h1>
+<p class="sub">Dosovitskiy 等 · Google Research · ICLR 2021</p>
+<p class="langbar"><a href="vision-transformer-paper5.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2020 年，Google 的一队研究员提出 <strong>ViT（Vision Transformer，视觉 Transformer）</strong>，干了一件当时听起来有点鲁莽的事：把专门处理文字的 Transformer（ChatGPT 用的那种大脑）<strong>原封不动拿来看图</strong>——不用任何专门为图像设计的零件。结果是：只要先让它看过足够多的图，它就能超过统治视觉领域八年的老霸主 CNN。今天你让 AI「看图说话」，它用的那双眼睛多半就是 ViT。</p>
+
+<h2>打个比方</h2>
+<p>以前看图的 CNN，像拿着放大镜读一幅画：先贴得很近看清一小块的笔触，再退后一步把小块拼成局部，再退后一步拼出整体——<strong>「先看邻居、由近及远」是写死在它骨子里的规矩</strong>。ViT 不拿放大镜：它把整幅画剪成一百多张小方块，全部摊在桌面上，像读一句一百多个词的话那样<strong>一口气读完</strong>。任何两块之间都能直接对上眼神：左上那块毛茸茸的、右下那块像尾巴的，第一眼就能凑到一起商量——「咱俩合起来，是不是一只猫？」</p>
+
+<h2>新在哪</h2>
+<p>旧世界里，文字有文字的模型、图像有图像的模型，各带各的祖传手艺，互不相通。ViT 说：图也可以当「话」读——<strong>把小方块当单词</strong>，看图和读文章就能用同一种大脑。这句话的分量在几年后才完全显出来：既然是同一种大脑，图和文字就能真正「想到一块儿」——后来能看图的 ChatGPT、听一句话就画图的 AI，都踩在这一步上。</p>
+
+<h2>怎么做到的</h2>
+<p>就两步。<strong>第一步，把图变成「词」</strong>：整张图切成一个个小方块，每块压成一串数字，就像把一个单词做成一张词卡；再给每张卡标上「你原来坐在第几行第几列」的座位号——不标的话，模型看到的就只是一袋打乱的拼图块。<strong>第二步，让这串词卡过 Transformer</strong>：每一层里，每块都和其余所有块互相打量、交换看法——毛茸茸的块从「尖耳朵」那块得到印证，一层层下来，散块的线索慢慢拼成一个判断：这是一只猫。</p>
+
+<h2>「白纸」为什么反而赢了</h2>
+<p>CNN 天生带一本「看图说明书」：先看邻居、别管远处。<strong>图少的时候，说明书是拐杖</strong>——CNN 学得又快又稳，ViT 这张白纸反而磕磕绊绊，成绩更差。<strong>可图一多（上亿张），说明书就成了枷锁</strong>：有些线索本来就要跨越整幅图才看得见，而白纸没有条条框框，看的图够多、全都自己悟了出来，于是反超。也诚实说一句代价：这份反超得先喂上亿张图、烧大把算力，当年普通实验室根本训不起——省数据的训法是后来的人补上的。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>把图剪成小方块、当一句话喂给 Transformer；见的图足够多时，不带任何看图的祖传规矩反而更强。从此看图和读字共用同一种大脑，多模态 AI 的大门被这篇论文推开。</p>
+</div>
+
+<p class="switch-hint">想看切块喂入的结构图、「先验换数据」的交叉实验和真实数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>一句话</h2>
+<p class="lead">ViT（Vision Transformer）把一张图切成 16×16 的小块（patch）、每块当一个「词」，组成一句「视觉句子」喂给<strong>几乎原封不动的标准 Transformer</strong>；并用实验证明：当预训练数据大到上亿张图时，这个不带图像专属设计的模型能<strong>超过最强的 CNN</strong>（ImageNet top-1 准确率 88.55%）、预训练算力还更省——<strong>视觉从此与语言共用同一种架构</strong>，多模态大模型的地基由此铺下。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>神经网络 / 深度学习</strong>：由许多「层」堆叠、从数据里自动学规律的模型；层数越多，能表达的模式越复杂。</li>
+<li><strong>卷积网络（CNN，convolutional neural network）</strong>：用小窗口滑过图片、由近及远逐层提取特征的网络；AlexNet、ResNet（Paper 2/3）都是，2012–2020 年统治视觉。</li>
+<li><strong>Transformer / 自注意力（self-attention）</strong>：2017 年提出的架构（Paper 1）；自注意力让序列里每个元素与其他所有元素两两「互看」打分、按相关度汇总信息。</li>
+<li><strong>token（词元）与 embedding（嵌入向量）</strong>：token 是 Transformer 处理的基本单位；embedding 是把一个 token 变成一串可学习的数字（向量）。</li>
+<li><strong>预训练–微调（pretrain–finetune）</strong>：先在海量数据上学通用本领，再用目标任务的少量数据稍作调整；BERT 把这套范式在 NLP 做成了标配。</li>
+<li><strong>归纳偏置（inductive bias）</strong>：设计者预先「焊死」在模型结构里的世界假设——比如 CNN 假设「挨着的像素更相关」「物体平移后还是同一个物体」。</li>
+<li><strong>ImageNet / ImageNet-21k / JFT-300M</strong>：三个由小到大的图像数据集，约 130 万 / 1400 万 / 3 亿张图；前两个公开，JFT 是 Google 内部私有数据。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者是 Dosovitskiy、Beyer、Kolesnikov 等十二人，来自 Google Research（Brain 团队），发表于 ICLR 2021（2020 年 10 月放出）。它上承 Transformer（Paper 1）与 BERT 的「预训练–微调」范式、以及 AlexNet→ResNet 的深度视觉路线；下启 CLIP、MAE、DINO、SAM、DiT——今天多模态大模型的「眼睛」，大多就是 ViT 一族。</p>
+
+<h2>问题与动机</h2>
+<p>到 2020 年，NLP 已经统一到「Transformer + 越做越大的预训练」：模型和数据一起放大、性能持续上涨，还看不到饱和。而视觉仍是 CNN 的天下。不是没人想把自注意力搬进视觉，但此前的尝试要么和卷积混着用、要么为省算力设计各种特殊的局部/稀疏注意力——这些花式结构在现成硬件加速器上跑不快，也一直没能规模化。</p>
+<p>最朴素的方案——<strong>让每个像素当一个 token</strong>——直接被算力判了死刑：自注意力要两两互看，计算量随 token 数<strong>平方</strong>增长，一张 224×224 的图就是 5 万多个像素，平方之后是天文数字。</p>
+<p>于是问题变成：<strong>一个尽量不做改动的标准 Transformer，能不能直接做视觉？要什么条件，才能打赢深耕八年、自带图像先验的 CNN？</strong></p>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>把图切成词：patch 就是视觉的 token</h3>
+<p>ViT 全篇第一个、也几乎是唯一一个图像专属操作：把 224×224 的图<strong>切成 16×16 的小块（patch）</strong>，共 <code>(224/16)² = 196</code> 块。每块拉直成 16×16×3 = 768 个数字，过一层可学习的线性投影，得到一个 <strong>patch embedding</strong>——地位完全等同于 NLP 里的词向量。一刀下去，序列长度从 5 万降到 196，平方复杂度立刻可负担。<strong>这就是标题「一张图值 16×16 个词」的字面含义。</strong></p>
+<p>再补上两样 NLP 的老零件：① 每个位置加一个可学习的<strong>位置编码（position embedding）</strong>，告诉模型这块原来在图里的哪儿——不加的话，它看到的只是一袋顺序打乱的拼图块；② 学 BERT 在句首放一个 <strong>[CLS] 分类 token</strong>，它一路参与所有层的互看、汇总全图信息，最后由它的输出接一个小分类头给出「这是什么」。</p>
+<p>然后——<strong>没有然后了</strong>。后面就是一个标准 Transformer 编码器（多头自注意力 + MLP，每个子层外套残差连接，见 Paper 1/2），一行都不用改。这份「懒」是刻意的：<strong>架构不动，NLP 世界里关于 Transformer 的全部放大经验、训练技巧和高效实现，视觉一夜之间全部继承。</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 348" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="v1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="70" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">输入图像</text>
+<rect x="25" y="36" width="90" height="90" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<line x1="55" y1="36" x2="55" y2="126" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="85" y1="36" x2="85" y2="126" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="25" y1="66" x2="115" y2="66" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="25" y1="96" x2="115" y2="96" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="123" y1="81" x2="158" y2="81" stroke="#7c8593" marker-end="url(#v1)"/>
+<text x="140" y="72" fill="#f0b429" font-size="11" text-anchor="middle">切块</text>
+<rect x="168" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="200" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="232" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="264" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="296" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="334" y="86" fill="#7c8593" font-size="13">…</text>
+<text x="262" y="112" fill="#7c8593" font-size="11" text-anchor="middle">196 个 16×16 小块，各拉直 + 线性投影成向量</text>
+<line x1="262" y1="120" x2="262" y2="140" stroke="#7c8593" marker-end="url(#v1)"/>
+<rect x="96" y="148" width="52" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="122" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">CLS</text>
+<rect x="158" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="176" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">1</text>
+<rect x="202" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="220" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">2</text>
+<rect x="246" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="264" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">3</text>
+<rect x="290" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="308" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">4</text>
+<rect x="334" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="352" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">5</text>
+<text x="382" y="168" fill="#7c8593" font-size="13">…</text>
+<text x="262" y="200" fill="#f0b429" font-size="11" text-anchor="middle">每张「词卡」+ 位置编码（记住原来的座位）</text>
+<line x1="262" y1="208" x2="262" y2="226" stroke="#7c8593" marker-end="url(#v1)"/>
+<rect x="70" y="228" width="420" height="48" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="280" y="248" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">标准 Transformer 编码器 × L 层</text>
+<text x="280" y="266" fill="#b9c0ca" font-size="11" text-anchor="middle">（自注意力：所有块两两互看 · + MLP · 原样照搬，不改一行）</text>
+<line x1="122" y1="276" x2="122" y2="296" stroke="#7c8593" marker-end="url(#v1)"/>
+<rect x="72" y="298" width="100" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="122" y="318" fill="#b9c0ca" font-size="11.5" text-anchor="middle">MLP 分类头</text>
+<line x1="180" y1="313" x2="212" y2="313" stroke="#7c8593" marker-end="url(#v1)"/>
+<text x="224" y="318" fill="#f0b429" font-size="13" font-weight="700">「猫」</text>
+</svg>
+<figcaption>图 1 · ViT 架构：切块 → 线性投影成「词卡」→ 加位置编码 → 标准 Transformer 编码器 → 由 CLS token 的输出做分类。图像专属的设计只有「切块」这一刀。</figcaption>
+</figure>
+
+<h3>拆掉先验，用数据买回来</h3>
+<p>CNN 的强，来自焊死在结构里的三条归纳偏置：<strong>局部性</strong>（先看邻居）、<strong>平移等变</strong>（猫挪到哪儿都是猫）、<strong>层级</strong>（小特征拼大特征）。这些假设对图像基本正确，等于先替模型答对了一半——<strong>数据少时是巨大优势</strong>。</p>
+<p>ViT 几乎把它们全拆了：自注意力从第一层起就能全局互看，「该看多近、看多远」不再由结构规定，而是<strong>交给数据去教</strong>。整个模型里残留的 2D 手工痕迹只有两处：切 patch 这一刀，以及微调换分辨率时对位置编码做的一次 2D 插值。</p>
+<p>论文最重要的实验就是量化这场「先验 vs 数据」的交易：只用 ImageNet（130 万图）预训练时，ViT <strong>明显不如</strong>同量级的 ResNet——白纸输给了说明书；到 ImageNet-21k（1400 万）大致打平；到 JFT-300M（3 亿）<strong>全面反超</strong>，而且模型越大越吃香。结论一句话：<strong>足够大的预训练，胜过手工归纳偏置。</strong></p>
+<p>有意思的是，训练完的 ViT 自己长出了类似 CNN 的习惯：低层的一部分注意力头只看邻近的 patch（像卷积），另一部分却从第一层就看全图——后者是 CNN 结构上做不到的；位置编码也自发学出了行列邻近结构。<strong>先验没有被硬塞进结构，但被数据教了出来。</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 262" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="38" x2="70" y2="205" stroke="#7c8593"/>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"/>
+<text x="70" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">迁移到 ImageNet 的精度</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">预训练数据量 →</text>
+<text x="150" y="223" fill="#7c8593" font-size="10.5" text-anchor="middle">ImageNet · 1.3M</text>
+<text x="315" y="223" fill="#7c8593" font-size="10.5" text-anchor="middle">ImageNet-21k · 14M</text>
+<text x="470" y="240" fill="#7c8593" font-size="10.5" text-anchor="end">JFT-300M · 3 亿</text>
+<path d="M150,118 C220,106 315,98 470,92" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<path d="M150,158 C230,126 315,98 470,64" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<circle cx="150" cy="118" r="3.5" fill="#e8794b"/><circle cx="315" cy="98" r="3.5" fill="#e8794b"/><circle cx="470" cy="92" r="3.5" fill="#e8794b"/>
+<circle cx="150" cy="158" r="3.5" fill="#f0b429"/><circle cx="315" cy="98" r="3.5" fill="#f0b429"/><circle cx="470" cy="64" r="3.5" fill="#f0b429"/>
+<text x="210" y="172" fill="#e8794b" font-size="11.5">ResNet（BiT）</text>
+<text x="400" y="56" fill="#f0b429" font-size="11.5">ViT</text>
+<text x="150" y="86" fill="#7c8593" font-size="11" text-anchor="middle">数据少：CNN 先验占优</text>
+<text x="440" y="130" fill="#e7ebf1" font-size="11.5" text-anchor="middle">数据大：ViT 反超</text>
+</svg>
+<figcaption>图 2 · 「先验换数据」的交叉（趋势示意，非精确数值）：小数据下自带先验的 ResNet 领先；预训练数据到千万级打平、上亿级后 ViT 反超。</figcaption>
+</figure>
+
+<h2>关键结果</h2>
+<ul>
+<li>用 JFT-300M 预训练的 <strong>ViT-H/14</strong>（6.3 亿参数，「/14」指 14×14 的 patch）在 ImageNet 上拿到 <strong>top-1 准确率 88.55%</strong>，超过当时最强的 CNN 系代表：BiT-L（超大 ResNet，87.54%）与 Noisy Student（EfficientNet，88.5%）；CIFAR-100 上 94.55%、VTAB（19 个小样本迁移任务）77.63%，同样领先。</li>
+<li>更扎心的是性价比：<strong>ViT-L/16 预训练只花约 0.68k TPUv3 核·天，成绩（87.76%）已超过 BiT-L 花 9.9k 核·天的结果</strong>——省了一个数量级的算力，还更准。</li>
+<li>用<strong>公开的</strong> ImageNet-21k 预训练，ViT-L/16 也有 <strong>85.30%</strong>——给了没有 JFT 的人一个可复现的配方。</li>
+<li>反面也诚实：只用 ImageNet-1k 这种「小」数据预训练时，ViT 不如同量级 ResNet，交叉点大约在千万张图量级——<strong>要么喂大，要么别用。</strong></li>
+</ul>
+
+<h2>为什么重要 / 影响</h2>
+<p><strong>一是架构统一。</strong>图像和文字变成了同一种「token 序列」，后面接同一种模型。CLIP 用一个 ViT 加一个文本 Transformer 做图文对比学习，直接开出多模态时代；今天能看图的对话大模型，视觉编码器基本都是 ViT 一族。</p>
+<p><strong>二是 NLP 的规模化经验整体平移进视觉。</strong>MAE 把 BERT 的「完形填空」搬到图像（遮住大部分 patch 让模型补全），DINO 系列做出视觉自监督表征，SAM（「分割一切」）的图像编码器是 ViT-H，图像生成的骨干网络也从 U-Net 换成了 Transformer（DiT，Sora、Stable Diffusion 3 一系的地基）。</p>
+<p><strong>三是方法论。</strong>它把「归纳偏置 vs 数据规模」从一句哲学口号变成可测量的实验问题，此后「少一点手工设计、多一点数据和算力」成为整个领域的默认方向。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>数据饥渴，且 JFT-300M 私有</strong>：原配方普通实验室既训不起也复现不了。但 DeiT（2020 年 12 月，Meta）随即证明：靠强数据增广 + 知识蒸馏，只用 ImageNet-1k 也能把 ViT 训好——说明「必须 3 亿图」的结论有一部分只是当时训练技巧没到位。</li>
+<li><strong>平方复杂度没有消失，只是被 patch 掩住</strong>：分辨率一高、patch 一多，注意力开销又会炸，检测、分割这类高分辨率密集任务吃亏。Swin Transformer（2021）用局部窗口 + 层级结构把 CNN 式先验请了回来才拿下这些任务——多少有点讽刺。</li>
+<li><strong>赢在架构，还是赢在规模与配方？</strong>ConvNeXt（2022）把 ResNet 按现代配方翻新后与 Swin 打平，说明 Transformer 架构本身未必是必要条件，这场争论至今没有定论。</li>
+<li><strong>覆盖面与工程小疤</strong>：原文只做了图像分类；学到的位置编码绑定训练分辨率，换分辨率要靠插值补救，谈不上优雅。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：把图切成 16×16 小块当「词」，喂给不改一行的标准 Transformer；预训练数据够大时，不带视觉先验反而更强。</p>
+<p>② 痛点：视觉被 CNN 垄断，此前的注意力方案要么混卷积、要么跑不快；逐像素注意力因平方复杂度不可行。</p>
+<p>③ 机制一：patch embedding——<code>(224/16)² = 196</code> 块、每块线性投影成向量，+ 位置编码 + [CLS] token，序列长度从 5 万降到 196。</p>
+<p>④ 机制二：拆掉 CNN 的局部性/平移/层级先验，用大规模预训练买回来——130 万图输、1400 万平、3 亿反超。</p>
+<p>⑤ 结果：ViT-H/14 在 ImageNet 88.55% 超最强 CNN；ViT-L/16 用约 1/15 的预训练算力反超 BiT-L；公开数据配方 85.30%。</p>
+<p>⑥ 模型自己学出「低层局部看与全局看并存」——先验可以不用焊死，由数据教出来。</p>
+<p>⑦ 影响：视觉与语言同架构，CLIP / MAE / DINO / SAM / DiT 全踩在它上面，多模态大模型的眼睛。</p>
+<p>⑧ 局限：小数据不行（DeiT 后来用技巧补救）；高分辨率平方开销（Swin 又请回先验）；ConvNeXt 质疑「架构必要性」。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整模型配置与实验细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

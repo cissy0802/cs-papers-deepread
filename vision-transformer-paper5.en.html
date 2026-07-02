@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>An Image is Worth 16×16 Words (ViT) — CS Papers Deep-Read Paper 5</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 5</p>
+<h1>An Image is Worth 16×16 Words (ViT)</h1>
+<p class="sub">Dosovitskiy et al. · Google Research · ICLR 2021</p>
+<p class="langbar"><a href="vision-transformer-paper5.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2020, a team at Google proposed <strong>ViT (the Vision Transformer)</strong> and did something that sounded a little reckless at the time: they took the Transformer — the kind of brain behind ChatGPT, built for text — and pointed it at images <strong>completely unchanged</strong>, with no image-specific parts at all. The result: as long as it first sees enough pictures, it beats CNNs, the reigning champions that had ruled computer vision for eight years. Today, when you ask an AI to "look at a picture and talk about it," the eyes it uses are most likely a ViT.</p>
+
+<h2>An analogy</h2>
+<p>The old way of seeing — the CNN — reads a painting with a magnifying glass: get up close to make out a small patch of brushwork, step back to assemble patches into parts, step back again to assemble the whole. <strong>"Look at neighbors first, near before far" is a rule carved into its bones.</strong> ViT throws away the magnifying glass: it cuts the whole painting into a hundred-plus little squares, lays them all out on the table, and reads them <strong>in one go</strong>, like reading a sentence of a hundred-plus words. Any two squares can lock eyes directly: the furry one in the top-left and the tail-shaped one in the bottom-right can huddle at first glance — "put us together, are we a cat?"</p>
+
+<h2>What's new</h2>
+<p>In the old world, text had text models and images had image models, each with its own inherited craft, mutually incompatible. ViT said: a picture can be read as a "sentence" too — <strong>treat the little squares as words</strong>, and seeing and reading can share one brain. The weight of that sentence only became fully clear years later: once it's the same brain, images and words can genuinely "think together" — the picture-reading ChatGPT, and the AIs that paint from a one-line prompt, all stand on this step.</p>
+
+<h2>How it works</h2>
+<p>Two steps. <strong>Step one, turn the image into "words"</strong>: slice the picture into small squares, compress each into a string of numbers — like making a flashcard out of a word — and stamp each card with a seat number saying "you originally sat in this row and column." Without the stamps, the model would just see a bag of shuffled puzzle pieces. <strong>Step two, run the flashcards through a Transformer</strong>: in every layer, each piece sizes up all the other pieces and trades notes — the furry piece gets confirmation from the pointy-ear piece — and layer by layer, scattered clues assemble into a verdict: this is a cat.</p>
+
+<h2>Why the "blank slate" won</h2>
+<p>A CNN is born with a "how to look at pictures" manual: check your neighbors first, ignore the far side. <strong>When pictures are scarce, the manual is a crutch</strong> — the CNN learns fast and steady, while the blank-slate ViT stumbles and scores worse. <strong>But once pictures are plentiful (hundreds of millions), the manual becomes a cage</strong>: some clues can only be seen by spanning the whole image, and the blank slate, with no rules fencing it in, figures all of that out by itself — and overtakes. One honest note on the cost: this overtaking required feeding it hundreds of millions of images and a mountain of compute, far beyond an ordinary lab at the time — the data-frugal recipes came later, from others.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Cut the image into little squares and feed it to a Transformer as a sentence; with enough pictures, carrying no inherited rules about how to see turns out to be stronger. From then on, seeing and reading share one brain — this paper pushed open the door to multimodal AI.</p>
+</div>
+
+<p class="switch-hint">Want the patch-and-feed diagram, the "priors vs data" crossover experiment, and the real numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">ViT (the Vision Transformer) cuts an image into 16×16 patches, treats each patch as a "word," and feeds the resulting "visual sentence" to <strong>an almost completely unmodified standard Transformer</strong> — then shows by experiment that once pretraining data reaches hundreds of millions of images, this model with no image-specific design <strong>beats the strongest CNNs</strong> (88.55% ImageNet top-1 accuracy) while spending less pretraining compute. <strong>Vision and language have shared one architecture ever since</strong>, and the foundation of multimodal models was laid here.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Neural network / deep learning</strong>: a model built by stacking many "layers" that learn patterns from data automatically; more layers, more complex patterns.</li>
+<li><strong>CNN (convolutional neural network)</strong>: a network that slides small windows over an image, extracting features layer by layer from near to far; AlexNet and ResNet (Papers 2/3) are CNNs, and they ruled vision from 2012 to 2020.</li>
+<li><strong>Transformer / self-attention</strong>: the architecture from 2017 (Paper 1); self-attention lets every element in a sequence "look at" every other element, score relevance pairwise, and pool information accordingly.</li>
+<li><strong>Token and embedding</strong>: a token is the basic unit a Transformer processes; an embedding turns a token into a learnable string of numbers (a vector).</li>
+<li><strong>Pretrain–finetune</strong>: first learn general ability on massive data, then adapt with a small amount of target-task data; BERT made this the standard playbook in NLP.</li>
+<li><strong>Inductive bias</strong>: assumptions about the world that the designer welds into the model's structure — e.g., a CNN assumes "nearby pixels are more related" and "an object shifted is still the same object."</li>
+<li><strong>ImageNet / ImageNet-21k / JFT-300M</strong>: three image datasets from small to large — roughly 1.3M / 14M / 300M images; the first two are public, JFT is Google-internal and private.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Dosovitskiy, Beyer, Kolesnikov, and nine colleagues at Google Research (the Brain team); the paper appeared at ICLR 2021 (released October 2020). It inherits the Transformer (Paper 1) and BERT's pretrain–finetune paradigm on one side, and the AlexNet→ResNet deep-vision line on the other; downstream of it come CLIP, MAE, DINO, SAM, and DiT — the "eyes" of today's multimodal models are mostly members of the ViT family.</p>
+
+<h2>The problem and the motivation</h2>
+<p>By 2020, NLP had converged on "Transformer + ever-larger pretraining": scale up models and data together and performance keeps climbing, with no saturation in sight. Vision, meanwhile, was still CNN territory. It's not that nobody had tried moving self-attention into vision — but earlier attempts either mixed it with convolutions or invented specialized local/sparse attention patterns to save compute, and those exotic structures ran poorly on existing hardware accelerators and never scaled.</p>
+<p>The most naive plan — <strong>one token per pixel</strong> — is executed on the spot by arithmetic: self-attention compares all pairs, so its cost grows with the <strong>square</strong> of the token count, and a 224×224 image is 50,000-plus pixels; square that and it's astronomical.</p>
+<p>So the question became: <strong>can a standard Transformer, changed as little as possible, do vision directly? And under what conditions can it beat CNNs, which had eight years of head start and built-in image priors?</strong></p>
+
+<h2>The core idea</h2>
+
+<h3>Cut the image into words: patches are visual tokens</h3>
+<p>ViT's first — and nearly only — image-specific operation: <strong>slice a 224×224 image into 16×16 patches</strong>, giving <code>(224/16)² = 196</code> of them. Each patch is flattened into 16×16×3 = 768 numbers and passed through one learnable linear projection, producing a <strong>patch embedding</strong> — the exact counterpart of a word vector in NLP. One cut, and the sequence length drops from 50,000 to 196; the quadratic cost becomes instantly affordable. <strong>That is the literal meaning of the title: an image is worth 16×16 words.</strong></p>
+<p>Then add two old NLP parts: ① a learnable <strong>position embedding</strong> per slot, telling the model where each patch originally sat — without it, the model sees only a bag of shuffled puzzle pieces; ② following BERT, a <strong>[CLS] classification token</strong> at the front of the sentence, which participates in every layer's attention, pools whole-image information, and whose final output feeds a small classification head that says "what this is."</p>
+<p>And then — <strong>that's it</strong>. What follows is a standard Transformer encoder (multi-head self-attention + MLP, each sub-layer wrapped in a residual connection; see Papers 1/2), with not a line changed. The "laziness" is deliberate: <strong>keep the architecture untouched, and everything the NLP world knows about scaling Transformers — training tricks, efficient implementations, all of it — transfers to vision overnight.</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 348" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="v1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="70" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">input image</text>
+<rect x="25" y="36" width="90" height="90" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<line x1="55" y1="36" x2="55" y2="126" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="85" y1="36" x2="85" y2="126" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="25" y1="66" x2="115" y2="66" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="25" y1="96" x2="115" y2="96" stroke="#7c8593" stroke-width="0.7"/>
+<line x1="123" y1="81" x2="158" y2="81" stroke="#7c8593" marker-end="url(#v1)"/>
+<text x="140" y="72" fill="#f0b429" font-size="10.5" text-anchor="middle">slice</text>
+<rect x="168" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="200" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="232" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="264" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect x="296" y="69" width="24" height="24" rx="3" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="334" y="86" fill="#7c8593" font-size="13">…</text>
+<text x="262" y="112" fill="#7c8593" font-size="11" text-anchor="middle">196 patches of 16×16, each flattened + linearly projected</text>
+<line x1="262" y1="120" x2="262" y2="140" stroke="#7c8593" marker-end="url(#v1)"/>
+<rect x="96" y="148" width="52" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="122" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">CLS</text>
+<rect x="158" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="176" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">1</text>
+<rect x="202" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="220" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">2</text>
+<rect x="246" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="264" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">3</text>
+<rect x="290" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="308" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">4</text>
+<rect x="334" y="148" width="36" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="352" y="168" fill="#e7ebf1" font-size="11.5" text-anchor="middle">5</text>
+<text x="382" y="168" fill="#7c8593" font-size="13">…</text>
+<text x="262" y="200" fill="#f0b429" font-size="11" text-anchor="middle">each "flashcard" + position embedding (remembers its seat)</text>
+<line x1="262" y1="208" x2="262" y2="226" stroke="#7c8593" marker-end="url(#v1)"/>
+<rect x="70" y="228" width="420" height="48" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="280" y="248" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">standard Transformer encoder × L layers</text>
+<text x="280" y="266" fill="#b9c0ca" font-size="11" text-anchor="middle">(self-attention: all patches look at each other · + MLP · used as is, no changes)</text>
+<line x1="122" y1="276" x2="122" y2="296" stroke="#7c8593" marker-end="url(#v1)"/>
+<rect x="72" y="298" width="100" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="122" y="318" fill="#b9c0ca" font-size="11.5" text-anchor="middle">MLP head</text>
+<line x1="180" y1="313" x2="212" y2="313" stroke="#7c8593" marker-end="url(#v1)"/>
+<text x="224" y="318" fill="#f0b429" font-size="13" font-weight="700">"cat"</text>
+</svg>
+<figcaption>Fig 1 · ViT architecture: slice into patches → linear projection into "flashcards" → add position embeddings → standard Transformer encoder → classify from the CLS token's output. The only image-specific design is the slicing.</figcaption>
+</figure>
+
+<h3>Remove the priors, buy them back with data</h3>
+<p>A CNN's strength comes from three inductive biases welded into its structure: <strong>locality</strong> (look at neighbors first), <strong>translation equivariance</strong> (a cat is a cat wherever it moves), and <strong>hierarchy</strong> (small features assemble into big ones). These assumptions are basically correct for images — half the answers filled in for free — <strong>a huge advantage when data is scarce</strong>.</p>
+<p>ViT strips nearly all of it out: self-attention can look globally from layer one, and "how near or far to look" is no longer dictated by structure — <strong>the data teaches it</strong>. The only remaining traces of hand-made 2D awareness in the whole model: the patch-slicing cut, and one 2D interpolation of position embeddings when fine-tuning at a different resolution.</p>
+<p>The paper's most important experiment quantifies this "priors vs data" trade: pretrained only on ImageNet (1.3M images), ViT is <strong>clearly worse</strong> than a comparable ResNet — the blank slate loses to the manual; at ImageNet-21k (14M) they roughly tie; at JFT-300M (300M) ViT <strong>overtakes across the board</strong>, and the bigger the model the more it benefits. One-line conclusion: <strong>large-scale pretraining beats hand-crafted inductive bias.</strong></p>
+<p>Intriguingly, a trained ViT grows CNN-like habits on its own: some attention heads in the lowest layers look only at nearby patches (convolution-like), while others look across the whole image from layer one — something a CNN structurally cannot do; the position embeddings also spontaneously learn the row-and-column layout. <strong>The priors weren't forced into the structure, but the data taught them anyway.</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 262" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="38" x2="70" y2="205" stroke="#7c8593"/>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"/>
+<text x="70" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">transfer accuracy (ImageNet)</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">pretraining data size →</text>
+<text x="150" y="223" fill="#7c8593" font-size="10.5" text-anchor="middle">ImageNet · 1.3M</text>
+<text x="315" y="223" fill="#7c8593" font-size="10.5" text-anchor="middle">ImageNet-21k · 14M</text>
+<text x="470" y="240" fill="#7c8593" font-size="10.5" text-anchor="end">JFT-300M · 300M</text>
+<path d="M150,118 C220,106 315,98 470,92" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<path d="M150,158 C230,126 315,98 470,64" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<circle cx="150" cy="118" r="3.5" fill="#e8794b"/><circle cx="315" cy="98" r="3.5" fill="#e8794b"/><circle cx="470" cy="92" r="3.5" fill="#e8794b"/>
+<circle cx="150" cy="158" r="3.5" fill="#f0b429"/><circle cx="315" cy="98" r="3.5" fill="#f0b429"/><circle cx="470" cy="64" r="3.5" fill="#f0b429"/>
+<text x="210" y="172" fill="#e8794b" font-size="11.5">ResNet (BiT)</text>
+<text x="400" y="56" fill="#f0b429" font-size="11.5">ViT</text>
+<text x="150" y="86" fill="#7c8593" font-size="11" text-anchor="middle">small data: CNN priors win</text>
+<text x="440" y="130" fill="#e7ebf1" font-size="11.5" text-anchor="middle">big data: ViT overtakes</text>
+</svg>
+<figcaption>Fig 2 · The "priors for data" crossover (trend sketch, not exact values): with small data the prior-laden ResNet leads; around tens of millions of pretraining images they tie, and past hundreds of millions ViT pulls ahead.</figcaption>
+</figure>
+
+<h2>Key results</h2>
+<ul>
+<li>Pretrained on JFT-300M, <strong>ViT-H/14</strong> (632M parameters; "/14" means 14×14 patches) reached <strong>88.55% top-1 accuracy on ImageNet</strong>, beating the strongest CNN-line contenders of the day: BiT-L (a very large ResNet, 87.54%) and Noisy Student (EfficientNet, 88.5%); it also led on CIFAR-100 (94.55%) and VTAB, a suite of 19 low-data transfer tasks (77.63%).</li>
+<li>The sharper point is cost-effectiveness: <strong>ViT-L/16 spent roughly 0.68k TPUv3 core-days on pretraining and its result (87.76%) already beat BiT-L's, which took 9.9k core-days</strong> — an order of magnitude less compute, and more accurate.</li>
+<li>Pretrained on the <strong>public</strong> ImageNet-21k, ViT-L/16 still reached <strong>85.30%</strong> — a reproducible recipe for anyone without JFT.</li>
+<li>The honest flip side: pretrained only on "small" ImageNet-1k, ViT loses to comparable ResNets; the crossover sits around tens of millions of images — <strong>go big, or don't bother.</strong></li>
+</ul>
+
+<h2>Why it mattered</h2>
+<p><strong>First, architectural unification.</strong> Images and text became the same kind of thing — token sequences — feeding the same kind of model. CLIP paired a ViT with a text Transformer for image–text contrastive learning and opened the multimodal era; the vision encoders inside today's picture-reading chat models are almost all ViT-family.</p>
+<p><strong>Second, NLP's scaling playbook transferred to vision wholesale.</strong> MAE brought BERT's "fill in the blanks" to images (mask most patches and reconstruct them), the DINO line built self-supervised visual representations, SAM ("segment anything") uses a ViT-H image encoder, and generative backbones switched from U-Net to Transformers (DiT — the foundation of the Sora / Stable Diffusion 3 lineage).</p>
+<p><strong>Third, methodology.</strong> It turned "inductive bias vs data scale" from a philosophical slogan into a measurable experiment, and "less hand design, more data and compute" became the field's default direction thereafter.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Data hunger, and JFT-300M is private</strong>: ordinary labs could neither afford nor reproduce the original recipe. But DeiT (December 2020, Meta) promptly showed that with strong data augmentation + knowledge distillation, ViT trains well on ImageNet-1k alone — suggesting "300M images required" was partly just missing training tricks.</li>
+<li><strong>The quadratic cost didn't disappear — patches only hide it</strong>: raise the resolution and the patch count, and attention costs blow up again, hurting dense high-resolution tasks like detection and segmentation. Swin Transformer (2021) brought CNN-style priors back — local windows plus a hierarchy — to win those tasks. Somewhat ironic.</li>
+<li><strong>Did the architecture win, or did scale and recipe?</strong> ConvNeXt (2022) modernized the ResNet's training recipe and matched Swin, suggesting the Transformer architecture itself may not be strictly necessary; the debate is still open.</li>
+<li><strong>Coverage and an engineering scar</strong>: the original paper only did classification, and the learned position embeddings are tied to the training resolution — changing resolution requires an interpolation patch-up, which is not elegant.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: cut the image into 16×16 patches as "words" and feed a standard Transformer, unchanged; with enough pretraining data, carrying no visual priors turns out stronger.</p>
+<p>② The pain: vision was CNN-monopolized; earlier attention attempts either mixed in convolutions or ran slowly; per-pixel attention is ruled out by quadratic cost.</p>
+<p>③ Mechanism one: patch embeddings — <code>(224/16)² = 196</code> patches, each linearly projected to a vector, + position embeddings + a [CLS] token; sequence length drops from 50,000 to 196.</p>
+<p>④ Mechanism two: strip out the CNN's locality/translation/hierarchy priors and buy them back with large-scale pretraining — lose at 1.3M images, tie at 14M, overtake at 300M.</p>
+<p>⑤ Results: ViT-H/14 hits 88.55% on ImageNet, beating the strongest CNNs; ViT-L/16 overtakes BiT-L with roughly 1/15 the pretraining compute; the public-data recipe reaches 85.30%.</p>
+<p>⑥ The model grows its own habits — low layers mix local-looking and global-looking heads — so priors need not be welded in; data can teach them.</p>
+<p>⑦ Impact: one architecture for vision and language; CLIP / MAE / DINO / SAM / DiT all stand on it — the eyes of multimodal models.</p>
+<p>⑧ Limits: fails on small data (DeiT later fixed this with tricks); quadratic cost at high resolution (Swin reinvited the priors); ConvNeXt questions whether the architecture was even necessary.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full model configs and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
