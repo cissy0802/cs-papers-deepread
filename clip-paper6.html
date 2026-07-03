@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>CLIP：用自然语言学视觉 — IT 论文精读 Paper 6</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 6</p>
+<h1>CLIP：用自然语言当老师教机器看图</h1>
+<p class="sub">Radford 等 · OpenAI · ICML 2021</p>
+<p class="langbar"><a href="clip-paper6.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2021 年，OpenAI（后来做出 ChatGPT 的那家公司）发布了 <strong>CLIP</strong>：不再请人给图片打标签，而是从互联网上收来<strong>4 亿对「图片 + 它旁边的文字说明」</strong>，让机器自己学会「这张图和这句话说的是不是同一回事」。学成之后，它<strong>不用再训练</strong>就能认出成千上万种没专门教过的东西。今天你用文字生成图片（Stable Diffusion、DALL·E）、用一句话搜图，背后都有它。</p>
+
+<h2>先说旧世界的麻烦</h2>
+<p>在这之前，教机器认图像是办一所<strong>只考选择题的学校</strong>：先雇一大批人，给上百万张图一张张手工贴标签——「猫」「狗」「飞机」——机器再对着背。贵、慢不说，最要命的是<strong>学会一千种就只会这一千种</strong>：想让它多认一个「滑板」，就得重新收集图、重新标、重新训一轮。而且它认的只是编号，「猫」对它来说不过是第 281 号选项，跟「猫爱抓沙发」这些含义毫无关系。</p>
+
+<h2>那个点子</h2>
+<p>CLIP 的点子是：<strong>老师其实早就免费待在互联网上了</strong>。网上每张图片旁边几乎都有人写好的文字——图注、标题、配文。别再出选择题，直接玩一个<strong>连线配对游戏</strong>：一次发给机器一叠图片和一叠打乱的说明文字，让它把「哪张图配哪句话」连对。连错了就调整自己，连对为止。这个游戏不用人出题、题量近乎无限。</p>
+
+<h2>它是怎么「认得」没教过的东西的？</h2>
+<p>关键在于，机器为了玩好配对，练出了<strong>两个翻译官</strong>：一个把图片翻成一种内部的「意思坐标」，一个把句子也翻到<strong>同一套坐标</strong>里——说同一件事的图和话，会被翻到彼此挨得很近的位置，就像地图上两家紧邻的店。</p>
+<p>要认新东西时，你只需<strong>用文字报上候选名字</strong>：比如把「一张滑板的照片」「一张猫的照片」都交给文字翻译官，再把要认的图交给图片翻译官，<strong>看图落在哪句话的旁边</strong>——离谁近就是谁。因为「滑板」这个词的意思它在配对游戏里早就见识过，所以<strong>不用任何新训练</strong>，写句话就等于当场造出一个新的识别器。类别不再是固定的选项表，而是你随口说出的语言。</p>
+
+<h2>带来了什么</h2>
+<p>视觉从此接上了语言的水管。想生成「一只骑滑板的柯基」，机器得先懂这句话和什么样的图「意思相近」——CLIP 练出的这套共同坐标，正是后来 Stable Diffusion、DALL·E 这类文生图模型的地基；今天的多模态助手（能看图聊天的 AI）大多也用它的「图片翻译官」当眼睛。也得诚实说一句：它擅长认「是什么」，但<strong>数数、分辨极相近的车型这类细活儿至今仍不灵</strong>。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>与其雇人给图片打标签，不如让机器拿互联网上现成的 4 亿对「图 + 配文」玩连线配对，练出把图像和语言放进同一套「意思坐标」的本事——从此认新东西不用重新训练，写一句话就是一个识别器。这套坐标成了文生图和多模态 AI 的地基。</p>
+</div>
+
+<p class="switch-hint">想看配对游戏的结构图、真实数字和它输在哪？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>一句话</h2>
+<p class="lead">CLIP（Contrastive Language-Image Pre-training）用从互联网收集的 <strong>4 亿对图文数据</strong>，以<strong>对比学习</strong>同时训练一个图像编码器和一个文本编码器，把图像和文字嵌进<strong>同一个向量空间</strong>；训练完后只靠把类别名写成一句话，就能<strong>零样本（zero-shot）</strong>迁移到 30 多个视觉任务——不用 ImageNet 的 128 万张训练图中的任何一张，就追平了在其上全监督训练的 ResNet-50。它把视觉从「固定类别的分类器」带进「用语言即时定义任务」的时代，成为文生图与多模态大模型的地基。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>图像分类</strong>：给一张图选出它属于哪个类别（猫/狗/飞机……），是计算机视觉最基础的任务。</li>
+<li><strong>监督学习 / 标注</strong>：靠人工给每条数据配好「标准答案」（标签）来训练模型；标注百万级图片非常昂贵。</li>
+<li><strong>嵌入 / 向量（embedding）</strong>：把图片或句子变成一串数字（一个高维空间里的点），让「含义相近」体现为「位置相近」。Word2Vec（本站 Paper 4）就是给词做嵌入。</li>
+<li><strong>余弦相似度（cosine similarity）</strong>：衡量两个向量方向有多接近的分数，越大代表两者「意思越像」。</li>
+<li><strong>编码器（encoder）</strong>：把原始输入（图片/文字）压成嵌入向量的那部分网络。</li>
+<li><strong>ResNet / ViT</strong>：两种主流图像编码器——残差卷积网络（本站 Paper 2）和视觉 Transformer（本站 Paper 5）。CLIP 两种都训过。</li>
+<li><strong>Transformer</strong>：基于注意力的序列模型（本站 Paper 1），CLIP 用它编码文字。</li>
+<li><strong>零样本（zero-shot）</strong>：不给模型任何该任务的训练样本，直接考它。</li>
+<li><strong>线性探针（linear probe）</strong>：冻结预训练模型、只在它输出的特征上训一个最简单的线性分类器，用来衡量特征本身的质量。</li>
+<li><strong>预训练 → 微调（pre-train → fine-tune）</strong>：先在海量通用数据上学基础能力，再用少量任务数据做适配——GPT、BERT 让 NLP 靠它起飞。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者是 Alec Radford（GPT-1/GPT-2 的第一作者）、Jong Wook Kim 等，OpenAI 团队，发表于 ICML 2021。它上承两条线：NLP 里 GPT 证明的「网上生数据 + 大规模预训练」范式，和视觉里 VirTex、ConVIRT 等「用自然语言监督学图像」的小规模先驱（更早的 Li 等 2017 做过零样本，但 ImageNet 准确率只有 11.5%）；同期还有 Google 的 ALIGN 用 18 亿对更脏的数据验证同一思路。下启 DALL·E 2、Stable Diffusion、LLaVA 等几乎整个多模态时代，开源社区以 OpenCLIP + LAION 数据集复刻并延续了它。</p>
+
+<h2>问题与动机</h2>
+<p>2021 年的计算机视觉停在一个别扭的位置。NLP 那边，GPT 系列已经证明：<strong>拿互联网上近乎无限的生文本做预训练，模型能零样本干各种活</strong>。而视觉的主流仍是监督学习——在 ImageNet 这类人工标注数据集上训练。这有三个硬伤：</p>
+<ul>
+<li><strong>标注贵得离谱</strong>：ImageNet 动用了约 2.5 万名标注者处理 1400 万张图。每换一个任务，就得再来一轮。</li>
+<li><strong>类别封闭</strong>：在 1000 类上训出的模型就只会这 1000 类，「多认一个新类别」意味着收集数据重新训练。模型输出的只是类别编号，不带任何语义。</li>
+<li><strong>脆</strong>：在 ImageNet 上刷到很高分的模型，换一批分布稍不同的图（素描、卡通、换个角度拍）性能就崩——它学到的可能是应付这套考卷的技巧，而非通用的视觉概念。</li>
+</ul>
+<p>而互联网上躺着海量免费的监督信号：每张图旁边的<strong>自然语言描述</strong>。它比类别编号信息丰富得多（一句话里有物体、动作、关系、场景），也不需要雇人。问题只在于：此前用它的尝试规模太小、方法太低效，成绩上不了台面。CLIP 要回答的就是：<strong>把「语言监督 + 规模」推到底，视觉能不能复制 NLP 的奇迹？</strong></p>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>想法一：把监督信号换成互联网上的自然语言</h3>
+<p>CLIP 不用任何人工标注，而是自建了一个 4 亿对的图文数据集 <strong>WIT（WebImageText）</strong>：用约 50 万个查询词在网上搜集图片和它们的配文，每个词条大致平衡数量。监督信号从「第 281 号类别」变成了「一句人话」——<strong>类别有了语义，而且天然开放</strong>：世界上有多少种说法，就有多少种潜在的类别。</p>
+
+<h3>想法二：不逐词预测配文，改玩「配对判别」（对比学习）</h3>
+<p>直觉的做法是让模型看图<strong>生成</strong>配文（像图像版 GPT），但作者发现这条路训练效率极低——网上配文措辞千变万化，逐词猜「人到底会怎么写」太难，算力都耗在无关紧要的用词上。CLIP 换成一个宽松得多的目标：<strong>不用会写，只要会认</strong>。</p>
+<p>做法是：一个批次取 N 对图文，图像编码器把 N 张图各压成一个向量，文本编码器把 N 句话也压成向量，两两算相似度得到一张 <strong>N×N 的分数表</strong>；训练目标是让表格<strong>对角线</strong>上的 N 个「真配对」分数尽量高、其余 N²−N 个「错配」分数尽量低。关键一式是 <code>相似度 = cos(图向量, 文向量) / τ</code>——就是量两个向量方向多接近（τ 是可学的温度，控制分数拉开的锐度），再对行、列各做一次交叉熵（即「每张图在 N 句话里选对那句、每句话在 N 张图里选对那张」的选择题损失）。论文实测：<strong>同样的零样本成绩，对比目标比预测词袋的方案省 4 倍数据/算力</strong>——把目标从「复述」降级成「认亲」，正是规模能推上去的原因。</p>
+
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="120" y="26" fill="#b9c0ca" font-size="12" text-anchor="middle">N 句配文「狗在草地上跑」…</text>
+<rect x="45" y="36" width="150" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="120" y="56" fill="#e7ebf1" font-size="12" text-anchor="middle">文本编码器</text>
+<line x1="195" y1="51" x2="235" y2="51" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="285" y="55" fill="#f0b429" font-size="12" text-anchor="middle">T₁</text>
+<text x="365" y="55" fill="#f0b429" font-size="12" text-anchor="middle">T₂</text>
+<text x="445" y="55" fill="#f0b429" font-size="12" text-anchor="middle">T₃</text>
+<text x="60" y="120" fill="#b9c0ca" font-size="12" text-anchor="middle">N 张图片</text>
+<rect x="15" y="132" width="90" height="52" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="60" y="153" fill="#e7ebf1" font-size="12" text-anchor="middle">图像</text><text x="60" y="170" fill="#e7ebf1" font-size="12" text-anchor="middle">编码器</text>
+<line x1="105" y1="158" x2="145" y2="158" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="170" y="105" fill="#e8794b" font-size="12" text-anchor="middle">I₁</text>
+<text x="170" y="175" fill="#e8794b" font-size="12" text-anchor="middle">I₂</text>
+<text x="170" y="245" fill="#e8794b" font-size="12" text-anchor="middle">I₃</text>
+<g>
+<rect x="245" y="75" width="80" height="60" rx="5" fill="rgba(240,180,41,0.28)" stroke="#f0b429" stroke-width="1.6"/><text x="285" y="110" fill="#f5e3b0" font-size="12.5" text-anchor="middle" font-weight="700">I₁·T₁ ✓</text>
+<rect x="325" y="75" width="80" height="60" rx="5" fill="rgba(255,255,255,0.03)" stroke="#3a414b"/><text x="365" y="110" fill="#5a6069" font-size="12" text-anchor="middle">I₁·T₂</text>
+<rect x="405" y="75" width="80" height="60" rx="5" fill="rgba(255,255,255,0.03)" stroke="#3a414b"/><text x="445" y="110" fill="#5a6069" font-size="12" text-anchor="middle">I₁·T₃</text>
+<rect x="245" y="145" width="80" height="60" rx="5" fill="rgba(255,255,255,0.03)" stroke="#3a414b"/><text x="285" y="180" fill="#5a6069" font-size="12" text-anchor="middle">I₂·T₁</text>
+<rect x="325" y="145" width="80" height="60" rx="5" fill="rgba(240,180,41,0.28)" stroke="#f0b429" stroke-width="1.6"/><text x="365" y="180" fill="#f5e3b0" font-size="12.5" text-anchor="middle" font-weight="700">I₂·T₂ ✓</text>
+<rect x="405" y="145" width="80" height="60" rx="5" fill="rgba(255,255,255,0.03)" stroke="#3a414b"/><text x="445" y="180" fill="#5a6069" font-size="12" text-anchor="middle">I₂·T₃</text>
+<rect x="245" y="215" width="80" height="60" rx="5" fill="rgba(255,255,255,0.03)" stroke="#3a414b"/><text x="285" y="250" fill="#5a6069" font-size="12" text-anchor="middle">I₃·T₁</text>
+<rect x="325" y="215" width="80" height="60" rx="5" fill="rgba(255,255,255,0.03)" stroke="#3a414b"/><text x="365" y="250" fill="#5a6069" font-size="12" text-anchor="middle">I₃·T₂</text>
+<rect x="405" y="215" width="80" height="60" rx="5" fill="rgba(240,180,41,0.28)" stroke="#f0b429" stroke-width="1.6"/><text x="445" y="250" fill="#f5e3b0" font-size="12.5" text-anchor="middle" font-weight="700">I₃·T₃ ✓</text>
+</g>
+<text x="365" y="305" fill="#b9c0ca" font-size="12" text-anchor="middle">对角线（真配对）分数 ↑ · 其余 N²−N 个错配分数 ↓</text>
+</svg>
+<figcaption>图 1 · 对比预训练：一批 N 对图文各自编码后两两算相似度，训练让 N 个真配对（对角线）分高、错配分低——两个编码器被逼着把「说同一件事」的图和话放到同一位置。</figcaption>
+</figure>
+
+<h3>想法三：零样本分类器是「写」出来的</h3>
+<p>训练完成后，两个编码器就是一对进出同一语义空间的翻译官。要做任何分类任务：把每个候选类别名套进模板写成一句话（如 <code>a photo of a {label}</code>），全部过文本编码器得到一组「类别向量」；再把待认的图过图像编码器，<strong>哪个类别向量和图向量的余弦相似度最高，就判为哪类</strong>。类别表是临时用文字写出来的，所以任务可以随写随换——这就是「零样本」的机制本体。论文还发现<strong>提示工程（prompt engineering）</strong>有实效：因为配文里的词有歧义（crane 是吊车也是鹤），用「一张…的照片」这类模板消歧、再把 80 个不同模板的类别向量平均（集成），能把 ImageNet 零样本准确率提高近 5 个百分点。</p>
+
+<figure>
+<svg viewBox="0 0 560 290" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="88" y="30" fill="#b9c0ca" font-size="12" text-anchor="middle">候选类别：猫 / 狗 / 滑板</text>
+<line x1="88" y1="38" x2="88" y2="54" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="18" y="56" width="140" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="88" y="76" fill="#b9c0ca" font-size="11.5" text-anchor="middle">「一张{类别}的照片」</text>
+<line x1="158" y1="71" x2="196" y2="71" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="198" y="56" width="110" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="253" y="76" fill="#e7ebf1" font-size="12" text-anchor="middle">文本编码器</text>
+<line x1="308" y1="71" x2="346" y2="71" stroke="#7c8593" marker-end="url(#a2)"/>
+<text x="380" y="52" fill="#f0b429" font-size="12">T猫</text>
+<text x="380" y="76" fill="#f0b429" font-size="12">T狗</text>
+<text x="380" y="100" fill="#f0b429" font-size="12">T滑板</text>
+<text x="88" y="170" fill="#b9c0ca" font-size="12" text-anchor="middle">待认的图 🛹</text>
+<line x1="88" y1="178" x2="88" y2="194" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="18" y="196" width="140" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="88" y="216" fill="#e7ebf1" font-size="12" text-anchor="middle">图像编码器</text>
+<line x1="158" y1="211" x2="196" y2="211" stroke="#7c8593" marker-end="url(#a2)"/>
+<text x="216" y="216" fill="#e8794b" font-size="13" font-weight="700">I</text>
+<rect x="248" y="150" width="176" height="118" rx="8" fill="rgba(255,255,255,0.02)" stroke="#3a414b"/>
+<text x="336" y="174" fill="#b9c0ca" font-size="11.5" text-anchor="middle">逐个算 cos(I, T)</text>
+<text x="336" y="200" fill="#5a6069" font-size="12" text-anchor="middle">I·T猫 = 0.12</text>
+<text x="336" y="224" fill="#5a6069" font-size="12" text-anchor="middle">I·T狗 = 0.18</text>
+<text x="336" y="248" fill="#f5e3b0" font-size="12.5" text-anchor="middle" font-weight="700">I·T滑板 = 0.31 ✓</text>
+<line x1="424" y1="248" x2="470" y2="248" stroke="#f0b429" marker-end="url(#a2g)"/>
+<text x="500" y="252" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">「滑板」</text>
+</svg>
+<figcaption>图 2 · 零样本分类：把候选类别名写成句子编码成 T 向量，图编码成 I 向量，取余弦相似度最高者——分类器由文字临时「写」出，不需要任何训练。</figcaption>
+</figure>
+
+<h3>架构与规模</h3>
+<p>结构是干净的<strong>双塔</strong>：图像塔训了两个家族——改良版 ResNet 和 ViT（共 9 个规格，最强的是 <strong>ViT-L/14@336px</strong>）；文本塔是一个 6300 万参数、12 层的 Transformer。两塔各自输出的向量经一次线性投影进入共同空间。规模才是主角：4 亿对数据训 32 轮，最大的 ResNet 版本在 592 块 V100 GPU 上训了 18 天，ViT-L/14 用 256 块 V100 训了 12 天。<strong>方法本身几乎没有新部件——新的是把「语言监督 + 对比目标 + 规模」这三件事同时推满。</strong></p>
+
+<h2>关键结果</h2>
+<ul>
+<li><strong>零样本追平监督基线</strong>：最强的 CLIP 在 ImageNet 上零样本 top-1 达 <strong>76.2%</strong>——与全监督训练的 ResNet-50 相当，而它没见过 ImageNet 128 万张训练图中的任何一张。</li>
+<li><strong>面上赢多输少</strong>：在覆盖 27 个数据集的评测套件上，零样本 CLIP 在 <strong>16 个</strong>上胜过「ResNet-50 特征 + 线性探针」这一强基线；动作识别等语言描述占优的任务赢得尤其多。</li>
+<li><strong>特征质量顶尖</strong>：改用线性探针评测（拼特征本身），CLIP 全面超过当时最强的一批视觉模型（含 Noisy Student EfficientNet-L2）。</li>
+<li><strong>鲁棒性是最惊人的一条</strong>：在 ImageNet-V2 / Sketch / R / A、ObjectNet 等 7 个「同类别、换分布」的考卷上，普通 ImageNet 模型分数暴跌，而零样本 CLIP 把这一「有效鲁棒性差距」最多缩小了 <strong>75%</strong>——旁证它学到的更像通用视觉概念，而非应试技巧。</li>
+<li><strong>诚实的反例</strong>：MNIST 手写数字零样本只有 <strong>88%</strong>——比在原始像素上跑逻辑回归还差。网上没有的东西（手写体扫描图），它就是没学过；语言监督不是魔法，覆盖面由数据决定。</li>
+</ul>
+
+<h2>为什么重要 / 影响</h2>
+<p><strong>它把视觉带进了「预训练 + 提示」的时代</strong>，影响至少四路：① <strong>文生图的地基</strong>——Stable Diffusion 直接用 CLIP 文本编码器理解提示词，DALL·E 2 整个建立在 CLIP 的图文空间上；② <strong>多模态大模型的眼睛</strong>——LLaVA 等「看图聊天」模型的主流做法就是把 CLIP 视觉编码器接到大语言模型上；③ <strong>开放词汇的一切</strong>——检测、分割、检索、内容审核都从「固定类别」升级为「文字随写随认」，以图搜图/以文搜图成了一行余弦相似度；④ <strong>开源生态</strong>——OpenAI 只放了模型没放数据，社区以 OpenCLIP + LAION-400M/5B 复刻并反超，顺带催生了开源图文数据集这条产业线。方法论上，它和 GPT 一起坐实了一个信条：<strong>与其精雕任务专用模型，不如在海量弱监督数据上学一个通用接口。</strong></p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>细活儿不行</strong>：细粒度分类（车型、花种、机型）、数物体个数、估距离这类抽象/系统性任务上，零样本 CLIP 明显偏弱，个别任务接近瞎猜。</li>
+<li><strong>离 SOTA 还远</strong>：零样本平均水平也就追平 2016 年的 ResNet-50；作者自己估算，要靠纯零样本达到当时的最高水平，需要再堆约 <strong>1000 倍</strong>算力——不可行，方法上还得有新东西。</li>
+<li><strong>「词袋式」理解</strong>：后续研究（如 ARO 基准）发现 CLIP 分不清「马吃草」和「草吃马」——它更像把图文各自的<em>关键词集合</em>对上了，组合与关系理解薄弱。</li>
+<li><strong>好骗</strong>：OpenAI 自己的后续工作发现，在苹果上贴一张写着「iPod」的纸条，CLIP 就把它认成 iPod——读字能力反成攻击面（typographic attack）。</li>
+<li><strong>偏见与数据不透明</strong>：4 亿对未经清洗的网络数据把社会偏见一并学了进来（论文自带审计章节，发现了带种族倾向的错误关联）；且 WIT 数据集从未公开，复现只能靠社区自建。</li>
+<li><strong>损失函数并非终点</strong>：后续 SigLIP 把 softmax 对比损失换成 sigmoid、EVA-CLIP 等持续改良，都在原设计上明显再涨——原版远非最优。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：4 亿对网络图文 + 对比学习，把图像和语言训进同一个向量空间，类别用文字随写随认。</p>
+<p>② 痛点:监督视觉标注贵、类别封闭、换分布就崩；而互联网上有近乎免费的语言监督。</p>
+<p>③ 机制一（对比目标）：N×N 相似度表，真配对拉高、错配压低；「会认就行、不必会写」，比预测配文省 4 倍效率——这是规模推得上去的关键。</p>
+<p>④ 机制二（零样本）：分类器 = 把类别名写成句子过文本编码器；prompt 模板 + 80 模板集成再涨近 5 个点。</p>
+<p>⑤ 结果：零样本 ImageNet 76.2% 追平监督 ResNet-50；27 个数据集赢 16 个；分布偏移下鲁棒性差距最多缩小 75%；但 MNIST 只有 88%。</p>
+<p>⑥ 影响：Stable Diffusion / DALL·E 2 的文本理解、LLaVA 类模型的视觉编码器、开放词汇检测分割检索、OpenCLIP+LAION 开源生态。</p>
+<p>⑦ 局限：数数与细粒度差、组合理解像词袋、贴字条就被骗、网络数据偏见、纯零样本离 SOTA 还差约 1000 倍算力。</p>
+<p>⑧ 站远看：它是「规模 + 弱监督 + 通用接口」信条在视觉上的落地——视觉的 GPT 时刻。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整实验矩阵与 30 个数据集明细，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
