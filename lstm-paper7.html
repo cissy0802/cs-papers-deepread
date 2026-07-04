@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Long Short-Term Memory（LSTM）— IT 论文精读 Paper 7</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 7</p>
+<h1>Long Short-Term Memory（LSTM）</h1>
+<p class="sub">Hochreiter &amp; Schmidhuber · Neural Computation · 1997</p>
+<p class="langbar"><a href="lstm-paper7.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>在 ChatGPT 出现之前，你手机里「能听会译」的那些东西——语音助手、谷歌翻译、手写识别——背后多半躺着同一个 1997 年的发明：<strong>LSTM（长短期记忆网络）</strong>。这篇论文给 AI 装上了一个<strong>能记住很久以前的事</strong>的记忆装置，此后统治「按顺序处理信息」的 AI 整整二十年。</p>
+
+<h2>先说个怪事</h2>
+<p>句子、语音都得按顺序一个字一个字读。当时的「记忆网络」像玩<strong>传话游戏</strong>：每读一个新字，就把之前记住的一切拿出来揉一遍、再把新字混进去。揉个十几轮，开头说了什么早就面目全非。更糟的是<strong>教也教不会</strong>：AI 学习靠「答错之后往回追责」，这股追责的声音往回传时同样一站站减弱，传不了几十步就没声了——所以它永远学不明白「结尾这个错，原因出在开头」这种<strong>远距离的账</strong>。</p>
+
+<h2>那个点子</h2>
+<p>LSTM 的点子是：<strong>别让记忆跟着每一步被揉</strong>。给网络配一条<strong>受保护的记忆传送带</strong>：放上去的东西默认<strong>原样往前送</strong>，一步都不揉、一站都不改，走多远都还是原来那句话。</p>
+
+<h2>门卫怎么把关</h2>
+<p>光有传送带还不行——什么都往上堆，很快就成垃圾场。所以每个记忆格子配了两道<strong>门</strong>，门卫由网络自己学出来：<strong>写门卫</strong>决定「眼前这条信息值不值得记」，<strong>读门卫</strong>决定「现在要不要把存货拿出来用」。平时两道门关着，存货安安静静原样前行；关键时刻门才打开，该记的记、该用的用。妙处还有一层：因为传送带不揉不搓，那股「往回追责」的纠错声音也能<strong>顺着它畅通地传回很久以前</strong>——远距离的账终于算得清了。</p>
+
+<h2>带来了什么</h2>
+<p>此后二十年，凡是「按顺序来」的活——听懂一句话、翻译一段文、认一行手写字——最好的系统里几乎都有 LSTM：谷歌语音搜索、谷歌翻译、Siri 都用过它。也说句诚实的：它必须<strong>一步一步按顺序算</strong>、快不起来，记性也远非无限——2017 年 Transformer 靠「所有词直接互相对视」接了它的班。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>给神经网络一条不揉不搓、原样前送的「记忆传送带」，再配上自己学会开关的写门和读门——远处的信息存得住、纠错信号传得回，AI 第一次真正记住了很久以前的事，并统治序列任务二十年。</p>
+</div>
+
+<p class="switch-hint">想看记忆单元的结构图、公式和「跨 1000 步」的实验？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>一句话</h2>
+<p class="lead">LSTM 在循环神经网络里造了一个带「门」的<strong>记忆单元</strong>：核心是一条自我连接、<strong>权重恒为 1</strong> 的「恒定误差传送带」，让记忆内容与训练时的纠错信号都能<strong>跨上千个时间步不衰减地流动</strong>；再用可学习的<strong>输入门 / 输出门</strong>决定何时写入、何时读出。它从根上治了 RNN 的<strong>梯度消失</strong>，让网络第一次学会横跨 1000 步以上的远距离依赖，此后二十年统治语音、翻译等序列任务。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>序列数据</strong>：有先后顺序的数据——句子里的词、语音里的帧、股价的逐日走势。处理它必须按顺序读，且「后面」常常依赖「很前面」。</li>
+<li><strong>循环神经网络（RNN，recurrent neural network）</strong>：专为序列设计的神经网络：每读一步输入，就把「到目前为止的记忆」更新一次，再带着这份记忆读下一步。</li>
+<li><strong>隐藏状态（hidden state）</strong>：RNN 随身携带的那份「记忆」——一组数字，每个时间步都被网络重算一遍。</li>
+<li><strong>时间步（time step）</strong>：序列里的一格：读到第几个词，就是第几个时间步。</li>
+<li><strong>权重（weight）</strong>：神经网络里可调的旋钮，训练就是不断微调这些数。</li>
+<li><strong>反向传播（backpropagation）</strong>：训练算法：算出输出错了多少，把这份「纠错信号」沿网络逐层往回传，告诉每个权重该怎么调。用在 RNN 上要沿时间一路传回去（BPTT）。</li>
+<li><strong>梯度（gradient）/ 梯度消失（vanishing gradient）</strong>：梯度就是那股纠错信号的大小；「消失」指它往回传时一步步缩小、几乎归零，前面的步骤就再也学不到东西。</li>
+<li><strong>sigmoid 函数</strong>：把任意数压到 0 与 1 之间的函数——正好可以当「阀门开度」用：0 全关、1 全开。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者 Sepp Hochreiter 与 Jürgen Schmidhuber，论文发表在期刊 Neural Computation（1997）；对问题的诊断源自 Hochreiter 1991 年的学位论文——最早严格分析 RNN 梯度为何消失/爆炸的工作之一。它上承 1980 年代的 RNN 与反向传播，下启 seq2seq（2014）与 Bahdanau 注意力（2014）——后者三年后长成 Transformer（2017）；在那之前，序列建模的王座一直是它的。</p>
+
+<h2>问题与动机</h2>
+<p>RNN 的设想很美：把历史压进隐藏状态，理论上想记多久记多久。可实践里它<strong>记性极差</strong>。原因在训练：纠错信号沿时间往回传时，<strong>每退一个时间步，都要乘一次「权重 × 激活函数斜率」</strong>。这个乘数几乎不可能恰好是 1——小于 1，信号就<strong>指数级缩小</strong>（梯度消失）；大于 1，就<strong>指数级放大</strong>（梯度爆炸，训练直接发散）。乘上几十次之后，要么归零要么上天。</p>
+<p>后果是：普通 RNN 实际只能学会<strong>相隔十来步以内</strong>的依赖。而真实任务满地都是远距离账——句首的主语决定句尾动词的形态、段落开头的人名决定结尾的「他」指谁。当时的种种补救（缩短回传、特制时间延迟结构、分层压缩序列等）要么治标、要么只对特定任务有效。<strong>这是结构病，得从结构上治。</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 232" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="f1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="f1r" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<text x="280" y="34" fill="#e7ebf1" font-size="12.5" text-anchor="middle">隐藏状态一路向前传，每一步都被重算一遍 →</text>
+<rect x="45" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="80" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">第 1 步</text>
+<rect x="150" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="185" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">第 2 步</text>
+<rect x="255" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="290" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">第 3 步</text>
+<rect x="360" y="62" width="70" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="395" y="84" fill="#b9c0ca" font-size="12" text-anchor="middle">……</text>
+<rect x="465" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="500" y="84" fill="#e7ebf1" font-size="11.5" text-anchor="middle">第 1000 步</text>
+<line x1="115" y1="79" x2="147" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="220" y1="79" x2="252" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="325" y1="79" x2="357" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="430" y1="79" x2="462" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="465" y1="130" x2="433" y2="130" stroke="#e8794b" stroke-width="4.2" marker-end="url(#f1r)"/>
+<line x1="360" y1="130" x2="328" y2="130" stroke="#e8794b" stroke-width="2.6" opacity="0.8" marker-end="url(#f1r)"/>
+<line x1="255" y1="130" x2="223" y2="130" stroke="#e8794b" stroke-width="1.5" opacity="0.6" marker-end="url(#f1r)"/>
+<line x1="150" y1="130" x2="118" y2="130" stroke="#e8794b" stroke-width="0.8" opacity="0.35" marker-end="url(#f1r)"/>
+<text x="500" y="152" fill="#e8794b" font-size="11.5" text-anchor="end">← 纠错信号往回传</text>
+<text x="280" y="186" fill="#e7ebf1" font-size="12.5" text-anchor="middle">每退一步就乘一次「权重 × 斜率」→ 指数级缩小</text>
+<text x="280" y="210" fill="#7c8593" font-size="11.5" text-anchor="middle">几十步后 ≈ 0：早年的原因再也学不到（梯度消失）</text>
+</svg>
+<figcaption>图 1 · RNN 的病根：纠错信号沿时间回传时每步乘一次缩放，指数级消失（或爆炸），远距离依赖学不会。</figcaption>
+</figure>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>想法一：恒定误差传送带（CEC）——让乘数恒等于 1</h3>
+<p>既然病根是「每回传一步就乘一次、乘数又不是 1」，那就<strong>造一个乘数恒为 1 的通道</strong>。做法：设一个<strong>线性</strong>单元（不过激活函数、不揉不搓），给它接一条<strong>权重固定为 1 的自环</strong>——这一步的状态默认原样抄给下一步：<code>c(t) = c(t−1) + 新写入</code>。纠错信号顺着这条自环往回传时，每步乘的都是 1，<strong>跨一千步也不缩不爆</strong>。论文管它叫「恒定误差传送带」（constant error carousel，CEC）——这是全文真正的心脏。</p>
+<p>你可能觉得眼熟：<strong>ResNet 的跳跃连接、Transformer 的残差连接，走的是同一条思想路线</strong>——「保持原样」不该靠学习学出来，该由结构免费提供。LSTM 是这条路线在时间维度上的先声。</p>
+
+<h3>想法二：乘法门——解决「写读冲突」</h3>
+<p>裸的传送带不能用。同一个入口权重既要负责「关键时刻把信息写进去」，又要负责「无关时刻把噪声挡在外面」——两个目标<strong>互相打架</strong>（论文称输入权重冲突），出口同理：存着的内容不该在每一步都往外漏。解法是把「存什么」和「何时读写」<strong>拆成两件事</strong>，交给两扇<strong>乘法门（gate）</strong>：</p>
+<ul>
+<li><strong>输入门（input gate）</strong>：算一个 0 到 1 之间的「开度」，乘在写入量上——0 就是「这步别写」，1 就是「照单全收」。</li>
+<li><strong>输出门（output gate）</strong>：同样的开度乘在读出量上——决定「现在要不要把存货拿出来给网络其它部分用」。</li>
+</ul>
+<p>门不是人手调的：每扇门自己就是个小神经元，<strong>看着当前输入和上一步的状态，学会何时开、何时关</strong>，如 <code>i(t) = σ(W·x(t) + U·h(t−1))</code>——σ 是 sigmoid，输出天然落在 0 与 1 之间，正好当阀门。于是无关时刻两门紧闭、状态原样滑过；关键时刻门开，读写才发生。<strong>CEC 负责「守得住」，门负责「管得住」</strong>——记忆单元（memory cell）= CEC + 两扇门。</p>
+
+<figure>
+<svg viewBox="0 0 560 372" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="f2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="f2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="185" y="352" fill="#e7ebf1" font-size="13" text-anchor="middle">输入 x(t)：本步的新信息</text>
+<line x1="185" y1="338" x2="185" y2="320" stroke="#7c8593" marker-end="url(#f2)"/>
+<rect x="105" y="286" width="160" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="185" y="307" fill="#e7ebf1" font-size="12" text-anchor="middle">候选写入 g(·)</text>
+<line x1="185" y1="286" x2="185" y2="258" stroke="#7c8593" marker-end="url(#f2)"/>
+<circle cx="185" cy="240" r="15" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="185" y="245" fill="#e7ebf1" font-size="14" text-anchor="middle">×</text>
+<text x="214" y="237" fill="#f0b429" font-size="11.5">输入门 0–1：值得写吗？</text>
+<text x="214" y="253" fill="#7c8593" font-size="10.5">关着 → 噪声进不来</text>
+<line x1="185" y1="225" x2="185" y2="196" stroke="#7c8593" marker-end="url(#f2)"/>
+<circle cx="185" cy="160" r="32" fill="rgba(240,180,41,0.08)" stroke="#f0b429" stroke-width="1.6"/>
+<text x="185" y="157" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">细胞状态</text>
+<text x="185" y="173" fill="#f0b429" font-size="12" text-anchor="middle">c</text>
+<path d="M215,146 C300,104 300,216 215,174" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#f2g)"/>
+<text x="292" y="118" fill="#f0b429" font-size="12" font-weight="700">自环权重 ≡ 1</text>
+<text x="292" y="134" fill="#7c8593" font-size="10.5">恒定误差传送带 CEC：</text>
+<text x="292" y="148" fill="#7c8593" font-size="10.5">状态默认原样带到下一步，</text>
+<text x="292" y="162" fill="#7c8593" font-size="10.5">纠错信号回传不衰减</text>
+<circle cx="264" cy="188" r="11" fill="rgba(15,18,22,0.9)" stroke="#e8794b" stroke-dasharray="3 3"/><text x="264" y="192" fill="#e8794b" font-size="11" text-anchor="middle">×</text>
+<text x="292" y="184" fill="#e8794b" font-size="10.5">遗忘门（2000 年后补上，</text>
+<text x="292" y="198" fill="#e8794b" font-size="10.5">原版没有：只加不减）</text>
+<line x1="185" y1="128" x2="185" y2="99" stroke="#7c8593" marker-end="url(#f2)"/>
+<circle cx="185" cy="81" r="15" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="185" y="86" fill="#e7ebf1" font-size="14" text-anchor="middle">×</text>
+<text x="214" y="78" fill="#f0b429" font-size="11.5">输出门 0–1：现在要用吗？</text>
+<text x="214" y="94" fill="#7c8593" font-size="10.5">关着 → 存货不外漏</text>
+<line x1="185" y1="66" x2="185" y2="44" stroke="#7c8593" marker-end="url(#f2)"/>
+<text x="185" y="28" fill="#e7ebf1" font-size="13" text-anchor="middle">输出 h(t)：交给网络其余部分</text>
+</svg>
+<figcaption>图 2 · LSTM 记忆单元：中间是权重恒为 1 的自环（CEC），输入门管「写」、输出门管「读」；虚线的遗忘门是 2000 年后加的。</figcaption>
+</figure>
+
+<h3>公式与那扇缺席的门</h3>
+<p>原版的状态更新写成 <code>c(t) = c(t−1) + i(t)·g(t)</code>——上一步状态原样保留，再加上「输入门开度 × 候选写入」；输出是 <code>h(t) = o(t)·h(c(t))</code>，即「输出门开度 × 压缩后的状态」。注意：<strong>1997 年的原版没有遗忘门（forget gate）</strong>——状态只加不减，在连续不断的输入流里会越积越大。Gers 等人 2000 年补上遗忘门 f，更新式变成今天的标准形态 <code>c(t) = f(t)·c(t−1) + i(t)·g(t)</code>：网络还能学会「该翻篇时把旧账清掉」。<strong>今天大家说的 LSTM，都是这个带遗忘门的版本。</strong></p>
+<p>训练上，论文配了一套截断的梯度算法：在空间和时间上都是局部的，<strong>每个权重每个时间步只要 O(1) 的计算</strong>——1997 年的算力也养得起。</p>
+
+<h2>关键结果</h2>
+<p>论文的实验全部是<strong>精心设计的人工任务</strong>——这点它自己坦白，但对照做得扎实：</p>
+<ul>
+<li><strong>嵌入式 Reber 文法</strong>：经典 RNN 考题，要求记住序列开头的一个符号、直到结尾才用上。当时的标准算法（RTRL、BPTT 等）时常失败，<strong>LSTM 全部解出且学得更快</strong>。</li>
+<li><strong>长时滞任务</strong>：把「线索」与「用到线索的时刻」之间的距离拉到<strong>最小 1000 步</strong>（含带噪版本），LSTM 照样学会；对照的 BPTT、RTRL 在几十步的间隔上就已全军覆没。</li>
+<li><strong>加法问题</strong>：在一条长数字流里记住两个被标记的数、最后输出它们的和——考「精确存数 + 跨长距离保持 + 抗干扰」，LSTM 同样解出。</li>
+</ul>
+<p>诚实说：原文没有任何真实世界基准，「统治现实应用」是十几年后的事——但「跨 1000 步时滞可学」这一点，当时没有任何别的通用方法做得到。</p>
+
+<h2>为什么重要 / 影响</h2>
+<p>这是一颗在「神经网络寒冬」里埋下、十年后才爆发的种子。2009 年 Graves 等用 LSTM 赢下手写识别国际竞赛；此后几年语音识别全面转向它；<strong>2014 年 seq2seq 用多层 LSTM 做出端到端机器翻译；2015 年谷歌语音搜索上线 LSTM 声学模型；2016 年谷歌翻译 GNMT 的编码器解码器都是深层 LSTM</strong>——智能手机「能听会译」的那些年，底下几乎都是它。它也因此成为历史上被引用最多的神经网络论文之一。</p>
+<p>思想遗产有两条今天还活着：其一，<strong>门控</strong>成了通用武器——GRU 是它的精简版，highway network 把门控用到深度方向；其二，<strong>「给信息留一条乘数为 1、不衰减的通路」</strong>这一原则，在 ResNet 与 Transformer 的残差连接里延续至今。此外，Hochreiter 对梯度消失的严格分析本身，就是深度学习理论的基石文献。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>原版不完整</strong>：没有遗忘门，状态只加不减，在连续任务里会无界增长；2000 年 Gers 等补上遗忘门后才算定型——今天通行的「LSTM」其实是改良版。</li>
+<li><strong>记性并非无限</strong>：人工任务能跨千步，真实任务里的有效依赖长度通常只有几百步量级；要求精确回忆久远细节的任务依然吃力。</li>
+<li><strong>本质串行</strong>：每一步必须等上一步算完，无法沿时间并行。GPU/TPU 时代这意味着训练又慢又贵——这是它被 Transformer（可全并行）取代的直接原因之一。</li>
+<li><strong>结构偏复杂</strong>：三门一状态、参数多。Cho 等 2014 年提出只有两扇门的 GRU，很多任务上打平；Greff 等 2017 年系统比较八种 LSTM 变体（LSTM: A Search Space Odyssey），发现<strong>没有谁明显胜过带遗忘门的原味版</strong>，而最关键的部件正是遗忘门与输出激活。</li>
+<li><strong>实验说服力滞后</strong>：原文全是合成任务，其价值直到多年后的大规模真实应用才被盖章。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 病根：RNN 的纠错信号沿时间回传时每步乘一次「权重 × 斜率」，指数级消失或爆炸，学不会相隔十几步以上的依赖（Hochreiter 1991 的诊断）。</p>
+<p>② 核心 idea：恒定误差传送带（CEC）——权重固定为 1 的线性自环，记忆与纠错信号沿它流动，乘数恒为 1、跨千步不衰减。</p>
+<p>③ 第二个 idea：乘法门。输入门管写、输出门管读，解决「同一权重既要写入又要挡噪声」的冲突；门是 0–1 开度、由网络自己学。</p>
+<p>④ 公式：原版 <code>c(t) = c(t−1) + i·g</code>；Gers 等 2000 年补遗忘门后成 <code>c(t) = f·c(t−1) + i·g</code>——今天的标准 LSTM。</p>
+<p>⑤ 结果：人工任务上跨 1000 步时滞照样学会，BPTT/RTRL 几十步就失败；但原文没有真实世界基准。</p>
+<p>⑥ 影响：统治序列建模二十年——手写识别、语音识别、seq2seq 翻译、谷歌语音搜索与 GNMT 全在其上。</p>
+<p>⑦ 思想遗产：门控（GRU、highway network）与「乘数为 1 的不衰减通路」（残差连接）活到今天。</p>
+<p>⑧ 局限：原版缺遗忘门；有效记忆有限；本质串行难并行、训练贵——2017 年被可全并行的 Transformer 接班。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整推导与全部实验，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

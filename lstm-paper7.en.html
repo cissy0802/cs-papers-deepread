@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Long Short-Term Memory (LSTM) — CS Papers Deep-Read Paper 7</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 7</p>
+<h1>Long Short-Term Memory (LSTM)</h1>
+<p class="sub">Hochreiter &amp; Schmidhuber · Neural Computation · 1997</p>
+<p class="langbar"><a href="lstm-paper7.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>Before ChatGPT, the things in your phone that could listen and translate — voice assistants, Google Translate, handwriting recognition — mostly had the same 1997 invention inside: <strong>LSTM (Long Short-Term Memory)</strong>. This paper gave AI a memory device that can <strong>remember things from long ago</strong>, and it ruled "process things in order" AI for a full twenty years.</p>
+
+<h2>First, a puzzle</h2>
+<p>Sentences and speech must be read in order, one piece at a time. The "memory networks" of the day played a <strong>game of telephone</strong>: on each new word, they took everything remembered so far, kneaded it all over again, and mixed the new word in. After a dozen rounds of kneading, whatever was said at the start is unrecognizable. Worse, <strong>you couldn't even teach them</strong>: AI learns by "tracing blame backward after a mistake," and that blame signal also fades station by station as it travels back — gone after a few dozen steps. So the network could never learn <strong>long-distance accounting</strong> like "the mistake at the end was caused by something at the beginning."</p>
+
+<h2>The idea</h2>
+<p>LSTM's idea: <strong>stop letting memory get kneaded at every step</strong>. Give the network a <strong>protected memory conveyor belt</strong>: whatever is placed on it is <strong>carried forward exactly as is</strong> — never kneaded, never rewritten — no matter how far it travels.</p>
+
+<h2>How the gatekeepers work</h2>
+<p>A conveyor alone isn't enough — dump everything onto it and it becomes a junkyard. So each memory slot gets two <strong>gates</strong>, and the gatekeepers are learned by the network itself: the <strong>write gatekeeper</strong> decides "is this piece of information worth recording?", and the <strong>read gatekeeper</strong> decides "should the stored stuff be taken out and used right now?" Most of the time both gates stay shut and the contents ride along untouched; only at the right moments do the gates open to write or read. There's a second payoff: because the belt never kneads anything, the backward "blame" signal can also <strong>travel smoothly all the way back to long ago</strong> — long-distance accounting finally works.</p>
+
+<h2>What it brought</h2>
+<p>For the next twenty years, almost every best-in-class system for "one step at a time" work — understanding speech, translating text, reading handwriting — had LSTM inside: Google voice search, Google Translate, and Siri all used it. One honest note: it must <strong>compute strictly step by step</strong>, so it's slow, and its memory is far from unlimited — in 2017 the Transformer, where all words look at each other directly, took over.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Give a neural network a memory conveyor belt that carries things forward untouched, plus a write gate and a read gate that learn when to open — distant information survives, the correction signal travels back, and AI could truly remember things from long ago for the first time — ruling sequence tasks for twenty years.</p>
+</div>
+
+<p class="switch-hint">Want the memory-cell diagram, the formulas, and the 1000-step experiments? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">LSTM builds a gated <strong>memory cell</strong> into recurrent networks: at its core is a self-connected loop with <strong>weight fixed at 1</strong> — the "constant error carousel" — letting both memories and training error signals <strong>flow across a thousand-plus time steps without decay</strong>, while learned <strong>input and output gates</strong> decide when to write and when to read. It cured the RNN's <strong>vanishing gradient</strong> at the root, let networks learn dependencies spanning 1000+ steps for the first time, and ruled speech, translation, and other sequence tasks for the next twenty years.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Sequence data</strong>: data with an order — words in a sentence, frames of audio, daily stock prices. It must be read in order, and "later" often depends on "much earlier."</li>
+<li><strong>RNN (recurrent neural network)</strong>: a network built for sequences: at each step it updates its "memory so far," then carries that memory into the next step.</li>
+<li><strong>Hidden state</strong>: the RNN's carried "memory" — a set of numbers recomputed by the network at every time step.</li>
+<li><strong>Time step</strong>: one slot of the sequence — reading the k-th word means being at time step k.</li>
+<li><strong>Weight</strong>: an adjustable knob in a neural network; training means nudging these numbers.</li>
+<li><strong>Backpropagation</strong>: the training algorithm: compute how wrong the output is, then pass that "correction signal" backward through the network to tell each weight how to adjust. In an RNN it must travel back through time (BPTT).</li>
+<li><strong>Gradient / vanishing gradient</strong>: the gradient is the size of that correction signal; "vanishing" means it shrinks step by step going backward until it's nearly zero, so early steps never learn.</li>
+<li><strong>Sigmoid</strong>: a function that squashes any number into the range 0 to 1 — perfect as a "valve opening": 0 fully closed, 1 fully open.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Sepp Hochreiter and Jürgen Schmidhuber; the paper appeared in the journal Neural Computation (1997). The diagnosis of the problem comes from Hochreiter's 1991 thesis — among the first rigorous analyses of why RNN gradients vanish or explode. It inherits the RNNs and backpropagation of the 1980s, and leads to seq2seq (2014) and Bahdanau attention (2014) — which three years later grew into the Transformer (2017). Until then, the throne of sequence modeling was LSTM's.</p>
+
+<h2>The problem and the motivation</h2>
+<p>The RNN vision is beautiful: compress history into a hidden state and, in principle, remember as long as you like. In practice its memory is <strong>terrible</strong>. The reason lies in training: as the correction signal travels backward through time, <strong>each step back multiplies it once by "weight × activation slope."</strong> That multiplier is almost never exactly 1 — below 1 the signal <strong>shrinks exponentially</strong> (vanishing gradient); above 1 it <strong>blows up exponentially</strong> (exploding gradient, training diverges). After a few dozen multiplications, it's either zero or infinity.</p>
+<p>The consequence: a plain RNN can only learn dependencies about <strong>ten-odd steps apart</strong>. Yet real tasks are full of long-distance accounting — the subject at the start of a sentence dictates the verb form at the end; a name in the first paragraph decides who "he" means in the last. The era's remedies (truncating the backward pass, hand-built time-delay structures, hierarchical sequence compression) were either band-aids or task-specific. <strong>This is a structural disease, and it needed a structural cure.</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 232" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="f1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="f1r" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<text x="280" y="34" fill="#e7ebf1" font-size="12.5" text-anchor="middle">hidden state flows forward, recomputed at every step →</text>
+<rect x="45" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="80" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">step 1</text>
+<rect x="150" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="185" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">step 2</text>
+<rect x="255" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="290" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">step 3</text>
+<rect x="360" y="62" width="70" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="395" y="84" fill="#b9c0ca" font-size="12" text-anchor="middle">…</text>
+<rect x="465" y="62" width="70" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="500" y="84" fill="#e7ebf1" font-size="11.5" text-anchor="middle">step 1000</text>
+<line x1="115" y1="79" x2="147" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="220" y1="79" x2="252" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="325" y1="79" x2="357" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="430" y1="79" x2="462" y2="79" stroke="#7c8593" marker-end="url(#f1)"/>
+<line x1="465" y1="130" x2="433" y2="130" stroke="#e8794b" stroke-width="4.2" marker-end="url(#f1r)"/>
+<line x1="360" y1="130" x2="328" y2="130" stroke="#e8794b" stroke-width="2.6" opacity="0.8" marker-end="url(#f1r)"/>
+<line x1="255" y1="130" x2="223" y2="130" stroke="#e8794b" stroke-width="1.5" opacity="0.6" marker-end="url(#f1r)"/>
+<line x1="150" y1="130" x2="118" y2="130" stroke="#e8794b" stroke-width="0.8" opacity="0.35" marker-end="url(#f1r)"/>
+<text x="500" y="152" fill="#e8794b" font-size="11.5" text-anchor="end">← correction signal travels back</text>
+<text x="280" y="186" fill="#e7ebf1" font-size="12.5" text-anchor="middle">each step back multiplies by "weight × slope" → shrinks exponentially</text>
+<text x="280" y="210" fill="#7c8593" font-size="11.5" text-anchor="middle">≈ 0 after a few dozen steps: early causes can never be learned (vanishing gradient)</text>
+</svg>
+<figcaption>Fig 1 · The RNN's disease: the correction signal is rescaled at every step back through time, vanishing (or exploding) exponentially — long-range dependencies can't be learned.</figcaption>
+</figure>
+
+<h2>The core idea</h2>
+
+<h3>Idea one: the constant error carousel (CEC) — make the multiplier exactly 1</h3>
+<p>If the disease is "one multiplication per step back, and the multiplier isn't 1," then <strong>build a channel whose multiplier is always 1</strong>. The construction: take a <strong>linear</strong> unit (no squashing, no kneading) and give it a <strong>self-loop with the weight fixed at 1</strong> — by default, this step's state is copied to the next step unchanged: <code>c(t) = c(t−1) + new write</code>. When the error signal travels backward along this loop, every step multiplies by exactly 1, so it <strong>crosses a thousand steps without shrinking or exploding</strong>. The paper calls it the <em>constant error carousel</em> (CEC) — the true heart of the whole work.</p>
+<p>It may look familiar: <strong>ResNet's skip connection and the Transformer's residual connection walk the same line of thought</strong> — "keep it as is" shouldn't have to be learned; the structure should provide it for free. LSTM is that principle's forerunner, applied along the time axis.</p>
+
+<h3>Idea two: multiplicative gates — resolving the write/read conflict</h3>
+<p>A naked carousel is unusable. The same incoming weight would have to both "write the information in at the key moment" and "block irrelevant noise the rest of the time" — two goals <strong>fighting each other</strong> (the paper's input weight conflict); the outgoing side has the same problem: stored content shouldn't leak out at every step. The fix is to <strong>separate "what to store" from "when to write and read,"</strong> handled by two <strong>multiplicative gates</strong>:</p>
+<ul>
+<li><strong>Input gate</strong>: computes an "opening" between 0 and 1, multiplied onto the amount written — 0 means "don't write this step," 1 means "take it all."</li>
+<li><strong>Output gate</strong>: the same kind of opening multiplied onto what is read out — deciding "should the stored content be handed to the rest of the network right now?"</li>
+</ul>
+<p>Gates aren't hand-tuned: each gate is itself a small neuron that <strong>looks at the current input and the previous state and learns when to open and close</strong>, e.g. <code>i(t) = σ(W·x(t) + U·h(t−1))</code> — σ is the sigmoid, whose output naturally lands between 0 and 1, perfect as a valve. So at irrelevant moments both gates stay shut and the state glides through unchanged; at key moments they open and reading or writing happens. <strong>The CEC keeps memories safe; the gates keep them managed</strong> — a memory cell = CEC + two gates.</p>
+
+<figure>
+<svg viewBox="0 0 560 372" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="f2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="f2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="185" y="352" fill="#e7ebf1" font-size="13" text-anchor="middle">input x(t): this step's new information</text>
+<line x1="185" y1="338" x2="185" y2="320" stroke="#7c8593" marker-end="url(#f2)"/>
+<rect x="105" y="286" width="160" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="185" y="307" fill="#e7ebf1" font-size="12" text-anchor="middle">candidate write g(·)</text>
+<line x1="185" y1="286" x2="185" y2="258" stroke="#7c8593" marker-end="url(#f2)"/>
+<circle cx="185" cy="240" r="15" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="185" y="245" fill="#e7ebf1" font-size="14" text-anchor="middle">×</text>
+<text x="214" y="237" fill="#f0b429" font-size="11.5">input gate 0–1: worth writing?</text>
+<text x="214" y="253" fill="#7c8593" font-size="10.5">closed → noise stays out</text>
+<line x1="185" y1="225" x2="185" y2="196" stroke="#7c8593" marker-end="url(#f2)"/>
+<circle cx="185" cy="160" r="32" fill="rgba(240,180,41,0.08)" stroke="#f0b429" stroke-width="1.6"/>
+<text x="185" y="157" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">cell state</text>
+<text x="185" y="173" fill="#f0b429" font-size="12" text-anchor="middle">c</text>
+<path d="M215,146 C300,104 300,216 215,174" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#f2g)"/>
+<text x="292" y="118" fill="#f0b429" font-size="12" font-weight="700">self-loop weight ≡ 1</text>
+<text x="292" y="134" fill="#7c8593" font-size="10.5">constant error carousel (CEC):</text>
+<text x="292" y="148" fill="#7c8593" font-size="10.5">state rides to the next step as is;</text>
+<text x="292" y="162" fill="#7c8593" font-size="10.5">error flows back without decay</text>
+<circle cx="264" cy="188" r="11" fill="rgba(15,18,22,0.9)" stroke="#e8794b" stroke-dasharray="3 3"/><text x="264" y="192" fill="#e8794b" font-size="11" text-anchor="middle">×</text>
+<text x="292" y="184" fill="#e8794b" font-size="10.5">forget gate (added in 2000 —</text>
+<text x="292" y="198" fill="#e8794b" font-size="10.5">the original only adds, never clears)</text>
+<line x1="185" y1="128" x2="185" y2="99" stroke="#7c8593" marker-end="url(#f2)"/>
+<circle cx="185" cy="81" r="15" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="185" y="86" fill="#e7ebf1" font-size="14" text-anchor="middle">×</text>
+<text x="214" y="78" fill="#f0b429" font-size="11.5">output gate 0–1: needed now?</text>
+<text x="214" y="94" fill="#7c8593" font-size="10.5">closed → contents don't leak</text>
+<line x1="185" y1="66" x2="185" y2="44" stroke="#7c8593" marker-end="url(#f2)"/>
+<text x="185" y="28" fill="#e7ebf1" font-size="13" text-anchor="middle">output h(t): handed to the rest of the network</text>
+</svg>
+<figcaption>Fig 2 · The LSTM memory cell: at the center a self-loop with weight fixed at 1 (the CEC); the input gate governs writing, the output gate governs reading; the dashed forget gate was added after 2000.</figcaption>
+</figure>
+
+<h3>The formulas — and the missing gate</h3>
+<p>The original state update is <code>c(t) = c(t−1) + i(t)·g(t)</code> — the previous state kept as is, plus "input-gate opening × candidate write"; the output is <code>h(t) = o(t)·h(c(t))</code>, i.e. "output-gate opening × squashed state." Note: <strong>the 1997 original has no forget gate</strong> — the state only accumulates and never shrinks, so in a continuous input stream it grows without bound. Gers et al. added the forget gate f in 2000, turning the update into today's standard form <code>c(t) = f(t)·c(t−1) + i(t)·g(t)</code>: the network can also learn to "wipe the slate when it's time to turn the page." <strong>What everyone calls LSTM today is this forget-gate version.</strong></p>
+<p>For training, the paper ships a truncated gradient algorithm that is local in both space and time — <strong>O(1) computation per weight per time step</strong> — affordable even on 1997 hardware.</p>
+
+<h2>Key results</h2>
+<p>The experiments are all <strong>carefully designed artificial tasks</strong> — the paper says so itself — but the comparisons are solid:</p>
+<ul>
+<li><strong>Embedded Reber grammar</strong>: a classic RNN test requiring a symbol from the start of the sequence to be remembered until the very end. The standard algorithms of the day (RTRL, BPTT, and others) often failed; <strong>LSTM solved it every time, and learned faster</strong>.</li>
+<li><strong>Long time-lag tasks</strong>: with the gap between "the clue" and "the moment the clue is needed" stretched to a <strong>minimal lag of 1000 steps</strong> (including noisy versions), LSTM still learned; the BPTT and RTRL baselines already failed completely at gaps of a few dozen steps.</li>
+<li><strong>The adding problem</strong>: remember two marked numbers inside a long stream of digits and output their sum at the end — testing "store exact values + hold them across long distances + resist distraction." LSTM solved this too.</li>
+</ul>
+<p>To be honest: the paper contains no real-world benchmark — "ruling real applications" came a decade-plus later. But "learnable across 1000-step lags" was something no other general method could do at the time.</p>
+
+<h2>Why it mattered</h2>
+<p>This was a seed planted during a "neural network winter" that exploded ten years later. In 2009 Graves and colleagues won international handwriting-recognition competitions with LSTM; speech recognition then switched to it wholesale; <strong>in 2014 seq2seq built end-to-end machine translation on stacked LSTMs; in 2015 Google voice search shipped an LSTM acoustic model; in 2016 Google Translate's GNMT used deep LSTMs for both encoder and decoder</strong> — in the smartphone years when devices learned to listen and translate, LSTM was underneath almost all of it. It became one of the most-cited neural network papers in history.</p>
+<p>Two pieces of its intellectual legacy are still alive. First, <strong>gating</strong> became a universal weapon — the GRU is its streamlined descendant, and highway networks carried gating into the depth dimension. Second, the principle of <strong>"give information a decay-free path whose multiplier is 1"</strong> lives on in the residual connections of ResNet and the Transformer. And Hochreiter's rigorous analysis of vanishing gradients is itself a foundational document of deep learning theory.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The original was incomplete</strong>: with no forget gate, the state only accumulates and grows without bound on continual tasks; only after Gers et al. added the forget gate in 2000 did the design settle — today's "LSTM" is really the revised version.</li>
+<li><strong>Memory is not unlimited</strong>: artificial tasks span a thousand steps, but effective dependency lengths on real tasks are typically in the hundreds; tasks demanding precise recall of distant details remain hard.</li>
+<li><strong>Inherently sequential</strong>: each step must wait for the previous one, so there's no parallelism across time. In the GPU/TPU era that means slow, expensive training — one direct reason it was replaced by the fully parallelizable Transformer.</li>
+<li><strong>Relatively complex</strong>: three gates plus a state, and many parameters. Cho et al. proposed the two-gate GRU in 2014, which ties on many tasks; Greff et al.'s 2017 systematic comparison of eight variants ("LSTM: A Search Space Odyssey") found <strong>none clearly beats the vanilla forget-gate version</strong>, with the forget gate and output activation being the most critical parts.</li>
+<li><strong>Evidence lagged the claim</strong>: the original experiments are all synthetic; the paper's value was only fully stamped by large-scale real-world deployment years later.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① The disease: an RNN's correction signal is multiplied by "weight × slope" at every step back through time, vanishing or exploding exponentially — dependencies more than ten-odd steps apart can't be learned (Hochreiter's 1991 diagnosis).</p>
+<p>② Core idea: the constant error carousel (CEC) — a linear self-loop with weight fixed at 1; memories and error signals flow along it with a multiplier of exactly 1, crossing a thousand steps without decay.</p>
+<p>③ Second idea: multiplicative gates. The input gate governs writing, the output gate governs reading, resolving the conflict of "one weight must both write and block noise"; gates are 0–1 openings learned by the network itself.</p>
+<p>④ Formulas: original <code>c(t) = c(t−1) + i·g</code>; after Gers et al. added the forget gate in 2000, <code>c(t) = f·c(t−1) + i·g</code> — today's standard LSTM.</p>
+<p>⑤ Results: learns across 1000-step lags on artificial tasks where BPTT/RTRL fail at a few dozen steps; but the paper has no real-world benchmark.</p>
+<p>⑥ Impact: ruled sequence modeling for twenty years — handwriting recognition, speech recognition, seq2seq translation, Google voice search and GNMT all sat on top of it.</p>
+<p>⑦ Legacy: gating (GRU, highway networks) and the "decay-free path with multiplier 1" (residual connections) live on today.</p>
+<p>⑧ Limits: the original lacked the forget gate; effective memory is finite; inherently sequential and expensive to train — handed the throne to the fully parallel Transformer in 2017.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full derivations and all experiments, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
