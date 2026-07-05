@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sequence to Sequence Learning (Seq2Seq) — CS Papers Deep-Read Paper 8</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 8</p>
+<h1>Sequence to Sequence Learning (Seq2Seq)</h1>
+<p class="sub">Sutskever, Vinyals &amp; Le · Google · NIPS 2014</p>
+<p class="langbar"><a href="seq2seq-paper8.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2014, three researchers at Google — one of them Ilya Sutskever, later OpenAI's chief scientist — proposed <strong>Seq2Seq (sequence to sequence)</strong>: <strong>two neural networks working as a relay team</strong>, one that "reads" and one that "speaks." For the first time, machine translation of a whole sentence was done end to end by neural networks alone — and it beat translation systems that had been polished for years. The "you say something, it says something back" shape of ChatGPT today traces straight back to this design.</p>
+
+<h2>An analogy</h2>
+<p>Think of how a simultaneous interpreter works: <strong>listen to the whole sentence, form a "meaning" in your head, then say that meaning out loud in the other language</strong> — never word-by-word substitution. Machine translation before Seq2Seq was much more like the latter: chop the sentence into pieces, look each piece up in a phrase table, then try to glue the fragments into something fluent. Seq2Seq taught the machine the interpreter's way: <strong>first understand, then re-say.</strong></p>
+
+<h2>What was new</h2>
+<p>The old world's translation systems were <strong>assembly lines</strong>: one component chopped phrases, one looked up tables, one reordered words, one scored fluency… dozens of parts, each hand-designed and tuned by experts, and when something went wrong it was hard to trace. Seq2Seq replaced all of it with <strong>one whole</strong>: feed it a huge pile of "source sentence – translation" pairs and it learns the entire translation process by itself, no hand-written rules anywhere in the middle.</p>
+
+<h2>How it works</h2>
+<p>The "reading" network takes in the source sentence one word at a time, updating its "mental state" as it goes; when the last word is read, that state is the whole sentence condensed into a single <strong>"thought."</strong> The "speaking" network takes over from that thought and <strong>says the translation one word at a time</strong>: for each new word it looks at the thought plus what it has already said, and it keeps going until it emits a special "full stop" marker — so the output can be as long or short as it needs to be, nothing fixed in advance.</p>
+<p>The paper also had a famously clever trick: <strong>feed the source sentence in backwards</strong>. That way the beginning of the source ends up right next to the beginning of the translation, so the model first learns the easy "match the openings" step and then untangles the rest from there — like moving two relay runners closer together for a smoother handoff. Scores jumped noticeably.</p>
+
+<h2>What it brought</h2>
+<p>It proved for the first time that <strong>pure neural networks — no linguistic rules, no hand-built components — could beat traditional translation systems on official benchmark data</strong>. Two years later, Google Translate replaced its decade-old system with a descendant of this architecture; and "first understand, then generate" spread from translation to summarization, dialogue, speech, and image captioning, becoming AI's general recipe. One honest caveat: squeezing a whole sentence into one fixed-size "thought" means the longer the sentence, the more gets forgotten — the "attention" mechanism invented the very next year to fix this eventually grew into the Transformer.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Two networks in relay: one reads the whole sentence into a single "thought," the other re-says it word by word from that thought — translation went from "assembly-line kit-bashing" to "first understand, then re-say," and today's ask-and-answer large language models grew out of exactly this shape.</p>
+</div>
+
+<p class="switch-hint">Want the encoder–decoder diagram, the reversal trick, and the real scores? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">Seq2Seq builds an <strong>encoder–decoder</strong> out of two multi-layer LSTMs: the encoder reads an input sequence of any length into <strong>one fixed-length vector</strong>, and the decoder generates an output sequence of any length from that vector, word by word. With the <strong>reversed-input</strong> trick, it became the first end-to-end neural system to beat a strong statistical machine translation baseline on WMT'14 English–French (BLEU 34.8 vs 33.3), establishing the "everything is sequence-to-sequence" paradigm.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Neural network</strong>: a model built from stacked "layers" that learns patterns from large amounts of data; training means gradually adjusting its internal parameters to make predictions more accurate.</li>
+<li><strong>Recurrent neural network (RNN)</strong>: a neural network built for sequences — it reads elements one at a time while maintaining a continuously updated "hidden state" as memory.</li>
+<li><strong>LSTM (Long Short-Term Memory)</strong>: an improved RNN (see Paper 7) that uses "gates" to control what gets written into and erased from memory, letting it remember information from many steps back. Both networks in this paper are LSTMs.</li>
+<li><strong>Hidden state</strong>: the internal vector an RNN carries and updates at every step — its "memory of everything read so far."</li>
+<li><strong>Word embedding</strong>: representing each word as a list of numbers (a vector) so that similar words get similar vectors — the entry point for neural networks to handle text (see Paper 4).</li>
+<li><strong>Statistical machine translation (SMT)</strong>: the dominant approach before Seq2Seq — build a "phrase table" from statistics over parallel text, then translate by chopping into phrases, looking them up, reordering, and scoring candidate outputs for fluency; a pipeline of many separate modules.</li>
+<li><strong>BLEU</strong>: the standard automatic score for machine translation (0–100), measuring overlap between machine output and human reference translations; higher is better, and even 1 point is a visible gap.</li>
+<li><strong>Beam search</strong>: when generating word by word, instead of committing to the single best word at each step, keep B candidate sentences alive and extend them all, then pick the best-scoring one overall — steadier than greedy "one path only."</li>
+</ul>
+</div>
+
+<h2>Coordinates</h2>
+<p>The authors are Ilya Sutskever, Oriol Vinyals, and Quoc V. Le at Google; the paper appeared at NIPS 2014. It builds on the LSTM (1997, Paper 7) and on earlier encoder–decoder ideas from Kalchbrenner &amp; Blunsom (2013) and Cho et al. (2014); it feeds directly into Bahdanau attention (2014) and the Transformer (2017) — the lineage of modern large language models starts taking shape right here.</p>
+
+<h2>Problem and motivation</h2>
+<p>By 2014, deep networks were thriving in speech and vision, but they had a fatal constraint: <strong>inputs and outputs had to be vectors of fixed, pre-specified dimensionality</strong>. Yet many of the most valuable problems — translation, speech recognition, question answering — are <strong>"sequence in, sequence out,"</strong> with both lengths unknown in advance and no obvious alignment between them.</p>
+<p>Translation at the time was ruled by SMT: a sprawling pipeline of word alignment, phrase tables, reordering models, and language models, trained separately and glued together with hand-tuned weights. It worked, but every module needed expert care, errors compounded down the pipeline, and the training objective was fragmented. The real question: <strong>could a single neural network learn "the probability of the output sequence given the input sequence" end to end, replacing the whole pipeline with one trainable system?</strong> What was missing was a general architecture for variable-length in, variable-length out.</p>
+
+<h2>Core ideas / method</h2>
+
+<h3>Idea 1: Encoder–decoder — split "reading" and "speaking" into two networks</h3>
+<p>Seq2Seq uses <strong>two separate LSTMs</strong>. The <strong>encoder</strong> reads the source sentence word by word, updating its hidden state at each step; after the final word (marked by an end-of-sequence symbol <code>&lt;EOS&gt;</code>), that hidden state is the sentence's <strong>fixed-length vector v</strong> — informally the "thought vector," the whole sentence's meaning compressed into one vector.</p>
+<p>The <strong>decoder</strong> is essentially a language model "set in key" by v: with v as its initial memory, it generates the translation word by word — as a formula, <code>p(y₁…yₜ | x) = ∏ p(yₜ | v, y₁…yₜ₋₁)</code>, which in plain words says "each new word is chosen based on the thought v of the whole source, plus everything I've already said." At each step it outputs a probability distribution over the vocabulary; the chosen word becomes the next step's input, and generation stops when <code>&lt;EOS&gt;</code> is produced — <strong>the model decides its own output length</strong>, which is exactly how variable-length output is solved.</p>
+<p><strong>Why two networks?</strong> First, input and output are usually different languages, so each side gets its own parameters for its own job. Second, the interface is beautifully clean — the two sides exchange only the single vector v, so each side can be made deeper and wider independently. The paper uses <strong>4-layer deep LSTMs</strong> on both sides (1000 units per layer, 1000-dimensional word embeddings, a 160k input vocabulary and an 80k output vocabulary), and the deep version clearly beats shallow ones.</p>
+
+<figure>
+<svg viewBox="0 0 560 262" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="14" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="37" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<rect x="76" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="99" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<rect x="138" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="161" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<rect x="200" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="223" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<line x1="60" y1="134" x2="74" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="122" y1="134" x2="136" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="184" y1="134" x2="198" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="37" y="196" fill="#b9c0ca" font-size="13" text-anchor="middle">A</text>
+<text x="99" y="196" fill="#b9c0ca" font-size="13" text-anchor="middle">B</text>
+<text x="161" y="196" fill="#b9c0ca" font-size="13" text-anchor="middle">C</text>
+<text x="223" y="196" fill="#b9c0ca" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
+<line x1="37" y1="182" x2="37" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="99" y1="182" x2="99" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="161" y1="182" x2="161" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="223" y1="182" x2="223" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="130" y="226" fill="#f0b429" font-size="11.5" text-anchor="middle">Encoder: reads word by word into its state</text>
+<line x1="246" y1="134" x2="266" y2="134" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a1g)"/>
+<rect x="268" y="116" width="34" height="36" rx="8" fill="rgba(240,180,41,0.22)" stroke="#f0b429" stroke-width="1.6"/><text x="285" y="140" fill="#f5c451" font-size="14" text-anchor="middle" font-weight="700">v</text>
+<text x="285" y="102" fill="#f0b429" font-size="10.5" text-anchor="middle">fixed-length vector</text>
+<line x1="304" y1="134" x2="324" y2="134" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a1g)"/>
+<rect x="326" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="349" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<rect x="388" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="411" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<rect x="450" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="473" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<rect x="510" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="533" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
+<line x1="372" y1="134" x2="386" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="434" y1="134" x2="448" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="496" y1="134" x2="508" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="349" y="66" fill="#e7ebf1" font-size="13" text-anchor="middle">W</text>
+<text x="411" y="66" fill="#e7ebf1" font-size="13" text-anchor="middle">X</text>
+<text x="473" y="66" fill="#e7ebf1" font-size="13" text-anchor="middle">Y</text>
+<text x="533" y="66" fill="#e7ebf1" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
+<line x1="349" y1="116" x2="349" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="411" y1="116" x2="411" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="473" y1="116" x2="473" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="533" y1="116" x2="533" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<path d="M357,72 C384,72 400,96 407,114" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+<path d="M419,72 C446,72 462,96 469,114" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+<path d="M481,72 C506,72 522,96 529,114" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+<text x="440" y="40" fill="#7c8593" font-size="10.5" text-anchor="middle">each generated word feeds the next step</text>
+<text x="440" y="226" fill="#e8794b" font-size="11.5" text-anchor="middle">Decoder: generates from v, stops at &lt;EOS&gt;</text>
+</svg>
+<figcaption>Fig. 1 · Encoder–decoder: the encoder reads the input "A B C" into a fixed-length vector v; the decoder starts from v as its memory and generates "W X Y" word by word, feeding each output back as the next input, until it emits &lt;EOS&gt;.</figcaption>
+</figure>
+
+<h3>Idea 2: Reversed input — an absurdly cheap big win</h3>
+<p>The paper's most famous trick: <strong>feed the source sentence backwards</strong> (train "A B C → W X Y" as "C B A → W X Y", target untouched). Why does it help? Fed forwards, the first words of the source aren't used until the whole sentence has been read and most of the translation generated — too many steps away. Reversed, <strong>the start of the source sits right next to the start of the translation</strong>, conjuring up a batch of "short-range dependencies" out of thin air. The optimizer first learns the easy "match the openings" alignment, and once that's anchored, the long-range correspondences fall into place — even though the <strong>average</strong> distance between corresponding words hasn't changed at all.</p>
+<p>The effect was striking: perplexity (a measure of how "uncertain" the model is about the next word — lower is better) dropped from 5.8 to 4.7, and <strong>BLEU jumped from 25.9 to 30.6</strong>. Honestly said: this is a purely empirical trick, and the authors had no complete theoretical explanation for it at the time.</p>
+
+<figure>
+<svg viewBox="0 0 560 212" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="14" y="52" fill="#7c8593" font-size="11.5">forward</text>
+<text x="120" y="52" fill="#e7ebf1" font-size="14" text-anchor="middle">A</text>
+<text x="180" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">B</text>
+<text x="240" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">C</text>
+<text x="300" y="52" fill="#7c8593" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
+<text x="360" y="52" fill="#e7ebf1" font-size="14" text-anchor="middle">W</text>
+<text x="420" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">X</text>
+<text x="480" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">Y</text>
+<path d="M124,38 C190,-2 300,-2 356,38" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#a2g)"/>
+<text x="240" y="16" fill="#e8794b" font-size="11">A and its translation W are 4 steps apart — far</text>
+<text x="14" y="150" fill="#7c8593" font-size="11.5">reversed</text>
+<text x="120" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">C</text>
+<text x="180" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">B</text>
+<text x="240" y="150" fill="#e7ebf1" font-size="14" text-anchor="middle">A</text>
+<text x="300" y="150" fill="#7c8593" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
+<text x="360" y="150" fill="#e7ebf1" font-size="14" text-anchor="middle">W</text>
+<text x="420" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">X</text>
+<text x="480" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">Y</text>
+<path d="M244,136 C280,108 320,108 356,136" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a2g)"/>
+<text x="300" y="106" fill="#f0b429" font-size="11" text-anchor="middle">only 2 steps — learn "opening matches opening" first</text>
+<text x="280" y="192" fill="#7c8593" font-size="11" text-anchor="middle">average distance is unchanged, but the sentence start gains many short-range links</text>
+</svg>
+<figcaption>Fig. 2 · Reversed input: after reversing the source, the first word A sits 2 steps from its translation W instead of 4; BLEU rose from 25.9 to 30.6 because of this alone.</figcaption>
+</figure>
+
+<h3>Idea 3: Training and decoding, the engineering</h3>
+<p>The training objective is plain: <strong>maximize the probability of the correct translation</strong> on a huge set of sentence pairs (word-level cross-entropy). Decoding uses <strong>beam search</strong>: keep the B most promising partial translations at each step and extend them all. Interestingly, <strong>B=2 already gets close to the best results</strong> — the model's own probability estimates are that good. To keep gradients from occasionally blowing up during training (exploding gradients), they are rescaled whenever their overall size crosses a threshold (gradient clipping). The whole system trained for about 10 days on 8 GPUs (4 running the LSTM layers, 4 computing the vocabulary probabilities).</p>
+
+<h2>Key results</h2>
+<p>The benchmark is <strong>WMT'14 English→French</strong> translation, trained on a 12-million-sentence-pair subset. Representative numbers:</p>
+<ul>
+<li><strong>An ensemble of 5 deep LSTMs with beam search: BLEU 34.8</strong>, beating a strong SMT baseline's <strong>33.3</strong> on the same data — <strong>the first time a pure neural system surpassed a statistical one on a large-scale translation task</strong>.</li>
+<li>Using the model to <strong>rescore the SMT baseline's 1000-best candidate lists</strong> reached BLEU <strong>36.5</strong>, close to the best published result on the task at the time (37.0).</li>
+<li>The <strong>reversal trick</strong> alone: BLEU 25.9 → 30.6, perplexity 5.8 → 4.7.</li>
+<li>Against everyone's expectations, it also translated <strong>long sentences</strong> well — the fixed vector was expected to choke on them, but reversal relieved much of the pressure.</li>
+<li>Projecting the sentence vectors v to 2D (PCA): <strong>sentences with similar meanings cluster together, sensitive to word order but insensitive to active vs passive voice</strong> — evidence that v really encodes meaning, not surface form.</li>
+</ul>
+
+<h2>Why it matters / impact</h2>
+<p>It established the paradigm that ruled the following decade: <strong>"everything is sequence to sequence."</strong> Translation, summarization, dialogue, speech recognition, image captioning (a CNN as the encoder, an LSTM as the decoder), code generation — all fit the same frame. In 2016 Google Translate launched GNMT (the industrial version of this architecture plus attention), replacing its decade-old SMT pipeline overnight — the first time neural networks took over the core of a major internet product wholesale. Deeper still: today's large language models — "prompt in, answer out" — are the direct descendants of this <strong>conditional word-by-word generation</strong> framework, with the encoder and decoder merged into a single Transformer. The three authors all became central figures of the wave: Sutskever later served as OpenAI's chief scientist, and Vinyals leads deep-learning research at DeepMind.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The fixed vector is a bottleneck</strong>: no matter how long the sentence, it all gets squeezed into the same vector v, so long sentences inevitably lose information. The next year, Bahdanau et al. proposed the <strong>attention mechanism</strong> — letting the decoder look back at the entire input sequence for every word it generates — which solved this head-on and made the reversal trick unnecessary; three years later that line grew into the Transformer.</li>
+<li><strong>Reversal is a hack, not a solution</strong>: it works for language pairs with similar word order, like English–French — which is precisely evidence that the model never truly learned long-range dependencies; the problem was just moved somewhere easier.</li>
+<li><strong>Fixed vocabulary, helpless on rare words</strong>: out-of-vocabulary words become UNK (an "unknown word" placeholder), so names and numbers were often mistranslated; subword segmentation (BPE) later fixed this.</li>
+<li><strong>Slow and hard to parallelize</strong>: an RNN must compute step by step, so training can't parallelize across a sentence the way a Transformer can, and word-by-word decoding is slow too. This is the root reason it was eventually replaced.</li>
+<li><strong>The idea wasn't conjured from nothing</strong>: Kalchbrenner &amp; Blunsom (2013) and Cho et al. (2014, a few months earlier) had proposed similar encoder–decoder frameworks; this paper's distinct contribution was using <strong>deep-enough LSTMs + reversal + serious compute</strong> to make end-to-end translation actually beat SMT for the first time — proof the road was passable.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① One sentence: two deep LSTMs form an encoder–decoder that exchanges only a fixed-length vector v, learning "variable-length sequence → variable-length sequence" end to end.</p>
+<p>② Pain point: deep networks only handled fixed-size inputs and outputs, while core problems like translation are variable-length both ways; the SMT pipeline had too many modules to optimize jointly.</p>
+<p>③ Mechanism: the decoder is a language model "set in key" by v — <code>p(y|x) = ∏ p(yₜ|v, y₁…yₜ₋₁)</code> — generating word by word and stopping at &lt;EOS&gt;, so the model decides its own output length.</p>
+<p>④ The big trick: feed the source reversed, turning start-of-sentence alignment into short-range dependencies; BLEU 25.9 → 30.6.</p>
+<p>⑤ Results: BLEU 34.8 on WMT'14 English–French, beating the 33.3 SMT baseline — the first neural win; rescoring reached 36.5.</p>
+<p>⑥ Evidence: sentence-vector visualization clusters by meaning and ignores voice — v really encodes "meaning."</p>
+<p>⑦ Impact: established the seq2seq paradigm; spawned GNMT, attention, and the Transformer; today's LLM question-answering shape is its direct descendant.</p>
+<p>⑧ Limits: the fixed vector loses information on long sentences (attention was born to fix it), reversal is an empirical hack, UNK vocabulary problems, and the hard-to-parallelize RNN was ultimately replaced by the Transformer.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · reading this page ≈ getting the paper's core; for full training configs and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
