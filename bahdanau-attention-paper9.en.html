@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Bahdanau Attention (Where Attention Began) — CS Papers Deep-Read Paper 9</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 9</p>
+<h1>Jointly Learning to Align and Translate (Bahdanau Attention)</h1>
+<p class="sub">Bahdanau, Cho &amp; Bengio · ICLR 2015</p>
+<p class="langbar"><a href="bahdanau-attention-paper9.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In late 2014, three researchers — Bahdanau, Cho, and Bengio — gave machine translation a new organ: <strong>attention</strong>. It lets the model, while translating each word, <strong>glance back at the most relevant words in the source sentence</strong>. The "attention" you hear about every day in ChatGPT and large-model news traces its bloodline straight back here — this paper is attention's <strong>birth certificate</strong>.</p>
+
+<h2>First, a puzzle</h2>
+<p>The previous paper, Seq2Seq, translated by "first understand, then re-say": read the whole English sentence, compress it onto <strong>one small sticky note</strong>, then write out the French from that note alone. Fine for short sentences; the moment sentences got long, quality fell off a cliff. No wonder — take a 60-word passage, allow yourself one sticky note, and try to reproduce every detail from it. Impossible. The strange part: <strong>human translators never work this way</strong>. Nobody memorizes a whole paragraph before writing; everyone reads as they translate.</p>
+
+<h2>What's new</h2>
+<p>This paper says: <strong>stop memorizing — let the model read as it translates too.</strong> While producing each word, the source text lies open on the desk, free to be consulted at any moment. The sticky note's single-plank bridge is torn down and replaced by the original text, always at hand.</p>
+
+<h2>How it works</h2>
+<p>Before writing each output word, the model takes its current thought — "where am I in the translation?" — and <strong>makes eye contact</strong> with every word of the source, one by one: each gets a relevance score. High scorers get a long look; low scorers just peripheral vision. Its gaze works like a <strong>spotlight</strong> — a bright spot plus dimmer surroundings — and in exactly those proportions it blends information from across the source into one custom reference, then writes. The best part: <strong>nobody taught it where to look</strong>. The model picked that up on its own, as a by-product of learning to translate — after training, its gaze lands on the right corresponding words, and where English and French swap word order, the gaze visibly criss-crosses back and forth.</p>
+
+<h2>What it brought</h2>
+<p>The immediate win: <strong>long sentences stopped collapsing</strong>, and neural translation matched the old statistical systems that had ruled for twenty years, for the first time. The deeper win: it proved that <strong>"look things up as needed" beats "memorize once."</strong> Three years later, Google's Transformer paper declared "attention is all you need," threw away every other part and kept only this trick — and the large-model era began. One honest note: this version of attention still sat on the old word-by-word engine, and every output word required scanning the whole source again — slow and hard to parallelize. That bill was settled three years later, by the Transformer.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Don't compress the whole sentence onto one sticky note and recite from it — let the translator <strong>glance back at the source for every word it writes, allocating its gaze by relevance</strong>. That gaze is where the attention mechanism began, and it's what beats inside the heart of every large model today.</p>
+</div>
+
+<p class="switch-hint">Want the three-step formula, the architecture diagram, and the BLEU numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">This paper adds a learnable <strong>soft alignment</strong> module — what we now call the <strong>attention mechanism</strong> — to the encoder–decoder neural translation model: for every word it generates, the decoder scores all source positions for relevance, turns the scores into weights via softmax, and takes a weighted sum to build <strong>a context vector custom-made for that word</strong>, tearing down the "squeeze the whole sentence into one fixed-length vector" bottleneck. Long-sentence translation stops degrading, English–French translation matches the statistical system Moses for the first time — and attention is born, growing into the Transformer three years later.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>RNN (recurrent neural network)</strong>: a neural network that processes a sequence word by word, updating an internal memory at each step; the workhorse of language processing before the Transformer.</li>
+<li><strong>Hidden state</strong>: the RNN's "working memory" at its current position — a vector of a few hundred numbers summarizing everything read so far.</li>
+<li><strong>Word embedding</strong>: representing each word as a list of numbers (a vector), where similar meanings get similar numbers (see Paper 4, Word2Vec).</li>
+<li><strong>Encoder–decoder / Seq2Seq</strong>: the "first understand, then re-say" architecture — an encoder reads the source sentence into a vector representation, and a decoder generates the translation from it word by word (see Paper 8).</li>
+<li><strong>Statistical machine translation (SMT)</strong>: the mainstream before neural translation — phrase tables mined from corpora plus scoring models assemble a translation; the flagship system was Moses.</li>
+<li><strong>BLEU</strong>: the standard automatic score for machine translation, measuring overlap between the machine's output and human reference translations; higher is better.</li>
+<li><strong>softmax</strong>: the standard operation that turns any list of scores into a list of <strong>proportions (weights) summing to 1</strong>.</li>
+<li><strong>Gradient / backpropagation</strong>: the correction signal that flows backward from "where the error is" to "how each parameter should change" during training; over long paths it decays (vanishing gradients, see Paper 7).</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>First author Dmitry Bahdanau was still a student interning in Yoshua Bengio's Montreal lab when he wrote this, together with Kyunghyun Cho and Bengio; posted September 2014, published at ICLR 2015. It directly follows the RNN Encoder–Decoder (Cho et al.) and Seq2Seq (Sutskever et al., Paper 8) from months earlier; downstream, Luong attention (2015) simplified it, Google's GNMT (2016) industrialized it, and three years later it grew into the Transformer (Paper 1).</p>
+
+<h2>The problem and the motivation</h2>
+<p>Every 2014 neural translation model shared one soft spot: the encoder had to squeeze the entire source sentence — whether 5 words or 60 — into <strong>one fixed-length vector</strong>, and the decoder rebuilt the whole translation from that vector alone. The vector became a <strong>single-plank bridge</strong>: fixed capacity, so the longer the sentence, the more detail gets dropped. Cho et al. had measured it that same year: <strong>as sentences grow longer, BLEU plummets</strong>.</p>
+<p>The authors' diagnosis: the problem wasn't network size but the <strong>design itself</strong> — demanding that arbitrarily long sentences fit losslessly into the same small container guarantees something gets sacrificed. Meanwhile, in old statistical translation, "alignment" (which output word corresponds to which source word) was a separate module with hand-crafted features, impossible to learn end-to-end alongside translation. <strong>Could a model learn, by itself, to look at the right place as it translates?</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 170" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="14" y="55" width="120" height="60" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="74" y="80" fill="#d9dee5" font-size="12" text-anchor="middle">source (60 words)</text>
+<text x="74" y="100" fill="#7c8593" font-size="11" text-anchor="middle">x₁ x₂ … x₆₀</text>
+<line x1="134" y1="85" x2="166" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="168" y="60" width="90" height="50" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="213" y="90" fill="#e7ebf1" font-size="12" text-anchor="middle">encoder RNN</text>
+<line x1="258" y1="85" x2="290" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="292" y="70" width="52" height="30" rx="6" fill="rgba(232,121,75,0.2)" stroke="#e8794b" stroke-width="1.8"/>
+<text x="318" y="90" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">c</text>
+<text x="318" y="52" fill="#e8794b" font-size="11" text-anchor="middle">fixed-length vector = the bottleneck</text>
+<text x="318" y="122" fill="#7c8593" font-size="10.5" text-anchor="middle">same size for 5 words or 60</text>
+<line x1="344" y1="85" x2="376" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="378" y="60" width="90" height="50" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="423" y="90" fill="#e7ebf1" font-size="12" text-anchor="middle">decoder RNN</text>
+<line x1="468" y1="85" x2="500" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="524" y="80" fill="#d9dee5" font-size="12" text-anchor="middle">output</text>
+<text x="524" y="98" fill="#7c8593" font-size="11" text-anchor="middle">y₁ y₂ …</text>
+</svg>
+<figcaption>Fig 1 · The fixed-vector bottleneck: however long the sentence, all information must squeeze through the same fixed-length vector c — the longer the sentence, the more is lost, and long-sentence BLEU plummets.</figcaption>
+</figure>
+
+<h2>The core idea</h2>
+
+<h3>The key step: a custom-blended context for every output word</h3>
+<p>The paper's model is called <strong>RNNsearch</strong>. Instead of making the decoder clutch one vector the whole way through, it <strong>redoes three steps for every word it generates</strong>:</p>
+<ul>
+<li><strong>① Score</strong>: take the decoder's previous hidden state <code>s₍ᵢ₋₁₎</code> ("where am I in the translation?") and compute a relevance score against each source position's representation <code>hⱼ</code>: <code>eᵢⱼ = a(s₍ᵢ₋₁₎, hⱼ)</code> — in plain terms, asking "how relevant is source word j to the word I'm about to write?" Here <code>a</code> is a small feed-forward neural network (later dubbed <strong>additive attention</strong>), and it learns for itself what "relevant" means.</li>
+<li><strong>② Normalize</strong>: <code>αᵢⱼ = softmax(eᵢⱼ)</code> — turn the scores into weights summing to 1: the proportions in which the model's gaze is distributed over the source.</li>
+<li><strong>③ Weighted sum</strong>: <code>cᵢ = Σⱼ αᵢⱼ·hⱼ</code> — blend information from across the source in those proportions into a <strong>context vector</strong> <code>cᵢ</code>, handed to the decoder to generate word i.</li>
+</ul>
+<p>The burden thus shifts from "one vector must remember everything" to "<strong>fetch what you need at every step</strong>": writing the word for "bank," the gaze clusters near <em>bank</em>; writing the end of the sentence, the gaze moves there.</p>
+<p><strong>Why this design? One word: differentiable.</strong> Because softmax makes the gaze <strong>soft</strong> — every source word gets some weight rather than one being hard-selected — the whole module is smooth end to end, and the training signal can flow back through it. So "where to look" (alignment) and "how to translate" (translation) are learned <strong>jointly, end-to-end, in the same training loop</strong> — exactly what the title's <em>jointly learning to align and translate</em> means. No human alignment annotations needed: <strong>alignment falls out as a by-product of learning to translate well.</strong></p>
+
+<h3>The supporting step: a bidirectional encoder, so each word's representation carries its context</h3>
+<p>The <code>hⱼ</code> being looked up needed an upgrade too. If it came only from a left-to-right RNN, it would summarize just "everything before j." The paper uses a <strong>bidirectional RNN</strong> instead: one pass reads left to right, another right to left, and the two hidden states at position j are concatenated into that word's <strong>annotation</strong> <code>hⱼ</code> — centered on word j yet aware of both what precedes and what follows, so attention can pick up a single word <em>with</em> its context.</p>
+
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<g font-size="12" text-anchor="middle">
+<rect x="30" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="306" fill="#b9c0ca">word x₁</text>
+<rect x="140" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="180" y="306" fill="#b9c0ca">x₂</text>
+<rect x="250" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="290" y="306" fill="#b9c0ca">x₃</text>
+<rect x="360" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="400" y="306" fill="#b9c0ca">x₄</text>
+</g>
+<g font-size="12" text-anchor="middle">
+<rect x="30" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="70" y="237" fill="#e7ebf1">h₁</text>
+<rect x="140" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="180" y="237" fill="#e7ebf1">h₂</text>
+<rect x="250" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="290" y="237" fill="#e7ebf1">h₃</text>
+<rect x="360" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="400" y="237" fill="#e7ebf1">h₄</text>
+</g>
+<line x1="70" y1="284" x2="70" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="180" y1="284" x2="180" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="290" y1="284" x2="290" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="400" y1="284" x2="400" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="112" y1="225" x2="138" y2="225" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="138" y1="240" x2="112" y2="240" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="222" y1="225" x2="248" y2="225" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="248" y1="240" x2="222" y2="240" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="332" y1="225" x2="358" y2="225" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="358" y1="240" x2="332" y2="240" stroke="#7c8593" marker-end="url(#a2)"/>
+<text x="470" y="236" fill="#7c8593" font-size="11">bidirectional RNN</text>
+<circle cx="235" cy="120" r="16" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="235" y="126" fill="#e7ebf1" font-size="15" text-anchor="middle">+</text>
+<line x1="70" y1="214" x2="224" y2="130" stroke="#f0b429" stroke-width="1.2" opacity="0.55"/>
+<line x1="180" y1="214" x2="230" y2="137" stroke="#f0b429" stroke-width="5" opacity="0.95"/>
+<line x1="290" y1="214" x2="243" y2="135" stroke="#f0b429" stroke-width="2.4" opacity="0.7"/>
+<line x1="400" y1="214" x2="249" y2="128" stroke="#f0b429" stroke-width="0.8" opacity="0.4"/>
+<text x="86" y="170" fill="#f0b429" font-size="11">weights αᵢⱼ (thicker = looked at more)</text>
+<rect x="420" y="30" width="120" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="480" y="52" fill="#b9c0ca" font-size="12" text-anchor="middle">decoder state s₍ᵢ₋₁₎</text>
+<path d="M420,60 C340,90 300,150 260,205" fill="none" stroke="#7c8593" stroke-dasharray="4 4"/>
+<text x="338" y="96" fill="#7c8593" font-size="11">① score against each hⱼ</text>
+<text x="338" y="112" fill="#7c8593" font-size="11">② softmax → αᵢⱼ</text>
+<line x1="235" y1="104" x2="235" y2="78" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="205" y="42" width="60" height="32" rx="6" fill="rgba(232,121,75,0.2)" stroke="#e8794b"/>
+<text x="235" y="63" fill="#e7ebf1" font-size="13" text-anchor="middle">cᵢ</text>
+<line x1="205" y1="58" x2="130" y2="58" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="20" y="42" width="108" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="74" y="63" fill="#e7ebf1" font-size="12" text-anchor="middle">generate word yᵢ</text>
+<text x="356" y="150" fill="#e8794b" font-size="11">③ weighted sum cᵢ = Σ αᵢⱼ·hⱼ</text>
+</svg>
+<figcaption>Fig 2 · The attention dataflow: a bidirectional encoder gives each source word an annotation hⱼ; for every output word, the decoder scores all hⱼ with its current state (①), softmaxes into weights (②), and takes a weighted sum into a custom context cᵢ (③) before writing.</figcaption>
+</figure>
+
+<h3>Why this cures long sentences</h3>
+<p>Two reasons. <strong>First, information no longer crosses a single-plank bridge</strong>: a 60-word sentence offers 60 annotations available at any moment — "memory capacity" grows naturally with sentence length, and the encoder is never forced to discard information. <strong>Second, the learning signal gets a shortcut</strong>: previously the correction signal had to travel from the end of the translation back through the entire RNN chain to reach the start of the source, decaying along the way (vanishing gradients); now attention lays a one-hop wire between the decoder and <strong>any source position</strong> — the same "build the signal a highway" intuition as ResNet's skip connections (Paper 2).</p>
+
+<h2>Key results</h2>
+<p>The benchmark is WMT'14 English→French. Control: <strong>RNNencdec</strong> (fixed-vector encoder–decoder); treatment: <strong>RNNsearch</strong> (with attention); each trained in two versions (sentences up to 30 / 50 words). BLEU on the full test set: <strong>RNNencdec-50 scores 17.82, RNNsearch-50 scores 26.75</strong> — same data, same RNN backbone, one extra attention module, nearly 9 BLEU apart. The longer-trained RNNsearch-50★ reaches <strong>28.45</strong>; on sentences without rare words it hits <strong>36.15</strong>, edging past the reigning statistical system Moses (35.63 — and Moses had used a huge extra monolingual corpus). <strong>For the first time, neural translation stood level with the statistical approach that had ruled for twenty years, on a serious benchmark.</strong></p>
+<p>The <strong>sentence-length curve</strong> says even more: RNNencdec's BLEU slides steadily once sentences pass 20 words, while RNNsearch-50 <strong>barely drops even beyond 50 words</strong> (Fig 3). And plotting the attention weights <code>αᵢⱼ</code> as a heatmap shows the model <strong>learned English–French word alignment by itself</strong> — where word order flips (e.g., <em>European Economic Area</em> ↔ <em>zone économique européenne</em>), the gaze visibly criss-crosses — with nobody ever teaching it alignment.</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="40" x2="70" y2="205" stroke="#7c8593"/>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"/>
+<text x="70" y="28" fill="#7c8593" font-size="11.5" text-anchor="middle">BLEU</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">sentence length (words) →</text>
+<path d="M88,88 C200,84 360,86 508,92" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<path d="M88,96 C180,92 260,110 340,150 C400,180 460,192 508,196" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<text x="504" y="82" fill="#f0b429" font-size="12" text-anchor="end">RNNsearch-50 (with attention)</text>
+<text x="470" y="180" fill="#e8794b" font-size="12" text-anchor="end">RNNencdec (fixed vector)</text>
+<text x="280" y="60" fill="#e7ebf1" font-size="12.5" text-anchor="middle">with attention: barely drops, however long</text>
+</svg>
+<figcaption>Fig 3 · Sentence length vs BLEU (schematic, after the paper's Fig 2): the fixed-vector model plummets past 20 words; with attention, long sentences barely degrade.</figcaption>
+</figure>
+
+<h2>Why it mattered</h2>
+<p>It contributed "attention" — the most important <strong>architectural primitive</strong> of the following decade. Luong et al. (2015) simplified the scoring to a dot product; Xu et al. (2015) carried it into image captioning (visual attention over a picture); GNMT (2016) deployed attention-based translation inside Google Translate; and in 2017 the Transformer (Paper 1) took it to its logical conclusion — <strong>throw away the RNN entirely and keep only attention</strong>, swapping this paper's small scoring network for scaled dot-product <code>softmax(QKᵀ/√d)V</code>. The self-attention that every large model runs for every token it generates is, mechanically, the direct descendant of this paper's three steps: score → softmax → weighted sum. As a bonus, attention heatmaps gave neural networks their first readily openable window of <strong>interpretability</strong>.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The backbone is still an RNN</strong>: word-by-word and sequential, hard to parallelize in training — the speed bottleneck stayed, and was only removed three years later by the Transformer.</li>
+<li><strong>Scoring cost grows multiplicatively with length</strong>: every output word scores the entire source, so a source of m words and a translation of n words costs <code>n×m</code> scorings — the direct ancestor of the Transformer's <code>O(n²)</code> attention cost.</li>
+<li><strong>Additive scoring wasn't optimal</strong>: Luong (2015) showed a plain dot product works as well and runs faster; this paper's small scoring network was later abandoned.</li>
+<li><strong>Soft alignment ≠ linguistic alignment</strong>: the α weights are often diffuse and don't always land on the "correct" word — reading them directly as the model's explanation is risky, which is where NLP's later "attention is not explanation" debate began.</li>
+<li><strong>The vocabulary problem went untouched</strong>: rare words remained unknown tokens (UNK), and "matching Moses" above holds only on the no-rare-word subset; that hole was later filled by BPE subword units (2016).</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① The pain: the encoder–decoder squeezes the whole sentence into one fixed-length vector — fixed capacity, so the longer the sentence the more is lost, and long-sentence BLEU plummets.</p>
+<p>② The core idea: for every word it generates, the decoder <strong>looks back at the source dynamically</strong> — score → softmax → weighted sum — into a context vector custom-made for that word.</p>
+<p>③ Mechanism: <code>eᵢⱼ = a(s₍ᵢ₋₁₎, hⱼ)</code>, <code>α = softmax(e)</code>, <code>cᵢ = Σ αᵢⱼ·hⱼ</code>; the scorer is a small network trained along with everything else (additive attention).</p>
+<p>④ "Soft" is the key: differentiable everywhere, so "where to look" and "how to translate" train jointly end-to-end, with no human alignment annotations — alignment falls out as a by-product.</p>
+<p>⑤ The supporting piece: a bidirectional RNN encoder gives each source word a context-aware annotation hⱼ for attention to draw on.</p>
+<p>⑥ Results: WMT'14 English–French, RNNsearch-50 at 26.75 vs the fixed-vector 17.82; long sentences barely degrade; 36.15 on the no-rare-word subset, past Moses at 35.63.</p>
+<p>⑦ Impact: attention became a universal architectural primitive — via Luong and GNMT all the way to the Transformer and the self-attention in every large model today.</p>
+<p>⑧ Limits: sequential RNN slowness; n×m scoring cost; soft alignment isn't true alignment and is debated as explanation; the UNK vocabulary problem was left for BPE.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full model configs and derivations, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

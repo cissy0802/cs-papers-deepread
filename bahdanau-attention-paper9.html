@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Bahdanau Attention（注意力机制的起点）— IT 论文精读 Paper 9</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 9</p>
+<h1>Jointly Learning to Align and Translate（Bahdanau 注意力）</h1>
+<p class="sub">Bahdanau, Cho &amp; Bengio · ICLR 2015</p>
+<p class="langbar"><a href="bahdanau-attention-paper9.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2014 年底，Bahdanau、Cho 和 Bengio 三人给机器翻译装上了一个新器官——<strong>注意力（attention）</strong>：让模型在翻译每一个词的时候，<strong>回过头去「看」原文里最相关的那几个词</strong>。你今天在 ChatGPT、大模型新闻里天天听到的 &quot;attention&quot;，血缘上都追溯到这里——这篇就是注意力机制的<strong>出生证明</strong>。</p>
+
+<h2>先说个怪事</h2>
+<p>上一篇 Seq2Seq 的翻译办法是「先读懂、再重说」：把整句英文从头到尾读一遍，压缩成<strong>一张小纸条</strong>，然后照着纸条默写出法文。短句还行；句子一长，成绩一落千丈。想想也是——一段 60 个词的话，只许你记成一张小纸条，再凭它复述出每个细节，怎么可能？可怪就怪在，<strong>人类译者从来不这么干</strong>：没有谁先把整段背下来再动笔，都是翻到哪儿、看到哪儿。</p>
+
+<h2>新在哪</h2>
+<p>这篇论文说：<strong>别背了，让模型也「翻到哪儿看到哪儿」。</strong>翻译每个词的时候，原文就摊在桌上，随时回头看、想看哪看哪。那张小纸条的独木桥被拆掉了，换成一份永远在手边的原文。</p>
+
+<h2>怎么做到的</h2>
+<p>模型每要写下一个译文词，先拿「我现在翻到哪了」这个念头，去和原文每个词逐一<strong>对眼神</strong>：给每个词打一个「相关度分」，分高的多看两眼、分低的只留点余光——目光像一盏<strong>聚光灯</strong>，有亮斑也有暗处，按这个比例把原文各处的信息调成一杯「专属参考」，再据此落笔。最妙的是：<strong>这套「该往哪看」没有人教</strong>，模型是在学翻译的过程中顺带自己学会的——训练完一看，它的目光自动落在正确的对应词上；碰到英法语序颠倒的地方，目光还会自己交叉回跳。</p>
+
+<h2>带来了什么</h2>
+<p>直接的好处是<strong>长句翻译不再崩盘</strong>，神经翻译的质量第一次追平了统治二十年的老牌统计系统。更深远的是它证明了一件事：让模型<strong>「按需回看」胜过「一次记死」</strong>。三年后 Google 那篇 Transformer 干脆宣布「注意力就是你的全部所需」，把其余零件全扔掉、只留这一招，大模型时代由此起步。也诚实说一句：这版注意力仍架在逐词吞吐的旧引擎上，每写一个词都得把原文全扫一遍，又慢又难并行——这笔账三年后才由 Transformer 结清。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>别把整句压成一张小纸条再默写——让翻译模型<strong>每写一个词都回头看原文、按相关度分配目光</strong>。这道「目光」就是注意力机制的起点，今天每个大模型的心脏都在做同一件事。</p>
+</div>
+
+<p class="switch-hint">想看注意力的三步公式、结构图和 BLEU 数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>一句话</h2>
+<p class="lead">这篇论文在编码器-解码器（encoder–decoder）神经翻译模型上加了一个可学习的「<strong>软对齐（soft alignment）</strong>」模块——即后来的<strong>注意力机制（attention）</strong>：解码器每生成一个词，都对源句所有位置打相关度分、用 softmax 变成权重、加权求和出<strong>该词专属的上下文向量</strong>，从而拆掉「整句压进一个固定长度向量」的瓶颈。长句翻译不再退化，英法翻译首次追平统计系统 Moses；注意力机制由此诞生，三年后长成 Transformer。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>RNN（循环神经网络）</strong>：逐词处理序列的神经网络，每读一个词就更新一次内部记忆，Transformer 之前处理语言的主力。</li>
+<li><strong>隐藏状态（hidden state）</strong>：RNN 读到当前位置时的「工作记忆」——一个几百维的数字向量，概括到目前为止读到的内容。</li>
+<li><strong>词向量（word embedding）</strong>：把每个词表示成一串数字（向量），意思相近的词数字也相近（见 Paper 4 Word2Vec）。</li>
+<li><strong>编码器-解码器 / Seq2Seq</strong>：「先读懂、再重说」的架构——编码器把源句读成向量表示，解码器据此逐词生成译文（见 Paper 8）。</li>
+<li><strong>统计机器翻译（SMT）</strong>：神经翻译之前的主流方法——靠从语料统计出的短语对照表加打分模型拼出译文，代表系统是 Moses。</li>
+<li><strong>BLEU</strong>：机器翻译的自动评分，衡量机器译文与人工参考译文的重合度，越高越好。</li>
+<li><strong>softmax</strong>：把一组任意大小的分数变成一组<strong>加起来等于 1 的比例（权重）</strong>的标准运算。</li>
+<li><strong>梯度 / 反向传播</strong>：训练时从「错在哪」反推「每个参数该怎么调」的纠错信号及其传递方式；传得太远会衰减（梯度消失，见 Paper 7）。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>第一作者 Dmitry Bahdanau 写这篇时还是在 Yoshua Bengio 蒙特利尔实验室实习的学生，与 Kyunghyun Cho、Bengio 合作，2014 年 9 月挂出 arXiv、发表于 ICLR 2015。它直接接续几个月前的 RNN Encoder–Decoder（Cho 等）与 Seq2Seq（Sutskever 等，Paper 8），往后被 Luong 注意力（2015）简化、被 Google 神经翻译系统 GNMT（2016）工业化，三年后长成 Transformer（Paper 1）。</p>
+
+<h2>问题与动机</h2>
+<p>2014 年的神经翻译模型有同一根软肋：编码器必须把整个源句——不管 5 个词还是 60 个词——压进<strong>一个固定长度的向量</strong>，解码器只凭这一个向量重建整句译文。这个向量成了<strong>独木桥</strong>：容量固定，句子越长、被迫丢掉的细节越多。Cho 等人当年实测证实：<strong>句子一变长，BLEU 急坠</strong>。</p>
+<p>作者的判断是：问题不在网络不够大，而在「固定长度向量」这个<strong>设计本身</strong>——它要求把任意长的句子无损塞进同一个小容器，注定顾此失彼。另一边，老牌统计翻译里「对齐」（哪个译文词对应哪个原文词）靠的是独立的模块与人工特征，没法和翻译放在一起端到端地学。<strong>能不能让模型自己学会「翻到哪儿、看哪儿」？</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 170" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="14" y="55" width="120" height="60" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="74" y="80" fill="#d9dee5" font-size="12" text-anchor="middle">源句（60 个词）</text>
+<text x="74" y="100" fill="#7c8593" font-size="11" text-anchor="middle">x₁ x₂ … x₆₀</text>
+<line x1="134" y1="85" x2="166" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="168" y="60" width="90" height="50" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="213" y="90" fill="#e7ebf1" font-size="12" text-anchor="middle">编码器 RNN</text>
+<line x1="258" y1="85" x2="290" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="292" y="70" width="52" height="30" rx="6" fill="rgba(232,121,75,0.2)" stroke="#e8794b" stroke-width="1.8"/>
+<text x="318" y="90" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">c</text>
+<text x="318" y="52" fill="#e8794b" font-size="11" text-anchor="middle">固定长度向量＝独木桥</text>
+<text x="318" y="122" fill="#7c8593" font-size="10.5" text-anchor="middle">5 词也是它，60 词也是它</text>
+<line x1="344" y1="85" x2="376" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="378" y="60" width="90" height="50" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="423" y="90" fill="#e7ebf1" font-size="12" text-anchor="middle">解码器 RNN</text>
+<line x1="468" y1="85" x2="500" y2="85" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="524" y="80" fill="#d9dee5" font-size="12" text-anchor="middle">译文</text>
+<text x="524" y="98" fill="#7c8593" font-size="11" text-anchor="middle">y₁ y₂ …</text>
+</svg>
+<figcaption>图 1 · 固定向量瓶颈：不管句子多长，全部信息都得挤过同一个固定长度向量 c——句子越长丢得越多，长句 BLEU 急坠。</figcaption>
+</figure>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>关键一步：每个输出词，配一杯量身调制的上下文</h3>
+<p>论文的模型叫 <strong>RNNsearch</strong>。它不再让解码器全程只抱着一个向量，而是<strong>每生成一个词，都重新走一遍三步</strong>：</p>
+<ul>
+<li><strong>① 打分</strong>：拿解码器上一步的隐藏状态 <code>s₍ᵢ₋₁₎</code>（「我现在翻到哪了」），去和源句每个位置的表示 <code>hⱼ</code> 算一个相关度 <code>eᵢⱼ = a(s₍ᵢ₋₁₎, hⱼ)</code>——白话：逐个问「原文第 j 个词跟我接下来要写的词有多相关？」。这里的 <code>a</code> 是一个很小的前馈神经网络（后世称为<strong>加性注意力 additive attention</strong>），「什么算相关」由它自己学。</li>
+<li><strong>② 归一</strong>：<code>αᵢⱼ = softmax(eᵢⱼ)</code>——把一串分数变成一组和为 1 的权重，相当于「目光在源句各处的分配比例」。</li>
+<li><strong>③ 加权求和</strong>：<code>cᵢ = Σⱼ αᵢⱼ·hⱼ</code>——按比例把源句各处的信息混合成<strong>上下文向量</strong> <code>cᵢ</code>，交给解码器生成第 i 个词。</li>
+</ul>
+<p>于是整句的负担从「一个向量记住一切」变成「<strong>每一步按需取用</strong>」：写「银行」时目光聚在 bank 附近，写句尾时目光移到句尾。</p>
+<p><strong>为什么这样设计？三个字：可微分。</strong>目光的分配被 softmax 做成「<strong>软</strong>」的——每个源词都分到一点权重、而不是硬选一个——整个模块就处处可导，训练的纠错信号能顺着它一路流回去。于是「往哪看」（对齐）和「怎么翻」（翻译）可以在<strong>同一个训练循环里端到端联合学习</strong>——这正是标题 <em>jointly learning to align and translate</em> 的含义。不需要任何人工对齐标注：<strong>对齐是学好翻译的副产品。</strong></p>
+
+<h3>配套一步：双向编码器，让每个词的表示「带着上下文」</h3>
+<p>要回看的那些 <code>hⱼ</code> 也得升级。如果它只由从左往右读的 RNN 产生，就只概括「j 之前」的内容。论文改用<strong>双向 RNN（bidirectional RNN）</strong>：一遍从左往右读、一遍从右往左读，把两个方向在位置 j 的隐藏状态拼接成该词的<strong>注解（annotation）</strong> <code>hⱼ</code>——它以第 j 个词为中心、又知道前后文，注意力取用时才「拎得起」单个词及其语境。</p>
+
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<!-- source words -->
+<g font-size="12" text-anchor="middle">
+<rect x="30" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="306" fill="#b9c0ca">源词 x₁</text>
+<rect x="140" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="180" y="306" fill="#b9c0ca">x₂</text>
+<rect x="250" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="290" y="306" fill="#b9c0ca">x₃</text>
+<rect x="360" y="286" width="80" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="400" y="306" fill="#b9c0ca">x₄</text>
+</g>
+<!-- annotations -->
+<g font-size="12" text-anchor="middle">
+<rect x="30" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="70" y="237" fill="#e7ebf1">h₁</text>
+<rect x="140" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="180" y="237" fill="#e7ebf1">h₂</text>
+<rect x="250" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="290" y="237" fill="#e7ebf1">h₃</text>
+<rect x="360" y="216" width="80" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="400" y="237" fill="#e7ebf1">h₄</text>
+</g>
+<line x1="70" y1="284" x2="70" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="180" y1="284" x2="180" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="290" y1="284" x2="290" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="400" y1="284" x2="400" y2="252" stroke="#7c8593" marker-end="url(#a2)"/>
+<!-- bidirectional arrows between annotations -->
+<line x1="112" y1="225" x2="138" y2="225" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="138" y1="240" x2="112" y2="240" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="222" y1="225" x2="248" y2="225" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="248" y1="240" x2="222" y2="240" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="332" y1="225" x2="358" y2="225" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="358" y1="240" x2="332" y2="240" stroke="#7c8593" marker-end="url(#a2)"/>
+<text x="470" y="236" fill="#7c8593" font-size="11">双向 RNN 编码器</text>
+<!-- weighted attention lines to + node -->
+<circle cx="235" cy="120" r="16" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="235" y="126" fill="#e7ebf1" font-size="15" text-anchor="middle">＋</text>
+<line x1="70" y1="214" x2="224" y2="130" stroke="#f0b429" stroke-width="1.2" opacity="0.55"/>
+<line x1="180" y1="214" x2="230" y2="137" stroke="#f0b429" stroke-width="5" opacity="0.95"/>
+<line x1="290" y1="214" x2="243" y2="135" stroke="#f0b429" stroke-width="2.4" opacity="0.7"/>
+<line x1="400" y1="214" x2="249" y2="128" stroke="#f0b429" stroke-width="0.8" opacity="0.4"/>
+<text x="88" y="170" fill="#f0b429" font-size="11">权重 αᵢⱼ（线越粗＝看得越多）</text>
+<!-- decoder prev state scoring -->
+<rect x="420" y="30" width="120" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="480" y="52" fill="#b9c0ca" font-size="12" text-anchor="middle">解码器状态 s₍ᵢ₋₁₎</text>
+<path d="M420,60 C340,90 300,150 260,205" fill="none" stroke="#7c8593" stroke-dasharray="4 4"/>
+<text x="332" y="96" fill="#7c8593" font-size="11">① 与每个 hⱼ 打分</text>
+<text x="332" y="112" fill="#7c8593" font-size="11">② softmax → αᵢⱼ</text>
+<!-- c_i output -->
+<line x1="235" y1="104" x2="235" y2="78" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="205" y="42" width="60" height="32" rx="6" fill="rgba(232,121,75,0.2)" stroke="#e8794b"/>
+<text x="235" y="63" fill="#e7ebf1" font-size="13" text-anchor="middle">cᵢ</text>
+<line x1="205" y1="58" x2="130" y2="58" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="20" y="42" width="108" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="74" y="63" fill="#e7ebf1" font-size="12" text-anchor="middle">生成第 i 个词 yᵢ</text>
+<text x="352" y="150" fill="#e8794b" font-size="11">③ 加权求和 cᵢ = Σ αᵢⱼ·hⱼ</text>
+</svg>
+<figcaption>图 2 · 注意力数据流：双向编码器给每个源词一个注解 hⱼ；解码器每生成一个词，都用当前状态给所有 hⱼ 打分（①）、softmax 成权重（②）、加权求和出专属上下文 cᵢ（③）再落笔。</figcaption>
+</figure>
+
+<h3>为什么这就治好了长句</h3>
+<p>两个原因。<strong>一是信息不再过独木桥</strong>：60 个词的句子有 60 份注解可随时取用，「记忆容量」随句长自然增长，编码器不再被迫丢信息。<strong>二是学习信号有了捷径</strong>：以前纠错信号要从译文末端穿过整条 RNN 链才能传回源句开头，长路上层层衰减（梯度消失）；现在注意力在解码器与源句<strong>任意位置</strong>之间拉了一条一步直达的短路——与 ResNet 跳跃连接（Paper 2）「给信号修高速公路」异曲同工。</p>
+
+<h2>关键结果</h2>
+<p>基准是 WMT&#39;14 英→法翻译。对照组 <strong>RNNencdec</strong>（固定向量的 encoder–decoder），实验组 <strong>RNNsearch</strong>（加注意力），各训「最长 30 词 / 50 词」两个版本。全测试集 BLEU：<strong>RNNencdec-50 得 17.82，RNNsearch-50 得 26.75</strong>——同样的数据、同样的 RNN 骨架，多一个注意力模块，差出近 9 个 BLEU。训练更久的 RNNsearch-50★ 达 <strong>28.45</strong>；在不含生僻词的句子上达 <strong>36.15</strong>，略超当时统治级的统计系统 Moses（35.63，且 Moses 还额外用了海量单语语料）——<strong>神经翻译首次在严肃基准上与统治二十年的统计方法平起平坐</strong>。</p>
+<p>更能说明问题的是<strong>句长曲线</strong>：RNNencdec 的 BLEU 在句长超过 20 词后一路下坠，而 RNNsearch-50 直到 50 词以上<strong>几乎不掉</strong>（图 3）。此外，把注意力权重 <code>αᵢⱼ</code> 画成热图，能直接看到模型<strong>自动学出了英法词对齐</strong>——语序颠倒处（如 European Economic Area ↔ zone économique européenne）目光清晰地交叉回跳，而没有任何人教过它对齐。</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="40" x2="70" y2="205" stroke="#7c8593"/>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"/>
+<text x="70" y="28" fill="#7c8593" font-size="11.5" text-anchor="middle">BLEU</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">句子长度（词数）→</text>
+<path d="M88,88 C200,84 360,86 508,92" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<path d="M88,96 C180,92 260,110 340,150 C400,180 460,192 508,196" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<text x="504" y="82" fill="#f0b429" font-size="12" text-anchor="end">RNNsearch-50（有注意力）</text>
+<text x="470" y="180" fill="#e8794b" font-size="12" text-anchor="end">RNNencdec（固定向量）</text>
+<text x="280" y="60" fill="#e7ebf1" font-size="12.5" text-anchor="middle">有注意力：句子再长也几乎不掉</text>
+</svg>
+<figcaption>图 3 · 句长 vs BLEU（示意，据原文 Fig.2）：固定向量模型在 20 词后急坠；加注意力后长句几乎不退化。</figcaption>
+</figure>
+
+<h2>为什么重要 / 影响</h2>
+<p>它贡献了「注意力」——此后十年最重要的<strong>架构原语</strong>。Luong 等（2015）把打分简化成点积；Xu 等（2015）把它搬进图像描述（「看图」的视觉注意力）；GNMT（2016）把注意力翻译系统部署进 Google 翻译；2017 年 Transformer（Paper 1）走到逻辑终点——<strong>把 RNN 整个扔掉、只留注意力</strong>，并把本文的小网络打分换成缩放点积 <code>softmax(QKᵀ/√d)V</code>。今天每个大模型每生成一个 token 都在做的自注意力（self-attention），机制上就是本文「打分 → softmax → 加权求和」三步的直系后代。另外，注意力热图还让神经网络第一次有了一扇随手可开的「可解释性」小窗。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>骨架仍是 RNN</strong>：逐词串行、难以并行训练，速度瓶颈没解决——这一刀三年后才由 Transformer 补上。</li>
+<li><strong>打分开销随句长成倍涨</strong>：每个输出词都要对整个源句打一遍分，源句 m 词、译文 n 词就要 <code>n×m</code> 次打分——这正是后来 Transformer <code>O(n²)</code> 注意力开销的前身。</li>
+<li><strong>加性打分并非最优</strong>：Luong（2015）表明更简单的点积打分效果相当且更快，本文的小网络打分后来被淘汰。</li>
+<li><strong>软对齐 ≠ 语言学对齐</strong>：α 权重常常发散、并不总落在「正确」的词上，把它直接当「模型的解释」有风险——后来 NLP 界「attention is not explanation」之争即源于此。</li>
+<li><strong>词表问题没碰</strong>：生僻词仍是未知符号（UNK），上面「追平 Moses」只在不含生僻词的子集成立；这个坑后来由 BPE 子词切分（2016）填上。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 痛点：encoder–decoder 把整句压进一个固定长度向量，容量固定、句子越长丢得越多，长句 BLEU 急坠。</p>
+<p>② 核心 idea：解码器每生成一个词，<strong>动态回看源句</strong>——打分 → softmax → 加权求和，得到该词专属的上下文向量。</p>
+<p>③ 机制：<code>eᵢⱼ = a(s₍ᵢ₋₁₎, hⱼ)</code>，<code>α = softmax(e)</code>，<code>cᵢ = Σ αᵢⱼ·hⱼ</code>；打分器是个跟着一起学的小网络（加性注意力）。</p>
+<p>④ 「软」是关键：处处可微，「往哪看」与「怎么翻」端到端联合训练，无需人工对齐标注——对齐成了翻译学好的副产品。</p>
+<p>⑤ 配套：双向 RNN 编码器给每个源词一个带前后文的注解 hⱼ，注意力才有得可取。</p>
+<p>⑥ 结果：WMT'14 英法 RNNsearch-50 26.75 vs 固定向量 17.82；长句几乎不退化；无生僻词子集上 36.15 超过 Moses 35.63。</p>
+<p>⑦ 影响：注意力成为通用架构原语，经 Luong、GNMT 一路长成 Transformer 与今天所有大模型的 self-attention。</p>
+<p>⑧ 局限：RNN 串行慢；打分开销 n×m；软对齐不是真对齐、当解释有争议；UNK 词表问题留给了 BPE。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整模型配置与推导，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
