@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BERT — CS Papers Deep-Read Paper 10</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 10</p>
+<h1>BERT: Bidirectional Pre-training + Fine-tuning</h1>
+<p class="sub">Devlin et al. · Google AI Language · NAACL 2019</p>
+<p class="langbar"><a href="bert-paper10.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2018 a team at Google proposed <strong>BERT</strong>: first let a model <strong>read Wikipedia and thousands of books on its own, teaching itself language</strong>, then for each concrete task (is this review positive? answer this question…) give it just a <strong>small "crash course"</strong> and it's ready for the job. In one stroke it broke the records on 11 language-understanding tasks — beating humans on some. The "<strong>pre-train first, then adapt</strong>" recipe that every large model today follows (including ChatGPT) was cemented in language by this paper. And since 2019, every Google search you make has run through it.</p>
+
+<h2>First, a puzzle</h2>
+<p>The most natural homework for teaching a machine to "understand" language is <strong>next-word guessing</strong>: give it half a sentence, have it guess the next word. But that game has a built-in handicap: <strong>you may only look left, never right</strong> — like reading a book with a sheet of paper covering everything ahead. Yet humans understand a word by looking both ways: in "He walked into the ___ and deposited his money," the blank is "bank," and the clue is <strong>to the right, in "deposited money."</strong> From "he walked into the" alone, it could be anything. The best models of the day lived with this handicap: either read left-to-right only, or duct-tape together two half-blind models — one reading forward, one backward. No single model could <strong>truly look both ways at once</strong>.</p>
+
+<h2>Change the homework: fill in the blanks</h2>
+<p>BERT's move is to change the exercise: forget next-word guessing — <strong>play fill-in-the-blank</strong>. Randomly blank out a few words in a sentence and have the model guess what's missing. To guess right, the model <strong>must look at both sides at once</strong> — the task itself forces two-way understanding. Better yet, these exercises are <strong>free</strong>: take any text, punch a few holes, and you have a question with its answer key built in. Wikipedia plus thousands of books become billions of free practice questions — no human grader needed. Guess, check, correct, repeat a few billion times, and the model soaks up word meanings, grammar, and a good deal of common sense.</p>
+
+<h2>College first, then job training</h2>
+<p>Filling blanks alone doesn't pay the bills. BERT's second idea splits learning into two stages, like a person's education: first an expensive pass through <strong>"general-education college"</strong> (fill-in-the-blank over massive text, building a general language foundation — done only once), then for each job a quick <strong>"onboarding crash course"</strong>: a few thousand labeled examples, a light touch-up of the same foundation, and it's on the job within hours. Before, every task meant raising an illiterate from scratch — slow, costly, and mediocre. Now every task starts from a college graduate. <strong>One expensive self-education, endlessly cheap onboarding</strong> — an unbeatable deal.</p>
+
+<h2>What it brought</h2>
+<p>When BERT landed, records fell across 11 language-understanding tasks, and within a year the whole field pivoted to "pre-train + fine-tune." Google put it inside Search to understand what your query really asks. One honest note: BERT is a <strong>reading-comprehension specialist — great at understanding, not at writing</strong>. The GPT line that later learned to chat and write took a different road and, at scale, stole the spotlight. But the "pre-train first, then adapt" paradigm became industry consensus right here.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Swap "guess the next word" for "fill in the blank," and a model can read billions of sentences looking both ways, teaching itself language for free; afterwards each task needs only a quick crash course on top. College first, job training second — the paradigm that has ruled AI ever since BERT.</p>
+</div>
+
+<p class="switch-hint">Want the masking recipe, the architecture, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">BERT pre-trains a <strong>deeply bidirectional</strong> Transformer encoder on unlabeled text using a <strong>masked language model</strong> (a fill-in-the-blank self-supervised task), then adapts to each downstream task by adding just one output layer and <strong>fine-tuning</strong> the whole thing — breaking the records on 11 NLP tasks (a 7.7-point absolute jump on GLUE; above human level on SQuAD question answering) and establishing <strong>"pre-train + fine-tune"</strong> as the ruling paradigm of NLP.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Neural network / layers</strong>: a model built by stacking "layers" that learn patterns from data automatically; more layers (deeper) means more complex patterns can be expressed.</li>
+<li><strong>Transformer / encoder</strong>: the 2017 architecture (see Paper 1) built on self-attention. It has two halves: an encoder that "reads and understands" the input, and a decoder that "generates output word by word." BERT uses only the encoder half.</li>
+<li><strong>Self-attention</strong>: a mechanism letting every word in a sentence directly "look at" all other words and absorb information weighted by relevance — naturally allowing a word to see both left and right.</li>
+<li><strong>Embedding / representation</strong>: turning a word or sentence into a list of numbers (a vector) so that "similar meaning" shows up as "similar numbers"; the model thinks in these vectors internally.</li>
+<li><strong>Language model</strong>: a model trained on tasks like "given the words so far, predict the next word." Since the answers are hidden in the text itself, no human labels are needed — hence <em>self-supervised</em>.</li>
+<li><strong>Pre-training / fine-tuning</strong>: first train a general-purpose foundation on massive generic data (pre-training), then continue training it briefly on a small task-specific dataset (fine-tuning) to transfer the general ability to the concrete task.</li>
+<li><strong>Token / WordPiece</strong>: the smallest unit of text a model processes. WordPiece is a splitting scheme that breaks rare words into common fragments (playing → play + ##ing), so ~30,000 fragments can spell any word.</li>
+<li><strong>GLUE / SQuAD</strong>: the two big public benchmarks for "language understanding" of that era — GLUE bundles 9 understanding tasks (sentiment, whether two sentences contradict, etc.); SQuAD is "read a Wikipedia passage, answer a question."</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova at Google AI Language; released in October 2018, published at NAACL 2019, where it won Best Paper. It inherits the Transformer (2017, the architecture) and ELMo and GPT-1 (2018, the embryo of "pre-train a language model, then transfer"); it launches the sprawling family of RoBERTa, ALBERT, DistilBERT and more, and stands opposite the GPT "generative" line — the watershed of NLP's pre-training era.</p>
+
+<h2>The problem and the motivation</h2>
+<p>By early 2018 the field could glimpse the direction: rather than train a small model from scratch per task, pre-train a language model on huge unlabeled corpora, then transfer. But the two pioneers each had a hard flaw:</p>
+<ul>
+<li><strong>GPT-1 (OpenAI)</strong>: a Transformer trained as a standard language model — predict the next word, left to right. Modern architecture, fine-tunable, but <strong>every word can only see its left context</strong>. For generation that's natural (you write forward), but for <em>understanding</em> it's self-handicapping: whether "bank" means the institution or the riverside often depends on clues to the right.</li>
+<li><strong>ELMo</strong>: saw that both sides matter, but its fix was to train two <em>separately unidirectional</em> LSTMs (one reading forward, one backward) and <strong>shallowly concatenate</strong> their outputs — two half-blind models reading independently, meeting only at the very last moment; no layer anywhere has genuine two-way interaction.</li>
+</ul>
+<p>So why not just train one bidirectional model? Because the "predict the next word" task is <strong>fundamentally at odds with bidirectionality</strong>: self-attention lets every position see the whole sentence, and once layers stack, each word can <strong>see itself through a detour</strong> via other words — prediction collapses into copying the answer, and the model learns nothing. <strong>It's not that nobody wanted bidirectional; the old homework forbade it.</strong> That's the real blocker: to get deep bidirectional representations, you must first find a training task that doesn't leak the answer.</p>
+
+<h2>The core ideas</h2>
+
+<h3>Idea one: the masked language model (MLM) — homework that can't leak</h3>
+<p>BERT borrowed an exercise linguists have used since 1953 — the <strong>Cloze task</strong>: randomly blank out <strong>15%</strong> of the tokens in a sentence (replacing them with a special <code>[MASK]</code> symbol) and have the model predict the missing words from <strong>all the remaining context</strong>. With that one swap, the leak is gone — the answer has been removed, so staring at the whole sentence can't reveal it; and to guess correctly, the model <strong>must</strong> fuse clues from both left and right. Bidirectionality stops being cheating and becomes a requirement.</p>
+
+<figure>
+<svg viewBox="0 0 560 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ma" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
+<marker id="mg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="20" y="30" fill="#7c8593" font-size="12">Unidirectional (GPT): left context only</text>
+<g font-size="11.5" text-anchor="middle">
+<rect x="20" y="42" width="46" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="43" y="62" fill="#b9c0ca">he</text>
+<rect x="72" y="42" width="66" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="105" y="62" fill="#b9c0ca">walked</text>
+<rect x="144" y="42" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="170" y="62" fill="#b9c0ca">into</text>
+<rect x="202" y="42" width="46" height="30" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="225" y="62" fill="#e7ebf1">??</text>
+<rect x="254" y="42" width="46" height="30" rx="6" fill="rgba(255,255,255,0.02)" stroke="#3a414b"/><text x="277" y="62" fill="#5a6069">and</text>
+<rect x="306" y="42" width="86" height="30" rx="6" fill="rgba(255,255,255,0.02)" stroke="#3a414b"/><text x="349" y="62" fill="#5a6069">deposited</text>
+<rect x="398" y="42" width="60" height="30" rx="6" fill="rgba(255,255,255,0.02)" stroke="#3a414b"/><text x="428" y="62" fill="#5a6069">money</text>
+</g>
+<path d="M43,80 C80,104 190,104 218,82" fill="none" stroke="#7c8593" stroke-width="1.4" marker-end="url(#mg)"/>
+<path d="M105,80 C140,98 196,98 220,82" fill="none" stroke="#7c8593" stroke-width="1.4" marker-end="url(#mg)"/>
+<text x="470" y="58" fill="#7c8593" font-size="11">clues on the right</text>
+<text x="470" y="74" fill="#7c8593" font-size="11">are blocked</text>
+<text x="20" y="146" fill="#f0b429" font-size="12">BERT cloze: remove the word, look both ways</text>
+<g font-size="11.5" text-anchor="middle">
+<rect x="20" y="158" width="46" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="43" y="178" fill="#b9c0ca">he</text>
+<rect x="72" y="158" width="66" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="105" y="178" fill="#b9c0ca">walked</text>
+<rect x="144" y="158" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="170" y="178" fill="#b9c0ca">into</text>
+<rect x="202" y="158" width="60" height="30" rx="6" fill="rgba(240,180,41,0.16)" stroke="#f0b429"/><text x="232" y="178" fill="#f5c451">[MASK]</text>
+<rect x="268" y="158" width="46" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="291" y="178" fill="#b9c0ca">and</text>
+<rect x="320" y="158" width="86" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="363" y="178" fill="#b9c0ca">deposited</text>
+<rect x="412" y="158" width="60" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="442" y="178" fill="#b9c0ca">money</text>
+</g>
+<path d="M43,196 C82,220 196,220 224,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
+<path d="M105,196 C140,214 202,214 226,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
+<path d="M291,196 C276,212 252,212 240,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
+<path d="M363,196 C324,222 262,220 238,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
+<path d="M442,196 C390,228 268,226 234,200" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
+<text x="500" y="174" fill="#f0b429" font-size="11">answer:</text>
+<text x="500" y="190" fill="#b9c0ca" font-size="11">"bank"</text>
+<text x="280" y="256" fill="#7c8593" font-size="11.5" text-anchor="middle">the target is removed, so seeing the whole sentence can't leak it — bidirectionality turns from cheating into necessity</text>
+</svg>
+<figcaption>Fig 1 · A next-word language model may only look left, so "bank" is unguessable; the cloze task removes the target word, forcing the model to fuse clues from both sides.</figcaption>
+</figure>
+
+<p>One subtle patch. The <code>[MASK]</code> symbol appears only during pre-training — at fine-tuning and inference time the input never contains it. A model that learns to "work only when it sees [MASK]" would falter on real tasks (a <em>pre-train/fine-tune mismatch</em>). So among the 15% selected positions, BERT doesn't always insert [MASK]: <strong>80% become [MASK], 10% become a random word, 10% keep the original word</strong> — while the model must predict the original in all cases. Now it can never tell which positions were tampered with, so it's forced to <strong>maintain a high-quality contextual representation for every position</strong>, not just wherever [MASK] sits.</p>
+
+<h3>Idea two: next sentence prediction (NSP) — learning relations between sentences</h3>
+<p>Cloze practice trains word-level understanding, but question answering and inference require understanding <strong>the relation between two sentences</strong>. So pre-training adds a second, true/false exercise: show the model a pair of sentences — 50% genuinely adjacent in the corpus, 50% randomly paired — and have it judge "is B the sentence that follows A?" (Honest note: this exercise was later shown to contribute little; see Limitations.)</p>
+
+<h3>Idea three: one foundation, every job — pre-train + fine-tune</h3>
+<p>BERT's architecture is simply stacked Transformer encoder layers: <strong>BERT-Base</strong>, 12 layers, ~110M parameters (deliberately matched to GPT-1's size for a fair comparison); <strong>BERT-Large</strong>, 24 layers, ~340M. The input format lets <em>every</em> understanding task fit one model: a special <code>[CLS]</code> token opens each input, <code>[SEP]</code> separates sentences; each token's input vector = <em>token embedding + segment embedding (marking sentence A or B) + position embedding</em>, summed. After pre-training, <strong>the output vector at [CLS] serves as a summary representation of the whole input</strong> — bolt a classifier onto it for classification tasks; for QA, use each token's output to predict where the answer span starts and ends.</p>
+<p><strong>Fine-tuning is astonishingly cheap</strong>: no freezing, no re-architecting — take the whole pre-trained model plus one new output layer and train 2–4 more epochs on the task data. Every task in the paper fine-tunes in under an hour on a single TPU. Pre-training used BooksCorpus (800M words) plus English Wikipedia (2,500M words) — that big bill is <strong>paid once</strong>, then shared by all tasks.</p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="fa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="140" y="26" fill="#f0b429" font-size="12.5" text-anchor="middle" font-weight="700">1. Pre-train (once, expensive)</text>
+<rect x="30" y="38" width="220" height="44" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="140" y="56" fill="#b9c0ca" font-size="11.5" text-anchor="middle">Unlabeled text: Wikipedia 2.5B words</text>
+<text x="140" y="72" fill="#b9c0ca" font-size="11.5" text-anchor="middle">+ books 0.8B words</text>
+<line x1="140" y1="82" x2="140" y2="104" stroke="#f0b429" stroke-width="1.6" marker-end="url(#fa)"/>
+<text x="152" y="98" fill="#7c8593" font-size="10.5">cloze MLM + next-sentence NSP</text>
+<rect x="42" y="106" width="196" height="66" rx="10" fill="rgba(240,180,41,0.1)" stroke="#f0b429" stroke-width="1.6"/>
+<text x="140" y="132" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">BERT: Transformer encoder</text>
+<text x="140" y="152" fill="#7c8593" font-size="11" text-anchor="middle">Base 12 layers 110M · Large 24 layers 340M</text>
+<text x="140" y="200" fill="#f0b429" font-size="12" text-anchor="middle">general language foundation (shared)</text>
+<text x="430" y="26" fill="#e8794b" font-size="12.5" text-anchor="middle" font-weight="700">2. Fine-tune (per task, cheap)</text>
+<line x1="238" y1="120" x2="330" y2="66" stroke="#e8794b" stroke-width="1.5" marker-end="url(#fa)"/>
+<line x1="238" y1="139" x2="330" y2="139" stroke="#e8794b" stroke-width="1.5" marker-end="url(#fa)"/>
+<line x1="238" y1="158" x2="330" y2="212" stroke="#e8794b" stroke-width="1.5" marker-end="url(#fa)"/>
+<rect x="334" y="44" width="196" height="44" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<text x="432" y="62" fill="#e7ebf1" font-size="12" text-anchor="middle">Sentiment: +1 output layer</text>
+<text x="432" y="79" fill="#7c8593" font-size="10.5" text-anchor="middle">a few thousand labels · 2–4 epochs</text>
+<rect x="334" y="117" width="196" height="44" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<text x="432" y="135" fill="#e7ebf1" font-size="12" text-anchor="middle">QA (SQuAD): +span head</text>
+<text x="432" y="152" fill="#7c8593" font-size="10.5" text-anchor="middle">same foundation · all params tuned</text>
+<rect x="334" y="190" width="196" height="44" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<text x="432" y="208" fill="#e7ebf1" font-size="12" text-anchor="middle">Inference / tagging / similarity…</text>
+<text x="432" y="225" fill="#7c8593" font-size="10.5" text-anchor="middle">under 1 hour on a single TPU</text>
+<text x="280" y="282" fill="#7c8593" font-size="11.5" text-anchor="middle">one expensive self-education buys cheap onboarding for every task — same architecture, one thin output head</text>
+</svg>
+<figcaption>Fig 2 · The pre-train + fine-tune paradigm: the shared foundation on the left is trained once; each task on the right adds one thin output head and fine-tunes briefly on small data.</figcaption>
+</figure>
+
+<p>Why does this work so well? One way to see it: the cloze task forces the model to internalize word-sense disambiguation, syntactic structure, even a slice of world knowledge — exactly the <strong>common foundation</strong> beneath nearly every language-understanding task. Fine-tuning is then just building a small house on solid ground — fast and stable — whereas the old way re-laid the foundation for every single house.</p>
+
+<h2>Key results</h2>
+<p>When the scores landed in October 2018, BERT had <strong>broken the record on all 11 NLP tasks it touched</strong>. Representative numbers: <strong>GLUE</strong> overall 80.5%, an <strong>absolute jump of 7.7 points</strong> over the previous best (a leaderboard that used to inch up by fractions of a point); within it, MultiNLI natural-language inference hit 86.7% (+4.6). On <strong>SQuAD v1.1</strong> reading comprehension it reached an F1 of 93.2 (a measure of overlap with the reference answer), surpassing the human annotators' 91.2; on SQuAD v2.0, F1 83.1 (+5.1). The ablations are equally persuasive: swapping MLM back to a traditional left-to-right objective drops scores across GLUE and collapses SQuAD by about 10 F1 points — <strong>deep bidirectionality is the main engine of the gains</strong>; and Large beats Base across the board, foreshadowing "bigger will keep getting better."</p>
+
+<h2>Why it mattered</h2>
+<p>BERT was NLP's "ImageNet moment": vision had long been used to "pre-train on ImageNet, then fine-tune," but NLP only got its own general-purpose foundation with BERT. For the next few years, "fine-tune BERT" became the default first move for nearly every language-understanding task, spawning a huge family: RoBERTa (trained longer and better), ALBERT (parameter sharing to slim down), DistilBERT (distilled small versions), multilingual mBERT, and many variants for other languages. In 2019 Google announced BERT inside Search ranking, calling it one of the biggest leaps in Search history. The deeper legacy is the paradigm itself: <strong>self-supervised pre-training of a large model on unlabeled data, then aligning it to concrete tasks</strong> — today's GPT and Claude stand on exactly this road, with "fine-tuning" swapped for larger-scale instruction alignment. And the bidirectional encoder never really left: the embedding models inside today's retrieval systems and vector databases are mostly BERT's direct descendants.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>NSP turned out nearly useless</strong>: RoBERTa (2019) showed through systematic ablation that dropping next-sentence prediction loses nothing and even helps slightly — the exercise is too easy (guessing whether the topics match suffices), so it taught little. Later models dropped it.</li>
+<li><strong>Under-trained</strong>: RoBERTa also proved the same architecture, given more data, longer training, and bigger batches, clearly beats BERT — the original left much of the method's potential on the table.</li>
+<li><strong>[MASK] mismatch and inefficiency</strong>: the 80/10/10 trick softens but doesn't remove the "sees [MASK] in training, never at test time" mismatch; and only 15% of positions per sentence produce a learning signal, so sample efficiency is low. ELECTRA (2020) switched to "judge whether each token was replaced" and learned far faster at equal compute.</li>
+<li><strong>Independence assumption between masked words</strong>: multiple blanks are guessed independently, ignoring their correlations (mask "New" and "York" and the two guesses should be coupled). XLNet (2019) made this its main line of attack.</li>
+<li><strong>Understands but cannot generate</strong>: the encoder-only architecture can't write long text word by word — weak at summarization, translation, dialogue. The decoder-only GPT line, once scaled, could both generate and understand, and took over the main stage.</li>
+<li><strong>Engineering limits</strong>: inputs cap at 512 tokens, so long documents need chunking; pre-training demanded serious TPU resources at the time, hard to reproduce outside big labs.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>1. In one line: pre-train a deep bidirectional Transformer encoder with cloze-style MLM, then add one output layer per task and fine-tune — records broken on 11 tasks.</p>
+<p>2. The pain: "predict the next word" fundamentally conflicts with bidirectionality (stacked attention lets a word see itself via detours and copy the answer), so GPT-1 stayed unidirectional and ELMo could only shallowly concatenate two one-way models.</p>
+<p>3. Core mechanism: remove 15% of the words and make the model guess them — the removed answer can't leak, and guessing right requires fusing left and right context; bidirectionality turns from cheating into necessity.</p>
+<p>4. The patch: of selected positions, 80% become [MASK], 10% a random word, 10% stay unchanged — softening the "[MASK] exists only in training" mismatch.</p>
+<p>5. The paradigm: pre-train once (3.3B words, big bill) + fine-tune per task (small data, under an hour on one TPU); [CLS] output as the whole-input summary; same architecture, one thin head.</p>
+<p>6. Results: GLUE 80.5% (+7.7); SQuAD v1.1 F1 93.2, above human; ablations show bidirectionality drives the gains.</p>
+<p>7. Impact: NLP's ImageNet moment — "pre-train + fine-tune" became the ruling paradigm; deployed in Google Search; today's retrieval embedding models are largely its descendants.</p>
+<p>8. Limits: NSP proved useless; the original was under-trained (RoBERTa); MLM is sample-inefficient (ELECTRA); masked-word independence (XLNet); cannot generate (later overtaken by the GPT line); 512-token cap.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full hyperparameters and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
