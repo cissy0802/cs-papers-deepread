@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>GPT-3 (Language Models are Few-Shot Learners) — CS Papers Deep-Read Paper 11</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 11</p>
+<h1>GPT-3 (Language Models are Few-Shot Learners)</h1>
+<p class="sub">Brown et al. · OpenAI · NeurIPS 2020</p>
+<p class="langbar"><a href="gpt-3-paper11.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2020, OpenAI released <strong>GPT-3</strong> — the direct ancestor of ChatGPT. What the paper did sounds almost crude: scale a language model up to an unprecedented <strong>175 billion parameters</strong> and have it read a huge slice of the internet. Then they showed something strange: this model <strong>never needs task-specific training again</strong> — show it a few examples right in the input, and it can translate, answer questions, write articles, and do arithmetic on the spot, picking things up "at a glance" the way people do.</p>
+
+<h2>First, the old world's problem</h2>
+<p>Before this, AI worked "one job, one training course." Want a model that translates? First collect tens of thousands of hand-labeled translation pairs and train on them. Want it to judge whether a movie review is positive? Collect and train all over again. <strong>Every new task meant paying people to label data and running another round of training</strong> — like sending an employee to a months-long bootcamp every time they switch roles. Expensive, slow, and only accessible to people who could train models.</p>
+
+<h2>The new idea: skip the bootcamp, hire a well-read veteran</h2>
+<p>GPT-3's approach: instead of running a bootcamp per task, raise <strong>one veteran who has read everything</strong>. During training it does exactly one thing — read oceans of text and practice "guess the next word." Once trained, you never touch it again: <strong>write the task in plain language on a note, attach two or three worked examples, and it follows along</strong>. The paper calls this "few-shot learning" — not re-teaching the model, just reminding it.</p>
+
+<h2>Why are a few examples enough?</h2>
+<p>The key: those examples <strong>aren't "teaching" it a new skill — they're telling it which skill to pull out</strong>. Picture a giant jukebox. The songs (the skills) were recorded while it read the internet: grammar, common sense, correspondences between languages, the rhythm of question-and-answer. The examples you write are like punching in a song number, helping it lock on: "ah, we're playing the English-to-French game now."</p>
+<p>And the paper's most important finding is: <strong>the bigger the model, the better this trick works</strong>. For small models, showing examples barely helps; only past a certain scale does "learning from examples" suddenly start working well. "Bigger" isn't just more of the same. One honest caveat: at bottom it is still just continuing text, and fluent doesn't mean true — <strong>it will fabricate facts with a straight face</strong>, a flaw that runs from GPT-3 straight through to today's chatbots.</p>
+
+<h2>What it brought</h2>
+<p>The way we use AI changed: no longer "engineers collect data and train models," but "<strong>anyone commands a model with a paragraph of text</strong>" — the prompts everyone writes today became a craft starting with this paper. Two years later, OpenAI added a layer of "follow human instructions" training on top of its successor, and that became ChatGPT.</p>
+
+<h2>One line to remember</h2>
+<div class="tl">
+<p>Scale "guess the next word" up to 175 billion parameters and the model can pick up new tasks on the spot from a few examples, with no task-specific training — GPT-3 proved that size itself buys generality, opened the prompting era, and is ChatGPT's direct ancestor.</p>
+</div>
+
+<p class="switch-hint">Want the diagram of the three prompting modes, the scaling curves, and the real benchmark numbers? <a data-mode="deep">→ Switch to Deep</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one line</h2>
+<p class="lead">GPT-3 scales a decoder-only Transformer language model — trained only to "predict the next word" — to <strong>175 billion parameters</strong> on about 300 billion tokens of web text, then shows that <strong>with zero gradient updates</strong>, just a task description plus a few demonstrations written into the input (<strong>in-context learning</strong>), it approaches or beats specially fine-tuned models across dozens of NLP benchmarks — <strong>scale itself buys generality</strong>. Two years later this line of work grew directly into ChatGPT.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Language model</strong>: a model that, given the text so far, computes "what word most likely comes next" — essentially an autocomplete machine.</li>
+<li><strong>Transformer / decoder-only</strong>: a network architecture that processes sequences entirely with attention (see Paper 1); "decoder-only" keeps just the left-to-right generation half. Every GPT is this kind.</li>
+<li><strong>Parameter</strong>: an adjustable "knob" inside the model; the count roughly tracks capacity. 175B parameters ≈ 175 billion tunable numbers.</li>
+<li><strong>Token</strong>: the smallest unit of text a model processes — roughly a word or a piece of a word.</li>
+<li><strong>Pre-training</strong>: first learning general ability from massive unlabeled text, with no specific task in mind.</li>
+<li><strong>Fine-tuning</strong>: after pre-training, continuing to train on thousands of hand-labeled examples for one task, turning the model into a specialist for that task.</li>
+<li><strong>Gradient update</strong>: the training step that adjusts parameters based on errors. "Zero gradient updates" = the weights are completely frozen; the model is only doing inference.</li>
+<li><strong>Benchmark</strong>: a standard, community-agreed test set (question answering, translation, cloze tasks…) used to compare models head to head.</li>
+</ul>
+</div>
+
+<h2>Coordinates</h2>
+<p>Tom Brown, Benjamin Mann, Nick Ryder, and 28 more authors at OpenAI; released May 2020, published at NeurIPS 2020. It follows GPT-2 (2019, which had shown the first hints of "doing tasks without fine-tuning") and that same year's Scaling Laws (Kaplan et al., the quantitative case that loss falls as a power law with scale); it precedes InstructGPT / ChatGPT (which add instruction tuning and RLHF on top of it) and the entire "large model + prompt" industry paradigm.</p>
+
+<h2>Problem and motivation</h2>
+<p>By 2019, mainstream NLP ran on the two-stage recipe BERT had established: <strong>pre-train, then fine-tune</strong> — pre-train on unlabeled text, then collect thousands of labeled examples per downstream task and fine-tune. Three pains. <strong>Cost</strong>: every new task needs its own labeled dataset, which can never cover the long tail of real needs. <strong>Narrowness</strong>: fine-tuning produces narrow specialists that latch onto shortcuts in the training distribution — inflated scores that collapse when the distribution shifts, so the generalization is suspect. <strong>Unlike humans</strong>: a person given a new task usually needs one sentence of instructions and at most an example or two, not ten thousand practice problems.</p>
+<p>GPT-2 had already hinted that "zero-shot task-doing" was possible, but its scores were far from competitive. This paper's question is crisp: <strong>scale model and data up by two orders of magnitude — does "pick it up from a few examples" grow from a hint into a real ability?</strong></p>
+
+<h2>Core idea / method</h2>
+
+<h3>In-context learning: moving "learning" into the input box</h3>
+<p>GPT-3 evaluates <strong>one frozen model</strong> under three settings: <strong>zero-shot</strong> gives only a natural-language description of the task; <strong>one-shot</strong> adds a single demonstration; <strong>few-shot</strong> gives 10–100 demonstrations (as many as fit in the 2048-token context window). The crux: <strong>the demonstrations are just ordinary text placed in the input — not a single parameter moves, no gradient updates happen</strong>. The model does the only thing it knows — predict the next word — and the answer emerges from the continuation.</p>
+
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="g1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="g1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<line x1="280" y1="20" x2="280" y2="310" stroke="rgba(124,133,147,0.25)" stroke-dasharray="4 4"/>
+<text x="140" y="30" fill="#7c8593" font-size="13" text-anchor="middle" font-weight="700">Fine-tuning (old)</text>
+<rect x="40" y="48" width="200" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="140" y="70" fill="#b9c0ca" font-size="12" text-anchor="middle">Pre-trained model</text>
+<line x1="140" y1="82" x2="140" y2="150" stroke="#7c8593" marker-end="url(#g1)"/>
+<text x="140" y="105" fill="#e8794b" font-size="11" text-anchor="middle">10,000s of labeled examples</text>
+<text x="140" y="122" fill="#e8794b" font-size="11" text-anchor="middle">repeated gradient updates</text>
+<rect x="40" y="154" width="200" height="34" rx="6" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<text x="140" y="176" fill="#e7ebf1" font-size="12" text-anchor="middle">Translation-only model</text>
+<text x="140" y="216" fill="#7c8593" font-size="11" text-anchor="middle">Every new task: collect data</text>
+<text x="140" y="232" fill="#7c8593" font-size="11" text-anchor="middle">and train all over again</text>
+<text x="420" y="30" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">In-context learning (GPT-3)</text>
+<rect x="308" y="42" width="224" height="118" rx="6" fill="rgba(240,180,41,0.06)" stroke="#f0b429"/>
+<text x="320" y="64" fill="#e7ebf1" font-size="11.5" font-family="Menlo,monospace">Translate English to French:</text>
+<text x="320" y="86" fill="#b9c0ca" font-size="11.5" font-family="Menlo,monospace">sea otter =&gt; loutre de mer</text>
+<text x="320" y="108" fill="#b9c0ca" font-size="11.5" font-family="Menlo,monospace">plush girafe =&gt; girafe peluche</text>
+<text x="320" y="130" fill="#f5c451" font-size="11.5" font-family="Menlo,monospace">cheese =&gt;</text>
+<text x="320" y="150" fill="#7c8593" font-size="10.5">↑ description + demos + query, all just input text</text>
+<line x1="420" y1="160" x2="420" y2="222" stroke="#f0b429" marker-end="url(#g1g)"/>
+<text x="432" y="186" fill="#f0b429" font-size="11">One forward pass</text>
+<text x="432" y="202" fill="#7c8593" font-size="11">weights frozen · zero updates</text>
+<rect x="360" y="226" width="120" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="420" y="248" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-family="Menlo,monospace">fromage</text>
+<text x="420" y="288" fill="#7c8593" font-size="11" text-anchor="middle">Demos only remind it which skill to use;</text>
+<text x="420" y="304" fill="#7c8593" font-size="11" text-anchor="middle">one model serves every task</text>
+</svg>
+<figcaption>Fig. 1 · Fine-tuning vs in-context learning: the old paradigm needs labeled data and weight updates per task; GPT-3 writes the task description and demos into the input, stays frozen, and continues the text into an answer.</figcaption>
+</figure>
+
+<p>Why might this work? The training corpus — web pages, books — is already full of demonstration-shaped text: problems followed by answers, English followed by French, a scathing review followed by one star. <strong>To predict the next word accurately, the model is forced to internalize these patterns.</strong> The few demonstrations you supply at inference time signal which pattern is in play. In the paper's framing, pre-training teaches the model a meta-ability to <strong>recognize the task from context and adapt on the fly</strong> — a broad form of meta-learning.</p>
+
+<h3>Scale is the protagonist: a controlled experiment over eight models</h3>
+<p>Architecturally GPT-3 contains almost nothing new: the same decoder-only Transformer as GPT-2 (96 layers in the largest version, 2048-token context window), with attention swapped for <strong>alternating dense and locally banded sparse</strong> layers to save compute. The real design is experimental: <strong>train 8 models of different sizes, from 125 million to 175 billion parameters</strong>, and evaluate them all on the same suite of dozens of benchmarks under the three settings. The training data is about 300 billion tokens: mostly filtered and weighted Common Crawl web pages, mixed with WebText2, two book corpora, and English Wikipedia — with higher-quality sources sampled more often. Training the largest model took roughly 3,640 petaflop/s-days, costing millions of dollars.</p>
+<p>The result is the paper's most important figure: <strong>as models grow, all three curves rise, but few-shot rises steepest — the gap between few-shot and zero-shot widens with scale</strong>. So "picking things up from examples" is not a cheap trick small models also have; it is an ability that strengthens with scale. Big models don't just <em>know more</em> — they are <strong>better at learning from context on the spot</strong>.</p>
+
+<figure>
+<svg viewBox="0 0 560 270" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="g2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<line x1="70" y1="30" x2="70" y2="215" stroke="#7c8593"/>
+<line x1="70" y1="215" x2="530" y2="215" stroke="#7c8593" marker-end="url(#g2)"/>
+<text x="70" y="20" fill="#7c8593" font-size="11.5" text-anchor="middle">Avg. score across dozens of benchmarks</text>
+<text x="300" y="242" fill="#7c8593" font-size="11.5" text-anchor="middle">Model size (log scale): 125M ──→ 175B parameters</text>
+<path d="M85,200 C220,190 380,140 515,62" fill="none" stroke="#f0b429" stroke-width="2.4"/>
+<path d="M85,203 C220,196 380,162 515,102" fill="none" stroke="#e8794b" stroke-width="2"/>
+<path d="M85,206 C220,201 380,180 515,132" fill="none" stroke="#7c8593" stroke-width="2"/>
+<text x="510" y="54" fill="#f0b429" font-size="12" text-anchor="end" font-weight="700">few-shot (10–100 demos)</text>
+<text x="510" y="96" fill="#e8794b" font-size="12" text-anchor="end">one-shot (1 demo)</text>
+<text x="510" y="152" fill="#7c8593" font-size="12" text-anchor="end">zero-shot (description only)</text>
+<line x1="470" y1="76" x2="470" y2="122" stroke="#f5c451" stroke-dasharray="3 3"/>
+<text x="300" y="80" fill="#e7ebf1" font-size="12" text-anchor="middle">The gap widens with scale:</text>
+<text x="300" y="98" fill="#e7ebf1" font-size="12" text-anchor="middle">bigger models are better at learning from examples</text>
+</svg>
+<figcaption>Fig. 2 · The paper's core finding (schematic): all three settings improve with scale, but few-shot improves fastest — in-context learning is an ability that grows with size.</figcaption>
+</figure>
+
+<p>Why does "predicting the next word" force out so many skills? A common intuition is <strong>compression</strong>: to predict the next word accurately across oceans of text, the cheapest strategy is not rote memorization but learning the regularities behind the text — grammar, facts, logic, correspondences between languages. Scale supplies the capacity to store those regularities; few-shot prompts are the key that retrieves them.</p>
+
+<h2>Key results</h2>
+<ul>
+<li><strong>LAMBADA</strong> (read a long passage, guess the final word — long-range understanding): few-shot accuracy <strong>86.4%</strong>, a large jump over the previous best.</li>
+<li><strong>TriviaQA</strong> (closed-book QA, no document lookup): few-shot <strong>71.2%</strong>, beating fine-tuned models in the same closed-book setting — the knowledge really is stored in the parameters.</li>
+<li><strong>Machine translation</strong>: few-shot BLEU into English approaches or exceeds the unsupervised state of the art of the time (translating out of English is much weaker).</li>
+<li><strong>SuperGLUE</strong> (broad language understanding): few-shot average <strong>71.8</strong>, slightly above a fine-tuned BERT-Large but clearly below the fine-tuned SOTA of about 89 — <strong>few-shot did not beat fine-tuning across the board</strong>.</li>
+<li><strong>Arithmetic</strong>: near-perfect on 2-digit addition and subtraction, degrading sharply as digits grow — more pattern-matching than real calculation.</li>
+<li><strong>News generation</strong>: humans judging whether ~500-word generated articles were real or fake scored about <strong>52%</strong> — barely above coin-flipping.</li>
+</ul>
+<p>The honest flip side: on natural language inference (ANLI) and word-sense tasks (WiC), few-shot performance stayed near chance; and the paper disclosed a filtering bug that let training data overlap with test sets (data contamination), publishing a lengthy analysis of its impact.</p>
+
+<h2>Why it matters / impact</h2>
+<p><strong>The paradigm changed.</strong> Interacting with models went from "collect data → fine-tune" to "write a prompt" — prompt engineering and few-shot prompting became basic skills, and the barrier to using AI dropped from "can train a model" to "can type." <strong>The road was set.</strong> It is the empirical vindication of the Scaling Laws, establishing "make it bigger" as the main route to general ability and triggering the industry-wide scale race (PaLM, LLaMA, GPT-4…). <strong>The product shape was set too.</strong> GPT-3 shipped no weights, only an API — the beginning of "model as a service." And its most famous descendants: instruction tuning plus RLHF on top of the GPT-3 series gives InstructGPT (2022), and one step further, ChatGPT — the "pre-trained base + prompting" structure of every modern chat model was fixed in this paper.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Confident fabrication</strong>: it guarantees fluent continuations, not true ones — "hallucination" became the field's central chronic problem starting here.</li>
+<li><strong>What few-shot really measures is debated</strong>: later work showed demo order and formatting swing the scores wildly, and sometimes the model isn't "learning" from the examples at all — just having pre-existing abilities activated. Whether in-context learning is learning remains contested.</li>
+<li><strong>Bias and toxicity</strong>: the paper itself measured stereotyped associations along gender, race, and religion; Bender et al.'s 2021 "Stochastic Parrots" critique took it as a primary target.</li>
+<li><strong>The recipe wasn't optimal</strong>: DeepMind's Chinchilla (2022) showed that at the same compute, GPT-3 had too many parameters and too little data — it was under-trained.</li>
+<li><strong>It doesn't follow instructions</strong>: raw GPT-3 only continues text; getting useful behavior takes carefully engineered prompts — exactly the problem InstructGPT / RLHF later solved.</li>
+<li><strong>Closed and expensive</strong>: training cost millions and the weights were never released; researchers criticized it for deepening resource inequality and making results hard to reproduce independently.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: a 175-billion-parameter autocomplete model picks up dozens of tasks from a few examples, with zero weight changes.</p>
+<p>② The pain: pre-train + fine-tune needs tens of thousands of labels per task and yields narrow specialists; humans need one instruction and a demo.</p>
+<p>③ Mechanism: in-context learning — task description and demos go into the input as plain text; the model stays frozen, zero gradient updates, and the answer emerges from the continuation.</p>
+<p>④ Where it comes from: the corpus is full of "demo → answer" patterns; next-word training forces the model to internalize them, and prompts merely cue up the recorded ability.</p>
+<p>⑤ Experimental design: 8 models (125M → 175B) × three settings × dozens of benchmarks; the architecture copies GPT-2 — the only variable is scale.</p>
+<p>⑥ Core finding: few-shot scores rise steepest with scale, and the few-shot/zero-shot gap keeps widening — learning from examples is an ability that grows with size.</p>
+<p>⑦ Results: 86.4% on LAMBADA, 71.2% on TriviaQA beating closed-book fine-tuned models, generated news detected at ≈ chance; but SuperGLUE 71.8 still trails fine-tuned SOTA, and reasoning tasks stay weak.</p>
+<p>⑧ Impact: the prompting paradigm + model-as-a-service + the scale race; add instruction tuning and RLHF and you get ChatGPT.</p>
+<p>⑨ Limits: hallucination, bias, contested in-context learning mechanics, Chinchilla-proven suboptimal recipe, no instruction-following, closed and hard to reproduce.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full benchmark tables and contamination analysis, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
