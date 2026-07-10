@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Scaling Laws for Neural Language Models — CS Papers Deep-Read Paper 12</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 12</p>
+<h1>Scaling Laws for Neural Language Models</h1>
+<p class="sub">Kaplan, McCandlish et al. · OpenAI · 2020</p>
+<p class="langbar"><a href="scaling-laws-paper12.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In early 2020 a team at OpenAI (Kaplan, McCandlish and colleagues) studied one question systematically: <strong>as you make a language model (the kind of "guess the next word" model behind ChatGPT) bigger and bigger, exactly how much better does it get?</strong> They found a startlingly clean rule — a model's prediction skill improves along a <strong>smooth, predict-ahead-of-time curve</strong> as you increase <strong>three things: how big the model is, how much text you feed it, and how much compute you spend</strong>. How clean? Before training even starts, you can calculate how good a ten-times-bigger model will be. This rule gave OpenAI the confidence to build GPT-3 — and lit the fuse on the whole "bigger is better" arms race that followed.</p>
+
+<h2>A counterintuitive finding</h2>
+<p>Your gut says making a model bigger should hit a ceiling: fast gains at first, then diminishing returns, then a plateau. Yet as they took models from tiny to huge and data from little to lots, the improvement curve turned out to be <strong>a straight downhill line</strong> — no kink, no plateau, straight across several orders of magnitude. It's as if <strong>every time you spend ten times the effort, your score reliably drops by the same fixed step</strong>, again and again.</p>
+
+<h2>Even stranger: shape doesn't matter</h2>
+<p>People assumed how you "wire up" the network mattered a lot — how deep, how wide, how many attention units. It turned out that for the same total "part count" (number of parameters), whether you build it tall-and-thin or short-and-wide gives <strong>nearly the same score</strong>. What really decides the outcome is just three plain numbers: <strong>how big, how much data, how much compute</strong>. In other words, getting stronger is less about clever design and more about how many resources you're willing to pour in.</p>
+
+<h2>So how do you use this rule?</h2>
+<p>It turns a guessing game into arithmetic: <strong>given a fixed compute budget, should you buy a bigger model, or feed it more books to read?</strong> They computed the split — put the lion's share into <strong>making the model bigger</strong>, and don't wait for it to read its books cover to cover: <strong>read the gist and stop, then spend the next batch of compute</strong>. In short: rather than let a small model grind a little data to death, let a big model skim a vast amount. It's exactly this arithmetic that let OpenAI leap straight to GPT-3's unprecedented scale.</p>
+<p>One honest caveat: that "split" was later found by DeepMind to be <strong>miscalibrated</strong> — for the same compute you should actually pick a less extreme model and feed it far more text. The shape of the law was right; the sweet spot was placed wrong.</p>
+
+<h2>What it brought</h2>
+<p>It turned big models from alchemy into engineering: <strong>how much to spend, how to split it, what you'll get back</strong> can now be worked out on paper first. Today every lab runs a "scaling law" prediction of cost versus payoff before launching a big model — that calculate-first, spend-second playbook starts here.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>A language model's skill improves along a smooth, predictable curve as you scale "model size + data + compute" — straight across several orders of magnitude, with the exact wiring of the network barely mattering. So for the first time you can calculate in advance whether to invest more and how to split it. That was GPT-3's confidence, and the quantitative basis for the whole "bigger is better" era.</p>
+</div>
+
+<p class="switch-hint">Want the exact power-law exponents, the compute-optimal split, and Chinchilla's later correction? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">This paper shows, with many controlled experiments, that a Transformer language model's <strong>test loss</strong> falls as a smooth <strong>power law</strong> in each of three factors — <strong>model size N, dataset size D, and training compute C</strong> — holding as a straight line across seven orders of magnitude, while structural details like depth-vs-width barely matter. It follows that, for a fixed compute budget, the optimum is to <strong>train very large models and stop early, before converging on the data</strong>. These "scaling laws" turned big-model spending into predictable engineering and directly underpinned GPT-3.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Language model</strong>: a model that reads text and predicts the "next word/token." The better it predicts, the better it has understood language and the world.</li>
+<li><strong>Token</strong>: the smallest text unit a model handles, roughly a word or half a word. "Dataset size" is counted in tokens.</li>
+<li><strong>Transformer</strong>: the network architecture all these models use, letting each token attend to its context (see this site's Paper 1).</li>
+<li><strong>Parameters N</strong>: the number of tunable "knobs" in the model — how big it is. Here it means the non-embedding parameters specifically.</li>
+<li><strong>(Test) loss</strong>: how wrong, on average, the model's next-token prediction is, measured by cross-entropy in nats/token; <strong>lower is better</strong>. It is the paper's single yardstick.</li>
+<li><strong>Compute C (FLOPs)</strong>: the total floating-point operations spent training, roughly proportional to "parameters × tokens processed" — a stand-in for how much you paid.</li>
+<li><strong>Power law</strong>: a relationship of the form <code>y = a·x^k</code>. Its signature is that <strong>on log–log axes it's a straight line</strong> with slope k; it means "each 10× multiplies the improvement by a fixed factor."</li>
+<li><strong>Overfitting / generalization</strong>: memorizing training data without generalizing is overfitting; extending to unseen data is generalization. Too little data with too big a model invites overfitting.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are an OpenAI team led by Jared Kaplan and Sam McCandlish (with Tom Brown, Dario Amodei, Alec Radford and others), released January 2020. It inherits the GPT-2 (2019) line of "large models + unsupervised pretraining" and turns "bigger is better" from a slogan into a <strong>quantitative law</strong>. It launches that same year's <strong>GPT-3</strong> — which bet on 175 billion parameters following exactly this arithmetic — and the whole scaling era. Two years later DeepMind's <strong>Chinchilla</strong> (Hoffmann et al., 2022) corrected its optimal split, making the two a must-read pair.</p>
+
+<h2>The problem and the motivation</h2>
+<p>Around 2019 people vaguely sensed that "bigger model, more data → better results," but this was only <strong>empirical intuition</strong>: nobody could say how much better, where it would plateau, or whether money was better spent on "a bigger model" or "more data." Every large model is enormously expensive to train, so trial-and-error amounts to gambling with cash.</p>
+<p>The authors set out to make it a science: <strong>fix everything else, vary one factor</strong>, and measure how loss responds. They trained a large family of Transformers from thousands to a billion-plus parameters, sweeping dataset sizes, model shapes, and training lengths, to see whether a clean law would emerge from the scatter — so people could "calculate before committing."</p>
+
+<h2>The core idea</h2>
+
+<h3>Finding 1: loss is a power law in each of N, D, C</h3>
+<p>The central result: when the other two factors aren't the bottleneck, test loss <code>L</code> falls as a <strong>smooth power law</strong> in parameters <code>N</code>, data <code>D</code>, and compute <code>C</code>, respectively: <code>L(N) ∝ N^(−0.076)</code>, <code>L(D) ∝ D^(−0.095)</code>, <code>L(C) ∝ C^(−0.050)</code>. Don't be scared by the numbers — in plain terms: <strong>plotted on log–log axes they are straight lines, running all the way out to seven orders of magnitude without bending</strong> — no kink, no sign of a plateau. Those tiny exponents (0.05–0.1) say the returns are steady but you must invest by multiples to buy each small improvement.</p>
+<p>Why is that striking? Because it means it's <strong>extrapolable</strong>: fit the line on small models and you can fairly accurately forecast how good a much larger one will be — knowing the result before training, a rarity in deep learning.</p>
+
+<figure>
+<svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="66" y1="34" x2="66" y2="212" stroke="#7c8593"/>
+<line x1="66" y1="212" x2="524" y2="212" stroke="#7c8593"/>
+<text x="66" y="24" fill="#7c8593" font-size="11" text-anchor="middle">loss L (log)</text>
+<text x="524" y="230" fill="#7c8593" font-size="11" text-anchor="end">model / data / compute (log) →</text>
+<line x1="90" y1="60" x2="500" y2="188" stroke="#f0b429" stroke-width="2.4"/>
+<circle cx="140" cy="76" r="3" fill="#e8794b"/><circle cx="220" cy="101" r="3" fill="#e8794b"/><circle cx="310" cy="129" r="3" fill="#e8794b"/><circle cx="400" cy="158" r="3" fill="#e8794b"/><circle cx="470" cy="179" r="3" fill="#e8794b"/>
+<text x="300" y="112" fill="#e7ebf1" font-size="12.5" text-anchor="middle">a straight line on log–log axes</text>
+<text x="300" y="132" fill="#7c8593" font-size="11" text-anchor="middle">slope = the small exponent α (0.05–0.1)</text>
+<text x="452" y="200" fill="#f0b429" font-size="11" text-anchor="end">keeps improving, no plateau</text>
+</svg>
+<figcaption>Fig 1 · Power-law scaling: loss falls almost linearly against "model / data / compute" on log–log axes, across many orders of magnitude without bending — so larger-scale scores can be extrapolated.</figcaption>
+</figure>
+
+<h3>Finding 2: scale beats shape</h3>
+<p>They swept network "shapes" — same parameter count, made deeper vs wider, more vs fewer attention units, different feed-forward ratios. Across a wide range, <strong>shape barely affected loss</strong>; what truly decided the score was <em>total parameter count N</em>. That carries huge weight: it demotes "should we hand-tune the architecture," long a heavy investment, to a second-order concern, and pushes all attention onto <strong>scale</strong>.</p>
+
+<h3>Finding 3: big models are more sample-efficient — and should stop early</h3>
+<p>Reading the same batch of data, <strong>bigger models learn faster and use fewer samples</strong> to reach a given loss. Combining the N and D effects into one formula of the form <code>L(N,D) = [ (Nc/N)^(αN/αD) + Dc/D ]^αD</code>: intuitively, <strong>too small a model makes parameters the bottleneck; too little data starts to overfit</strong>. To avoid overfitting, data need only grow <em>sublinearly</em> with the model (about <code>D ∝ N^0.74</code>), not blow up proportionally.</p>
+<p>Pushed to a compute budget, this yields the famous recommendation: given fixed compute C, <strong>the optimum is to put most of it into a bigger model and stop early on the data, before convergence</strong>. By this paper's fit, optimal model size grows fast with compute (about <code>N ∝ C^0.73</code>) while data grows only slowly (about <code>D ∝ C^0.27</code>). In plain words: <strong>rather than let a small model grind a little data to death, spend on a bigger model and let it skim a vast amount.</strong> It's exactly this arithmetic that let OpenAI leap to GPT-3's scale.</p>
+
+<h2>Key results</h2>
+<p>The evidence is hundreds of training runs falling onto clean straight lines: the power laws in N, D, and C each hold across <strong>six to seven orders of magnitude</strong> with tiny fit error. The combined <code>L(N,D)</code> formula predicts both the "not enough parameters" and "not enough data" bottlenecks and their optimal trade-off. They also found the <strong>optimal batch size</strong> is predictable from the "gradient noise scale." Most convincing is the <strong>extrapolation check</strong>: a curve fit at small scale predicted larger models' loss quite accurately — precisely the basis on which GPT-3 placed its bet the next year.</p>
+
+<h2>Why it mattered</h2>
+<p>It moved big models from "alchemy" toward "engineering": <strong>how much to invest, how to split it, what you'll get</strong> can now be calculated ahead of time. Three deep effects — one, it gave <strong>GPT-3</strong> its quantitative justification and established the now-standard practice of running scaling-law forecasts before training; two, it shifted the field's focus from "designing cleverer architectures" to "scaling up," shaping the "scale is all you need" creed; three, its methodology — fit a law on small experiments, extrapolate to large models — was adopted widely (scaling laws are now an essential tool for training any frontier model).</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The optimal split was miscalibrated (the key critique)</strong>: DeepMind's <strong>Chinchilla</strong> (2022) showed that, by not separately tuning things like the learning rate at each scale, this paper <strong>systematically underestimated the value of data</strong>. The corrected conclusion: at compute-optimal, <strong>model and data should scale roughly equally</strong> (about 20 tokens per parameter), not "heavy model, light data." Following this, Chinchilla (70B parameters, 1.4T tokens) <strong>beat the several-times-larger Gopher (280B)</strong> at equal compute — revealing that many big models of the era, GPT-3 included, were badly <em>undertrained</em>.</li>
+<li><strong>Loss ≠ capability</strong>: the power law describes prediction loss (perplexity), whereas what people care about is downstream ability — translation, reasoning, coding. Loss can fall smoothly while downstream skills jump "emergently"; the relationship isn't simple (see this site's Emergent Abilities).</li>
+<li><strong>Extrapolation isn't unlimited</strong>: a straight line may eventually bend at extreme scale, or when hitting data/knowledge limits; "never plateaus" was an observation within the measurable range, not a law of the universe.</li>
+<li><strong>It explains "what," not "why"</strong>: the power law is an empirical fit; why the exponents take these values, and the underlying theory, the paper does not answer — still an open question.</li>
+<li><strong>Read as "scale is everything"</strong>: it is often flattened to "bigger is better," fueling a compute-and-data arms race, with attendant worries about energy, cost, and centralization.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: a Transformer LM's loss is a smooth power law in parameters N, data D, and compute C — straight across many orders of magnitude, and extrapolable.</p>
+<p>② The pain: "bigger is better" was only intuition — no one could say how much better, where it plateaus, or whether to spend on model or data; every run was expensive trial-and-error.</p>
+<p>③ Power laws: <code>L(N)∝N^−0.076</code>, <code>L(D)∝D^−0.095</code>, <code>L(C)∝C^−0.050</code> — straight lines on log–log axes; small exponents mean steady returns but multiplicative investment.</p>
+<p>④ Scale beats shape: at fixed parameter count, depth-vs-width and other shapes barely affect loss; total parameters decide the score.</p>
+<p>⑤ Big models are more sample-efficient; given compute, the optimum is "train a very large model and stop early on data" (this paper: about N∝C^0.73, D∝C^0.27, model-heavy).</p>
+<p>⑥ Validation: hundreds of points fall onto lines holding across six–seven orders of magnitude; small-scale fits extrapolate to large models — GPT-3's direct basis.</p>
+<p>⑦ Impact: turned big models from alchemy into engineering, shaped the "scale is all you need" era; scaling laws became a standard tool for frontier training.</p>
+<p>⑧ Limits: Chinchilla corrected the split (model/data should scale equally, ~20 tokens/param), so many models were undertrained; loss ≠ downstream ability; extrapolation isn't unlimited; it explains what, not why.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full fitting details and all experiment curves, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
