@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Emergent Abilities（大模型的涌现能力）— IT 论文精读 Paper 13</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 13</p>
+<h1>Emergent Abilities（大模型的涌现能力）</h1>
+<p class="sub">Jason Wei 等 · Google / Stanford / DeepMind · TMLR 2022</p>
+<p class="langbar"><a href="emergent-abilities-paper13.en.html">EN →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文说了什么？</h2>
+<p>还记得 GPT-3 那种大模型「看几个例子就会做新题」的本事吗？这篇论文（2022 年，Google 一队人牵头）注意到一件更怪的事：<strong>有些本事，小模型怎么都学不会，模型做大到某个门槛，它却「突然」就会了</strong>——不是慢慢变好，是从「几乎全错」一下跳到「像样地会」。他们给这种现象起了个名字：<strong>涌现（emergence）</strong>。</p>
+
+<h2>先打个比方</h2>
+<p>像烧水。你一度一度往上加热，水一直只是「热水」——90 度、95 度、99 度，看着没什么质变。可到了 100 度，它<strong>突然</strong>沸腾了，从液体变成蒸汽。多出来的这一度，带来的不是「更热一点」，而是<strong>一个新状态</strong>。大模型的某些能力就是这样：规模一点点堆上去时毫无起色，越过某条线，能力「相变」般地冒出来。</p>
+
+<h2>这跟以前的认识哪儿不一样？</h2>
+<p>上一代人的共识是：<strong>模型越大，各项表现平滑地、可预测地好一点点</strong>（这正是「规模定律」那篇讲的）。你甚至能拿小模型的成绩画条线、外推出大模型大概多强。可涌现能力偏偏<strong>不守这个规矩</strong>：在门槛之前，曲线贴着「瞎猜」的水平一动不动，你根本<strong>预测不到</strong>后面会有一跳。会不会跳、什么时候跳，事先看不出来。</p>
+
+<h2>他们怎么发现的？</h2>
+<p>方法很朴素：拿一大批难度各异的题（从三位数加法、冷门语言问答，到需要推理的综合考试），让<strong>从小到大一整排模型</strong>都去做，再把「模型多大」和「做对多少」画成一张图。结果反复出现同一种形状：<strong>前半段几乎是条贴着地面的平线（跟瞎猜差不多），到某个规模猛地翘起来。</strong>他们还发现，有些「解题技巧」也是涌现的——比如让模型「一步步把思路写出来再答」（思维链），小模型用了反而更差，大到一定程度才开始真正帮上忙。</p>
+
+<h2>这带来了什么？</h2>
+<p>一个既兴奋又不安的结论：<strong>把模型做得更大，可能会解锁一批你事先根本没料到的新能力</strong>——这既是「继续把模型往大做」的最强动力，也是安全研究者最担心的地方（连有害能力也可能不打招呼地冒出来）。<strong>大模型不再是「同一个东西的放大版」，而可能在放大中变成「另一种东西」。</strong></p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>有些能力小模型完全不具备，模型大到某个门槛却像烧水到沸点一样「突然」出现、且事先无法预测——这就是涌现。不过要留一句诚实的话：后来有人反驳，这种「突变」有时是<strong>打分方式</strong>造成的错觉——换把宽松点的尺子去量，陡坎就摊平成缓坡了。</p>
+</div>
+
+<p class="switch-hint">想看涌现曲线、具体是哪些能力、以及「这是不是错觉」的争论？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>一句话</h2>
+<p class="lead">这篇论文把一个观察正式命名并系统化：<strong>某些能力在小模型上完全不存在（成绩贴着随机水平），当模型规模越过某个门槛却「突然」出现并迅速变好</strong>——作者称之为<strong>涌现能力（emergent abilities）</strong>。它的定义性特征是<em>不可预测</em>：你无法靠外推小模型的表现（即「规模定律」的平滑曲线）提前算出这一跳。论文用十几个任务和 GPT-3、LaMDA、Gopher、Chinchilla、PaLM 等一整排模型佐证，并指出连思维链、指令遵循这类「提示技巧」也只在大模型上才生效。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>大语言模型（LLM，large language model）</strong>：在海量文本上训练、靠「猜下一个词」学会语言的神经网络，如 GPT-3、PaLM。</li>
+<li><strong>规模 / 训练算力（FLOPs）</strong>：衡量「模型多大、训练多久」的量。常用<em>参数量</em>（模型有多少可调旋钮）和<em>训练浮点运算数</em>（总共算了多少次乘加，记作 FLOPs）来刻画；本文横轴常用后者。</li>
+<li><strong>规模定律（scaling laws）</strong>：上一篇论文的结论——模型的整体误差随规模沿一条<strong>平滑幂律</strong>可预测地下降。涌现正是它的「例外面」。</li>
+<li><strong>少样本 / 提示（few-shot / prompting）</strong>：不再为每个任务重新训练，而是把几个示范例子写进输入里，让模型当场照做。</li>
+<li><strong>思维链（chain-of-thought, CoT）</strong>：一种提示技巧——让模型先把推理步骤一步步写出来、再给答案，遇到多步推理题更准。</li>
+<li><strong>指令微调 / 指令遵循（instruction tuning）</strong>：用「指令→期望回答」的数据继续训练，让模型学会听懂并执行自然语言指令。</li>
+<li><strong>基准 / BIG-Bench、MMLU</strong>：成套的评测题库。BIG-Bench 汇集了两百多项五花八门的任务；MMLU 是覆盖数十个学科的多选考试。</li>
+<li><strong>相变（phase transition）</strong>：物理里「量变积累到临界点突然发生质变」的现象（如水到 100 度沸腾）。本文借它形容能力的突然出现。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>第一作者 Jason Wei，合作者来自 Google Research、Stanford（含 Percy Liang、Rishi Bommasani、Tatsunori Hashimoto）与 DeepMind，2022 年发表于 TMLR。它上承「规模定律」（Kaplan 等 2020）「大就是好」的定量图景，却专门去凿它<strong>不平滑、不可预测的那一面</strong>；发表后立刻成为理解大模型的高频词，也直接招来 2023 年那篇著名的「涌现是海市蜃楼吗？」反方（见末节）。它不提出新模型、新架构，而是一篇<strong>观察与提问</strong>之作——恰恰因为提对了问题而影响巨大。</p>
+
+<h2>问题与动机</h2>
+<p>2020 年前后，规模定律给了业界一个安稳的世界观：把模型和数据一起放大，损失就沿一条平滑曲线可预测地下降。这条曲线漂亮、好用，却回答的是「<strong>整体上</strong>平均好多少」。作者追问一个更细的问题：<strong>如果把眼光从「平均损失」挪到「一项一项具体能不能做成的任务」上，图景还一样平滑吗？</strong></p>
+<p>答案是否定的。他们发现，在不少<strong>具体任务</strong>上，成绩并不随规模缓慢爬升，而是长时间趴在「和瞎猜没区别」的水平，然后在某个规模<strong>陡然拉起</strong>。这类「小模型完全没有、大模型才有」的能力，无法从小模型的曲线外推出来——这既是对规模定律「一切可预测」印象的一个重要补充，也逼着人重新想：<strong>我们到底该怎么衡量、预期一个更大的模型会做什么？</strong></p>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>涌现的定义：不在小模型、只在大模型</h3>
+<p>作者给了一个刻意简洁的定义：<strong>「一种能力，如果它不存在于较小的模型、却存在于较大的模型，就称为涌现的。」</strong>关键不在「大模型更强」这种废话，而在两点：一是<strong>相变式的形状</strong>——门槛前贴着随机水平几乎是平的，跨过门槛后骤然上升；二是<strong>不可预测</strong>——单看门槛以下那段平线，你无从判断后面会不会跳、在哪跳。这正是它和规模定律那条平滑曲线的分野。</p>
+
+<figure>
+<svg viewBox="0 0 560 262" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="72" y1="36" x2="72" y2="212" stroke="#7c8593"/>
+<line x1="72" y1="212" x2="524" y2="212" stroke="#7c8593"/>
+<text x="72" y="24" fill="#7c8593" font-size="11.5" text-anchor="middle">任务准确率</text>
+<text x="524" y="230" fill="#7c8593" font-size="11.5" text-anchor="end">模型规模（训练算力，对数）→</text>
+<line x1="72" y1="184" x2="524" y2="184" stroke="#5a6069" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="78" y="178" fill="#7c8593" font-size="10.5">随机水平（瞎猜）</text>
+<line x1="336" y1="40" x2="336" y2="212" stroke="#5a6069" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="336" y="52" fill="#7c8593" font-size="10.5" text-anchor="middle">门槛</text>
+<path d="M90,183 C200,182 300,181 336,180 C372,176 400,110 470,66 C490,54 505,50 512,48" fill="none" stroke="#e8794b" stroke-width="2.4"/>
+<text x="150" y="204" fill="#f0b429" font-size="11.5">小模型：几乎全错</text>
+<text x="470" y="40" fill="#e8794b" font-size="11.5" text-anchor="end">大模型：突然会了</text>
+<text x="356" y="120" fill="#e7ebf1" font-size="12.5">突变（相变）</text>
+</svg>
+<figcaption>图 1 · 涌现曲线：门槛前贴着随机水平几乎是平线，越过门槛骤然拉起——形状像「相变」，且无法从平线段外推预测。</figcaption>
+</figure>
+
+<h3>怎么量：把规模当横轴，把一项项任务画出来</h3>
+<p>方法上没有花架子：取同一族、只是<strong>大小不同</strong>的一排模型（这样架构、数据、训练方式尽量可比），用统一的<em>少样本提示</em>去做同一批任务，横轴放<strong>训练算力（FLOPs）或参数量</strong>、纵轴放准确率。反复画出来的，就是图 1 那种「平线 + 陡坎」。作者强调用 FLOPs 或参数量当横轴都行，重点是那条曲线的<strong>形状</strong>，而非某个精确的临界数值。</p>
+
+<h3>不只是「知识」，连「解题技巧」也涌现</h3>
+<p>论文的另一半讲<strong>提示策略的涌现</strong>：有些技巧在小模型上<em>无效甚至有害</em>，大到一定规模才开始生效。最典型的是<strong>思维链（CoT）</strong>——让模型先写推理步骤再作答，在小模型上准确率反而更低，越过某个规模后才明显超过「直接作答」。<strong>指令微调</strong>也类似：小模型做指令微调收益不明显甚至倒退，够大的模型才靠它学会广泛地听懂指令。换句话说，<strong>「能力」和「用能力的方法」都可能有门槛</strong>。</p>
+<p>为什么会这样？论文<strong>坦承没有确定答案</strong>，只给了几种候选直觉：也许某些任务需要多个子步骤全部到位、大模型才凑齐所有零件；也许是评测用的「全对才算对」这类严格指标把渐进的进步<strong>显示</strong>成了突变（这条恰恰埋下了后来的争论）。作者把「为什么涌现」明确留作<strong>开放问题</strong>。</p>
+
+<h2>关键结果</h2>
+<p>论文汇总了<strong>十几项</strong>表现出涌现的少样本任务，横跨算术（如三位数加减）、音标转写、单词重排、波斯语问答、辨别真伪陈述、以及覆盖数十学科的综合考试（MMLU）等，模型则取自 GPT-3、LaMDA、Gopher、Chinchilla、PaLM 等家族。这些任务的共同特征是：在大约 <code>10²²～10²⁴</code> 训练 FLOPs 这一带之前贴着随机水平，越过后骤升——具体门槛因任务而异。<strong>思维链</strong>的收益同样只在大模型（约百亿参数量级以上）才转正。作者据此论证：<strong>涌现是一种在多任务、多模型上反复出现的普遍现象，而非个别巧合。</strong>（注：文中数值区间会随模型族与任务不同而变，此处取其量级。）</p>
+
+<h2>为什么重要 / 影响</h2>
+<p>这篇论文的分量不在技术，而在<strong>它塑造了整个领域谈论大模型的方式</strong>。它把「涌现」这个词推成通用语汇，让人们意识到：<strong>更大的模型可能不是「同一个东西更强」，而是会解锁事先无法预料的新能力。</strong>这一图景既给「继续 scale」提供了强动机（下一个门槛后面也许藏着惊喜），也让 AI 安全研究者高度警觉——如果有用能力会不打招呼地冒出来，<strong>有害能力也可能</strong>。它还把评测的重要性顶到台前：想知道模型「会不会」某件事，只看平均损失不够，得一项项去测。此后关于「大模型到底懂不懂」「还会涌现出什么」的讨论，几乎都以它为坐标。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>「涌现也许是海市蜃楼」——最有力的反方</strong>：Schaeffer、Miranda、Koyejo（Stanford）2023 年的论文（获 NeurIPS 最佳论文）指出，很多涌现曲线的「突变」是<strong>评测指标</strong>造成的假象：若用「全对才算对」这类<em>非线性、不连续</em>的指标，本来平滑的进步会被显示成陡坎；换用<em>连续</em>指标（如逐词的对数似然、编辑距离），同一批模型的曲线就变成平滑上升。他们甚至能靠挑指标<strong>凭空造出</strong>或<strong>抹平</strong>涌现。结论：涌现在很多情况下是「量尺问题」，不必是模型的内在相变。</li>
+<li><strong>「不可预测」被削弱</strong>：若换个连续指标能提前看出趋势，那么「无法从小模型外推」这条定义性主张就没那么绝对——有工作显示，用合适的度量，一些「涌现」任务其实是可预测的。</li>
+<li><strong>依赖度量与阈值</strong>：能力算不算「涌现」，高度取决于你怎么定义门槛、用什么指标、题目难度如何切分——定义带有一定主观性。</li>
+<li><strong>只是观察、未解释机理</strong>：论文明确把「为什么会涌现」留作开放问题，没有给出机制层面的答案；后续争论也主要在「现象是否为真」，机理仍不清楚。</li>
+<li><strong>可比性有限</strong>：跨模型族比较时，数据、训练细节、评测口径难以完全对齐，个别曲线的陡峭程度需谨慎解读。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：某些能力小模型完全没有、大到某个门槛才「突然」出现且事先不可预测，作者命名为「涌现能力」。</p>
+<p>② 痛点：规模定律说「整体误差平滑可预测下降」，但落到一项项具体任务上，成绩常是「长平线 + 陡坎」，无法外推。</p>
+<p>③ 定义：不在小模型、只在大模型；关键是相变式形状 + 不可预测，而非单纯「大模型更强」。</p>
+<p>④ 方法：同族不同大小的一排模型，用统一少样本提示做同批任务，横轴放算力/参数、纵轴放准确率，反复得到「平线 + 陡坎」。</p>
+<p>⑤ 连技巧也涌现：思维链、指令微调在小模型无效甚至有害，够大才生效。</p>
+<p>⑥ 结果：十几项任务（算术、冷门语言问答、MMLU 等）在约 10²²～10²⁴ FLOPs 一带涌现；跨 GPT-3、LaMDA、Gopher、Chinchilla、PaLM 反复出现。</p>
+<p>⑦ 影响：把「涌现」推成通用语汇，既强化「继续 scale」的动机，也点燃对不可预测风险的安全担忧，并抬高了逐任务评测的重要性。</p>
+<p>⑧ 局限：Schaeffer 等 2023「海市蜃楼」反驳——很多突变是非连续指标造的假象，换连续指标即平滑；「不可预测」被削弱；论文只观察、未解释机理。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整任务清单与每条曲线，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

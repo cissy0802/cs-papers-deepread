@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Emergent Abilities of Large Language Models — CS Papers Deep-Read Paper 13</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 13</p>
+<h1>Emergent Abilities of Large Language Models</h1>
+<p class="sub">Jason Wei et al. · Google / Stanford / DeepMind · TMLR 2022</p>
+<p class="langbar"><a href="emergent-abilities-paper13.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper say?</h2>
+<p>Remember how a big model like GPT-3 could "learn a new task from a few examples"? This paper (2022, led by a team at Google) noticed something even stranger: <strong>certain skills that small models simply cannot learn appear "all at once" once a model is scaled past some threshold</strong> — not a gradual climb, but a jump from "gets nearly everything wrong" to "does it competently." They gave the phenomenon a name: <strong>emergence</strong>.</p>
+
+<h2>An analogy first</h2>
+<p>Think of boiling water. You add heat degree by degree and it stays just "hot water" — 90°, 95°, 99°, no obvious change in kind. Then at 100° it <strong>suddenly</strong> boils, turning from liquid to steam. That last degree doesn't buy "a bit hotter" — it buys a <strong>new state</strong>. Some abilities of large models are like this: as you scale up bit by bit nothing seems to happen, then past a line the ability appears as if by a "phase transition."</p>
+
+<h2>How is this different from before?</h2>
+<p>The prior consensus was: <strong>bigger models do smoothly and predictably a little better across the board</strong> (exactly what the "scaling laws" paper described). You could even draw a line through small-model scores and extrapolate roughly how good a big one would be. But emergent abilities <strong>break that rule</strong>: before the threshold the curve sits flat at the "random guessing" level, and you simply <strong>cannot predict</strong> the jump ahead. Whether and when it jumps is invisible in advance.</p>
+
+<h2>How did they find it?</h2>
+<p>The method is plain: take a broad batch of tasks of varying difficulty (from three-digit arithmetic and obscure-language QA to reasoning-heavy exams), have <strong>a whole lineup of models from small to large</strong> attempt them, and plot "how big the model is" against "how many it got right." The same shape kept appearing: <strong>a long stretch hugging the floor (about as good as guessing), then a sharp lift-off past some scale.</strong> They also found that some "problem-solving tricks" are emergent too — for example, having the model "write out its reasoning step by step before answering" (chain-of-thought) actually <em>hurts</em> small models and only starts helping once the model is big enough.</p>
+
+<h2>What does it bring?</h2>
+<p>An exciting and unsettling conclusion: <strong>making a model bigger may unlock a batch of new abilities you didn't see coming at all</strong> — which is both the strongest motive to "keep scaling" and exactly what safety researchers worry about (harmful abilities could appear unannounced too). <strong>A large model is no longer "the same thing, scaled up" — scaling may turn it into a different thing.</strong></p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Some abilities that small models entirely lack appear "suddenly" once a model crosses a scale threshold — like water hitting its boiling point — and cannot be predicted in advance. That is emergence. One honest caveat, though: later work argued the "jump" is sometimes an illusion of <strong>how you score the test</strong> — measure with a gentler ruler and the cliff flattens into a slope.</p>
+</div>
+
+<p class="switch-hint">Want the emergence curve, which abilities exactly, and the "is it real?" debate? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">This paper formally names and systematizes an observation: <strong>some abilities are entirely absent in small models (scores hug the random baseline) yet appear "suddenly" and improve fast once a model crosses a scale threshold</strong> — the authors call these <strong>emergent abilities</strong>. Their defining feature is <em>unpredictability</em>: you cannot foresee the jump by extrapolating small-model performance (the smooth "scaling law" curve). The paper backs this with a dozen-plus tasks across GPT-3, LaMDA, Gopher, Chinchilla, and PaLM, and notes that even "prompting tricks" like chain-of-thought and instruction following only work on large models.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Large language model (LLM)</strong>: a neural network trained on huge text corpora that learns language by "guessing the next word," e.g., GPT-3, PaLM.</li>
+<li><strong>Scale / training compute (FLOPs)</strong>: measures of "how big, how long trained." Common ones are <em>parameter count</em> (how many tunable knobs) and <em>training FLOPs</em> (total floating-point operations); this paper's x-axis is usually the latter.</li>
+<li><strong>Scaling laws</strong>: the prior paper's finding — a model's overall error falls along a <strong>smooth power law</strong> with scale, predictably. Emergence is its "exception side."</li>
+<li><strong>Few-shot / prompting</strong>: instead of retraining per task, you write a few demonstration examples into the input and the model follows suit on the spot.</li>
+<li><strong>Chain-of-thought (CoT)</strong>: a prompting trick — have the model write reasoning steps before giving an answer; more accurate on multi-step problems.</li>
+<li><strong>Instruction tuning</strong>: further training on "instruction → desired response" data so the model learns to understand and follow natural-language instructions.</li>
+<li><strong>Benchmarks / BIG-Bench, MMLU</strong>: standardized test suites. BIG-Bench collects 200+ diverse tasks; MMLU is a multiple-choice exam spanning dozens of subjects.</li>
+<li><strong>Phase transition</strong>: physics' phenomenon where "gradual change hits a critical point and suddenly changes in kind" (e.g., water boiling at 100°). The paper borrows it to describe abilities appearing abruptly.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>Lead author Jason Wei, with collaborators from Google Research, Stanford (including Percy Liang, Rishi Bommasani, Tatsunori Hashimoto), and DeepMind; published in TMLR in 2022. It inherits the "bigger is better" quantitative picture of the "scaling laws" paper (Kaplan et al. 2020) but deliberately chisels at its <strong>non-smooth, unpredictable side</strong>. It quickly became a household term for understanding large models — and drew the famous 2023 rebuttal "Are Emergent Abilities a Mirage?" (see the last section). It proposes no new model or architecture; it is a work of <strong>observation and questioning</strong> — influential precisely because it asked the right question.</p>
+
+<h2>The problem and the motivation</h2>
+<p>Around 2020, scaling laws gave the field a comfortable worldview: scale model and data together, and loss falls predictably along a smooth curve. That curve is elegant and useful — but it answers "how much better <strong>on average</strong>." The authors pressed a finer question: <strong>if you shift your gaze from "average loss" to "can a specific task actually be done," is the picture still smooth?</strong></p>
+<p>The answer is no. On many <strong>specific tasks</strong>, scores don't climb slowly with scale — they sit for a long time at "no better than guessing," then <strong>shoot up</strong> at some scale. Such "absent in small models, present in large ones" abilities cannot be extrapolated from small-model curves — an important complement to the impression that scaling laws make "everything predictable," and a prod to rethink: <strong>how should we even measure or anticipate what a bigger model will be able to do?</strong></p>
+
+<h2>The core idea</h2>
+
+<h3>Defining emergence: absent in small, present in large</h3>
+<p>The authors give a deliberately simple definition: <strong>"An ability is emergent if it is not present in smaller models but is present in larger models."</strong> The point isn't the truism "big models are stronger," but two things: first, a <strong>phase-transition shape</strong> — flat and near-random below the threshold, a steep rise above it; second, <strong>unpredictability</strong> — from the flat stretch alone you cannot tell whether or where the jump will come. That is exactly what separates it from the smooth scaling-law curve.</p>
+
+<figure>
+<svg viewBox="0 0 560 262" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="72" y1="36" x2="72" y2="212" stroke="#7c8593"/>
+<line x1="72" y1="212" x2="524" y2="212" stroke="#7c8593"/>
+<text x="72" y="24" fill="#7c8593" font-size="11.5" text-anchor="middle">task accuracy</text>
+<text x="524" y="230" fill="#7c8593" font-size="11.5" text-anchor="end">model scale (training compute, log) →</text>
+<line x1="72" y1="184" x2="524" y2="184" stroke="#5a6069" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="78" y="178" fill="#7c8593" font-size="10.5">random baseline (guessing)</text>
+<line x1="336" y1="40" x2="336" y2="212" stroke="#5a6069" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="336" y="52" fill="#7c8593" font-size="10.5" text-anchor="middle">threshold</text>
+<path d="M90,183 C200,182 300,181 336,180 C372,176 400,110 470,66 C490,54 505,50 512,48" fill="none" stroke="#e8794b" stroke-width="2.4"/>
+<text x="150" y="204" fill="#f0b429" font-size="11.5">small: near-all-wrong</text>
+<text x="470" y="40" fill="#e8794b" font-size="11.5" text-anchor="end">large: suddenly works</text>
+<text x="356" y="120" fill="#e7ebf1" font-size="12.5">sharp jump (phase transition)</text>
+</svg>
+<figcaption>Fig 1 · Emergence curve: flat and near-random below the threshold, a steep lift-off above it — a "phase-transition" shape that can't be extrapolated from the flat stretch.</figcaption>
+</figure>
+
+<h3>How to measure it: scale on the x-axis, tasks plotted one by one</h3>
+<p>The method has no gimmicks: take a lineup of models from the same family that differ only in <strong>size</strong> (so architecture, data, and training are as comparable as possible), run the same batch of tasks with a uniform <em>few-shot prompt</em>, put <strong>training FLOPs or parameter count</strong> on the x-axis and accuracy on the y-axis. What emerges over and over is the "flat line + cliff" of Fig 1. The authors stress that either FLOPs or parameters work as the x-axis; what matters is the <strong>shape</strong> of the curve, not any precise critical number.</p>
+
+<h3>Not just "knowledge" — even "problem-solving tricks" emerge</h3>
+<p>The other half of the paper is <strong>the emergence of prompting strategies</strong>: some tricks are <em>useless or even harmful</em> on small models and only start helping past some scale. The clearest case is <strong>chain-of-thought (CoT)</strong> — having the model write reasoning before answering actually lowers accuracy on small models, and only clearly beats "answer directly" above some scale. <strong>Instruction tuning</strong> is similar: it barely helps (or hurts) small models, and only large-enough models use it to broadly learn to follow instructions. In short, <strong>both "abilities" and "ways of using abilities" can have thresholds.</strong></p>
+<p>Why does this happen? The paper <strong>candidly has no settled answer</strong>, offering only candidate intuitions: perhaps some tasks require several sub-steps to all click into place, and only large models assemble every piece; perhaps the strict "all-or-nothing" metrics used in evaluation <strong>display</strong> gradual progress as a jump (a thread that, tellingly, seeds the later debate). The authors explicitly leave "why emergence happens" an <strong>open question</strong>.</p>
+
+<h2>Key results</h2>
+<p>The paper compiles <strong>a dozen-plus</strong> few-shot tasks that show emergence, spanning arithmetic (e.g., three-digit add/subtract), phonetic transliteration, word unscrambling, Persian QA, truthfulness judgments, and a dozens-of-subjects exam (MMLU), with models drawn from the GPT-3, LaMDA, Gopher, Chinchilla, and PaLM families. Their common trait: scores hug the random baseline until roughly <code>10²²–10²⁴</code> training FLOPs, then shoot up — the exact threshold varies by task. <strong>Chain-of-thought's</strong> benefit likewise only turns positive on large models (around the ten-billion-plus-parameter range). From this the authors argue: <strong>emergence is a general phenomenon recurring across many tasks and models, not a one-off coincidence.</strong> (Note: the numeric ranges shift with model family and task; these are order-of-magnitude figures.)</p>
+
+<h2>Why it mattered</h2>
+<p>This paper's weight is not technical but in <strong>how it shaped the way the field talks about large models</strong>. It pushed "emergence" into common vocabulary and made people realize: <strong>a bigger model may not be "the same thing, stronger" but may unlock new abilities that can't be foreseen.</strong> That picture both fuels the drive to "keep scaling" (a surprise may lurk past the next threshold) and puts safety researchers on high alert — if useful abilities can appear unannounced, so can <strong>harmful ones</strong>. It also elevated evaluation: to know whether a model "can" do something, average loss isn't enough — you must test task by task. Nearly all later discussion of "does a large model really understand" and "what else might emerge" takes it as a reference point.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>"Emergence may be a mirage" — the strongest rebuttal</strong>: Schaeffer, Miranda, and Koyejo (Stanford), 2023 (a NeurIPS best paper), argued that many emergence "jumps" are an artifact of the <strong>evaluation metric</strong>: with a <em>nonlinear, discontinuous</em> metric like "all-or-nothing accuracy," smooth progress is displayed as a cliff; switch to a <em>continuous</em> metric (e.g., per-token log-likelihood, edit distance) and the same models' curve becomes a smooth rise. They could even <strong>conjure</strong> or <strong>erase</strong> emergence just by choosing the metric. Conclusion: in many cases emergence is a "measurement issue," not necessarily an intrinsic phase transition.</li>
+<li><strong>"Unpredictability" weakened</strong>: if a continuous metric reveals the trend early, the defining claim "can't be extrapolated from small models" is less absolute — work shows some "emergent" tasks are in fact predictable with the right measure.</li>
+<li><strong>Metric- and threshold-dependent</strong>: whether an ability counts as "emergent" hinges heavily on how you define the threshold, which metric you use, and how task difficulty is sliced — the definition carries some subjectivity.</li>
+<li><strong>Observation, not explanation</strong>: the paper explicitly leaves "why emergence happens" open, offering no mechanistic answer; the follow-up debate is mainly about "whether the phenomenon is real," and the mechanism remains unclear.</li>
+<li><strong>Limited comparability</strong>: comparing across model families, data, training details, and evaluation protocols can't be fully aligned, so the steepness of individual curves should be read with care.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: some abilities are absent in small models and appear "suddenly" past a scale threshold, unpredictably — the authors name these "emergent abilities."</p>
+<p>② The pain: scaling laws say "overall error falls smoothly and predictably," but on specific tasks scores are often "a long flat line + a cliff," not extrapolable.</p>
+<p>③ Definition: absent in small, present in large; the key is the phase-transition shape + unpredictability, not merely "bigger is stronger."</p>
+<p>④ Method: a lineup of same-family models of different sizes, uniform few-shot prompts on the same tasks, scale on the x-axis and accuracy on the y-axis, yielding "flat line + cliff" repeatedly.</p>
+<p>⑤ Tricks emerge too: chain-of-thought and instruction tuning are useless or harmful on small models and only work once big enough.</p>
+<p>⑥ Results: a dozen-plus tasks (arithmetic, obscure-language QA, MMLU, etc.) emerge around 10²²–10²⁴ FLOPs; recurs across GPT-3, LaMDA, Gopher, Chinchilla, PaLM.</p>
+<p>⑦ Impact: pushed "emergence" into common vocabulary, fueling the "keep scaling" drive, igniting safety concern over unpredictable risks, and raising the stakes of task-by-task evaluation.</p>
+<p>⑧ Limits: Schaeffer et al. 2023's "mirage" rebuttal — many jumps are artifacts of discontinuous metrics, smooth under continuous ones; "unpredictability" weakened; the paper only observes, without explaining the mechanism.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full task list and every curve, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
