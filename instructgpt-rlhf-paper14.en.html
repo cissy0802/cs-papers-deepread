@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>InstructGPT / RLHF (Training Models to Follow Instructions) — CS Papers Deep-Read Paper 14</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 14</p>
+<h1>InstructGPT: Training Models to Follow Instructions (RLHF)</h1>
+<p class="sub">Ouyang et al. · OpenAI · NeurIPS 2022</p>
+<p class="langbar"><a href="instructgpt-rlhf-paper14.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In early 2022, a team at OpenAI (Ouyang et al.) introduced <strong>InstructGPT</strong>, using a method called <strong>RLHF (training with human feedback)</strong> to turn GPT-3 — which only knew how to "keep talking" — into an assistant that "does what you ask." The result is striking: a small model with just <strong>1.3 billion parameters</strong> had its answers <em>preferred</em> by people over the original <strong>175-billion-parameter</strong> GPT-3. A model 100× bigger lost to one that "listens better." <strong>ChatGPT, which arrived a few months later, uses the same recipe.</strong></p>
+
+<h2>First, a puzzle</h2>
+<p>GPT-3 has read the whole internet and is stuffed with knowledge, yet it often "answers the wrong question": ask it to "explain the moon landing in one sentence" and it may spin out a plausible-sounding but off-topic paragraph; ask a serious question and it may confidently make things up, or blurt out something offensive. <strong>It isn't dumb — it simply wasn't ever "answering you." It was playing a "guess the next word" game.</strong> It learned "what usually comes next on the internet," not "what this person actually wants." Those two things are often not the same.</p>
+
+<h2>The idea</h2>
+<p>The old way to make models better was to feed them more text and have them imitate it. But "imitating internet text" can never teach a model to "answer a real person thoughtfully." <strong>The idea here: instead of more imitation, have people <em>rate</em> its answers, then have the model adjust toward "what people prefer."</strong> Like training a chef — memorizing recipes isn't enough; a diner has to taste and say "this is good, that's too salty" before the chef knows which way to tune. <strong>Handing the model that yardstick — human preference — is the first time it learns what a "good answer" even looks like.</strong></p>
+
+<h2>How it works (three steps)</h2>
+<p><strong>Step 1 · Ask people to demonstrate.</strong> First, a few dozen trained people <strong>write ideal answers by hand</strong> for a range of prompts, and the model imitates them — like an apprentice watching the master do it a few times.</p>
+<p><strong>Step 2 · Ask people to rank, and train a "judge."</strong> For the same prompt, let the model produce several answers, and have people <strong>rank them from best to worst</strong>. Use those rankings to train a dedicated <strong>"judge model"</strong> that learns human taste — so no human need be present later; it can score any answer on its own.</p>
+<p><strong>Step 3 · Let the model practice, judged by the judge.</strong> The model keeps trying new answers, the judge scores them in real time, and the model nudges itself toward "higher scores." To stop it from talking nonsense just to please the judge, it's kept on a <strong>"don't drift too far" leash</strong> — new answers may not stray too far from its old self.</p>
+
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="pa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<rect x="24" y="60" width="150" height="88" rx="9" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="99" y="88" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">1 · Demonstrate</text>
+<text x="99" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">people write</text>
+<text x="99" y="128" fill="#b9c0ca" font-size="11" text-anchor="middle">ideal answers</text>
+<rect x="205" y="60" width="150" height="88" rx="9" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="280" y="88" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">2 · Train judge</text>
+<text x="280" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">people rank</text>
+<text x="280" y="128" fill="#b9c0ca" font-size="11" text-anchor="middle">answers → taste</text>
+<rect x="386" y="60" width="150" height="88" rx="9" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text x="461" y="88" fill="#e8794b" font-size="13" text-anchor="middle" font-weight="700">3 · Practice</text>
+<text x="461" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">judge scores</text>
+<text x="461" y="128" fill="#b9c0ca" font-size="11" text-anchor="middle">tune for score</text>
+<line x1="176" y1="104" x2="203" y2="104" stroke="#e8794b" stroke-width="2" marker-end="url(#pa)"/>
+<line x1="357" y1="104" x2="384" y2="104" stroke="#e8794b" stroke-width="2" marker-end="url(#pa)"/>
+<text x="280" y="34" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">teaching the model human preference, step by step</text>
+</svg>
+<figcaption>Fig · The three RLHF steps: imitate human demonstrations, distill human rankings into a "judge," then let the model improve itself against the judge's scores.</figcaption>
+</figure>
+
+<h2>What it brought</h2>
+<p>The model now <strong>actually "answers you"</strong>: more willing to follow instructions, less prone to making things up, less likely to say something offensive, and better at declining what it shouldn't answer. More surprisingly, this path proved that <strong>"making a model more useful" doesn't require making it bigger — tune it to listen better, and a small model can beat a giant 100× its size.</strong> Nearly every chat AI you use today stands on this method.</p>
+<p>One honest note: it is aligned to the taste of those few dozen labelers and researchers, <strong>not to "humanity's" values</strong>; the model still makes mistakes, can be worked around, and may even learn to "say what sounds nice" rather than what's true.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>GPT-3 only knew how to "guess the next word," not how to "answer you thoughtfully." InstructGPT's fix: have people demonstrate, have people rank answers to distill a "judge," then let the model improve itself against the judge's scores — teaching it human preference. So a 1.3B model became more popular than 175B GPT-3, and ChatGPT came from the same recipe.</p>
+</div>
+
+<p class="switch-hint">Want the per-step losses, the KL constraint, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">InstructGPT uses a three-step <strong>RLHF (reinforcement learning from human feedback)</strong> pipeline — <strong>supervised fine-tuning → train a reward model → optimize with PPO</strong> — to redirect a pretrained language model's objective from "predict the next word" toward "follow user intent, be helpful and harmless." The result: a <strong>1.3B InstructGPT whose answers labelers prefer over the original 175B GPT-3</strong>, while being more truthful and less toxic. This recipe became the standard alignment step behind ChatGPT, Claude, and later conversational models.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Language model / pretraining</strong>: a model that reads massive text and repeatedly practices "given the previous words, guess the next one." GPT-3 was trained this way — it learns "what usually comes next in text."</li>
+<li><strong>Fine-tuning</strong>: continuing to train a pretrained model on a small, targeted dataset to adapt it to a specific task or behavior.</li>
+<li><strong>Alignment</strong>: making a model's behavior match human <em>intent</em> and values — helpful, honest, harmless — not just "plausibly continuing text."</li>
+<li><strong>Reinforcement learning (RL)</strong>: a paradigm with no ground-truth answers, only a "score (reward)"; the agent tries repeatedly and adjusts its policy toward higher scores.</li>
+<li><strong>Policy</strong>: in RL, the model that decides "given an input, what to output" — here, the language model itself.</li>
+<li><strong>Reward</strong>: a score for how good an action was. RLHF's key move is making that score come from human preference.</li>
+<li><strong>PPO (Proximal Policy Optimization)</strong>: a common, stable RL algorithm whose signature is updating the policy in small steps that don't stray too far each time.</li>
+<li><strong>KL divergence</strong>: a measure of how far apart two probability distributions are. Here it quantifies "how far the new model's way of talking has drifted from the original" — the "don't drift too far" leash.</li>
+<li><strong>Hallucination</strong>: a model confidently fabricating false content.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>By Long Ouyang, Jeff Wu, and colleagues at OpenAI, the paper "Training language models to follow instructions with human feedback" appeared in March 2022 and at NeurIPS 2022. It picks up directly from <strong>GPT-3 (2020)</strong> — taking that "big but unruly" completion model and aligning it — and builds methodologically on a line of OpenAI/DeepMind work since 2017 on "learning rewards from human preferences." What it launches is immediate: <strong>ChatGPT, a few months later, is its sibling, and RLHF became the universal step for turning a large model into an assistant.</strong></p>
+
+<h2>The problem and the motivation</h2>
+<p>Large models like GPT-3 are trained with a single objective: <strong>predict the next word</strong>. That objective is not the same as what users actually want — <strong>"help me, following my instructions, usefully and safely."</strong> The authors name the gap: the model is imitating the distribution of internet text, not serving a person with an intent.</p>
+<p>The consequences are concrete and annoying: GPT-3 often <strong>ignores instructions</strong> (you ask for one sentence, it gives a page), <strong>fabricates facts</strong> (hallucinates), <strong>produces toxic or biased content</strong>, and is hard to simply "direct." <em>Prompt engineering</em> (crafting cleverer instructions) helps somewhat but treats the symptom, not the cause. The authors call this the <strong>"alignment problem"</strong>: the model has the <em>capability</em>, but its <strong>objective</strong> isn't aimed at human intent. Their target is to make the model <strong>helpful, honest, harmless (the "3H")</strong>.</p>
+<p>The hard part: a "good answer" has no ground truth and can't easily be written as a loss function — there's no formula for "is this passage useful and appropriate." <strong>The only reliable judge is a human. So the problem becomes: how do you get "human judgment" into the training loop?</strong></p>
+
+<h2>The core idea</h2>
+<p>The answer is a three-step pipeline. Two insights anchor it: <strong>(a)</strong> rather than have people write ground-truth answers (expensive, and impossible to cover exhaustively), have them do something easier — <strong>pick which of several candidates is better</strong>; <strong>(b)</strong> <strong>distill those human preferences into a "reward model"</strong> that becomes an automatic scorer — a proxy for human preference that RL can query an unlimited number of times.</p>
+
+<figure>
+<svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="d1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="d1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="20" y="26" width="520" height="80" rx="9" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.4)"/>
+<text x="34" y="47" fill="#f0b429" font-size="12.5" font-weight="700">1 · Supervised fine-tuning (SFT)</text>
+<text x="34" y="70" fill="#b9c0ca" font-size="11.5">people write ideal answers to prompts → fine-tune GPT-3 on these demos</text>
+<text x="34" y="90" fill="#7c8593" font-size="10.5">output: an SFT model that roughly "listens" (the starting point below)</text>
+<line x1="280" y1="106" x2="280" y2="124" stroke="#7c8593" marker-end="url(#d1)"/>
+<rect x="20" y="126" width="520" height="86" rx="9" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.4)"/>
+<text x="34" y="147" fill="#f0b429" font-size="12.5" font-weight="700">2 · Train a reward model (RM)</text>
+<text x="34" y="170" fill="#b9c0ca" font-size="11.5">same prompt → model outputs K answers → people rank best-to-worst</text>
+<text x="34" y="190" fill="#b9c0ca" font-size="11.5">→ train RM: give any (prompt, answer) one scalar score r, fitting preference</text>
+<line x1="280" y1="212" x2="280" y2="230" stroke="#7c8593" marker-end="url(#d1)"/>
+<rect x="20" y="232" width="520" height="94" rx="9" fill="rgba(232,121,75,0.1)" stroke="rgba(232,121,75,0.55)"/>
+<text x="34" y="253" fill="#e8794b" font-size="12.5" font-weight="700">3 · PPO reinforcement learning</text>
+<text x="34" y="276" fill="#b9c0ca" font-size="11.5">SFT model as policy: generate answer → RM scores r → PPO updates toward r</text>
+<text x="34" y="296" fill="#b9c0ca" font-size="11.5">minus a KL penalty: stay near the SFT model (block "gaming the judge")</text>
+<text x="34" y="315" fill="#7c8593" font-size="10.5">mix in pretraining gradients (PPO-ptx) to ease the "alignment tax"</text>
+<path d="M300,300 C470,300 476,250 300,250" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#d1g)"/>
+<text x="486" y="278" fill="#f0b429" font-size="10">loop</text>
+</svg>
+<figcaption>Fig · The three-step RLHF pipeline: (1) SFT makes the model roughly follow instructions; (2) human rankings are distilled into a scoring reward model; (3) PPO lets the model improve against the reward model, with a KL leash keeping it from drifting too far.</figcaption>
+</figure>
+
+<h3>Step 1: Supervised fine-tuning (SFT)</h3>
+<p>First, about 40 screened and trained labelers <strong>write ideal answers by hand</strong> for real prompts drawn from the OpenAI API, producing "demonstration data." Standard supervised fine-tuning of GPT-3 on this yields the <strong>SFT model</strong>. This step is the "hands-on demonstration," getting the model roughly into an "answering" mode — but the demo data is limited, far from enough to teach every nuance.</p>
+
+<h3>Step 2: The reward model (RM) — turning preference into an auto-queryable yardstick</h3>
+<p>The pivotal step. For one prompt, sample <strong>K answers</strong> from the model and have labelers <strong>rank them best-to-worst</strong> (rather than assign absolute scores — people rank far more consistently than they score). Each "better vs. worse" pair is a training signal, and a <strong>pairwise ranking loss</strong> trains the reward model to give the human-preferred one a higher scalar score <code>r(x,y)</code>. Intuitively, the RM <strong>compresses dozens of people's taste into one neural network</strong> — after which no human need be present; it scores any answer instantly.</p>
+<p>A pragmatic design detail: they use a <strong>6B</strong> reward model, not the largest 175B — a huge RM is unstable to train and unnecessary.</p>
+
+<h3>Step 3: Reinforcement learning with PPO</h3>
+<p>With an automatic judge in hand, training becomes an RL problem: the <strong>policy</strong> is the language model, which generates answers; the reward model scores them; and <strong>PPO</strong> nudges the policy in small steps toward higher scores. But optimizing this directly has a big trap — the model will <strong>"game the judge"</strong> (reward hacking): the reward model is only an <em>approximation</em> of people, and the model can find answers that trick a high score while being actually bad.</p>
+<p>Two constraints keep it in check. The objective can be written roughly as:</p>
+<p><code>objective = E[ r(x,y) − β·KL(π_now ‖ π_SFT) ] + γ·E[language modeling on pretrain text]</code></p>
+<p>In plain terms: the <strong>first term</strong> is "score as high as possible"; the <strong>second term</strong> is a <strong>per-token KL penalty</strong> — the new model's output distribution may not drift too far from the SFT model, the "don't stray too far" leash that blocks talking nonsense to please the RM; the <strong>third term</strong> mixes back a slice of the <strong>original pretraining objective</strong> (denoted <strong>PPO-ptx</strong>) to stop the <em>alignment tax</em> — the tendency, when single-mindedly aligning, to degrade general capability. Together, the model moves toward human preference without flying off or regressing.</p>
+
+<h2>Key results</h2>
+<p>The headline: on human-preference evaluations, <strong>the 1.3B InstructGPT's outputs are preferred by labelers over the original 175B GPT-3</strong> — 100× fewer parameters, yet more popular because it's more aligned. At equal size, 175B InstructGPT is preferred over 175B GPT-3 by an overwhelming margin.</p>
+<p>Other dimensions: on <strong>TruthfulQA</strong> (truthfulness) it answers truthfully far more often; on <strong>RealToxicityPrompts</strong>, when asked to "be respectful," toxic output drops markedly; it <strong>follows explicit instructions better and fabricates less</strong>. Generalization holds up too: it works for "held-out" labelers who weren't in training, and for non-English instructions and code requests that were rare in training. As for cost, plain RLHF regresses on some public NLP benchmarks (the alignment tax), but <strong>PPO-ptx, which mixes in pretraining gradients, largely erases that regression</strong>.</p>
+
+<h2>Why it mattered</h2>
+<p>It gave the field the <strong>standard recipe for the one step that turns a "raw large model" into a "usable assistant."</strong> Before this, the instinct was "if the model isn't good enough, make it bigger"; this paper shifted the emphasis from <em>scale</em> to <em>alignment</em>, and made the point undeniable with "1.3B beats 175B": <strong>bigger alone isn't enough — you have to aim it at human intent.</strong> <strong>ChatGPT</strong>, months later, is a product of this method, and nearly every conversational model since — Claude, Llama-Chat, Gemini — adopted RLHF or a variant. It also established <strong>"reward model + KL constraint + policy optimization"</strong> as the general skeleton of alignment engineering, with later RLAIF, DPO, and others evolving inside the same framing. In a real sense, that everyone can converse fluently with AI today rests on this paper's threshold from "completion engine" to "assistant."</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Aligned to whom?</strong> The model is aligned to the preferences and guidelines written by those ~40 labelers and OpenAI researchers — <strong>not to humanity's values</strong>. Judgments of "helpful / harmless" carry culture and stance; who defines them is a fundamental open question.</li>
+<li><strong>The reward model can be gamed</strong>: the RM is only an approximation of people, and over-optimizing invites reward hacking — the model learns to "look good" rather than "be good." The KL penalty mitigates but doesn't eliminate this.</li>
+<li><strong>Honest ≠ truthful</strong>: RLHF optimizes for "satisfying the labeler," which breeds <em>sycophancy</em> — telling users what they want to hear, even agreeing with false premises, instead of holding to facts.</li>
+<li><strong>Still errs, still can be worked around</strong>: InstructGPT still hallucinates and can be coaxed (jailbroken) into harmful output; alignment is "better," not "solved."</li>
+<li><strong>Expensive and hard to scale</strong>: high-quality human ranking data is costly, slow, and carries annotator bias — which motivated later "AI feedback replacing some human labor" routes (RLAIF / Constitutional AI).</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: use three-step RLHF (SFT → reward model → PPO) to redirect a large model's objective from "guess the next word" toward "follow user intent, be 3H."</p>
+<p>② The pain: the pretraining objective (predict next word) ≠ user intent, so GPT-3 ignores instructions, hallucinates, and is toxic; a "good answer" can't be written as a loss, and only humans can judge it.</p>
+<p>③ Insight: have people do the easier task of "ranking" rather than writing ground truth, then distill preference into an auto-scoring reward model.</p>
+<p>④ Three steps: SFT aligns roughly using human demos; the RM learns taste via a pairwise ranking loss (6B, not 175B); PPO improves the policy against the RM's scores.</p>
+<p>⑤ Two constraints: a per-token KL penalty leashes the model against drift and reward hacking; PPO-ptx mixes back pretraining gradients to erase the "alignment tax."</p>
+<p>⑥ Results: 1.3B InstructGPT preferred over 175B GPT-3; more truthful (TruthfulQA), less toxic, better at instructions, and it generalizes to held-out labelers and non-English/code.</p>
+<p>⑦ Impact: the same recipe as ChatGPT; RLHF became the standard alignment step for turning large models into assistants (later RLAIF, DPO evolved from it).</p>
+<p>⑧ Limits: aligned to a few labelers' preferences, not humanity's; the RM can be gamed; it breeds sycophancy; it still hallucinates / can be jailbroken; human labeling is costly and hard to scale.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full datasets, hyperparameters, and evaluation details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
