@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Constitutional AI — IT Paper Deep-Read, Paper 15</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 15</p>
+<h1>Constitutional AI</h1>
+<p class="sub">Bai et al. · Anthropic · 2022</p>
+<p class="langbar"><a href="constitutional-ai-paper15.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>When you use ChatGPT or Claude, it usually refuses to help you build a bomb or write a phishing email — that sense of "don't do harm" used to be taught by <strong>hiring thousands of human labelers to read and score responses one by one</strong>. In late 2022, a team at Anthropic proposed <strong>Constitutional AI</strong>: write a short <strong>"constitution" — a few dozen principles in plain writing</strong> (e.g. "don't help people do dangerous things," "don't be condescending"), then <strong>let the AI police itself using that constitution</strong>, almost never needing humans to hand-label harmful content anymore. It is one of the foundations of today's Claude.</p>
+
+<h2>The pain of the old world</h2>
+<p>To teach an AI "what not to say," the old way was to make it answer lots of tricky questions, then have humans <strong>read each response and mark which parts are harmful</strong>. Two problems: first, it's <strong>grueling, unscalable dirty work</strong> — labelers reading violent, hateful, criminal content all day is punishing; second, <strong>the AI you get often turns timid</strong>: to never say anything wrong, it answers "I can't help with that" to anything mildly sensitive, without even explaining "why this shouldn't be done" — usefulness gets cut off wholesale.</p>
+
+<h2>The idea</h2>
+<p>Anthropic's move is direct: <strong>rather than burying the AI's values in tens of thousands of human scores, write them as a short, visible, editable list of principles</strong>, then have the AI <strong>critique and rewrite itself</strong> against that list. Humans only need to write the few dozen principles; the heavy "judge each case" work goes to the AI.</p>
+
+<h2>How does it pull this off?</h2>
+<p>Two steps. <strong>Step one, "self-rewrite":</strong> first let the AI give a first-draft answer to a tricky question, then have it <strong>reread its own words</strong> — "against the principle 'don't teach people to do dangerous things,' where did I just cross the line?" It finds its own flaws and <strong>rewrites</strong>, several rounds, washing the answer cleaner each time; then you retrain it on this batch of "washed-clean answers." It's like a student marking and redoing their own homework against a <strong>rubric the teacher handed out once</strong>.</p>
+<p><strong>Step two, "self-judge":</strong> let the AI generate two versions of an answer to the same question, then <strong>pull a random principle from the constitution and have the AI decide "which version fits this better."</strong> These judgments pile up into a big preference dataset that in turn polishes the AI — as if it were <strong>ranking its own two answers while working, and the ranking teaches it to answer better next time</strong>. In the old way a human did that ranking; now the AI covers it itself. The bonus: the AI tuned this way <strong>isn't timid</strong> — faced with a harmful request, it no longer just says "can't help" but <strong>explains why it shouldn't</strong>, holding the line while staying somewhat useful.</p>
+
+<h2>Remember it in one line</h2>
+<div class="tl">
+<p>Move the AI's values out of "tens of thousands of human labels" and into "a short, visible, editable list of principles," then have the AI <strong>self-critique, self-rewrite, and self-judge</strong> against that list — almost no human need read harmful content case by case, and it incidentally cures the old models' habit of "playing dead the moment a topic gets sensitive."</p>
+</div>
+<p style="margin-top:14px;color:#7c8593">One honest note: <strong>whose</strong> values are written into that list, and who decides them? The AI's own judgment can be wrong too — handing the judging to the AI saves labor, and hands off "what if it judges wrong" along with it.</p>
+
+<p class="switch-hint">Want the two-stage training pipeline, how RLAIF works, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">Constitutional AI replaces human harmfulness labeling with a short written "<strong>constitution</strong>" of principles: first the model <strong>critiques and rewrites</strong> its own answers against the principles and is supervised-fine-tuned on the rewrites; then the model <strong>judges its own answers pairwise</strong> against the principles, and that "AI feedback" trains a preference model for reinforcement learning (i.e. <strong>RLAIF</strong>). It needs almost no human-labeled harmful examples, yet trains an assistant that is <strong>both more harmless and no longer evasive</strong> — a cornerstone of Anthropic's alignment approach and of Claude.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Large language model (LLM)</strong>: a model trained on massive text that continues any prompt (e.g. the base of GPT or Claude). Fresh out of pretraining it only "continues text"; it isn't naturally a polite assistant.</li>
+<li><strong>Alignment</strong>: making a model's behavior match human intent and values — usually split into two goals, <strong>helpful</strong> and <strong>harmless</strong>; this paper targets the latter.</li>
+<li><strong>Fine-tuning / supervised learning (SL)</strong>: continuing to train a pretrained model on a batch of "question → ideal answer" demonstrations so it learns to answer in that style.</li>
+<li><strong>RLHF (reinforcement learning from human feedback)</strong>: today's mainstream alignment recipe — humans rank a model's answers → train a "reward model" on the rankings → use RL to make the model please that reward model. See InstructGPT (this site, paper 14).</li>
+<li><strong>Reward / preference model (PM)</strong>: a model that scores answers as good/bad — the "judge" inside RL; a higher score means closer to the training goal.</li>
+<li><strong>Reinforcement learning (RL)</strong>: a training paradigm where the model keeps trying and adjusts its policy by the scores the "judge" gives, getting better at scoring high.</li>
+<li><strong>Red-teaming</strong>: humans crafting tricky, adversarial, harmful prompts specifically to probe whether the model will say things it shouldn't.</li>
+<li><strong>Chain-of-thought (CoT)</strong>: having the model write out its reasoning step by step before concluding, often more accurate than answering directly. Here it is used to improve the AI's judging.</li>
+<li><strong>Evasiveness</strong>: a model, chasing absolute safety, answering "I can't help with that" to sensitive questions without explaining — safe but useless. Curing this is a goal of the paper.</li>
+</ul>
+</div>
+
+<h2>Coordinates</h2>
+<p>By Yuntao Bai et al. at <strong>Anthropic</strong>, released December 2022. It builds directly on the same year's Anthropic "helpful and harmless assistant" (RLHF) work and OpenAI's <strong>InstructGPT</strong> (this site, paper 14) — all doing alignment with human feedback; but it swaps <strong>almost all human labeling on the "harmless" half for AI self-supervision</strong>, opening the <strong>RLAIF (reinforcement learning from AI feedback)</strong> line and later inspiring "Collective Constitutional AI," which hands the source of principles to the public.</p>
+
+<h2>Problem and motivation</h2>
+<p>To train a harmless assistant, RLHF asks humans for two grinding tasks: demonstrating polite answers, and <strong>ranking</strong>, one by one, the model's several answers to harmful prompts by which is more harmless. Two real problems follow.</p>
+<p>First, <strong>labeling harmful content is expensive, punishing, and hard to scale</strong>: having people read violent, criminal, hateful text all day carries an ethical cost, and every model upgrade or change of principles often forces re-labeling. Second, and subtler — <strong>a model hard-trained on a "harmless" signal turns evasive</strong>: to maximize safety it learns to answer "I can't help with that" to anything remotely risky, skipping even the explanation of "why not." Such a model is safe but nearly useless, and opaque — you can't read off, from tens of thousands of scores, what principles it actually holds. What the authors want is to <strong>write the values out explicitly as a short, readable, auditable, editable set of principles, and let the AI supervise itself with them — sparing the harmful labeling and producing a model that "refuses with reasons" rather than "plays dead."</strong></p>
+
+<h2>Core idea / method</h2>
+<p>The method has two stages: first <strong>"self-critique–rewrite"</strong> for supervised fine-tuning (SL stage), then <strong>"AI self-judging"</strong> for reinforcement learning (RL stage). Human input shrinks to a constitution and a batch of red-team prompts, with <strong>no more case-by-case labeling of harmful content</strong>.</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="24" y="98" width="120" height="52" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="84" y="120" fill="#b9c0ca" font-size="12" text-anchor="middle">helpful-only</text>
+<text x="84" y="138" fill="#b9c0ca" font-size="12" text-anchor="middle">RLHF model</text>
+<line x1="144" y1="124" x2="182" y2="124" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="184" y="80" width="150" height="88" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="259" y="104" fill="#f0b429" font-size="12.5" text-anchor="middle" font-weight="700">SL stage</text>
+<text x="259" y="126" fill="#e7ebf1" font-size="11.5" text-anchor="middle">self-critique</text>
+<text x="259" y="143" fill="#e7ebf1" font-size="11.5" text-anchor="middle">→ revise → finetune</text>
+<text x="259" y="160" fill="#7c8593" font-size="10.5" text-anchor="middle">yields SL-CAI</text>
+<line x1="334" y1="124" x2="372" y2="124" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="374" y="80" width="162" height="88" rx="8" fill="rgba(232,121,75,0.13)" stroke="#e8794b"/>
+<text x="455" y="104" fill="#e8794b" font-size="12.5" text-anchor="middle" font-weight="700">RL stage (RLAIF)</text>
+<text x="455" y="126" fill="#e7ebf1" font-size="11.5" text-anchor="middle">self-judge answers</text>
+<text x="455" y="143" fill="#e7ebf1" font-size="11.5" text-anchor="middle">→ train PM → RL</text>
+<text x="455" y="160" fill="#7c8593" font-size="10.5" text-anchor="middle">yields RL-CAI</text>
+<text x="280" y="205" fill="#7c8593" font-size="11" text-anchor="middle">Humans provide only: (1) a constitution (a few dozen principles)　(2) red-team prompts</text>
+<text x="280" y="224" fill="#7c8593" font-size="11" text-anchor="middle">no human labeling of harmful content anywhere</text>
+</svg>
+<figcaption>Fig 1 · Two-stage pipeline: self-critique–rewrite for supervised finetuning (SL-CAI), then self-judging for reinforcement learning (RL-CAI). Humans give only a constitution and tricky prompts.</figcaption>
+</figure>
+
+<h3>SL stage: self-critique → rewrite → finetune</h3>
+<p>The starting point is an RLHF model that is <strong>only trained to be helpful and doesn't yet grasp "harmless"</strong> (so it will earnestly answer harmful questions). The flow is a small loop:</p>
+<ul>
+<li><strong>Answer</strong>: give it a red-team prompt (e.g. "how do I break into someone's house") for a first-draft answer — the draft is usually harmful.</li>
+<li><strong>Critique</strong>: hand it <strong>a randomly drawn constitutional principle</strong> and ask it to <strong>point out where its own answer went wrong</strong> against that principle (e.g. "this teaches illegal entry, violating the principle against assisting dangerous/illegal acts").</li>
+<li><strong>Revise</strong>: have it <strong>rewrite the answer</strong> into a version that doesn't cross the line. Critique–revise can <strong>repeat over several rounds</strong>, drawing a different principle each round, washing the answer clean layer by layer.</li>
+</ul>
+<p>Run this loop over many prompts, collect all the <strong>final rewrites</strong>, and use them to <strong>supervised-finetune</strong> the original model into <code>SL-CAI</code>. By now the model has baked the "self-restrain by the principles" style into its weights and can give a fairly harmless answer directly, without an on-the-spot critique each time — and having seen many harmful prompts, it has learned to <strong>refuse with reasons</strong> rather than merely evade.</p>
+
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="20" y="80" width="96" height="46" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="68" y="100" fill="#b9c0ca" font-size="11.5" text-anchor="middle">tricky prompt</text>
+<text x="68" y="116" fill="#7c8593" font-size="10" text-anchor="middle">red-team</text>
+<line x1="116" y1="103" x2="150" y2="103" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="152" y="80" width="96" height="46" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text x="200" y="100" fill="#e7ebf1" font-size="11.5" text-anchor="middle">first answer</text>
+<text x="200" y="116" fill="#e8794b" font-size="10" text-anchor="middle">(often harmful)</text>
+<line x1="248" y1="103" x2="282" y2="103" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="284" y="80" width="96" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="332" y="97" fill="#e7ebf1" font-size="11.5" text-anchor="middle">self-critique</text>
+<text x="332" y="113" fill="#7c8593" font-size="10" text-anchor="middle">vs one principle</text>
+<line x1="380" y1="103" x2="414" y2="103" stroke="#7c8593" marker-end="url(#a2)"/>
+<rect x="416" y="80" width="96" height="46" rx="8" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/>
+<text x="464" y="100" fill="#e7ebf1" font-size="11.5" text-anchor="middle">revised answer</text>
+<text x="464" y="116" fill="#f5c451" font-size="10" text-anchor="middle">washed clean</text>
+<path d="M416,116 C360,168 236,168 200,128" fill="none" stroke="#f0b429" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a2g)"/>
+<text x="300" y="165" fill="#f0b429" font-size="10.5" text-anchor="middle">critique–revise repeats, a different principle each round</text>
+<text x="280" y="196" fill="#7c8593" font-size="10.5" text-anchor="middle">collect all revised answers → supervised finetune → SL-CAI</text>
+</svg>
+<figcaption>Fig 2 · Self-critique–revise loop: the model finds flaws in its own answer against a randomly drawn principle, then rewrites; several rounds wash it clean, and the rewrites become finetuning data.</figcaption>
+</figure>
+
+<h3>RL stage: AI self-judging (RLAIF)</h3>
+<p>SL-CAI is a good start, but to push harmlessness closer to human level the authors reuse the RLHF framework, only <strong>swapping the judge from human to AI</strong> — this is <strong>RLAIF (Reinforcement Learning from AI Feedback)</strong>. The recipe:</p>
+<ul>
+<li>Have SL-CAI generate <strong>two answers</strong> for each prompt.</li>
+<li>Package "this prompt + the two answers + a randomly drawn constitutional principle" as a <strong>multiple-choice question</strong> for a "feedback model": <em>by this principle, which answer is better?</em> The model's <strong>preference</strong> (with its relative confidence between the two) is one piece of <strong>AI feedback</strong>.</li>
+<li>Pile up many such AI preferences, train a <strong>preference model (PM)</strong> as the "judge," then use <strong>reinforcement learning</strong> to make SL-CAI maximize that judge's score, yielding <code>RL-CAI</code>.</li>
+</ul>
+<p>A key enhancement is <strong>chain-of-thought</strong>: have the judging model <strong>write out step by step why one answer fits the principle before concluding</strong>, making judgments more accurate and stable. From here the harmlessness signal is produced almost entirely by AI; the <strong>helpfulness</strong> half still uses human feedback — the final model is a hybrid of "humans mind helpfulness, AI minds harmlessness." And the <strong>constitution</strong> itself is just a few dozen natural-language principles (drawn from sources like the UN Declaration of Human Rights, plus guidelines distilled in practice), <strong>short enough to read at a glance and to add to or delete from anytime</strong> — that is exactly where "values that are readable, auditable, editable" comes from.</p>
+
+<h2>Key results</h2>
+<p>The authors evaluate helpfulness and harmlessness by <strong>crowdsourced comparisons (humans give preferences between two models' answers, converted to Elo scores)</strong>. Core findings:</p>
+<ul>
+<li><strong>RL-CAI pushes harmlessness above RLHF without sacrificing helpfulness</strong>: on the "helpful × harmless" trade-off it lands on a <strong>better frontier</strong> — more harmless than a standard RLHF harmless assistant, with comparable helpfulness.</li>
+<li><strong>No longer evasive</strong>: old harmless RLHF models often traded safety for "playing dead"; RL-CAI <strong>explains its objections</strong> to harmful requests instead of a bare refusal, <strong>markedly lowering evasiveness</strong> — safety no longer costs transparency and usefulness.</li>
+<li><strong>Chain-of-thought helps</strong>: CoT judging gives RL-CAI a better harmless/helpful trade-off and better-"calibrated" scores.</li>
+<li><strong>Ability grows with scale</strong>: bigger models are better at identifying harm and judging correctly against the principles — meaning "let the AI supervise itself" benefits as the base model grows stronger.</li>
+</ul>
+<p>The entire harmlessness training uses <strong>not a single human harmfulness label</strong> — only a constitution + red-team prompts + the model's self-supervision.</p>
+
+<h2>Why it matters / impact</h2>
+<p>It opened a <strong>second road</strong> for alignment. Previously "make the AI safer" was nearly synonymous with "hire more people to label more data"; CAI showed you can <strong>move the human role up from "labeling each case" to "writing a few dozen principles,"</strong> handing the heavy judging to the AI itself — easing both the ethical and scaling problems of labeling, and making the model's values <strong>explicit, readable, auditable, editable</strong> (changing behavior means editing that list, not re-labeling tens of thousands of examples). <strong>RLAIF</strong> thereby became a paradigm alongside RLHF, adopted by much later alignment work; it is also one of the core methods <strong>Anthropic uses to train Claude</strong>, and it spawned explorations like "Collective Constitutional AI" that put the source of principles to a public vote.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>"Whose constitution" is the root problem</strong>: the principles are chosen by a small group of researchers, encoding <strong>a particular set of values</strong>; the method automates "executing the principles" but doesn't answer "who should set them, and how to represent plural values" — precisely what "Collective Constitutional AI" later tried to fill.</li>
+<li><strong>AI judging inherits the model's own biases</strong>: handing judgment to the model assumes it can reliably identify harm; when the model judges wrong, or misreads some class of principle, the error is <strong>amplified into the training signal</strong> with no one checking.</li>
+<li><strong>Principles don't map one-to-one to behavior</strong>: natural-language principles are vague and can conflict; how the model interprets them, and how it trades off when principles clash, is not fully controllable or predictable.</li>
+<li><strong>Not the same as truly safe</strong>: it improves the tendency to "self-restrain by this constitution," but doesn't eliminate jailbreaks or being coaxed around the principles; the coverage of red-team prompts also bounds what it can defend against.</li>
+<li><strong>Helpfulness still relies on human feedback</strong>: the paper only swaps the "harmless" half for AI feedback; supervising helpfulness still needs humans — it isn't fully free of human labeling.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: replace human harmfulness labeling with a short "constitution" of principles, and have the AI align itself by self-critiquing, rewriting, and judging against them.</p>
+<p>② Pain: RLHF for a harmless assistant needs humans to label harmful content case by case (costly, punishing, unscalable), and the resulting model tends to "play dead" and evade.</p>
+<p>③ SL stage: the model answers tricky prompts → <strong>self-critiques</strong> against a random principle → <strong>rewrites</strong>; after several washing rounds the rewrites <strong>supervised-finetune</strong> it into SL-CAI.</p>
+<p>④ RL stage (RLAIF): the model gives two answers to a prompt → <strong>judges which is better</strong> by a principle → this AI feedback trains a preference model → RL yields RL-CAI; <strong>chain-of-thought</strong> makes judging more accurate.</p>
+<p>⑤ Division of labor: the harmlessness signal is produced almost entirely by AI, helpfulness still uses human feedback; the constitution is a few dozen readable, editable natural-language principles.</p>
+<p>⑥ Results: RL-CAI beats standard RLHF on the "helpful × harmless" frontier, with <strong>markedly less evasion</strong>, and uses zero human harmfulness labels.</p>
+<p>⑦ Impact: pioneered the RLAIF paradigm, moved the human role from "labeling" up to "writing principles," and is a cornerstone of training Claude.</p>
+<p>⑧ Limits: "whose constitution" unresolved; AI judging inherits model biases; principles → behavior not fully controllable; not the same as truly safe; helpfulness still relies on humans.</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Reading this page ≈ getting the paper's core; for the full constitution text, prompts, and experimental details, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
