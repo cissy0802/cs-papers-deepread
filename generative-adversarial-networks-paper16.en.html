@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Generative Adversarial Networks (GAN) — CS Papers Deep-Read Paper 16</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 16</p>
+<h1>Generative Adversarial Networks (GAN)</h1>
+<p class="sub">Ian Goodfellow et al. · Université de Montréal · NIPS 2014</p>
+<p class="langbar"><a href="generative-adversarial-networks-paper16.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2014, Ian Goodfellow and colleagues introduced <strong>GANs (generative adversarial networks)</strong>. The AI face-swaps (deepfakes) you've seen, the eerily realistic "people who don't exist," auto-colorizing old black-and-white photos, turning a horse into a zebra — much of this "conjure a realistic image out of nothing" technology traces back to the idea in this paper. It taught machines something hard: not to <strong>recognize</strong> an image, but to <strong>paint</strong> one that never existed before yet looks utterly real.</p>
+
+<h2>First, the hard part</h2>
+<p>Getting a machine to recognize "that's a cat" isn't too hard — feed it a pile of labeled cat pictures. But the reverse — having it "paint a cat it has never seen, but which just looks real" — is much harder: <strong>how do you judge whether it painted something realistic?</strong> "Looks real" is a fuzzy thing with no scoring formula. You can't hand the machine a ruler and say "measure by this, the higher the more real." That's exactly where the old approaches got stuck.</p>
+
+<h2>The idea: make two networks fight</h2>
+<p>Rather than hard-code a "realism" scoring formula, GANs <strong>build a second network to be the judge</strong>. So there are two networks in the ring: a <strong>"forger"</strong> (the generator) that fabricates images out of nothing, and an <strong>"inspector"</strong> (the discriminator) that decides whether the image in hand is real data or a forgery. The two are adversaries: the forger tries hard to fool the inspector, the inspector tries hard to catch it.</p>
+
+<h2>Why do they keep getting better?</h2>
+<p>The key is that this "cat-and-mouse game" spirals upward on its own. At first the forger paints badly and the inspector catches it instantly; but each time it's caught, the forger learns "where it slipped up" and nudges toward more realism; and the inspector, to avoid being fooled, is forced to sharpen its eye too. In this chase, the forger is pushed to be more and more realistic — until the inspector can no longer tell real from fake and can only flip a coin. At that point the forger's images look virtually identical to the real thing. <strong>The beauty is: nobody ever wrote down "what counts as realistic" — that ruler grew, on its own, out of the adversarial contest between the two networks.</strong></p>
+
+<h2>What it brought</h2>
+<p>This opened the floodgates for "machines that create." In the years that followed, GANs produced faces realistic enough to fool the human eye, could swap faces, turn sketches into photos, colorize old films — and "generation" went from a niche corner to one of the hottest directions in AI.</p>
+<p>One honest cost: this contest is <strong>hard to balance</strong> — once the two sides fall out of step, the forger may get lazy and keep painting the same "safe" image over and over, or training may simply collapse; this is why GANs are famously finicky to train.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Let a "forger network" and an "inspector network" fight each other, each pushing the other to improve — and without anyone writing down "what counts as realistic," the machine learns to fabricate images real enough to pass.</p>
+</div>
+
+<p class="switch-hint">Want the two-network diagram, the minimax formula, and why it converges? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">GAN learns to generate data through a <strong>minimax game</strong> between a <strong>generator G</strong> and a <strong>discriminator D</strong>: G turns random noise into fake samples and tries to fool D, while D tries to tell real samples from G's fakes. Trained alternately, each pushes the other stronger, until G's distribution matches the real data distribution and D can no longer tell them apart. It was the first method to make generation possible <strong>without writing any realism-scoring function</strong> — the criterion emerges from the adversarial process itself — launching an entire era of generative modeling.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Generative model</strong>: not judging "is this a cat," but learning "what a cat looks like" and being able to produce new samples. GANs are one of these.</li>
+<li><strong>Probability distribution / real data distribution</strong>: think of "all real images" as a probability distribution — the more real an image looks, the higher its probability. A generative model's goal is to make its own distribution match this real one.</li>
+<li><strong>Neural network</strong>: a model of many stacked layers that learns an "input → output" mapping from data; both G and D are neural networks.</li>
+<li><strong>Noise / latent variable z</strong>: a string of random numbers, the generator's "raw material"; swap in a different noise and you get a different generated image.</li>
+<li><strong>Discrimination / classification</strong>: outputting a "real" or "fake" judgment (a probability from 0 to 1) for an image. That's what the discriminator does.</li>
+<li><strong>Gradient / backpropagation</strong>: how neural networks train — computing the signal (the gradient) for "which direction to nudge the parameters to reduce error," and following it to update.</li>
+<li><strong>Maximum likelihood</strong>: the training objective of earlier generative models — make the model assign as high a probability as possible to "the real data appearing." GANs sidestep it.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Ian Goodfellow and colleagues (including deep-learning pioneer Yoshua Bengio), out of Bengio's lab at the Université de Montréal; the paper appeared at NIPS 2014. It follows deep learning's victories on <strong>discriminative tasks</strong> (classification, recognition) and turns toward the harder problem of <strong>generation</strong>; it inherits the line of generative models like restricted Boltzmann machines and variational autoencoders (VAE, same year), but strikes out on its own — not estimating a probability density, but playing an adversarial game. It launches DCGAN, pix2pix / CycleGAN, StyleGAN, and much more, and later stands opposite the diffusion models.</p>
+
+<h2>The problem and the motivation</h2>
+<p>By 2014, discriminative tasks (labeling images) had been thoroughly conquered in deep learning, but <strong>generation</strong> — having a machine fabricate realistic new samples — remained hard, in two ways.</p>
+<p>First, most generative models must <strong>write out the data's probability density explicitly</strong> and do maximum likelihood, but for high-dimensional complex data (like natural images) that probability is often intractable and can only be approximated expensively (e.g., Markov-chain Monte Carlo sampling) — slow and unstable.</p>
+<p>Second, and more fundamentally: <strong>"does this image look real" has no simple, differentiable scoring formula.</strong> Fall back on pixel-level error (comparing the generated image to some real image pixel by pixel) and the model is forced to paint the "average" of all possible answers — a blurry mush. That's the old world's pain: you want to teach the model "paint it real," but you can't write down a mathematical definition of "real," so you have nothing to run gradient descent on.</p>
+
+<h2>The core idea</h2>
+
+<h3>Adversarial game: hand "evaluation" to another network too</h3>
+<p>GAN's decisive move: <strong>if you can't write a realism function, then train another network to be that function.</strong> Set up two neural networks:</p>
+<ul>
+<li><strong>Generator G</strong>: takes a string of random noise <code>z</code> and outputs a fake sample <code>G(z)</code>. It wants the fake to look real.</li>
+<li><strong>Discriminator D</strong>: takes a sample and outputs the probability that it "is real data," <code>D(·)∈[0,1]</code>. It wants to judge real ones as 1 and G's fakes as 0.</li>
+</ul>
+<p>Their goals are exactly opposed, forming a <strong>two-player zero-sum game</strong>. One formula captures it: <code>min_G max_D  E[log D(x)] + E[log(1 − D(G(z)))]</code> — in plain terms, D wants to <strong>raise</strong> this quantity (judge real x high, fake G(z) low), while G wants to <strong>lower</strong> it (make D judge even G(z) high, i.e., get fooled). Training just alternates: fix one, optimize the other.</p>
+<p>An analogy (the paper's own): G is a <strong>counterfeiter</strong>, D is the <strong>police inspecting the bills</strong>. The counterfeiter keeps improving the fakes to fool the police; the police keep sharpening their eye to catch them; the two chase each other until the fakes are so realistic the police can only guess by coin flip — at which point the counterfeiter has "graduated."</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs>
+<marker id="g1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="gg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
+</defs>
+<rect x="20" y="48" width="92" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="66" y="70" fill="#b9c0ca" font-size="12" text-anchor="middle">noise z</text>
+<line x1="112" y1="65" x2="146" y2="65" stroke="#7c8593" marker-end="url(#g1)"/>
+<rect x="148" y="46" width="104" height="38" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="200" y="70" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">Generator G</text>
+<line x1="252" y1="65" x2="286" y2="65" stroke="#7c8593" marker-end="url(#g1)"/>
+<rect x="288" y="48" width="104" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="340" y="70" fill="#e7ebf1" font-size="12" text-anchor="middle">fake G(z)</text>
+<rect x="288" y="186" width="104" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="340" y="208" fill="#b9c0ca" font-size="12" text-anchor="middle">real data x</text>
+<rect x="430" y="94" width="104" height="86" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="482" y="132" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">Discriminator D</text><text x="482" y="152" fill="#7c8593" font-size="11" text-anchor="middle">real? fake?</text>
+<path d="M392,65 C414,65 414,116 430,116" fill="none" stroke="#7c8593" marker-end="url(#g1)"/>
+<path d="M392,203 C414,203 414,158 430,158" fill="none" stroke="#7c8593" marker-end="url(#g1)"/>
+<line x1="482" y1="180" x2="482" y2="204" stroke="#7c8593" marker-end="url(#g1)"/>
+<text x="482" y="220" fill="#b9c0ca" font-size="11.5" text-anchor="middle">probability D∈[0,1]</text>
+<path d="M482,94 C482,26 200,22 200,44" fill="none" stroke="#f0b429" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#gg)"/>
+<text x="330" y="20" fill="#f0b429" font-size="11.5" text-anchor="middle">backprop gradients: push G to fake better, D to see sharper</text>
+</svg>
+<figcaption>Fig 1 · Adversarial setup: G turns noise z into a fake sample; together with real data it goes into D; D judges real vs fake and backpropagates gradients, so the two networks push each other stronger in the game.</figcaption>
+</figure>
+
+<h3>Why it converges to "indistinguishable"</h3>
+<p>The game has an elegant theoretical landing point. Fix G, and the optimal discriminator is <code>D*(x) = p_data(x) / (p_data(x) + p_g(x))</code> — the fraction that "the real-data density at a point" makes up of "the sum of real + fake densities"; in plain terms, wherever real samples outnumber fakes, D should lean "real." Plug this optimal D back in, and what G must minimize turns out to be <strong>equivalent to shrinking a kind of distance between the real distribution <code>p_data</code> and the generated distribution <code>p_g</code></strong> (the Jensen–Shannon divergence, a measure of how far apart two distributions are). That distance is minimized <strong>if and only if <code>p_g = p_data</code></strong> (the generated distribution exactly equals the real one), at which point <code>D(x)</code> is identically <code>1/2</code> — <strong>the discriminator can't tell at all and can only guess</strong>. So mathematically, the game's ideal endpoint is precisely "the generated distribution equals the real distribution."</p>
+
+<figure>
+<svg viewBox="0 0 560 232" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="150" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">early: separable</text>
+<text x="410" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">converged: overlapping</text>
+<line x1="34" y1="180" x2="270" y2="180" stroke="#7c8593"/>
+<path d="M56,180 Q104,66 152,180" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<path d="M150,180 Q198,96 246,180" fill="none" stroke="#e8794b" stroke-width="2.2"/>
+<path d="M40,92 C110,94 150,150 262,162" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="5 3"/>
+<text x="150" y="200" fill="#9aa3ad" font-size="10.5" text-anchor="middle">D splits real from fake</text>
+<line x1="300" y1="180" x2="536" y2="180" stroke="#7c8593"/>
+<path d="M338,180 Q416,72 494,180" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<path d="M342,180 Q420,82 498,180" fill="none" stroke="#e8794b" stroke-width="2.2" stroke-dasharray="4 3"/>
+<line x1="308" y1="132" x2="528" y2="132" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="5 3"/>
+<text x="418" y="124" fill="#9aa3ad" font-size="10.5" text-anchor="middle">D ≈ 1/2, can only guess</text>
+<rect x="360" y="188" width="12" height="4" fill="#f0b429"/><text x="378" y="196" fill="#7c8593" font-size="10.5">real p_data</text>
+<rect x="466" y="188" width="12" height="4" fill="#e8794b"/><text x="484" y="196" fill="#7c8593" font-size="10.5">generated p_g</text>
+</svg>
+<figcaption>Fig 2 · Game convergence: early on the generated distribution (copper) and real distribution (gold) are separable and D can judge; once trained, the two overlap and D is ≈ 1/2 everywhere — unable to tell them apart.</figcaption>
+</figure>
+
+<h3>A key engineering fix: don't let the forger deflate on day one</h3>
+<p>In the theoretical formula G minimizes <code>log(1 − D(G(z)))</code>. But early in training G paints badly and D catches it easily (<code>D(G(z))≈0</code>), where this term's <strong>gradient is nearly zero</strong> — the forger "can't learn" the moment it steps in. So in practice G instead <strong>maximizes <code>log D(G(z))</code></strong> (the non-saturating loss): the goal is the same (fool D), but the early gradient is strong enough for the forger to get going. This small change is one of the keys to making GANs actually trainable.</p>
+<p>Training proceeds by <strong>alternation</strong>: first update D (possibly for k steps) to sharpen its eye, then update G once to fool it; each backpropagates, and each grows stronger as the other does. Worth noting: G <strong>never directly sees a single real image</strong> from start to finish — it learns what real data looks like only indirectly, through "D's feedback."</p>
+
+<h2>Key results</h2>
+<p>The paper trains on <strong>MNIST</strong> (handwritten digits), <strong>TFD</strong> (Toronto Face Database), and <strong>CIFAR-10</strong> (small natural images) and shows generated samples: visually crisp, recognizable, and not mere copies of the training set — the authors show that smoothly interpolating in the noise latent space <code>z</code> yields <strong>smoothly transitioning</strong> images, evidence the model learned structure rather than memorized. Quantitatively, hamstrung by the lack of a good metric at the time, the authors could only compare via a <strong>Parzen-window</strong> log-likelihood estimate, and admit the metric itself is weak. <strong>The real persuasion comes from sample quality</strong>: for its time, this was a rare generative model that could <strong>sample directly, needing no Markov chain, producing an image in a single forward pass</strong>. Honestly, the 2014 GAN images were still small and blurry; the jaw-dropping high-resolution results waited for DCGAN two years later and beyond.</p>
+
+<h2>Why it mattered</h2>
+<p>GANs ignited an entire wave of generative modeling. They proved a brand-new route — "use <strong>adversarial training</strong>, not explicit likelihood" — was viable, directly spawning <strong>DCGAN</strong> (a stable convolutional version), conditional generation, <strong>pix2pix / CycleGAN</strong> (image-to-image translation, turning a horse into a zebra), <strong>StyleGAN</strong> (photorealistic faces), super-resolution, data augmentation, and much more, and brought "deepfake" and "AI-generated faces" into public view. Yann LeCun called adversarial training "the coolest idea in machine learning in the last decade." Even after diffusion models surpassed GANs on many image tasks, the idea of <strong>"pit two networks against each other and hand the evaluation criterion to a learnable opponent"</strong> has settled into a general-purpose tool of deep learning (adversarial robustness, adversarial training, and more all extend from it).</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Training instability</strong>: this is a dynamic game, not a simple minimization; the two networks' strengths must be finely balanced — get it wrong and it oscillates or fails to converge, extremely sensitive to hyperparameters and architecture, famously hard to tune.</li>
+<li><strong>Mode collapse</strong>: G may cut corners and produce only a few "safe-win" samples (e.g., always the same face), fooling D while throwing away the diversity of the real data.</li>
+<li><strong>No explicit likelihood, hard to evaluate</strong>: GANs give no probability for a sample, and long lacked a recognized good metric (FID, Inception Score came later, each flawed), making "how well did it actually learn" hard to measure.</li>
+<li><strong>Theory-practice gap</strong>: the proof that it "converges to <code>p_g=p_data</code>" assumes infinite model capacity and optimization directly in the space of densities; with finite neural networks trained by alternating gradient descent, reaching that ideal solution is not guaranteed.</li>
+<li><strong>Later supplanted</strong>: diffusion models (DDPM, etc.), with more stable training and higher sample quality, replaced GANs on many generation tasks — its throne was not permanent.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: learn to generate data via an adversarial game between generator G and discriminator D, writing no realism function — the evaluation criterion emerges from the contest.</p>
+<p>② The pain: explicit-density generative models are intractable/unstable; and "does it look real" has no simple differentiable scoring formula.</p>
+<p>③ Core: G forges to fool D, D tells real from fake, <code>min_G max_D E[log D(x)] + E[log(1−D(G(z)))]</code>, trained alternately to push each other stronger.</p>
+<p>④ Analogy: counterfeiter vs. bill-inspecting police, chasing each other until the inspector can only guess.</p>
+<p>⑤ Theoretical landing: optimal <code>D*=p_data/(p_data+p_g)</code>; the game's optimum is at <code>p_g=p_data</code>, <code>D≡1/2</code>, equivalent to minimizing the JS divergence between the two distributions.</p>
+<p>⑥ Key fix: G instead maximizes <code>log D(G(z))</code> (non-saturating) to avoid early vanishing gradients so the forger can learn.</p>
+<p>⑦ Results: crisp samples on MNIST/TFD/CIFAR-10, smooth latent-space interpolation; one-pass generation with no Markov chain; the quantitative metric (Parzen window) was weak at the time.</p>
+<p>⑧ Impact: spawned DCGAN, CycleGAN, StyleGAN, deepfakes, and a whole field; the adversarial idea became a general-purpose tool.</p>
+<p>⑨ Limits: unstable training, mode collapse, hard to evaluate, idealized theory; later surpassed by diffusion models on many tasks.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full training details and proofs, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
