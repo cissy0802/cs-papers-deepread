@@ -19,12 +19,16 @@ header .subtitle{font-size:0.85rem;color:#f0b429;margin-top:6px;font-family:"SF 
 .entry.todo .num{color:#565c65}
 .entry.todo .title{color:#6b7280;font-weight:600}
 .entry.todo .meta{color:#4f555d}
+.group{margin:38px 0 14px;font-size:0.9rem;font-weight:700;color:#f0b429;font-family:"SF Mono",Menlo,monospace;letter-spacing:0.5px;padding-bottom:9px;border-bottom:1px solid rgba(240,180,41,0.18)}
+.list>.group:first-child{margin-top:10px}
+.group .tag{color:#5a6069;font-weight:400;font-size:0.78rem;margin-left:8px}
 footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 @media(max-width:600px){header h1{font-size:1.5rem}.entry{flex-direction:column;gap:4px}.entry .meta{margin-left:0;text-align:left}}
 </style></head><body>
 <div class="container">
 <header><h1>IT 论文精读</h1><p>CS Papers Deep-Read — BigCat's Milestone-Papers Shelf</p><div class="subtitle">&gt; 一篇一图 · 提纯精读 · 读完这页 ≈ 读懂这篇论文</div></header>
 <div class="list">
+<div class="group">深度学习 · 现代 AI<span class="tag">— 神经网络 / Transformer / 大模型 / 对齐</span></div>
 <a class="entry" href="attention-is-all-you-need-paper1.html"><span class="num">Paper 1</span><span class="title">Attention Is All You Need — 用纯注意力取代 RNN，一个架构成了当代所有大模型的地基</span><span class="meta">Vaswani 等 · 2017</span></a>
 <a class="entry" href="deep-residual-learning-paper2.html"><span class="num">Paper 2</span><span class="title">Deep Residual Learning (ResNet) — 一条「跳跃连接」让网络堆到上百层，几乎所有深网络的地基</span><span class="meta">He 等 · 2015</span></a>
 <a class="entry" href="alexnet-paper3.html"><span class="num">Paper 3</span><span class="title">AlexNet — 让深网络自己从百万张图里学特征，2012 断崖式夺冠、点燃深度学习革命</span><span class="meta">Krizhevsky 等 · 2012</span></a>
@@ -48,6 +52,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="entry todo"><span class="num"></span><span class="title">Adam: A Method for Stochastic Optimization — 默认优化器，几乎每个深度模型都在用</span><span class="meta">Kingma &amp; Ba · 2014</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Playing Atari with Deep Reinforcement Learning (DQN) — 深度网络从像素学会玩游戏，深度强化学习开篇</span><span class="meta">Mnih 等 · 2013</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">AlphaGo (Mastering the Game of Go) — 深度网络 + 蒙特卡洛树搜索击败围棋冠军</span><span class="meta">Silver 等 · 2016</span></div>
+<div class="group">Google 分布式系统<span class="tag">— 老三件套 · 新三驾马车 · 演进</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Google File System (GFS) — 廉价机器 + 副本容错撑起 PB 级分布式存储</span><span class="meta">Ghemawat 等 · 2003</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">MapReduce: Simplified Data Processing on Large Clusters — 把大规模并行抽象成 map+reduce，开启大数据时代</span><span class="meta">Dean &amp; Ghemawat · 2004</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Bigtable: A Distributed Storage System for Structured Data — 稀疏多维有序宽表，列式存储先驱</span><span class="meta">Chang 等 · 2006</span></div>
@@ -59,6 +64,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="entry todo"><span class="num"></span><span class="title">F1: A Distributed SQL Database That Scales — 建在 Spanner 之上的分布式 SQL 层</span><span class="meta">Shute 等 · 2013</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Dapper: Large-Scale Distributed Systems Tracing — 分布式追踪，现代可观测性蓝本</span><span class="meta">Sigelman 等 · 2010</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Tail at Scale — 大规模系统里尾延迟为何致命、怎么治</span><span class="meta">Dean &amp; Barroso · 2013</span></div>
+<div class="group">分布式共识 · 一致性 · 存储<span class="tag">— 时钟 / 共识 / NoSQL / P2P</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Time, Clocks, and the Ordering of Events — 逻辑时钟与 happens-before，分布式一致性思想原点</span><span class="meta">Lamport · 1978</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Byzantine Generals Problem — 有节点会说谎时如何达成一致</span><span class="meta">Lamport, Shostak &amp; Pease · 1982</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Paxos Made Simple — 分布式共识的奠基算法（的简化讲法）</span><span class="meta">Lamport · 2001</span></div>
@@ -67,20 +73,26 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="entry todo"><span class="num"></span><span class="title">Harvest, Yield, and Scalable Tolerant Systems — CAP 定理思想雏形，一致性与可用性取舍</span><span class="meta">Fox &amp; Brewer · 1999</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Chord: A Scalable Peer-to-peer Lookup Service — 分布式哈希表（DHT），P2P 查找经典</span><span class="meta">Stoica 等 · 2001</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Kafka: a Distributed Messaging System for Log Processing — 以日志为中心的流处理与消息系统</span><span class="meta">Kreps 等 · 2011</span></div>
+<div class="group">数据库 · 数据模型</div>
 <div class="entry todo"><span class="num"></span><span class="title">A Relational Model of Data for Large Shared Data Banks — 几乎所有现代数据库的理论根</span><span class="meta">E. F. Codd · 1970</span></div>
+<div class="group">操作系统 · 网络架构</div>
 <div class="entry todo"><span class="num"></span><span class="title">The UNIX Time-Sharing System — 定义现代操作系统哲学：一切皆文件、小工具组合</span><span class="meta">Ritchie &amp; Thompson · 1974</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">End-to-End Arguments in System Design — 「功能该放在哪一层」，互联网架构第一性原理</span><span class="meta">Saltzer, Reed &amp; Clark · 1984</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Congestion Avoidance and Control — 让互联网没有在流量下崩溃</span><span class="meta">Van Jacobson · 1988</span></div>
+<div class="group">密码学 · 安全 · 去中心化</div>
 <div class="entry todo"><span class="num"></span><span class="title">New Directions in Cryptography — 公钥密码学诞生，无需预共享密钥也能安全通信</span><span class="meta">Diffie &amp; Hellman · 1976</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">A Method for Obtaining Digital Signatures and Public-Key Cryptosystems (RSA) — 第一个实用公钥体制</span><span class="meta">Rivest, Shamir &amp; Adleman · 1978</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Bitcoin: A Peer-to-Peer Electronic Cash System — 工作量证明解决无信任双花，区块链源头</span><span class="meta">Satoshi Nakamoto · 2008</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Reflections on Trusting Trust — 「你能信任你没亲手写的代码吗」，最深刻的安全思想实验</span><span class="meta">Ken Thompson · 1984</span></div>
+<div class="group">万维网 · 搜索 · 信息</div>
 <div class="entry todo"><span class="num"></span><span class="title">As We May Think — 预言了超链接与个人信息机器</span><span class="meta">Vannevar Bush · 1945</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Anatomy of a Large-Scale Hypertextual Web Search Engine — PageRank，谷歌的起点</span><span class="meta">Brin &amp; Page · 1998</span></div>
+<div class="group">计算与信息理论基石</div>
 <div class="entry todo"><span class="num"></span><span class="title">A Mathematical Theory of Communication — 信息论奠基，定义了「比特」与信道容量</span><span class="meta">Claude Shannon · 1948</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">On Computable Numbers, with an Application to the Entscheidungsproblem — 图灵机与「可计算性」，计算理论的根</span><span class="meta">Alan Turing · 1936</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Computing Machinery and Intelligence — 「机器能思考吗」与图灵测试，AI 哲学起点</span><span class="meta">Alan Turing · 1950</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Complexity of Theorem-Proving Procedures — NP 完全性，P vs NP 问题开端</span><span class="meta">Stephen Cook · 1971</span></div>
+<div class="group">软件工程 · 编程思想</div>
 <div class="entry todo"><span class="num"></span><span class="title">Go To Statement Considered Harmful — 结构化编程宣言，一封信改变编程范式</span><span class="meta">Edsger Dijkstra · 1968</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">On the Criteria To Be Used in Decomposing Systems into Modules — 模块化与封装的思想源</span><span class="meta">David Parnas · 1972</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">No Silver Bullet: Essence and Accident in Software Engineering — 为什么软件复杂性没有银弹</span><span class="meta">Fred Brooks · 1986</span></div>

@@ -19,12 +19,16 @@ header .subtitle{font-size:0.85rem;color:#f0b429;margin-top:6px;font-family:"SF 
 .entry.todo .num{color:#565c65}
 .entry.todo .title{color:#6b7280;font-weight:600}
 .entry.todo .meta{color:#4f555d}
+.group{margin:38px 0 14px;font-size:0.9rem;font-weight:700;color:#f0b429;font-family:"SF Mono",Menlo,monospace;letter-spacing:0.5px;padding-bottom:9px;border-bottom:1px solid rgba(240,180,41,0.18)}
+.list>.group:first-child{margin-top:10px}
+.group .tag{color:#5a6069;font-weight:400;font-size:0.78rem;margin-left:8px}
 footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 @media(max-width:600px){header h1{font-size:1.5rem}.entry{flex-direction:column;gap:4px}.entry .meta{margin-left:0;text-align:left}}
 </style></head><body>
 <div class="container">
 <header><h1>CS Papers Deep-Read</h1><p>Milestone Papers, Distilled — BigCat's Shelf</p><div class="subtitle">&gt; one paper, one diagram · read this page ≈ understand the paper</div></header>
 <div class="list">
+<div class="group">Deep Learning · Modern AI<span class="tag">— neural nets / Transformers / LLMs / alignment</span></div>
 <a class="entry" href="attention-is-all-you-need-paper1.en.html"><span class="num">Paper 1</span><span class="title">Attention Is All You Need — one attention-only architecture that became the foundation of every modern large model</span><span class="meta">Vaswani et al. · 2017</span></a>
 <a class="entry" href="deep-residual-learning-paper2.en.html"><span class="num">Paper 2</span><span class="title">Deep Residual Learning (ResNet) — one skip connection let networks go hundreds of layers deep; the backbone of almost every deep net</span><span class="meta">He et al. · 2015</span></a>
 <a class="entry" href="alexnet-paper3.en.html"><span class="num">Paper 3</span><span class="title">AlexNet — a deep net that learned its own features from a million images, won 2012 by a landslide and ignited the deep learning revolution</span><span class="meta">Krizhevsky et al. · 2012</span></a>
@@ -48,6 +52,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="entry todo"><span class="num"></span><span class="title">Adam: A Method for Stochastic Optimization — the default optimizer running under almost every deep model</span><span class="meta">Kingma &amp; Ba · 2014</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Playing Atari with Deep Reinforcement Learning (DQN) — a deep network learns to play games straight from pixels; the opening of deep reinforcement learning</span><span class="meta">Mnih et al. · 2013</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">AlphaGo (Mastering the Game of Go) — deep networks plus Monte Carlo tree search beat a Go world champion</span><span class="meta">Silver et al. · 2016</span></div>
+<div class="group">Google Distributed Systems<span class="tag">— the original trio · the second-gen trio · evolution</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Google File System (GFS) — cheap machines plus replication and fault tolerance hold up petabyte-scale distributed storage</span><span class="meta">Ghemawat et al. · 2003</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">MapReduce: Simplified Data Processing on Large Clusters — abstract massive parallelism into map + reduce, opening the big-data era</span><span class="meta">Dean &amp; Ghemawat · 2004</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Bigtable: A Distributed Storage System for Structured Data — a sparse, multidimensional sorted wide table; a pioneer of columnar storage</span><span class="meta">Chang et al. · 2006</span></div>
@@ -59,6 +64,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="entry todo"><span class="num"></span><span class="title">F1: A Distributed SQL Database That Scales — a distributed SQL layer built on Spanner, marrying strong consistency with the SQL ecosystem</span><span class="meta">Shute et al. · 2013</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Dapper: Large-Scale Distributed Systems Tracing — distributed tracing, the blueprint for modern observability</span><span class="meta">Sigelman et al. · 2010</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Tail at Scale — why tail latency is deadly in large systems and how to tame it</span><span class="meta">Dean &amp; Barroso · 2013</span></div>
+<div class="group">Consensus · Consistency · Storage<span class="tag">— clocks / consensus / NoSQL / P2P</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Time, Clocks, and the Ordering of Events in a Distributed System — logical clocks and happens-before, the origin of distributed-consistency thinking</span><span class="meta">Lamport · 1978</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Byzantine Generals Problem — how to reach agreement when some nodes lie</span><span class="meta">Lamport, Shostak &amp; Pease · 1982</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Paxos Made Simple — the foundational distributed-consensus algorithm, told plainly</span><span class="meta">Lamport · 2001</span></div>
@@ -67,20 +73,26 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="entry todo"><span class="num"></span><span class="title">Harvest, Yield, and Scalable Tolerant Systems — an early form of the CAP theorem, trading consistency against availability</span><span class="meta">Fox &amp; Brewer · 1999</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Chord: A Scalable Peer-to-peer Lookup Service — the distributed hash table (DHT), a P2P lookup classic</span><span class="meta">Stoica et al. · 2001</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Kafka: a Distributed Messaging System for Log Processing — a log-centric stream-processing and messaging system</span><span class="meta">Kreps et al. · 2011</span></div>
+<div class="group">Databases · Data Models</div>
 <div class="entry todo"><span class="num"></span><span class="title">A Relational Model of Data for Large Shared Data Banks — the theoretical root of nearly every modern database</span><span class="meta">E. F. Codd · 1970</span></div>
+<div class="group">Operating Systems · Networking</div>
 <div class="entry todo"><span class="num"></span><span class="title">The UNIX Time-Sharing System — defines modern OS philosophy: everything is a file, small tools composed together</span><span class="meta">Ritchie &amp; Thompson · 1974</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">End-to-End Arguments in System Design — where functionality belongs in the stack, a first principle of internet architecture</span><span class="meta">Saltzer, Reed &amp; Clark · 1984</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Congestion Avoidance and Control — the mechanism that kept the internet from collapsing under load</span><span class="meta">Van Jacobson · 1988</span></div>
+<div class="group">Cryptography · Security · Decentralization</div>
 <div class="entry todo"><span class="num"></span><span class="title">New Directions in Cryptography — the birth of public-key cryptography: secure communication without a pre-shared secret</span><span class="meta">Diffie &amp; Hellman · 1976</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">A Method for Obtaining Digital Signatures and Public-Key Cryptosystems (RSA) — the first practical public-key cryptosystem</span><span class="meta">Rivest, Shamir &amp; Adleman · 1978</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Bitcoin: A Peer-to-Peer Electronic Cash System — proof-of-work solves trustless double-spending, the origin of the blockchain</span><span class="meta">Satoshi Nakamoto · 2008</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Reflections on Trusting Trust — "can you trust code you did not write yourself?", the most profound thought experiment in security</span><span class="meta">Ken Thompson · 1984</span></div>
+<div class="group">Web · Search · Information</div>
 <div class="entry todo"><span class="num"></span><span class="title">As We May Think — foresaw the hyperlink and the personal information machine</span><span class="meta">Vannevar Bush · 1945</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Anatomy of a Large-Scale Hypertextual Web Search Engine — PageRank, where Google began</span><span class="meta">Brin &amp; Page · 1998</span></div>
+<div class="group">Foundations of Computing &amp; Information</div>
 <div class="entry todo"><span class="num"></span><span class="title">A Mathematical Theory of Communication — the foundation of information theory, defining the "bit" and channel capacity</span><span class="meta">Claude Shannon · 1948</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">On Computable Numbers, with an Application to the Entscheidungsproblem — the Turing machine and computability, the root of computing theory</span><span class="meta">Alan Turing · 1936</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Computing Machinery and Intelligence — "can machines think?" and the Turing test, the starting point of AI philosophy</span><span class="meta">Alan Turing · 1950</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">The Complexity of Theorem-Proving Procedures — NP-completeness and the opening of the P vs NP problem</span><span class="meta">Stephen Cook · 1971</span></div>
+<div class="group">Software Engineering · Programming</div>
 <div class="entry todo"><span class="num"></span><span class="title">Go To Statement Considered Harmful — the manifesto of structured programming; one letter that changed a paradigm</span><span class="meta">Edsger Dijkstra · 1968</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">On the Criteria To Be Used in Decomposing Systems into Modules — the source of modularity and information hiding</span><span class="meta">David Parnas · 1972</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">No Silver Bullet: Essence and Accident in Software Engineering — why there is no silver bullet for software complexity</span><span class="meta">Fred Brooks · 1986</span></div>
