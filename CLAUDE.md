@@ -59,3 +59,10 @@
 ## index 维护：roadmap-first（写论文时把灰色占位转成链接，勿 append 重复）
 
 本仓 index.html / index.en.html 已改为「路线图先出」：清单里还没写的论文已作为灰色占位行 <div class="entry todo">…</div>（无 href、不可点、todo 类）预先列出，顺序随 TOPICS.md 清单。写某篇论文时：按 slug 在两个 index 里找到该论文的灰色占位行，原地改成 <a class="entry" href="{本期文件名}">（去掉 todo 类、加 href，内部结构不变），绝不要在末尾另 append 一行（否则重复）。只有该论文清单里没有对应灰色占位行时才 append。
+
+
+### 每次运行先「对齐」灰色占位（清单增长时自动补灰行）
+
+每次运行开头，先扫 `TOPICS.md` 论文清单：凡是 **slug 没有对应页**（`ls *-paper*.html` 去 `-paperN` 后缀比对）**且** index 里没有对应灰色行的论文，按清单顺序补一条灰色占位行 `<div class="entry todo">…</div>`（无 href、`todo` 类）。`index.en.html` 用论文真实英文标题+简述（勿泄漏中文），`index.html` 用清单中文裁成本仓 zh 风格。**两个 index 都要补。**
+
+这样 BigCat 往清单里加的新论文，下次运行就会自动作为灰色条目出现；等真正写它时再按 slug **原地**转成链接（勿另 append）。
