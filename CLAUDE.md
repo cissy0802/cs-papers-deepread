@@ -54,3 +54,7 @@
 ## 4. 完成后
 调用 **PushNotification**（`status:"proactive"`，一行 < 200 字、无 markdown），例如：
 `IT 论文精读已更新：ResNet · 残差连接让网络能训到上百层 · cissy0802.github.io/cs-papers-deepread`
+
+## index 维护：roadmap-first（写论文时把灰色占位转成链接，勿 append 重复）
+
+本仓 index.html / index.en.html 已改为「路线图先出」：清单里还没写的论文已作为灰色占位行 <div class="entry todo">…</div>（无 href、不可点、todo 类）预先列出，顺序随 TOPICS.md 清单。写某篇论文时：按 slug 在两个 index 里找到该论文的灰色占位行，原地改成 <a class="entry" href="{本期文件名}">（去掉 todo 类、加 href，内部结构不变），绝不要在末尾另 append 一行（否则重复）。只有该论文清单里没有对应灰色占位行时才 append。

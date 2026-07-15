@@ -14,6 +14,11 @@ header .subtitle{font-size:0.85rem;color:#f0b429;margin-top:6px;font-family:"SF 
 .entry .num{flex-shrink:0;font-size:0.85rem;color:#f0b429;font-weight:700;min-width:64px;font-family:"SF Mono",Menlo,monospace}
 .entry .title{font-size:1.05rem;font-weight:600;color:#d9dee5}
 .entry .meta{font-size:0.85rem;color:#7c8593;margin-left:auto;text-align:right;font-family:"SF Mono",Menlo,monospace}
+.entry.todo{background:rgba(255,255,255,0.015);border-color:rgba(240,180,41,0.05);border-left-color:#3a3f47;cursor:default;box-shadow:none}
+.entry.todo:hover{transform:none;background:rgba(255,255,255,0.015);border-left-color:#3a3f47}
+.entry.todo .num{color:#565c65}
+.entry.todo .title{color:#6b7280;font-weight:600}
+.entry.todo .meta{color:#4f555d}
 footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 @media(max-width:600px){header h1{font-size:1.5rem}.entry{flex-direction:column;gap:4px}.entry .meta{margin-left:0;text-align:left}}
 </style></head><body>
@@ -37,6 +42,43 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <a class="entry" href="constitutional-ai-paper15.html"><span class="num">Paper 15</span><span class="title">Constitutional AI（宪法 AI）— 教 AI「不作恶」从前靠几千人逐条读、逐条标那些有害内容，又累又难规模化，还把模型训得一遇敏感话题就「装死」回避。这篇把价值观写成一小份看得见、改得动的「宪法」原则，让 AI 照着清单自我批评、自我改写、再自我评判两个答案哪个更好（RLAIF），几乎不用一条人工有害标注，就训出既更无害、又肯讲理拒绝而非一味回避的助手。开创 RLAIF、把人的活从「打标签」上移到「写原则」，Claude 的训练基石之一</span><span class="meta">Bai 等 · 2022</span></a>
 <a class="entry" href="generative-adversarial-networks-paper16.html"><span class="num">Paper 16</span><span class="title">GAN（生成对抗网络）— 想教机器画出以假乱真的图，却卡在「像不像真的」根本写不出打分公式。这篇的釜底抽薪之招：不写规则，而是再造一个网络当裁判——一个「造假者」凭噪声造图、一个「验钞员」分辨真假，两个互为对手你追我赶，把对方逼得越来越强，直到验钞员再也分不清、只能瞎猜，造假者就学会了造真。理论上博弈的最优点正是「生成分布 = 真实分布」。点燃生成式建模一整波浪潮：DCGAN、CycleGAN、StyleGAN、deepfake 皆由此发端，「对抗」成了深度学习通用武器</span><span class="meta">Goodfellow 等 · 2014</span></a>
 <!-- entries -->
+<div class="entry todo"><span class="num"></span><span class="title">Denoising Diffusion Probabilistic Models (DDPM) — 扩散模型，当代图像 / 视频生成主力</span><span class="meta">Ho 等 · 2020</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Batch Normalization — 归一化中间激活，让深网训练更快更稳</span><span class="meta">Ioffe &amp; Szegedy · 2015</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Dropout — 随机「关掉」神经元来正则化</span><span class="meta">Srivastava 等 · 2014</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Adam: A Method for Stochastic Optimization — 默认优化器，几乎每个深度模型都在用</span><span class="meta">Kingma &amp; Ba · 2014</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Playing Atari with Deep Reinforcement Learning (DQN) — 深度网络从像素学会玩游戏，深度强化学习开篇</span><span class="meta">Mnih 等 · 2013</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">AlphaGo (Mastering the Game of Go) — 深度网络 + 蒙特卡洛树搜索击败围棋冠军</span><span class="meta">Silver 等 · 2016</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">The Google File System (GFS) — 廉价机器 + 副本容错撑起 PB 级分布式存储</span><span class="meta">Ghemawat 等 · 2003</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">MapReduce: Simplified Data Processing on Large Clusters — 把大规模并行抽象成 map+reduce，开启大数据时代</span><span class="meta">Dean &amp; Ghemawat · 2004</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Bigtable: A Distributed Storage System for Structured Data — 稀疏多维有序宽表，列式存储先驱</span><span class="meta">Chang 等 · 2006</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Spanner: Google's Globally-Distributed Database — 用 TrueTime 实现全球尺度的外部一致性事务</span><span class="meta">Corbett 等 · 2012</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Dapper: Large-Scale Distributed Systems Tracing — 分布式追踪，现代可观测性蓝本</span><span class="meta">Sigelman 等 · 2010</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">The Tail at Scale — 大规模系统里尾延迟为何致命、怎么治</span><span class="meta">Dean &amp; Barroso · 2013</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Time, Clocks, and the Ordering of Events — 逻辑时钟与 happens-before，分布式一致性思想原点</span><span class="meta">Lamport · 1978</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">The Byzantine Generals Problem — 有节点会说谎时如何达成一致</span><span class="meta">Lamport, Shostak &amp; Pease · 1982</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Paxos Made Simple — 分布式共识的奠基算法（的简化讲法）</span><span class="meta">Lamport · 2001</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">In Search of an Understandable Consensus Algorithm (Raft) — 为「可理解」而设计的共识算法，工业界事实标准</span><span class="meta">Ongaro &amp; Ousterhout · 2014</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Dynamo: Amazon's Highly Available Key-value Store — 最终一致 + 一致性哈希 + 向量时钟，NoSQL 浪潮源头</span><span class="meta">DeCandia 等 · 2007</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Harvest, Yield, and Scalable Tolerant Systems — CAP 定理思想雏形，一致性与可用性取舍</span><span class="meta">Fox &amp; Brewer · 1999</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Chord: A Scalable Peer-to-peer Lookup Service — 分布式哈希表（DHT），P2P 查找经典</span><span class="meta">Stoica 等 · 2001</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Kafka: a Distributed Messaging System for Log Processing — 以日志为中心的流处理与消息系统</span><span class="meta">Kreps 等 · 2011</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">A Relational Model of Data for Large Shared Data Banks — 几乎所有现代数据库的理论根</span><span class="meta">E. F. Codd · 1970</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">The UNIX Time-Sharing System — 定义现代操作系统哲学：一切皆文件、小工具组合</span><span class="meta">Ritchie &amp; Thompson · 1974</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">End-to-End Arguments in System Design — 「功能该放在哪一层」，互联网架构第一性原理</span><span class="meta">Saltzer, Reed &amp; Clark · 1984</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Congestion Avoidance and Control — 让互联网没有在流量下崩溃</span><span class="meta">Van Jacobson · 1988</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">New Directions in Cryptography — 公钥密码学诞生，无需预共享密钥也能安全通信</span><span class="meta">Diffie &amp; Hellman · 1976</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">A Method for Obtaining Digital Signatures and Public-Key Cryptosystems (RSA) — 第一个实用公钥体制</span><span class="meta">Rivest, Shamir &amp; Adleman · 1978</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Bitcoin: A Peer-to-Peer Electronic Cash System — 工作量证明解决无信任双花，区块链源头</span><span class="meta">Satoshi Nakamoto · 2008</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Reflections on Trusting Trust — 「你能信任你没亲手写的代码吗」，最深刻的安全思想实验</span><span class="meta">Ken Thompson · 1984</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">As We May Think — 预言了超链接与个人信息机器</span><span class="meta">Vannevar Bush · 1945</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">The Anatomy of a Large-Scale Hypertextual Web Search Engine — PageRank，谷歌的起点</span><span class="meta">Brin &amp; Page · 1998</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">A Mathematical Theory of Communication — 信息论奠基，定义了「比特」与信道容量</span><span class="meta">Claude Shannon · 1948</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">On Computable Numbers, with an Application to the Entscheidungsproblem — 图灵机与「可计算性」，计算理论的根</span><span class="meta">Alan Turing · 1936</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Computing Machinery and Intelligence — 「机器能思考吗」与图灵测试，AI 哲学起点</span><span class="meta">Alan Turing · 1950</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">The Complexity of Theorem-Proving Procedures — NP 完全性，P vs NP 问题开端</span><span class="meta">Stephen Cook · 1971</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Go To Statement Considered Harmful — 结构化编程宣言，一封信改变编程范式</span><span class="meta">Edsger Dijkstra · 1968</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">On the Criteria To Be Used in Decomposing Systems into Modules — 模块化与封装的思想源</span><span class="meta">David Parnas · 1972</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">No Silver Bullet: Essence and Accident in Software Engineering — 为什么软件复杂性没有银弹</span><span class="meta">Fred Brooks · 1986</span></div>
 </div>
 <footer>把一篇论文读透，胜过刷过十篇摘要。</footer>
 </div>
