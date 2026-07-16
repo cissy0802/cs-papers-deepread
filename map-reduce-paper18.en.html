@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>MapReduce — IT Paper Deep-Read Paper 18</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 18</p>
+<h1>MapReduce: Shrinking "Massive Parallelism" to Two Functions</h1>
+<p class="sub">Jeffrey Dean &amp; Sanjay Ghemawat · Google · OSDI 2004</p>
+<p class="langbar"><a href="map-reduce-paper18.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2004, two Google engineers published a recipe called <strong>MapReduce</strong> for one nagging problem: <strong>you have a huge pile of data to crunch, one machine can't finish it, so it has to be spread across thousands of machines.</strong> The catch is that "getting a thousand machines to cooperate on one job" is brutally hard to write — who gets which slice of data, what happens when a machine dies mid-computation, how do you glue the fragments back together. Writing that plumbing is more work than the actual algorithm. MapReduce's contribution: <strong>package all that plumbing away once, and leave you just two blanks to fill in.</strong> It went on to directly spawn the open-source Hadoop and the whole "big data" era.</p>
+
+<h2>First, the painful chore</h2>
+<p>Say your boss asks you to count, across <strong>Google's entire crawled copy of the web, how many times each word appears</strong>. The logic couldn't be simpler — scan start to finish, tally one for every word you see. But the data is tens of terabytes; one machine would scan until the heat death of the universe. So you split it across a thousand machines, count separately, and merge a thousand little tallies into one big one. <strong>The real torture isn't the counting — it's "how do I spread this safely across a thousand machines"</strong>: how to slice it, how to distribute it, who covers for a machine that drops offline, how to gather the results. Every new big-data job forces you to clean up that same mess all over again.</p>
+
+<h2>The idea: you fill in just two blanks</h2>
+<p>MapReduce says: jobs like this can all be broken into the same <strong>two steps</strong>. Just spell out those two steps and I'll handle everything else.</p>
+<p><strong>Step one, "Map" (process in parallel)</strong>: tell me, given one small slice of data, what "<strong>label → value</strong>" slips you want to emit. For word counting: for each word you see, emit one <code>(that word, 1)</code>. <strong>Step two, "Reduce" (roll up by label)</strong>: tell me, once I've gathered all the slips carrying <em>the same label</em>, how you want to fold them into one answer. For word counting: sum up the pile of 1s a given word received. <strong>You write only these two "how-tos"; who does the work, what happens when it breaks, how slips get grouped by label — the framework does all of it.</strong></p>
+
+<h2>Why is it fast and failure-proof?</h2>
+<p>A few plain but potent tricks. <strong>One: on failure, just recompute that one small piece.</strong> A "foreman" watches over thousands of "workers"; when a worker dies mid-task, the foreman simply <strong>reassigns that small piece to someone else</strong> — no need to tear the whole job down. Machines break daily, and it runs right through. <strong>Two: send the work to where the data already is.</strong> The data already lives scattered on these machines' disks, so the framework tries to make <strong>"the worker that processes a chunk" be the very machine that stores that chunk</strong>, saving enormous network hauling. <strong>Three: rescue the stragglers.</strong> Among a thousand workers a few always sit on flaky machines and crawl, dragging the whole job's finish line out; near the end the framework <strong>hands those slow pieces to a second worker to race, and takes whichever finishes first</strong> — which cuts total time dramatically.</p>
+
+<h2>What it gave us</h2>
+<p>MapReduce took "write a large-scale program that runs on thousands of machines and survives them breaking at random" — once the province of distributed-systems wizards — and <strong>turned it into filling in two functions any engineer can write</strong>. Google was soon running thousands of such jobs internally, and even rewrote its search index with it. The open-source world cloned the idea into Hadoop, and nearly the whole "big data" industry was built on this line of thinking. <strong>The honest cost</strong>: it's only good at batch work — "scan a huge pile of data front to back." Ask it to iterate repeatedly, or answer in real time, and it turns clumsy — which is exactly what later systems like Spark set out to fix.</p>
+
+<h2>Remember it in one line</h2>
+<div class="tl">
+<p>Take the misery of "getting thousands of machines to cooperate on crunching a mountain of data" and shrink it to two functions you fill in: Map (process in parallel, turning data into "label → value" slips) and Reduce (roll the slips up by label into an answer). Who computes, how failed machines are covered, how stragglers are rescued, how results are stitched together — the framework does it all. That let ordinary people write massive parallel programs, and opened the big-data era.</p>
+</div>
+
+<p class="switch-hint">Want the execution-flow diagram, the fault-tolerance and "race-the-straggler" mechanics, and real-cluster numbers sorting 1&nbsp;TB? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">MapReduce is a <strong>programming model plus runtime framework</strong> from Google: the user writes only two functions — <code>map</code> (turn input into a batch of intermediate "key→value" pairs) and <code>reduce</code> (fold all values sharing a key into a result) — and the framework automatically <strong>parallelizes the computation across thousands of machines</strong>, handling <strong>data partitioning, task scheduling, machine fault tolerance, straggler mitigation, and the cross-machine data shuffle</strong> for you. It lets engineers who know nothing about distributed systems write large-scale parallel programs that survive machine failure. It is the second of Google's "big three," and directly spawned the open-source Hadoop and the entire big-data ecosystem.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Parallel computing</strong>: splitting one big job into many small pieces and having many machines (or cores) work them at once, to cut total time.</li>
+<li><strong>Cluster</strong>: a large crowd of ordinary servers, networked together and used as "one supercomputer."</li>
+<li><strong>Key-value pair</strong>: one "label → content" datum, like <code>("cat", 1)</code>; the label is the key, the content is the value. MapReduce moves key-value pairs end to end.</li>
+<li><strong>map / reduce in functional programming</strong>: <em>map</em> = apply one function to each element of a list to get a new list; <em>reduce</em> (fold) = combine a list's elements pairwise into a single result (e.g. a sum). This paper carries these two old primitives to thousand-machine scale.</li>
+<li><strong>Fault tolerance</strong>: the system still finishes correctly — no crash, no wrong answer — even when some of its parts fail.</li>
+<li><strong>GFS (Google File System)</strong>: Google's distributed file system (this site's Paper 17); slices data into chunks, stores several copies of each across thousands of machines. MapReduce's input and output both live on it.</li>
+<li><strong>Throughput vs latency</strong>: throughput = how much data you process per unit time; latency = how long a single request waits. MapReduce is <strong>high-throughput, high-latency</strong> batch processing, not a real-time system.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Jeffrey Dean and Sanjay Ghemawat, from Google; the paper appeared at OSDI 2004. It is the second of Google's "big three" distributed-systems papers: it <strong>sits on top of</strong> Paper 17's <strong>GFS</strong> (data lives on GFS, which provides the fault-tolerant storage) and <strong>feeds into</strong> <strong>Bigtable</strong> two years later (much of Bigtable's bulk data prep is done with MapReduce jobs). Conceptually it lifts the ancient functional-programming primitives <code>map</code>/<code>reduce</code> to thousand-machine scale; in engineering terms it inspired the open-source <strong>Hadoop MapReduce</strong>, essentially defined the entry-level "big data" paradigm for the next decade-plus, and set the target that later, more flexible engines — Spark, Dataflow — aimed to surpass.</p>
+
+<h2>Problem and motivation</h2>
+<p>In the early 2000s, Google was full of computations that were "conceptually simple, enormous in data": counting word frequencies, building the inverted index, analyzing crawl logs, computing statistics over the web graph. <strong>The algorithm is often obvious at a glance; the hard part is that the data is so large it must be spread across thousands of machines.</strong></p>
+<p>And the moment you go to thousands of machines, engineers are forced to rewrite the same batch of <strong>business-irrelevant plumbing</strong> over and over: how to partition input, how to schedule tasks across hundreds or thousands of machines, what to do when a machine crashes halfway, how to gather the intermediate results scattered across machines by key, how to handle slow machines dragging things out. This fault-tolerance and parallelism boilerplate <strong>drowns a computation that should be a few dozen lines under thousands of lines of distributed plumbing</strong>. The Google team noticed: <strong>however varied these computations look, their "parallel skeleton" is strikingly identical.</strong> So they extracted that common skeleton into a framework, leaving two "fill-in" slots for the user and taking on everything else — <strong>letting engineers care only about "what to compute" again, and handing off "how to compute it, in parallel and fault-tolerantly, across thousands of machines."</strong></p>
+
+<h2>Core idea / method</h2>
+
+<h3>Programming model: write only map and reduce</h3>
+<p>The user expresses the computation as two functions, both trading in <strong>key-value pairs</strong>:</p>
+<ul>
+<li><code>map: (k1, v1) → list(k2, v2)</code>&nbsp;&nbsp;Given one input (say a file name and one line of its content), emit <strong>zero or more intermediate key-value pairs</strong>.</li>
+<li><code>reduce: (k2, list(v2)) → list(v2)</code>&nbsp;&nbsp;The framework has already gathered all values for <em>one intermediate key</em> <code>k2</code> into a list and handed it to you; you <strong>fold them into a smaller result</strong> (usually zero or one value).</li>
+</ul>
+<p><strong>The classic example — word count</strong>: <code>map</code> emits a <code>(word, "1")</code> for every word in a document; the framework automatically gathers all the <code>"1"</code>s for the same word; <code>reduce</code> receives <code>("cat", ["1","1","1"])</code> and sums them into <code>("cat", "3")</code>. The user writes <strong>not a single line about "parallelism," "machines," or "networks"</strong> — that is the model's magic: as long as your problem fits the "map each record, then reduce by key" mold, you get thousand-machine parallelism and fault tolerance for free.</p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<rect x="14" y="40" width="92" height="26" rx="5" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="60" y="57" fill="#b9c0ca" font-size="11" text-anchor="middle">the cat sat</text>
+<rect x="14" y="92" width="92" height="26" rx="5" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="60" y="109" fill="#b9c0ca" font-size="11" text-anchor="middle">the dog ran</text>
+<text x="60" y="30" fill="#7c8593" font-size="10.5" text-anchor="middle">input splits</text>
+<rect x="150" y="34" width="118" height="90" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="209" y="26" fill="#f0b429" font-size="11" text-anchor="middle">map: emit (word,1)</text>
+<text x="209" y="54" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(the,1)(cat,1)</text>
+<text x="209" y="70" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(sat,1)</text>
+<text x="209" y="92" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(the,1)(dog,1)</text>
+<text x="209" y="108" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(ran,1)</text>
+<rect x="300" y="30" width="120" height="98" rx="7" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<text x="360" y="22" fill="#e8794b" font-size="11" text-anchor="middle">group by key (shuffle)</text>
+<text x="360" y="50" fill="#e7ebf1" font-size="10.5" text-anchor="middle">the → [1,1]</text>
+<text x="360" y="68" fill="#e7ebf1" font-size="10.5" text-anchor="middle">cat → [1]</text>
+<text x="360" y="86" fill="#e7ebf1" font-size="10.5" text-anchor="middle">sat → [1]  dog → [1]</text>
+<text x="360" y="104" fill="#e7ebf1" font-size="10.5" text-anchor="middle">ran → [1]</text>
+<rect x="452" y="40" width="96" height="82" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="500" y="32" fill="#f0b429" font-size="11" text-anchor="middle">reduce: sum</text>
+<text x="500" y="60" fill="#e7ebf1" font-size="10.5" text-anchor="middle">the → 2</text>
+<text x="500" y="78" fill="#e7ebf1" font-size="10.5" text-anchor="middle">cat → 1</text>
+<text x="500" y="96" fill="#e7ebf1" font-size="10.5" text-anchor="middle">sat → 1 …</text>
+<defs><marker id="w1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<path d="M108,66 L148,72" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
+<path d="M108,104 L148,92" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
+<path d="M270,79 L298,79" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
+<path d="M422,79 L450,80" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
+<text x="280" y="168" fill="#7c8593" font-size="11" text-anchor="middle">User writes only "emit (word,1)" and "sum the values"; the "group by key" step is all framework.</text>
+</svg>
+<figcaption>Figure 1 · Word-count dataflow: map turns each word into (word, 1); the framework gathers all values for the same word into a list; reduce sums. The user never touches parallelism or machines.</figcaption>
+</figure>
+
+<h3>Execution: one master directing M map tasks + R reduce tasks</h3>
+<p>How does the framework run that across thousands of machines? The core is to <strong>split the input into M pieces and the intermediate output into R buckets</strong>, then have one master hand those M+R tasks to a crowd of workers:</p>
+<ul>
+<li><strong>Split and assign</strong>: input is auto-split into <strong>M pieces</strong> (~16–64 MB each), one <em>map task</em> per piece; intermediate keys are divided by a <strong>partitioning function</strong> (default <code>hash(key) mod R</code>) into <strong>R buckets</strong>, one <em>reduce task</em> per bucket. A special <strong>master</strong> process keeps handing these tasks to idle workers.</li>
+<li><strong>Map phase</strong>: each map worker reads its input piece, runs the user's <code>map</code>, and its emitted intermediate pairs are <strong>buffered in memory then periodically flushed to the worker's local disk</strong>, partitioned into R regions. The locations of these local files are reported back to the master.</li>
+<li><strong>Shuffle + reduce phase</strong>: once a reduce worker gets the locations from the master, it uses RPCs to <strong>pull its bucket</strong> from each map worker's local disk (this step is the <em>shuffle</em>), <strong>sorts by key</strong> so identical keys sit together, runs the user's <code>reduce</code> per key, and writes results to GFS.</li>
+</ul>
+<p>The job's final output is <strong>R files</strong> (one per reduce task), usually needing no further merge — just feed them straight into the next MapReduce. <strong>Note one crucial trade-off</strong>: map's intermediate output lands on <em>local disk</em> (cheap, fast), while final output goes to <em>GFS</em> (expensive, reliable) — a distinction that, as we'll see, dictates the very different handling of the two kinds of task failure.</p>
+
+<figure>
+<svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="m1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="m1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<rect x="216" y="8" width="128" height="34" rx="7" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="280" y="30" fill="#e7ebf1" font-size="12" text-anchor="middle" font-weight="700">master · assign/monitor</text>
+<text x="30" y="66" fill="#7c8593" font-size="10.5">input (GFS)</text>
+<rect x="22" y="74" width="70" height="22" rx="4" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/><text x="57" y="89" fill="#b9c0ca" font-size="10" text-anchor="middle">split 1</text>
+<rect x="22" y="104" width="70" height="22" rx="4" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/><text x="57" y="119" fill="#b9c0ca" font-size="10" text-anchor="middle">split 2</text>
+<rect x="22" y="134" width="70" height="22" rx="4" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/><text x="57" y="149" fill="#b9c0ca" font-size="10" text-anchor="middle">split … M</text>
+<rect x="140" y="74" width="96" height="82" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="188" y="100" fill="#e7ebf1" font-size="11.5" text-anchor="middle">map</text><text x="188" y="118" fill="#e7ebf1" font-size="11.5" text-anchor="middle">worker</text><text x="188" y="140" fill="#7c8593" font-size="9.5" text-anchor="middle">read split local</text>
+<rect x="264" y="74" width="86" height="82" rx="6" fill="rgba(232,121,75,0.09)" stroke="#e8794b"/><text x="307" y="98" fill="#e7ebf1" font-size="10.5" text-anchor="middle">local disk</text><text x="307" y="116" fill="#7c8593" font-size="9.5" text-anchor="middle">intermediate</text><text x="307" y="132" fill="#7c8593" font-size="9.5" text-anchor="middle">split into R</text>
+<rect x="392" y="74" width="92" height="36" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="438" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">reduce</text><text x="438" y="104" fill="#7c8593" font-size="9.5" text-anchor="middle">sort+merge</text>
+<rect x="392" y="120" width="92" height="36" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="438" y="136" fill="#e7ebf1" font-size="11" text-anchor="middle">reduce</text><text x="438" y="150" fill="#7c8593" font-size="9.5" text-anchor="middle">… R of them</text>
+<rect x="502" y="86" width="46" height="60" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="525" y="112" fill="#e7ebf1" font-size="10" text-anchor="middle">output</text><text x="525" y="128" fill="#7c8593" font-size="9" text-anchor="middle">GFS</text>
+<path d="M92,85 L138,95" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
+<path d="M92,115 L138,112" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
+<path d="M92,145 L138,130" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
+<path d="M236,115 L262,115" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
+<path d="M350,105 L390,95" stroke="#e8794b" stroke-width="1.7" marker-end="url(#m1g)"/>
+<path d="M350,128 L390,132" stroke="#e8794b" stroke-width="1.7" marker-end="url(#m1g)"/>
+<text x="330" y="188" fill="#e8794b" font-size="10" text-anchor="middle">reduce pulls its bucket from map workers via RPC (shuffle)</text>
+<path d="M484,95 L500,100" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
+<path d="M484,138 L500,128" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
+<path d="M244,42 C204,52 199,60 194,72" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m1)"/>
+<path d="M320,42 C360,54 400,60 430,72" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m1)"/>
+<text x="280" y="232" fill="#7c8593" font-size="10.5" text-anchor="middle">Split into M map tasks + R reduce tasks; the master hands tasks to idle workers.</text>
+<text x="280" y="250" fill="#7c8593" font-size="10.5" text-anchor="middle">Map intermediates land on <tspan fill="#e8794b">local disk</tspan>; only the final output goes to <tspan fill="#e8794b">GFS</tspan>.</text>
+</svg>
+<figcaption>Figure 2 · Execution flow: the master hands M map and R reduce tasks to workers; map reads input locally and flushes intermediates to local disk in R partitions; reduce pulls (shuffle), sorts, merges, and writes to GFS.</figcaption>
+</figure>
+
+<h3>Fault tolerance: recompute on failure, and map ≠ reduce</h3>
+<p>With thousands of machines running at once, failure is routine, and fault tolerance is the framework's whole reason to exist. The master periodically <strong>pings</strong> every worker; no response for a while and it's declared dead. The elegance is that <strong>the two task types are handled quite differently</strong> — precisely because of the "intermediates on local disk, final output on GFS" trade-off:</p>
+<ul>
+<li><strong>A failed map task must be redone</strong> — even if it had already <em>completed</em>. Its output sits on <strong>the local disk of the machine that just died</strong>, so nobody can reach it. The master marks it "to do" again, assigns it to another machine, and any reduce worker that hadn't yet pulled its data is told to pull from the new location.</li>
+<li><strong>A completed reduce task need not be redone</strong> — because its result was already <strong>safely written to GFS</strong> (multiple replicas, so a dead machine doesn't lose it).</li>
+</ul>
+<p>Because <code>map</code> and <code>reduce</code> are <strong>deterministic functions</strong> (same input always yields same output), recomputing gives identical results, so the framework can safely "re-run" any failed task and the final output is exactly as if nothing had ever broken. <strong>Master failure itself</strong> is very unlikely; the paper's implementation simply restarts the whole job (or one can checkpoint periodically and resume from a checkpoint).</p>
+
+<h3>Locality: send the computation to the data</h3>
+<p>Network bandwidth is a scarce resource in the cluster. Since input already lives on GFS with several replicas scattered across machines, when the master assigns a map task it <strong>deliberately picks a worker where an input replica happens to be — on that very machine, or a rack neighbor</strong>. As a result, most input data is <strong>read from local disk and never crosses the network</strong> — on a large job this lets the vast majority of input consume zero network bandwidth, a key engineering detail behind the high throughput. It echoes GFS's design: <strong>keep storage and computation next to each other.</strong></p>
+
+<h3>Straggler mitigation: race the slow tasks near the finish</h3>
+<p>An easily overlooked but deadly problem is the <strong>straggler</strong>: the job is 99% done, and just a few tasks are stuck on some <strong>flaky machine</strong> — a dying disk, a CPU stolen by another process, a bad config. One of them alone can stretch the job's tail by several times. MapReduce's fix is plain and effective: <strong>as a job nears completion, the master launches "backup tasks" for the still-in-progress ones</strong>, letting another machine race the same work, and <strong>takes whichever finishes first, discarding the other</strong>. It costs only a little extra resource yet flattens the long tail dramatically — in the paper, turning this off makes the sort take <strong>about 44% longer</strong>.</p>
+
+<h3>Handy accessories</h3>
+<ul>
+<li><strong>Combiner (local pre-merge)</strong>: in many jobs a single map emits huge numbers of same-key pairs (e.g. <code>(the,1)</code> thousands of times within one map). The user may supply a <code>combiner</code> to <strong>partially merge on the map side first</strong> (folding thousands of <code>(the,1)</code> into <code>(the,1000)</code>), sharply cutting the data that must be shuffled across the network. It's usually just the reduce logic.</li>
+<li><strong>Custom partitioning</strong>: default is <code>hash(key) mod R</code>, but the user can override it (e.g. partition by a URL's host, so one website's data lands in one output file).</li>
+<li><strong>Skipping bad records</strong>: some input records crash the user's code every time (a library bug, say). When enabled, a record that crashes a task several times is noted by the master and <strong>skipped on retry</strong> — sacrificing a tiny bit of data to keep a huge job from being blocked forever by a few dirty records.</li>
+<li><strong>Ordering guarantee and counters</strong>: keys are emitted in sorted order within each reduce partition; the framework also offers distributed <strong>counters</strong> for tallying global quantities like "how many records processed."</li>
+</ul>
+
+<h2>Key results</h2>
+<p>The paper measures two representative jobs on a cluster of about <strong>1800 machines</strong> (each ~2 GHz, 4 GB RAM, two IDE disks, gigabit network):</p>
+<ul>
+<li><strong>grep (distributed search)</strong>: scan <code>10¹⁰</code> records of 100 bytes each (~<strong>1 TB</strong>) for a rare three-character pattern. Split into M≈15000 pieces, the whole computation finishes in about <strong>150 seconds</strong> (including ~1 minute of startup overhead).</li>
+<li><strong>sort (distributed sort)</strong>: sort ~<strong>1 TB</strong> (the same <code>10¹⁰</code> 100-byte records), with M≈15000, R=4000. It finishes in about <strong>891 seconds</strong> normally.</li>
+</ul>
+<p>Two control experiments best show the design's worth. <strong>① Backup tasks off</strong> — the same sort stretches to about <strong>1283 seconds</strong>, ~44% slower, its tail held hostage by a few stragglers. <strong>② Killing machines on purpose</strong> — deliberately killing 200 worker processes mid-sort, the framework re-runs the lost map tasks elsewhere and the whole job completes correctly with only <strong>~5% extra time</strong>. These numbers directly prove "backup tasks cure the long tail" and "recompute cures failure." The paper also reports Google's internal adoption: within a year or so of launch, engineers had written <strong>over a thousand distinct MapReduce programs</strong>, ran hundreds to thousands of jobs a day, and <strong>rewrote the production search-indexing pipeline with it</strong> — shorter code, easier to understand, easier to change.</p>
+
+<h2>Why it matters / impact</h2>
+<p>MapReduce's greatness lies not in an algorithm but in an <strong>abstraction</strong>. It took "massive parallelism + fault tolerance" — once hand-written carefully by distributed-systems experts — and <strong>settled it into a framework once, leaving the user just two fill-in slots</strong>, so any engineer could now command thousands of machines. Together with GFS and Bigtable it forms Google's "big three," and in the open-source world Yahoo and others cloned these two papers into <strong>Hadoop</strong> (HDFS + Hadoop MapReduce), almost single-handedly igniting the big-data industry — for the next decade-plus, data warehousing, log analysis, recommendation, and ML feature engineering mostly began with a MapReduce job. Deeper still is the set of ideas it popularized: <strong>trade a simple, restricted programming model for automatic parallelism</strong>, <strong>build fault tolerance into the framework rather than the app</strong>, <strong>move computation, not data</strong>, and <strong>fight the long tail with backup tasks</strong> — all inherited and extended by later Spark, Flink, and Google Dataflow / Beam.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Great at batch, weak at iteration and real time</strong>: every job must "read GFS → compute → write back to GFS," flushing intermediates to disk repeatedly. Machine learning and graph algorithms that <strong>iterate dozens or hundreds of rounds</strong> become re-read-re-write cycles, painfully slow. Spark cures exactly this by "keeping intermediates in memory," running an order of magnitude faster on iterative jobs.</li>
+<li><strong>Too rigid a model</strong>: real computations are often "a complex DAG of many map/reduce steps," and cramming them into "one map, one reduce" is awkward and inefficient, forcing people to hand-chain a long series of jobs. Later systems — FlumeJava, Spark, Dataflow — switched to freer <strong>dataflow operator graphs</strong>.</li>
+<li><strong>Slammed by the database community</strong>: DeWitt and Stonebraker (2008) publicly called MapReduce "<strong>a major step backwards</strong>" — no schema, no indexes, bypassing decades of mature parallel-database technique, when a SQL engine had long done many of these things faster and better.</li>
+<li><strong>Shuffle is the bottleneck, tuning is a dark art</strong>: hauling massive intermediate data across the network by key (the shuffle) is often the slowest stage of all; how to set M, R, partitioning, and combiners takes a lot of experience.</li>
+<li><strong>Google itself moved past it</strong>: internally it shifted to higher-level, more flexible models like FlumeJava and <strong>Cloud Dataflow</strong> (the precursor to Apache Beam), and classic MapReduce faded to a secondary role. It is a foundational, mind-opening work — not the endpoint.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: a programming model + runtime that lets the user write just two functions, <code>map</code>/<code>reduce</code>, while the framework auto-parallelizes across thousands of machines with end-to-end fault tolerance.</p>
+<p>② Model: <code>map:(k1,v1)→list(k2,v2)</code> emits intermediate pairs per record; the framework groups by key; <code>reduce:(k2,list(v2))→list(v2)</code> folds. Word count is the canonical example.</p>
+<p>③ Execution: input split into <strong>M</strong> map tasks, intermediate keys into <strong>R</strong> buckets as reduce tasks; a <strong>master</strong> assigns and monitors; reduce pulls from map workers' local disks (<strong>shuffle</strong>), sorts, merges, writes to GFS.</p>
+<p>④ Key trade-off: map intermediates land on <strong>local disk</strong> (cheap), final output on <strong>GFS</strong> (reliable) — which dictates how the two failure types are handled.</p>
+<p>⑤ Fault tolerance: master pings workers; failed tasks re-run safely thanks to map/reduce <strong>determinism</strong>; <strong>completed maps must be redone</strong> (output trapped on a dead local disk), completed reduces need not (already on GFS).</p>
+<p>⑥ Locality: schedule map tasks onto the <strong>machine holding an input replica</strong>, so most input reads from local disk and never crosses the network.</p>
+<p>⑦ <strong>Backup tasks</strong> cure stragglers: race slow tasks near the finish, first-to-complete wins; disabling them makes sort ~44% slower. <strong>Combiner</strong> pre-merges on the map side, shrinking the shuffle.</p>
+<p>⑧ Results: on ~1800 machines, 1 TB grep ≈150 s, 1 TB sort ≈891 s; killing 200 machines costs only ~5% more; over a thousand internal programs, and it rewrote the search index.</p>
+<p>⑨ Impact: with GFS/Bigtable it forms the "big three," directly spawned Hadoop and the whole big-data ecosystem, and popularized "restricted model for automatic parallelism, move computation not data."</p>
+<p>⑩ Limitations: batch-only, slow at iteration/real time, rigid model, slammed as "a step backwards" by the DB community; Google itself moved on to Dataflow and beyond.</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Finish this page ≈ get the paper's core; for full implementation details and result tables, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
