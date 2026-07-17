@@ -55,7 +55,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="group">Google 分布式系统<span class="tag">— 老三件套 · 新三驾马车 · 演进</span></div>
 <a class="entry" href="google-file-system-paper17.html"><span class="num">Paper 17</span><span class="title">The Google File System (GFS) — 单 master 记账、数据切成大块存三份，用会坏的廉价机器拼出 PB 级存储，大数据基础设施第一块地基</span><span class="meta">Ghemawat 等 · 2003</span></a>
 <a class="entry" href="map-reduce-paper18.html"><span class="num">Paper 18</span><span class="title">MapReduce — 只写 map+reduce 两个函数，框架自动把计算并行摊到上千台机器并全程容错，开启大数据时代</span><span class="meta">Dean &amp; Ghemawat · 2004</span></a>
-<div class="entry todo"><span class="num"></span><span class="title">Bigtable: A Distributed Storage System for Structured Data — 稀疏多维有序宽表，列式存储先驱</span><span class="meta">Chang 等 · 2006</span></div>
+<a class="entry" href="bigtable-paper19.html"><span class="num">Paper 19</span><span class="title">Bigtable — 用 (行键,列,时间戳) 定位的稀疏有序大表，横跨上千台机器长到 PB 级，宽列 NoSQL 与 LSM 引擎的祖师爷</span><span class="meta">Chang 等 · 2006</span></a>
 <div class="entry todo"><span class="num"></span><span class="title">Chubby — 把 Paxos 落地成分布式锁与协调服务，GFS / Bigtable 靠它选主</span><span class="meta">Burrows · 2006</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Percolator (Caffeine) — 给 Bigtable 加跨行事务 + 通知，把重建索引变成增量更新</span><span class="meta">Peng &amp; Dabek · 2010</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Pregel — 「像顶点一样思考」的 BSP 图计算模型，大规模图算法的分布式框架</span><span class="meta">Malewicz 等 · 2010</span></div>
