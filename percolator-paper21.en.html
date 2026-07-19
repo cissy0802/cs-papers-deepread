@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Percolator — CS Papers Deep Read · Paper 21</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS · DEEP READ · PAPER 21</p>
+<h1>Percolator — Large-scale Incremental Processing</h1>
+<p class="sub">Peng &amp; Dabek · Google · OSDI 2010</p>
+<p class="langbar"><a href="percolator-paper21.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2010, two Google engineers (Peng and Dabek) built a system called <strong>Percolator</strong> and used it to rebuild <strong>Google's search index</strong>. In one sentence: it changed how a freshly-crawled web page reaches search results — from <strong>"wait for the whole batch to be recomputed" to "one page in, update it right away."</strong> After it shipped, the average <em>age</em> of documents in search results dropped by half — the web got fresher, faster.</p>
+
+<h2>The pain of the old world</h2>
+<p>Before this, Google used its previous workhorse, <strong>MapReduce</strong>: treat all of the billions of web pages as one giant pot, <strong>cook the whole pot at once</strong>, and produce a new index. The problem — <strong>change a single page and you still have to re-cook the entire pot.</strong> A full pass over the web took days, so an article you posted today might not be searchable for several days. The only way to speed it up was to re-cook the whole pot more often, which was far too expensive.</p>
+
+<h2>The new idea: don't re-cook the pot, just add the one spoonful</h2>
+<p>Percolator's idea: <strong>when one page changes, update only the small part that depends on it, and leave the billions of unchanged pages alone.</strong> That is "incremental processing" — like adding one ladle to a soup instead of pouring it out and reboiling.</p>
+<p>This was hard to do before because of two obstacles, and Percolator supplies exactly the two missing pieces:</p>
+
+<h3>Piece one: make one change "all-or-nothing"</h3>
+<p>Updating a page often means changing several records at once (this word points at that document, that document's rank, its backlinks…). If the machine crashes halfway, the index becomes a half-new, half-old mess. <strong>Percolator wraps those scattered changes in a "transaction": either they all take effect, or it's as if nothing happened — never a half-baked state.</strong></p>
+<p>How does it guarantee all-or-nothing? Picture moving house: you put a sticky note on every box to lock it, and you <strong>designate one "master box" as the master switch</strong>. Only when the master box's note is flipped does the whole move count as "officially done"; until then, anyone looking sees "not moved yet." So even if the power dies mid-move, others see the master box unflipped and know this move doesn't count. <strong>One atomic little action decides the fate of a whole pile of changes.</strong></p>
+
+<h3>Piece two: when something changes, auto-notify whatever should change next</h3>
+<p>The index is a chain: page content changes → recompute its keywords → keywords change → update the inverted list… Percolator adds a set of <strong>"triggers": you watch a kind of data, and the moment it's written, the system automatically wakes up a piece of logic you wrote to follow up, which may trigger the next link — <strong>like changing one cell in Excel and watching every formula that depends on it recompute in a cascade.</strong> A handful of changes "percolate" through the whole index on their own — which is exactly where the name Percolator comes from.</p>
+
+<h2>What it bought</h2>
+<p>Google used it to replace the old MapReduce indexing pipeline (the new system is known as <strong>Caffeine</strong>). Processing the same number of pages, the <strong>average freshness of search results roughly doubled</strong> — what you just posted becomes searchable sooner. One honest cost: this "always up to date" isn't free — compared with MapReduce sweeping the whole pot smoothly, Percolator does dozens of scattered reads and writes for every document it updates, so it <strong>burns more machines</strong>. Google traded resources for freshness because the trade was worth it.</p>
+
+<h2>Remember this</h2>
+<div class="tl">
+<p>Percolator turned Google's search index from "recompute the whole batch, days behind" into "one page in, update it now." It does this with two things: wrapping scattered changes in an "all-or-nothing" transaction (using one "master lock" as the master switch), plus a trigger system where "something changes → whatever depends on it is auto-notified to follow up." Freshness doubled; the price is more machines.</p>
+</div>
+
+<p class="switch-hint">Want to see how it builds transactions on Bigtable with timestamps and a "primary lock," and how observers cascade? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">Percolator adds two things on top of <strong>Bigtable</strong> — <strong>cross-row, cross-table ACID transactions</strong> (snapshot isolation) and an <strong>observer / notification</strong> mechanism — to convert Google's web indexing from "rebuild the whole thing with MapReduce" into "incremental processing: one document in, update only the affected part." The resulting system (known as <strong>Caffeine</strong>) cut the <strong>average age of documents in search results by about 50%</strong> at the same throughput.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Index / inverted index</strong>: a search engine's core data structure — a huge table of "which word appears on which pages." A user's query hits it to find candidate pages instantly. Building the index = crawl pages, extract content, compute rank, update that table.</li>
+<li><strong>MapReduce</strong>: Google's previous big-data framework (Paper 18 here), which abstracts massive parallel computation into map + reduce, run over the whole input in one batch. Great at "cook the whole pot," bad at "change one small piece."</li>
+<li><strong>Bigtable</strong>: Google's distributed wide-table store (Paper 19 here), holding petabytes of sparse data. Key limitation: it only guarantees atomic reads/writes on a <strong>single row</strong>, with no cross-row transactions. Percolator is built on top of it to supply exactly that.</li>
+<li><strong>Transaction / ACID</strong>: a group of operations that all take effect or none do (atomicity), and never expose each other's half-finished state — the "a transfer never loses half the money" guarantee from databases.</li>
+<li><strong>Snapshot isolation</strong>: a weaker but efficient transaction isolation level. Each transaction reads a <strong>consistent snapshot</strong> at some instant (as if the database were photographed), and writes are checked for collisions at commit time.</li>
+<li><strong>Timestamp</strong>: here, a globally, strictly increasing "queue number" used to order events and version data. Higher number = more recent.</li>
+<li><strong>Two-phase commit (2PC)</strong>: the classic protocol for making changes spread across many places "all succeed or all fail" — first "prewrite" to grab locks, then "commit" together.</li>
+<li><strong>Multi-version (MVCC)</strong>: keep multiple timestamped historical versions of the same datum, so reading an old version and writing a new one don't fight. Bigtable natively stores versions by timestamp; Percolator leans on this.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>Authors Daniel Peng and Frank Dabek, Google, published at <strong>OSDI 2010</strong>. It builds directly on Google's "old three" — sitting on top of <strong>Bigtable</strong> (storage) and replacing the <strong>MapReduce</strong>-based (batch) indexing pipeline — and uses a lightweight lock service akin to <strong>Chubby</strong> (Paper 20) for failure detection. It is counted among Google's "new three" (alongside Pregel and Dremel). It moved "large-scale distributed transactions" from an academic "can't be done efficiently" to industrial reality, and directly inspired later distributed databases like <strong>TiDB / TiKV</strong>, whose transaction models are essentially copied from Percolator.</p>
+
+<h2>The problem &amp; motivation</h2>
+<p>Google's web index is fundamentally a pipeline: crawl a page → extract content, compute PageRank, cluster and dedup → update the inverted index. Before 2010 this ran as <strong>batch MapReduce</strong>: feed in the entire web repository of the moment (tens of PB), run a chain of MapReduce jobs, and emit a whole new index.</p>
+<p>The pain is the <strong>granularity of batch</strong>: MapReduce insists on scanning the entire input. Even if only a tiny fraction of pages actually changed this round, you still have to <strong>reprocess the whole repository</strong> — because one new page can shift other pages' ranks and cluster memberships, so batch can't "compute only the affected part." The result: a page took <strong>a full re-run (on the order of days)</strong> to go from crawled to live in the index. Updating faster meant re-running the full batch more often — prohibitively expensive.</p>
+<p>So why not just use a database and fire a transaction that touches a few rows per page? Because of <strong>scale</strong>: no DBMS of the era could sustain that volume of random read/write throughput across thousands of machines. <strong>The problem becomes: on storage that <em>can</em> take the scale (Bigtable), can we supply the two capabilities that "update only the affected part" needs — multi-row transactions, and a "who changed, notify whom" trigger?</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="150" y="26" fill="#e8794b" font-size="13" text-anchor="middle" font-weight="700">Old: MapReduce full rebuild</text>
+<rect x="40" y="42" width="220" height="70" rx="8" fill="rgba(232,121,75,0.08)" stroke="#e8794b"/>
+<text x="150" y="66" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Change 1 page</text>
+<text x="150" y="86" fill="#b9c0ca" font-size="11" text-anchor="middle">→ rescan whole repository</text>
+<text x="150" y="103" fill="#7c8593" font-size="10.5" text-anchor="middle">tens of PB · days per round</text>
+<text x="410" y="26" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">New: Percolator incremental</text>
+<rect x="300" y="42" width="220" height="70" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="410" y="66" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Change 1 page</text>
+<text x="410" y="86" fill="#b9c0ca" font-size="11" text-anchor="middle">→ update only affected records</text>
+<text x="410" y="103" fill="#7c8593" font-size="10.5" text-anchor="middle">minutes · 2× fresher</text>
+<g stroke="#7c8593" stroke-width="1"><line x1="45" y1="150" x2="515" y2="150"/></g>
+<text x="60" y="145" fill="#7c8593" font-size="10.5">timeline</text>
+<g fill="#e8794b"><rect x="70" y="160" width="90" height="16" rx="3" opacity="0.7"/><rect x="180" y="160" width="90" height="16" rx="3" opacity="0.7"/><rect x="290" y="160" width="90" height="16" rx="3" opacity="0.7"/></g>
+<text x="115" y="192" fill="#7c8593" font-size="10" text-anchor="middle">big batch · big batch · big batch</text>
+<g fill="#f0b429"><rect x="70" y="205" width="10" height="16" rx="2"/><rect x="90" y="205" width="10" height="16" rx="2"/><rect x="110" y="205" width="10" height="16" rx="2"/><rect x="130" y="205" width="10" height="16" rx="2"/><rect x="150" y="205" width="10" height="16" rx="2"/><rect x="170" y="205" width="10" height="16" rx="2"/><rect x="190" y="205" width="10" height="16" rx="2"/><rect x="210" y="205" width="10" height="16" rx="2"/><rect x="230" y="205" width="10" height="16" rx="2"/><rect x="250" y="205" width="10" height="16" rx="2"/></g>
+<text x="165" y="237" fill="#7c8593" font-size="10" text-anchor="middle">one in · one updated (a steady trickle)</text>
+</svg>
+<figcaption>Fig 1 · From "full rebuild" to "incremental update": MapReduce works one big batch at a time, days apart; Percolator updates one page as it arrives, so pages enter the index far sooner.</figcaption>
+</figure>
+
+<h2>Core idea &amp; method</h2>
+
+<h3>Why exactly "transactions + notifications"</h3>
+<p>Incremental processing is, at heart: <strong>maintain a pile of interdependent data, and when an upstream item changes, "percolate" that change downstream.</strong> Doing this needs two things: <strong>multi-row transactions</strong> — an update usually must change several places consistently, and mustn't crash halfway (or the index becomes garbage); and <strong>notifications</strong> — you must know "what got dirty, which computation to wake next," or you're back to "scan everything to find the changes." Percolator layers exactly these two onto Bigtable.</p>
+
+<h3>Capability one: snapshot-isolation transactions on Bigtable</h3>
+<p>Bigtable only guarantees single-row atomicity. To do cross-row, cross-table ACID, Percolator gives each data column a few extra <strong>"metadata" columns</strong>, storing lock and version info right inside Bigtable, then strings them into transactions with a <strong>two-phase commit</strong> protocol. Three columns are central:</p>
+<ul>
+<li><strong><code>data</code></strong>: the cell's actual value at a given timestamp. Bigtable natively keeps multiple versions by timestamp.</li>
+<li><strong><code>lock</code></strong>: marks "an uncommitted transaction is holding this cell." Among all cells a transaction writes, <strong>one is designated the "primary lock,"</strong> the rest are "secondary" locks, each recording where the primary lives.</li>
+<li><strong><code>write</code> (the commit point)</strong>: a pointer to the timestamp of the committed <code>data</code> version. <strong>Reads only honor <code>write</code> — data with no write record is invisible to readers.</strong></li>
+</ul>
+<p>Each transaction takes two timestamps from a global service, the <strong>timestamp oracle</strong>: <code>start_ts</code> at the beginning, <code>commit_ts</code> at commit. A read returns "the latest committed version with timestamp &lt; start_ts" — that forms its consistent snapshot. A write happens in two phases:</p>
+<ul>
+<li><strong>Prewrite</strong>: lock each cell to be written (pick one as primary), and write the new value into <code>data</code> (stamped with start_ts). Before locking, check two things: is there a <code>write</code> record committed after start_ts (yes = <em>write-write conflict</em>, abort); is another transaction's lock still present (yes = lock contention, back off and retry).</li>
+<li><strong>Commit</strong>: get commit_ts and <strong>commit the primary cell first</strong> — verify the primary lock is still there, then atomically write the <code>write</code> record (pointing at start_ts) and erase the primary lock. <strong>This step is the transaction's "moment of taking effect": once the primary commits, the transaction counts.</strong> Then, at leisure, roll each secondary lock forward into a write record.</li>
+</ul>
+<p>The magic is the <strong>"primary lock as master switch"</strong>: a transaction may touch dozens of cells, but whether it counts is decided by a single atomic action — "did the primary cell turn into a write record." If a client crashes after committing the primary but before cleaning up secondaries, those secondary locks linger, but any other transaction that stumbles on one will <strong>follow the address it records to inspect the primary</strong>: primary already committed → help commit this secondary too (roll-forward); primary still locked / rolled back → clear this secondary (roll-back). To decide whether the client is really dead, it uses a Chubby-like lightweight lock service plus a timeout. <strong>So there's no dedicated transaction manager — cleanup is lazy and decentralized, done in passing by later transactions.</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="280" y="22" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">One transaction: write to rows Bob and Joe (primary on Bob)</text>
+<text x="118" y="52" fill="#7c8593" font-size="11" text-anchor="middle">row / phase</text>
+<text x="250" y="52" fill="#f5c451" font-size="11" text-anchor="middle">data</text>
+<text x="350" y="52" fill="#f5c451" font-size="11" text-anchor="middle">lock</text>
+<text x="465" y="52" fill="#f5c451" font-size="11" text-anchor="middle">write</text>
+<line x1="40" y1="60" x2="520" y2="60" stroke="#7c8593"/>
+<text x="60" y="92" fill="#f0b429" font-size="11" font-weight="700">Prewrite</text>
+<text x="60" y="108" fill="#b9c0ca" font-size="10.5">@start_ts</text>
+<text x="118" y="88" fill="#e7ebf1" font-size="11">Bob</text>
+<rect x="205" y="76" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="92" fill="#e7ebf1" font-size="10.5" text-anchor="middle">new value</text>
+<rect x="308" y="76" width="90" height="24" rx="4" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="353" y="92" fill="#e7ebf1" font-size="9.5" text-anchor="middle">primary</text>
+<text x="465" y="92" fill="#5a6069" font-size="11" text-anchor="middle">—</text>
+<text x="118" y="126" fill="#e7ebf1" font-size="11">Joe</text>
+<rect x="205" y="114" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="130" fill="#e7ebf1" font-size="10.5" text-anchor="middle">new value</text>
+<rect x="308" y="114" width="90" height="24" rx="4" fill="rgba(232,121,75,0.08)" stroke="#e8794b"/><text x="353" y="130" fill="#e7ebf1" font-size="8.5" text-anchor="middle">secondary→Bob</text>
+<text x="465" y="130" fill="#5a6069" font-size="11" text-anchor="middle">—</text>
+<line x1="40" y1="150" x2="520" y2="150" stroke="rgba(240,180,41,0.25)" stroke-dasharray="4 4"/>
+<text x="60" y="188" fill="#f0b429" font-size="11" font-weight="700">Commit</text>
+<text x="60" y="202" fill="#f0b429" font-size="11" font-weight="700">primary</text>
+<text x="60" y="218" fill="#b9c0ca" font-size="10.5">@commit_ts</text>
+<text x="118" y="184" fill="#e7ebf1" font-size="11">Bob</text>
+<rect x="205" y="172" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="188" fill="#e7ebf1" font-size="10.5" text-anchor="middle">new value</text>
+<rect x="308" y="172" width="90" height="24" rx="4" fill="rgba(255,255,255,0.02)" stroke="#3a4048"/><text x="353" y="188" fill="#7c8593" font-size="9.5" text-anchor="middle">cleared</text>
+<rect x="420" y="172" width="90" height="24" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"/><text x="465" y="188" fill="#e7ebf1" font-size="9.5" text-anchor="middle">→start_ts</text>
+<text x="118" y="220" fill="#e7ebf1" font-size="11">Joe</text>
+<rect x="205" y="208" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="224" fill="#e7ebf1" font-size="10.5" text-anchor="middle">new value</text>
+<rect x="308" y="208" width="90" height="24" rx="4" fill="rgba(232,121,75,0.08)" stroke="#e8794b"/><text x="353" y="224" fill="#e7ebf1" font-size="8.5" text-anchor="middle">secondary (pending)</text>
+<text x="465" y="224" fill="#5a6069" font-size="11" text-anchor="middle">—</text>
+<text x="512" y="163" fill="#f0b429" font-size="10" text-anchor="end">↑ primary → write = moment it takes effect</text>
+<line x1="40" y1="244" x2="520" y2="244" stroke="rgba(240,180,41,0.25)" stroke-dasharray="4 4"/>
+<text x="60" y="282" fill="#f0b429" font-size="11" font-weight="700">Commit</text>
+<text x="60" y="296" fill="#f0b429" font-size="11" font-weight="700">secondary</text>
+<text x="118" y="290" fill="#e7ebf1" font-size="11">Joe</text>
+<rect x="205" y="278" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="294" fill="#e7ebf1" font-size="10.5" text-anchor="middle">new value</text>
+<rect x="308" y="278" width="90" height="24" rx="4" fill="rgba(255,255,255,0.02)" stroke="#3a4048"/><text x="353" y="294" fill="#7c8593" font-size="9.5" text-anchor="middle">cleared</text>
+<rect x="420" y="278" width="90" height="24" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"/><text x="465" y="294" fill="#e7ebf1" font-size="9.5" text-anchor="middle">→start_ts</text>
+</svg>
+<figcaption>Fig 2 · Two-phase commit: prewrite locks each row (one primary, rest secondary) and writes data; commit atomically turns the primary lock into a write record (the moment of effect), then cleans up secondaries. Reads honor only the write column, so half-finished state is invisible.</figcaption>
+</figure>
+
+<h3>The timestamp oracle: a global queue-number dispenser</h3>
+<p>Snapshot isolation requires timestamps to be <strong>strictly increasing</strong>. Percolator uses a dedicated <em>timestamp oracle</em> service to hand them out. It doesn't write to disk per request — too slow; instead it <strong>batch-writes "the highest number allocated so far" to stable storage once</strong>, then serves numbers purely from memory within that range, replying to a batch of requests at a time. Thanks to batching, a single machine can dispense <strong>about 2 million timestamps per second</strong>, enough for the whole cluster. (It's a centralized component, but its state is tiny and replicable, and after batching it isn't a bottleneck.)</p>
+
+<h3>Capability two: observers &amp; notifications — let changes percolate on their own</h3>
+<p>Transactions alone aren't enough for incremental work: you still need to know "which data got dirty, which computation to wake." Percolator adds <strong>observers</strong> to columns: a programmer registers "when these columns are written, run this logic"; when a column is written, a mark is placed in its <code>notify</code> column. A pool of standing worker processes <strong>randomly scan for these notification marks</strong>, and on a hit run the matching observer code — which in turn writes other columns and triggers the next round of notifications, cascading onward. Like changing one Excel cell and watching dependent formulas recompute in a chain. To prevent repeated firing and infinite loops, Percolator guarantees <strong>each notification triggers an observer at most once</strong> (deduped via an <code>ack</code> column). <strong>This "write → notify → observer → write again" chain is the engine that "incrementally percolates changes through the index"</strong> — hence the name Percolator.</p>
+
+<figure>
+<svg viewBox="0 0 560 190" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="pa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="24" y="70" width="120" height="50" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="84" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">page content changes</text>
+<text x="84" y="107" fill="#7c8593" font-size="9.5" text-anchor="middle">(write contents col)</text>
+<line x1="146" y1="95" x2="196" y2="95" stroke="#f0b429" stroke-width="1.6" marker-end="url(#pa)"/>
+<rect x="200" y="70" width="130" height="50" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="265" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">observer: extract terms</text>
+<text x="265" y="107" fill="#7c8593" font-size="9.5" text-anchor="middle">write term col → notify</text>
+<line x1="332" y1="95" x2="382" y2="95" stroke="#f0b429" stroke-width="1.6" marker-end="url(#pa)"/>
+<rect x="386" y="70" width="150" height="50" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="461" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">observer: update inverted list</text>
+<text x="461" y="107" fill="#7c8593" font-size="9.5" text-anchor="middle">write index col …</text>
+<text x="280" y="34" fill="#e7ebf1" font-size="12" text-anchor="middle" font-weight="700">write → notify → observer → write: changes cascade</text>
+<text x="280" y="160" fill="#7c8593" font-size="10.5" text-anchor="middle">workers randomly scan notify marks; each notification fires an observer at most once (ack dedup) to avoid loops</text>
+</svg>
+<figcaption>Fig 3 · Observer cascade: one write raises a notification; a worker scans it, runs the observer, writes downstream and triggers the next notification — changes spread through the index like percolation.</figcaption>
+</figure>
+
+<h2>Key results</h2>
+<p>Percolator shipped as Google's web indexing system <strong>Caffeine</strong>, replacing the previous MapReduce-based batch indexing. The paper's headline result: at the <strong>same document count / same throughput</strong>, it lowered the <strong>average age of documents in search results by about 50%</strong> — roughly doubling freshness. The system runs across thousands of machines managing petabytes; the timestamp oracle reaches <strong>~2 million</strong> timestamps per second on a single machine. The authors are candid about the cost: versus MapReduce's efficient sequential scan, Percolator does <strong>dozens of random Bigtable reads/writes per document</strong>, so its resource efficiency is markedly lower — an explicit <strong>machines-for-freshness</strong> trade.</p>
+
+<h2>Why it matters / impact</h2>
+<p>Its significance has two layers. First, <strong>engineering</strong>: it proved that "on storage that can take the scale, add cross-row transactions + incremental notifications" is a viable path, giving Google search a freshness that was previously impossible. Second, and more lasting — <strong>it turned the "timestamp + lock columns + primary-lock 2PC" style of distributed transaction into a reproducible engineering template.</strong> Later open-source distributed databases <strong>TiKV / TiDB</strong> essentially copied Percolator's transaction model (start_ts / commit_ts, primary lock, lazy cleanup), and systems like CockroachDB were influenced by it. Many of today's "transactions across nodes" systems carry Percolator's DNA. It is also the paper in Google's "new three" that brought <strong>strongly consistent transactions</strong> back to large-scale systems — paving the way for <strong>Spanner</strong> (globally consistent transactions) two years later.</p>
+
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>Snapshot isolation, not serializable</strong>: SI admits the <em>write-skew</em> anomaly — two transactions each read a consistent snapshot, each modify different rows, and together violate a cross-row invariant while neither reports a conflict. Fine for indexing, but not the strongest consistency.</li>
+<li><strong>Low resource efficiency</strong>: dozens of random Bigtable ops per document, plus timestamp round-trips and lock reads/writes, make per-unit-work overhead far higher than MapReduce's sequential scan. It <strong>trades throughput / resources for latency and freshness</strong>, and is a poor fit for cost-sensitive batch work that doesn't need to be incremental.</li>
+<li><strong>No per-transaction latency guarantee</strong>: it's designed for freshness at high throughput, not low-latency OLTP. A single transaction takes several RPCs, so individual latency is high — unsuitable for user-facing online transactions with strict SLAs.</li>
+<li><strong>The timestamp oracle is a central point</strong>: mitigated by batching and replication, it's still logically a global single point — a component to handle carefully in scalability and fault-tolerance design.</li>
+<li><strong>Lazy lock cleanup causes blocking</strong>: locks left behind by a crashed client are only cleared when the next transaction stumbles on them, combined with a timeout; meanwhile the affected rows are blocked, waiting out the timeout in the worst case.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one sentence: add "cross-row ACID transactions + observer notifications" on top of Bigtable to turn Google's web indexing from a full MapReduce rebuild into incremental processing.</p>
+<p>② The pain: MapReduce reprocesses the whole repository even to change one page, so new pages take days to enter the index; and no DBMS could do random transactions at that scale.</p>
+<p>③ Transaction mechanism: give each column <code>data</code>/<code>lock</code>/<code>write</code> metadata columns; two-phase commit — prewrite locks (one primary, rest secondary), commit atomically turns the <strong>primary</strong> lock into a write record (the moment of effect), then cleans up secondaries; reads honor only write, so half-finished state is invisible.</p>
+<p>④ Snapshot isolation: transactions take start_ts / commit_ts from the <strong>timestamp oracle</strong>, read a consistent snapshot, check write-write conflicts on write; the oracle batch-dispenses ~2M/sec on one machine.</p>
+<p>⑤ Fault tolerance: no dedicated transaction manager — locks left by a crash are lazily rolled forward / back by later transactions following <strong>secondary → primary</strong>, with a Chubby-like service plus timeout deciding death.</p>
+<p>⑥ Notification mechanism: observers register on columns; write → mark notify → workers randomly scan → run observer → write again, cascading changes through the index; each notification fires at most once (ack dedup) to avoid loops.</p>
+<p>⑦ Results: shipped as the Caffeine indexing system, cutting average document age by ~50% (2× freshness) at the same throughput; the cost is dozens of random ops per document and low resource efficiency.</p>
+<p>⑧ Impact: made "timestamp + primary-lock 2PC" a distributed-transaction template, directly inspiring TiKV / TiDB; paved the way for Spanner's globally consistent transactions. Limits: SI only (write skew), high per-transaction latency, timestamp oracle as a logical single point.</p>
+</div>
+</div>
+<footer>CS Papers · Deep Read — Finish this page ≈ grasp the paper's core; for full protocol details and data, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

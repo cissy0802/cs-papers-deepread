@@ -57,7 +57,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <a class="entry" href="map-reduce-paper18.html"><span class="num">Paper 18</span><span class="title">MapReduce — 只写 map+reduce 两个函数，框架自动把计算并行摊到上千台机器并全程容错，开启大数据时代</span><span class="meta">Dean &amp; Ghemawat · 2004</span></a>
 <a class="entry" href="bigtable-paper19.html"><span class="num">Paper 19</span><span class="title">Bigtable — 用 (行键,列,时间戳) 定位的稀疏有序大表，横跨上千台机器长到 PB 级，宽列 NoSQL 与 LSM 引擎的祖师爷</span><span class="meta">Chang 等 · 2006</span></a>
 <a class="entry" href="chubby-paper20.html"><span class="num">Paper 20</span><span class="title">The Chubby Lock Service — 把难写易错的 Paxos 封装成「文件 + 粗粒度锁」服务，谁抢到锁谁当主，成了 GFS / Bigtable 选主与 ZooKeeper / etcd 的共同祖师爷</span><span class="meta">Burrows · 2006</span></a>
-<div class="entry todo"><span class="num"></span><span class="title">Percolator (Caffeine) — 给 Bigtable 加跨行事务 + 通知，把重建索引变成增量更新</span><span class="meta">Peng &amp; Dabek · 2010</span></div>
+<a class="entry" href="percolator-paper21.html"><span class="num">Paper 21</span><span class="title">Percolator (Caffeine) — 给 Bigtable 加跨行事务与「主锁」两阶段提交、再配观察者通知，让谷歌搜索索引从整批重算变成增量更新、新鲜度翻倍</span><span class="meta">Peng &amp; Dabek · 2010</span></a>
 <div class="entry todo"><span class="num"></span><span class="title">Pregel — 「像顶点一样思考」的 BSP 图计算模型，大规模图算法的分布式框架</span><span class="meta">Malewicz 等 · 2010</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Dremel — 列式存储 + 多级执行树，秒级交互式查询万亿行，BigQuery 的底子</span><span class="meta">Melnik 等 · 2010</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Spanner: Google's Globally-Distributed Database — 用 TrueTime 实现全球尺度的外部一致性事务</span><span class="meta">Corbett 等 · 2012</span></div>
