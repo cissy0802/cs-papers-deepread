@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dremel — CS Papers Deep-Read Paper 23</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 23</p>
+<h1>Dremel: Interactive Queries over Trillions of Rows</h1>
+<p class="sub">Melnik et al. · Google · VLDB 2010</p>
+<p class="langbar"><a href="dremel-paper23.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2010, Google described an internal system called <strong>Dremel</strong>. It let an engineer casually type a query against a table of <strong>trillions of rows</strong> — "which web pages got the most clicks in the last hour?" — and get the answer back in <strong>seconds</strong>. At the time that felt like magic: the same job on the earlier batch tool (MapReduce) took minutes or hours. Today's public <strong>BigQuery</strong> on Google Cloud is built on it.</p>
+
+<h2>First, the pain</h2>
+<p>Once data gets big, "asking a question" gets slow. Traditional databases store data <strong>row by row</strong>: all of one record's fields (URL, title, click count, time…) sit together. But the thing you want to compute is usually just <strong>one column</strong> (say "sum of clicks over all pages"). Storing row by row forces the machine to read <strong>every whole record</strong> off disk just to pick out that one number — most of what it reads is wasted, like flipping through every full page of a book just to check the page numbers.</p>
+
+<h2>Idea one: store by column, not by row</h2>
+<p>Dremel flips it: <strong>keep all values of one column together</strong>. Every page's "click count" in one long strip, every "title" in another. Now summing clicks means reading <strong>only that one strip</strong> and touching nothing else — you read exactly what you need. And since values in one column look alike (all numbers, all URLs), they <strong>compress beautifully</strong> when packed together, so reading is even faster.</p>
+<p>The hard part: Google's data isn't a tidy table but is <strong>deeply nested</strong> — a page record holds "several authors," and each author holds "several languages," like a Russian doll, or a checklist with sub- and sub-sub-items. How do you shred such "nesting-doll data" into flat columns and still <strong>reassemble it exactly</strong> afterward? Dremel's trick: attach <strong>two little tags</strong> to each value in a column — one saying "which nesting level it belongs to," one saying "is it the start of a new group, or a continuation of the last." With those two tags, the scattered columns can be <strong>losslessly rebuilt</strong> into the original nested shape. This encoding is its most technical — and most widely copied — contribution.</p>
+
+<h2>Idea two: spread the query across thousands of machines</h2>
+<p>Columns alone aren't fast enough. Dremel borrows the shape of a <strong>search engine</strong>: a query arrives at a "root server," which splits the work and hands it down to a batch of "intermediate servers," which hand it further down to <strong>thousands of "leaf servers"</strong> — each chewing on a small slice of the whole dataset and computing its own local answer ("the click-sum for my slice"). Those partial answers then <strong>flow back up the tree, merging layer by layer</strong>, until the root assembles the final result. With thousands of machines working at once, trillions of rows get scanned in seconds.</p>
+
+<h2>What it gave us</h2>
+<p>It turned "querying big data" from <strong>"submit a job and go get a coffee"</strong> into <strong>"type a line, glance, tweak, repeat"</strong> — interactive exploration. For the first time, analysts could interrogate petabyte-scale data the way they'd use a small database. It became BigQuery, and its "columnar encoding for nested data" became the whole big-data world's standard (today's open-source Parquet and ORC walk the same path).</p>
+<p>One honest note: Dremel is fast because it's good at <strong>one thing</strong> — large-scale, read-only "scan-and-aggregate" analysis. It doesn't update data, doesn't do transactions, and early on barely supported complex joins between big tables. It's not a replacement for an ordinary database.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Shred nested data <strong>into columns</strong> (with two little tags that guarantee lossless reassembly), then <strong>borrow a search engine's multi-level tree to spread the query across thousands of machines</strong> and merge results back up — so even trillions of rows answer in seconds, turning big-data querying into interactive exploration. This is the foundation of BigQuery.</p>
+</div>
+
+<p class="switch-hint">Want to see how the two "level" tags work, what the serving tree looks like, and how fast it runs? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">Dremel combines two things — <strong>columnar storage for nested data</strong> (two integers, a "repetition level" and a "definition level," losslessly shred nesting-doll records into columns and reassemble them) and a <strong>multi-level serving tree borrowed from distributed search engines</strong> (a query fans down from a root to thousands of leaf servers, and partial results merge back up) — to run <strong>second-scale</strong> interactive aggregation queries over <strong>trillion-row</strong>, read-only nested data, scaling to thousands of CPUs and petabytes. It is the ancestor of Google BigQuery, and its nested columnar encoding is the intellectual source of open formats like Parquet and ORC.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Row vs columnar storage</strong>: how a table is laid out on disk. Row storage keeps all of one record's fields together (good for "fetch a whole record"); columnar storage keeps all values of one field together (good for "compute a few columns," and it compresses well). Dremel is columnar.</li>
+<li><strong>Nested record</strong>: data where fields can contain sub-records and some fields can <strong>repeat multiple times</strong>, like JSON or Google's Protocol Buffers (a structured-data format). E.g. a "page" has several "authors," each author several "languages."</li>
+<li><strong>Aggregation query</strong>: a query that computes statistics — sum, count, average, group-and-count (<code>GROUP BY</code>). The workhorse of analytics, and what Dremel optimizes for.</li>
+<li><strong>OLAP vs OLTP</strong>: OLAP is "analytical" — big scans computing statistics, mostly read-only; OLTP is "transactional" — frequent reads/writes of single records with strong consistency. Dremel is OLAP; it does not do OLTP.</li>
+<li><strong>MapReduce</strong>: Google's earlier batch framework that abstracts large-scale parallelism into map + reduce; great for offline batch, but each job writes to disk and has startup overhead, so <strong>latency is in minutes</strong> — unsuited to interactive follow-up.</li>
+<li><strong>GFS (Google File System)</strong>: Google's distributed file system, splitting data into chunks replicated across thousands of cheap machines. Dremel's column data lives on such shared storage.</li>
+<li><strong>Tablet / shard</strong>: a big table split horizontally into many pieces, each holding a range of rows, stored and read independently so many machines can work in parallel.</li>
+<li><strong>Straggler</strong>: the one unusually slow machine in a batch of parallel tasks; at a scale of thousands, some are always slow, and they drag out overall latency.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Sergey Melnik, Andrey Gubarev, and other Google engineers; the paper appeared at <strong>VLDB 2010</strong>, though the system had been <strong>in production inside Google since 2006</strong>, serving thousands of users. Alongside <strong>Percolator</strong> (incremental indexing) and <strong>Pregel</strong> (graph processing), it is one of Google's "<strong>second-generation</strong>" distributed systems — built after the founding trio (GFS / MapReduce / Bigtable), aimed at more specialized workloads. Downstream, it was productized in 2012 as the public-cloud <strong>BigQuery</strong>; its nested columnar encoding was inherited by <strong>Apache Parquet / ORC</strong> and became a storage standard across the Spark and Hadoop ecosystems. Google published a 2020 retrospective, "Dremel: A Decade of Interactive SQL Analysis," on how it evolved.</p>
+
+<h2>The problem and the motivation</h2>
+<p>By the late 2000s Google had amassed huge amounts of <strong>read-only</strong> data: crawl results, crawler metadata, spam analysis, map traffic, application crash logs. Engineers needed to <strong>explore</strong> it on a whim — "which kind of page shows the most anomalies?", "what's the distribution of this field?" — questions you refine as you go and try over and over.</p>
+<p>The main tool then was <strong>MapReduce</strong>, but it was built for <strong>batch</strong>: every job schedules, starts up, and writes intermediate results to disk, so <strong>latency runs to minutes or hours</strong>. Ask a question, wait ten minutes, realize you asked it wrong, edit, wait again — the rhythm of exploration is destroyed. People wanted <strong>interactive</strong>: type a line, get an answer in seconds, immediately ask the next.</p>
+<p>Worse was the shape of the data. Much of Google's data is stored as <strong>Protocol Buffers</strong> — <strong>nested, repeated-field</strong> tree records, not the tidy 2-D tables of a relational database. Traditional columnar stores (like the earlier C-Store) were designed for <strong>flat tables</strong>. <strong>Letting nested records also enjoy columnar benefits was the core technical challenge.</strong></p>
+
+<h2>The core idea</h2>
+
+<h3>Idea 1: losslessly shred nested records into columns</h3>
+<p>First, why columnar. An analytical query typically touches <strong>a few of hundreds of fields</strong>. In row storage, to read those few fields the machine must haul each whole record off disk — most of the I/O is waste. Columnar storage keeps <strong>all values of one field path contiguous as a "column stripe,"</strong> so a query reads only the columns it uses — I/O drops to "on demand"; and since one column's data is homogeneous, it <strong>compresses extremely well</strong>, cutting reads further.</p>
+
+<figure>
+<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="150" y="24" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">one nested record</text>
+<rect x="30" y="38" width="240" height="230" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
+<text x="46" y="62" fill="#f5c451" font-size="12">Doc</text>
+<text x="60" y="84" fill="#b9c0ca" font-size="11.5">url = "a.com"</text>
+<text x="60" y="106" fill="#e7ebf1" font-size="11.5">Author (repeated)</text>
+<text x="76" y="126" fill="#b9c0ca" font-size="11">name = "Ann"</text>
+<text x="76" y="144" fill="#b9c0ca" font-size="11">Lang = [en, zh]</text>
+<text x="60" y="168" fill="#e7ebf1" font-size="11.5">Author (second)</text>
+<text x="76" y="188" fill="#b9c0ca" font-size="11">name = "Bo"</text>
+<text x="76" y="206" fill="#b9c0ca" font-size="11">Lang = [fr]</text>
+<text x="46" y="238" fill="#7c8593" font-size="10.5">…nested / repeated fields</text>
+<line x1="278" y1="150" x2="316" y2="150" stroke="#e8794b" stroke-width="1.6" marker-end="url(#a1)"/>
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<text x="410" y="24" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">shredded into "columns"</text>
+<rect x="324" y="42" width="212" height="40" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="336" y="60" fill="#f5c451" font-size="10.5">column: url</text>
+<text x="336" y="76" fill="#b9c0ca" font-size="10.5">a.com · …</text>
+<rect x="324" y="90" width="212" height="40" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="336" y="108" fill="#f5c451" font-size="10.5">column: Author.name</text>
+<text x="336" y="124" fill="#b9c0ca" font-size="10.5">Ann · Bo · …</text>
+<rect x="324" y="138" width="212" height="48" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="336" y="156" fill="#f5c451" font-size="10.5">column: Author.Lang.code</text>
+<text x="336" y="172" fill="#b9c0ca" font-size="10.5">en · zh · fr · … + (r, d)</text>
+<rect x="324" y="194" width="212" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="336" y="212" fill="#7c8593" font-size="10.5">column: …other fields</text>
+<text x="336" y="228" fill="#7c8593" font-size="10.5">each stored on its own</text>
+<text x="430" y="262" fill="#7c8593" font-size="10.5" text-anchor="middle">a query reads only the columns it needs</text>
+</svg>
+<figcaption>Fig 1 · Record shredding: a nested record is split into column stripes, one per leaf field; repeated/optional columns carry two level tags (r, d) that let them be reassembled losslessly.</figcaption>
+</figure>
+
+<p>The hard part is <strong>nesting + repetition</strong>. In a flat table, "row 5's click count" has an obvious position; but when <code>Author</code> can occur many times and each <code>Author</code>'s <code>Lang</code> can too, after you line up all <code>code</code> values into one column, how do you know <strong>which record's which author</strong> a given code belongs to? And how do you tell "there simply was no Lang here (missing)" from "this is the start of a new group"? Dremel's answer: give <strong>each value two integers</strong> —</p>
+<ul>
+<li><strong>Repetition level (r)</strong>: at which repeated field <strong>along the path</strong> this value continues from the previous one. <code>r=0</code> marks the start of a <strong>new record</strong>, <code>r=1</code> a new <code>Author</code> within the same record, <code>r=2</code> another <code>Lang</code> within the same <code>Author</code>. In short: <strong>r tells you where a new group breaks off.</strong></li>
+<li><strong>Definition level (d)</strong>: how many of the optional/repeated fields along the path are <strong>actually present</strong>. If a record has an <code>Author</code> but that author filled in no <code>Lang</code>, a placeholder carrying only d records "it went empty at this level." In short: <strong>d tells you at which level a NULL is null.</strong></li>
+</ul>
+<p>With (r, d), the values scattered across columns can be replayed by a <strong>finite state machine</strong> and <strong>losslessly reassembled</strong> into the original nested record — no structure lost, no missing-value information lost. This "repetition/definition level" encoding is the paper's <strong>most technical and most far-reaching</strong> move: it let columnar storage gracefully swallow nested data for the first time, and was inherited almost verbatim by Parquet. (The paper also gives an efficient algorithm to reassemble a <strong>subset of records</strong> by reading only <strong>some columns</strong>, so queries assemble only what they need.)</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="280" y="24" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">storing column Author.Lang.code</text>
+<rect x="60" y="44" width="90" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="105" y="66" fill="#e7ebf1" font-size="12" text-anchor="middle">en</text>
+<rect x="60" y="86" width="90" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="105" y="108" fill="#e7ebf1" font-size="12" text-anchor="middle">zh</text>
+<rect x="60" y="128" width="90" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="105" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">fr</text>
+<text x="180" y="40" fill="#f0b429" font-size="11">r</text>
+<text x="230" y="40" fill="#e8794b" font-size="11">d</text>
+<text x="180" y="66" fill="#f0b429" font-size="12">0</text><text x="230" y="66" fill="#e8794b" font-size="12">2</text><text x="270" y="66" fill="#7c8593" font-size="10.5">← new record's first language</text>
+<text x="180" y="108" fill="#f0b429" font-size="12">2</text><text x="230" y="108" fill="#e8794b" font-size="12">2</text><text x="270" y="108" fill="#7c8593" font-size="10.5">← same author, one more</text>
+<text x="180" y="150" fill="#f0b429" font-size="12">1</text><text x="230" y="150" fill="#e8794b" font-size="12">2</text><text x="270" y="150" fill="#7c8593" font-size="10.5">← same record, new author</text>
+<line x1="60" y1="188" x2="500" y2="188" stroke="rgba(240,180,41,0.2)"/>
+<text x="60" y="212" fill="#f0b429" font-size="11">r (repetition)</text><text x="200" y="212" fill="#b9c0ca" font-size="11">= where a new group breaks off</text>
+<text x="60" y="232" fill="#e8794b" font-size="11">d (definition)</text><text x="200" y="232" fill="#b9c0ca" font-size="11">= at which level a NULL is null</text>
+</svg>
+<figcaption>Fig 2 · Two level tags: each column value carries (r, d). Those two integers alone reassemble the shredded columns into the nested record — r marks group boundaries, d marks the depth of a NULL.</figcaption>
+</figure>
+
+<h3>Idea 2: a multi-level serving tree spreads the query across thousands of machines</h3>
+<p>Columnar storage saves I/O, but scanning trillions of rows in seconds still needs <strong>massive parallelism</strong>. Dremel lifts the architecture straight from <strong>distributed search engines</strong>: a <strong>multi-level serving tree</strong>.</p>
+<p>A SQL query arrives at the <strong>root server</strong>: it reads the table's metadata, rewrites the query into dispatchable sub-queries, and passes them down to a layer of <strong>intermediate servers</strong>; they rewrite further and pass down again, until the work lands on thousands of <strong>leaf servers</strong>. Leaves are the only layer that actually <strong>reads data</strong> — each owns a small slice of the table (a tablet), scans its own column data, and does a <strong>local aggregation</strong> (say "the <code>GROUP BY country</code> counts within my slice"). Partial results then <strong>merge back up the tree, layer by layer</strong>: an intermediate server folds dozens of children into one, and the root folds those into the final answer.</p>
+<p>Why is this fast? Aggregations like <code>COUNT</code>, <code>SUM</code>, <code>GROUP BY</code> are naturally <strong>divide-and-combine</strong>: each slice computes locally, upper layers merge, communication is small, parallelism is enormous. Thousands of leaves scan at once, so trillions of rows become a few-hundred-million-row, few-second job per machine.</p>
+
+<figure>
+<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="dn" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="up" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="238" y="30" width="84" height="34" rx="6" fill="rgba(232,121,75,0.18)" stroke="#e8794b"/><text x="280" y="52" fill="#e7ebf1" font-size="12" text-anchor="middle">root</text>
+<rect x="120" y="104" width="96" height="32" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="168" y="125" fill="#e7ebf1" font-size="11" text-anchor="middle">intermediate</text>
+<rect x="344" y="104" width="96" height="32" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="392" y="125" fill="#e7ebf1" font-size="11" text-anchor="middle">intermediate</text>
+<line x1="264" y1="64" x2="180" y2="102" stroke="#7c8593" marker-end="url(#dn)"/>
+<line x1="296" y1="64" x2="380" y2="102" stroke="#7c8593" marker-end="url(#dn)"/>
+<g fill="rgba(240,180,41,0.08)" stroke="#f0b429">
+<rect x="60" y="176" width="66" height="30" rx="5"/><rect x="136" y="176" width="66" height="30" rx="5"/><rect x="212" y="176" width="66" height="30" rx="5"/>
+<rect x="300" y="176" width="66" height="30" rx="5"/><rect x="376" y="176" width="66" height="30" rx="5"/><rect x="452" y="176" width="66" height="30" rx="5"/></g>
+<g fill="#b9c0ca" font-size="10" text-anchor="middle">
+<text x="93" y="196">leaf</text><text x="169" y="196">leaf</text><text x="245" y="196">leaf</text>
+<text x="333" y="196">leaf</text><text x="409" y="196">leaf</text><text x="485" y="196">leaf</text></g>
+<line x1="150" y1="136" x2="95" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
+<line x1="168" y1="136" x2="169" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
+<line x1="186" y1="136" x2="243" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
+<line x1="374" y1="136" x2="333" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
+<line x1="392" y1="136" x2="409" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
+<line x1="410" y1="136" x2="483" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
+<rect x="60" y="230" width="458" height="34" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
+<text x="289" y="251" fill="#7c8593" font-size="11" text-anchor="middle">columnar data on shared storage (GFS) · each leaf reads one tablet</text>
+<text x="150" y="90" fill="#7c8593" font-size="10">query fans down ↓</text>
+<text x="360" y="90" fill="#f0b429" font-size="10">results merge up ↑</text>
+</svg>
+<figcaption>Fig 3 · Multi-level serving tree: the query fans from the root down to thousands of leaf servers, each scanning + locally aggregating its shard; results merge up the tree into the final answer.</figcaption>
+</figure>
+
+<h3>Idea 3: in-situ analysis + taming stragglers</h3>
+<p>Dremel doesn't move data: column data sits <strong>in place</strong> on shared storage (GFS), and queries read it right there, skipping the long "load into a dedicated database first" step — this is <strong>in-situ analysis</strong>. The cost is that it's read-only and not tuned for writes.</p>
+<p>With thousands of machines running together, some are always unusually slow (<strong>stragglers</strong>) and hold everyone back. Dremel uses a <strong>query dispatcher</strong>: each tablet usually has several replicas, so if one leaf is slow to return, that slice is <strong>reassigned to another replica</strong>. It also supports <strong>approximate early termination</strong> — e.g., once 99% of shards are processed and the last 1% is lagging, it can <strong>finish early</strong> and return a good-enough approximate result. For "spot the trend / explore" analysis, trading a sliver of accuracy for a large cut in latency is usually well worth it.</p>
+
+<h2>Key results</h2>
+<p>The paper argues with real production workloads:</p>
+<ul>
+<li><strong>Columnar saves I/O</strong>: on a table of <strong>85 billion records, ~87 TB</strong>, querying only a few of its fields, columnar reads beat record-oriented reads by <strong>more than an order of magnitude</strong> — the fewer fields you touch, the bigger the win.</li>
+<li><strong>Seconds over trillions</strong>: thanks to the serving tree, aggregation queries over <strong>trillion-row-scale</strong> tables return in <strong>seconds</strong>; most production queries finish within seconds to a dozen seconds — genuinely <strong>interactive</strong>.</li>
+<li><strong>Scale</strong>: experiments ran on <strong>about three thousand nodes</strong>; the system scales to thousands of CPUs and petabytes of data and served thousands of users at Google.</li>
+<li><strong>Beats batch</strong>: for the same aggregation, Dremel is far faster than running MapReduce over the same columnar data — compressing "minute-scale batch" into "second-scale interactive."</li>
+</ul>
+
+<h2>Why it mattered</h2>
+<p>Dremel proved something many then doubted: <strong>with no indexes, purely on "columnar + massively parallel brute-force scanning," you can query enormous data interactively.</strong> It changed how analysis is done — from "submit a batch job, wait for results" to "type a line, get a second-scale answer, ask again" — making petabyte-scale exploratory analysis fluent for the first time.</p>
+<p>Two influence lines run especially deep. First, it was productized in 2012 as <strong>BigQuery</strong>, launching the "<strong>serverless data warehouse</strong>" category of cloud products, where users just write SQL and never manage machines. Second, its <strong>nested columnar encoding</strong> was inherited by <strong>Apache Parquet and ORC</strong>, becoming the de facto storage standard across Spark, Hadoop, and modern data lakes — every Parquet file you store in the open-source stack today traces its lineage to this paper's (r, d) encoding.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>A specialist, not a generalist</strong>: Dremel is only good at <strong>read-only, scan-style aggregate analysis</strong> (OLAP); it does no transactions and can't update single records, so it can't replace an OLTP database. Use it for the wrong job and it's a disaster.</li>
+<li><strong>Early on, barely any big-table JOINs</strong>: the original serving tree is friendly to "divide-and-combine" aggregation but weak on complex queries that produce <strong>huge intermediate results</strong> (especially joins between large tables); early on it handled only limited "broadcast small table" joins. Later (see the 2020 retrospective) a <strong>shuffle (repartition)</strong> mechanism was added to fill this gap, at the cost of higher latency and complexity.</li>
+<li><strong>The ceiling of brute-force scanning</strong>: no indexes means even highly <strong>selective</strong> point lookups (fetching very few rows) pay a substantial scan cost; its strength is "touch many rows, compute few columns," not "pinpoint a handful of rows."</li>
+<li><strong>Complex encoding, high engineering bar</strong>: the repetition/definition-level encoding is elegant but <strong>hard to implement and debug</strong>; handling every nesting + null edge case correctly is famously error-prone.</li>
+<li><strong>Coupled storage/compute and the approximation trade-off</strong>: the early tree bound storage and compute fairly tightly and was rigidly shaped; approximate early termination lowers latency but returns <strong>incomplete results</strong>, unsuitable when exact answers are required. All of this was gradually re-architected over the following decade (storage/compute disaggregation, vectorized columnar evaluation, etc.).</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: columnar storage (that swallows nested data) + a multi-level serving tree (spread over thousands of machines) → second-scale interactive aggregation over trillion-row read-only data.</p>
+<p>② The pain: MapReduce batch latency runs to minutes and breaks exploration; and Google's data is nested, repeated, tree-shaped, while traditional columnar stores only knew flat tables.</p>
+<p>③ Core 1 (encoding): two integers — <strong>repetition level r</strong> (where a new group breaks) + <strong>definition level d</strong> (at which level a NULL is null) — shred nested records into columns losslessly and reassemble them; the paper's most technical move, inherited by Parquet.</p>
+<p>④ Core 2 (execution): a search-engine-style multi-level tree, root→intermediate→leaf; leaves read shards and aggregate locally, results merge up; aggregation is naturally divide-and-combine, so parallelism is huge.</p>
+<p>⑤ Engineering: in-situ reads on GFS, no data movement; replica reassignment tames stragglers; approximate early termination trades accuracy for latency.</p>
+<p>⑥ Results: columnar &gt;10× faster on an 85-billion-row / 87 TB table; trillion-row queries return in seconds; ~3000 nodes, petabytes, thousands of users; far faster than MapReduce.</p>
+<p>⑦ Impact: productized as BigQuery, launching serverless data warehouses; nested columnar encoding is the source of Parquet/ORC, the modern data-lake storage standard.</p>
+<p>⑧ Limits: read-only aggregation specialist, no transactions; barely any big-table JOINs early (shuffle added later); no indexes so even point lookups scan; high engineering bar for the encoding.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full encoding algorithm and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
