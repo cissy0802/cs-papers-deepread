@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Attention Is All You Need（Transformer）— IT 论文精读 Paper 1</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,49 +36,38 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 1</p>
-<h1>Attention Is All You Need（Transformer）</h1>
+<h1 data-tts="1cf0e8e9d3629a7d">Attention Is All You Need（Transformer）</h1>
 <p class="sub">Vaswani 等 · Google · NeurIPS 2017</p>
 <p class="langbar"><a href="attention-is-all-you-need-paper1.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="3e3e436137c4a854">这篇论文干了什么？</h2>
 <p>2017 年，Google 一队人提出了一个叫 <strong>Transformer</strong> 的新「大脑结构」。你今天听说的 ChatGPT、各种 AI 聊天和绘画，几乎全都长在这个结构上——这篇论文就是它的出生证明。</p>
-
-<h2>先打个比方</h2>
+<h2 data-tts="b0cc79b41c56536a">先打个比方</h2>
 <p>读这句话：「小猫没过马路，因为<strong>它</strong>太累了。」你一眼就知道「它」指小猫、不是马路——因为读到「它」的时候，你会<strong>回头扫一眼整句话</strong>，判断谁跟「它」最相关。</p>
 <p>Transformer 干的就是这件事：<strong>让句子里每个词，都回头扫一眼全句、自己决定该重点看谁</strong>。这个「按相关度分配注意力」的动作，就叫<strong>注意力（attention）</strong>——论文标题说「注意力就是你需要的全部」，正是这个意思。</p>
-
-<h2>它到底新在哪？</h2>
+<h2 data-tts="22d9856b399e9d7b">它到底新在哪？</h2>
 <p>在它之前，机器读句子像<strong>排队传话</strong>：一个词一个词地读，前面的信息一站站往后传。句子一长，前头说了啥就传糊了、传丢了；而且必须一个接一个，快不起来。</p>
 <p>Transformer 把「排队传话」换成了<strong>开会</strong>：所有词一次性摆上桌，每个词同时看向所有词、一步就能跟最远的词对上话。于是两个好处：<strong>① 快</strong>（大家并行地看，不用排队）、<strong>② 记性好</strong>（再远的词也一步够到，不会传丢）。</p>
-
-<h2>那它怎么决定「该听谁」？</h2>
+<h2 data-tts="f03e9bf92a32344a">那它怎么决定「该听谁」？</h2>
 <p>每个词身上挂着两张小标签：一张写「<strong>我在找什么</strong>」（比如「它」在找前面出现过的一个名词），一张写「<strong>我是什么</strong>」（比如「小猫」是个动物名词）。一个词就拿自己那张「我在找什么」，去跟全句每个词的「我是什么」<strong>逐一比一下</strong>——越对得上，就越多地听那个词的。「它」的「找名词」对上了「小猫」的「是名词」，于是它重点听小猫。<strong>整件事就是这么朴素的「按匹配度分配注意力」，没有玄机。</strong></p>
 <p>而且它不止用一种眼光看：<strong>同时用好几套标签、从好几个角度看</strong>（一套盯语法、一套盯谁指代谁、一套盯语气……），最后再合起来——这叫<strong>多头</strong>。另外，因为所有词是「一次性摆上桌」的、天生没了先后，模型还会给每个词发一个「<strong>座位号</strong>」，好知道谁在前谁在后。</p>
 <p>代价也有：词一多，两两之间都得互相看一眼，<strong>计算量涨得很快</strong>，所以特别长的文本它会吃力——这正是后来一堆改进想解决的问题。</p>
-
-<h2>这带来了什么？</h2>
+<h2 data-tts="0f063ab0592d490f">这带来了什么？</h2>
 <p>因为又快又记得住，人们发现只要把这个结构<strong>堆得更大、喂更多数据</strong>，它就越来越聪明——于是有了 BERT、GPT，一路长成今天会聊天、会写代码、会画画的大模型。可以说，<strong>今天几乎每个厉害的 AI，心脏里都是这篇论文的这套「开会」机制</strong>。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="69e73c1dab538b3d">一句话记住</h2>
 <div class="tl">
 <p>让句子里每个词都回头扫一眼全句、自己决定重点听谁——用这个「注意力」动作，取代老式的「排队传话」，于是 AI 读得又快、又记得住远处的关系。这套结构后来长成了几乎所有大模型。</p>
 </div>
-
 <p class="switch-hint">想深入到机制、公式和示意图？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="c59d9e4dc139bca1">一句话</h2>
 <p class="lead">这篇论文提出了 <strong>Transformer</strong>：一个<strong>彻底丢掉循环（RNN）和卷积（CNN）、只靠「注意力」一种机制</strong>处理序列的架构。它让模型一次看到整句话、并行算出每个词该关注谁，于是既训得快、又能一步抓住相距很远的词之间的关系。这个 2017 年为机器翻译而生的架构，后来成了 <strong>BERT、GPT 乃至今天几乎所有大模型的共同地基</strong>。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="f234b613157faa30">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>神经网络（neural network）</strong>：一个能从大量例子里自己学出规律的数学模型，可以先粗略理解成「一个会照着数据自我调参的函数」。</li>
@@ -87,126 +77,111 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>词向量（word embedding）</strong>：把一个词表示成一串数字（向量），意思相近的词数字也相近——这样神经网络才能对词做计算。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="b4dade6185bb3577">坐标</h2>
 <p>八位作者来自 Google，论文发在 2017 年的 NeurIPS。在它之前，序列建模的王者是<strong>循环神经网络（RNN）</strong>尤其是 LSTM，通常再配上 2014 年 Bahdanau 等人引入的<em>注意力（attention）</em>作为附加组件。这篇论文的胆识，是把注意力从「配角」提成「唯一主角」——标题本身就是宣言。当时「去掉循环结构」远非显而易见：RNN 主导序列建模已近三十年。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="d8b5b6def00aefca">问题与动机</h2>
 <p>RNN 有两个死结。<strong>一是不能并行</strong>：它必须一个词一个词地算，第 <code>t</code> 个词的状态依赖第 <code>t-1</code> 个，像多米诺骨牌顺次推倒，句子越长越慢，喂不满 GPU 的并行算力。<strong>二是长距离依赖抓不住</strong>：一句话里「它」指代几十个词之前的哪个名词，这份信息要沿时间步一格格传过去，路径太长，<strong>梯度容易消失</strong>（训练时反向传回来的、用来调整模型的信号越传越弱、几乎归零，于是学不动远处的关系），远处的关联被稀释。</p>
 <p>其实注意力 2014 年就有了，但那时只是<strong>挂在 RNN 骨架上的附加件</strong>，主干还是循环网络，顺序枷锁没解开。这篇论文反过来想：<strong>既然真正干活的是注意力，能不能把 RNN 整个扔掉、只留注意力？</strong>目标是一个既能像 CNN 那样并行、又能让任意两词「一步直连」的架构。</p>
-
 <figure>
-<svg viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<text x="20" y="26" fill="#e8794b" font-size="14" font-weight="700">RNN：信息顺序传递，隔得越远越衰减</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 640 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#e8794b" font-size="14" font-weight="700" x="20" y="26">RNN：信息顺序传递，隔得越远越衰减</text>
 <g>
-<rect x="34" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="61" y="72" fill="#b9c0ca" font-size="12" text-anchor="middle">词1</text>
-<rect x="154" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="181" y="72" fill="#b9c0ca" font-size="12" text-anchor="middle">词2</text>
-<rect x="274" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="301" y="72" fill="#b9c0ca" font-size="12" text-anchor="middle">词3</text>
-<rect x="394" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="421" y="72" fill="#b9c0ca" font-size="12" text-anchor="middle">词4</text>
-<rect x="514" y="52" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="541" y="72" fill="#b9c0ca" font-size="12" text-anchor="middle">词5</text>
-<line x1="90" y1="67" x2="150" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="210" y1="67" x2="270" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="330" y1="67" x2="390" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="450" y1="67" x2="510" y2="67" stroke="#7c8593" marker-end="url(#a1)"/>
-<text x="300" y="104" fill="#7c8593" font-size="11.5" text-anchor="middle">词1 → 词5 要传 4 步 · 路径长度 O(n) · 不能并行</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="34" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="61" y="72">词1</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="154" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="181" y="72">词2</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="274" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="301" y="72">词3</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="394" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="421" y="72">词4</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="514" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="541" y="72">词5</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="90" x2="150" y1="67" y2="67"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="210" x2="270" y1="67" y2="67"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="330" x2="390" y1="67" y2="67"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="450" x2="510" y1="67" y2="67"></line>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="300" y="104">词1 → 词5 要传 4 步 · 路径长度 O(n) · 不能并行</text>
 </g>
-<text x="20" y="150" fill="#f0b429" font-size="14" font-weight="700">自注意力：任意两词一步直连</text>
+<text fill="#f0b429" font-size="14" font-weight="700" x="20" y="150">自注意力：任意两词一步直连</text>
 <g>
-<rect x="34" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="61" y="196" fill="#b9c0ca" font-size="12" text-anchor="middle">词1</text>
-<rect x="154" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="181" y="196" fill="#b9c0ca" font-size="12" text-anchor="middle">词2</text>
-<rect x="274" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.22)" stroke="#f0b429" stroke-width="2"/><text x="301" y="196" fill="#e7ebf1" font-size="12" text-anchor="middle">词3</text>
-<rect x="394" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="421" y="196" fill="#b9c0ca" font-size="12" text-anchor="middle">词4</text>
-<rect x="514" y="176" width="54" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"/><text x="541" y="196" fill="#b9c0ca" font-size="12" text-anchor="middle">词5</text>
-<path d="M295,176 Q180,136 67,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
-<path d="M296,176 Q238,140 181,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
-<path d="M306,176 Q363,140 421,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
-<path d="M307,176 Q424,136 541,176" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1g)"/>
-<text x="300" y="230" fill="#7c8593" font-size="11.5" text-anchor="middle">词3 一步连到所有词 · 路径长度 O(1) · 整句可并行计算</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="34" y="176"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="61" y="196">词1</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="154" y="176"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="181" y="196">词2</text>
+<rect fill="rgba(240,180,41,0.22)" height="30" rx="6" stroke="#f0b429" stroke-width="2" width="54" x="274" y="176"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="301" y="196">词3</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="394" y="176"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="421" y="196">词4</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="6" stroke="#7c8593" width="54" x="514" y="176"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="541" y="196">词5</text>
+<path d="M295,176 Q180,136 67,176" fill="none" marker-end="url(#a1g)" stroke="#f0b429" stroke-width="1.4"></path>
+<path d="M296,176 Q238,140 181,176" fill="none" marker-end="url(#a1g)" stroke="#f0b429" stroke-width="1.4"></path>
+<path d="M306,176 Q363,140 421,176" fill="none" marker-end="url(#a1g)" stroke="#f0b429" stroke-width="1.4"></path>
+<path d="M307,176 Q424,136 541,176" fill="none" marker-end="url(#a1g)" stroke="#f0b429" stroke-width="1.4"></path>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="300" y="230">词3 一步连到所有词 · 路径长度 O(1) · 整句可并行计算</text>
 </g>
 </svg>
 <figcaption>图 1 · RNN 的顺序传递 vs 自注意力的全连接：后者把任意两词的路径从 O(n) 压到 O(1)，且天然可并行。</figcaption>
 </figure>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>自注意力：每个词自己问「谁和我相关」</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="8bb9e50d0a0bbded">自注意力：每个词自己问「谁和我相关」</h3>
 <p>做法是：每个词生成三个向量——<em>查询（Query）</em>、<em>键（Key）</em>、<em>值（Value）</em>。可以想象成：Query 是「我想找什么」，Key 是「我是什么、能被谁找到」，Value 是「找到我之后我能提供的信息」。这三个向量是用三个可学习的矩阵，把同一个词向量投影出来的三副面孔。</p>
 <p>一个词更新自己时，拿自己的 Query 去和<strong>全句每个词的 Key</strong> 打分（点积，越像分越高），把分数过一个 <em>softmax</em> 归一成加起来为 1 的权重，再拿权重去对所有词的 Value 加权求和。式子就是那句著名的 <code>Attention(Q,K,V)=softmax(QKᵀ/√dₖ)V</code>——白话说：<strong>每个词按相关度，把全句其他词的信息汇总到自己身上</strong>，而且任意两词只隔一次矩阵运算、天然并行。</p>
-
 <figure>
-<svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<rect x="20" y="30" width="46" height="28" rx="6" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="43" y="49" fill="#e7ebf1" font-size="13" text-anchor="middle">Q</text>
-<rect x="20" y="88" width="46" height="28" rx="6" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="43" y="107" fill="#e7ebf1" font-size="13" text-anchor="middle">K</text>
-<rect x="20" y="150" width="46" height="28" rx="6" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="43" y="169" fill="#e7ebf1" font-size="13" text-anchor="middle">V</text>
-<rect x="104" y="52" width="82" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="145" y="77" fill="#b9c0ca" font-size="12" text-anchor="middle">QKᵀ 打分</text>
-<rect x="210" y="52" width="60" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="240" y="77" fill="#b9c0ca" font-size="12" text-anchor="middle">÷√dₖ</text>
-<rect x="294" y="52" width="96" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="342" y="72" fill="#b9c0ca" font-size="12" text-anchor="middle">softmax</text><text x="342" y="87" fill="#7c8593" font-size="10.5" text-anchor="middle">→ 权重</text>
-<rect x="418" y="96" width="120" height="40" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="478" y="121" fill="#e7ebf1" font-size="12" text-anchor="middle">×V 加权求和</text>
-<line x1="66" y1="46" x2="102" y2="64" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="66" y1="100" x2="102" y2="80" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="186" y1="72" x2="208" y2="72" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="270" y1="72" x2="292" y2="72" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="390" y1="80" x2="440" y2="94" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="66" y1="164" x2="440" y2="128" stroke="#e8794b" stroke-dasharray="4 3" marker-end="url(#a2)"/>
-<text x="561" y="120" fill="#f0b429" font-size="13" text-anchor="middle">→ z</text>
-<line x1="538" y1="116" x2="552" y2="116" stroke="#7c8593" marker-end="url(#a2)"/>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 620 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.14)" height="28" rx="6" stroke="#f0b429" width="46" x="20" y="30"></rect><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="43" y="49">Q</text>
+<rect fill="rgba(240,180,41,0.14)" height="28" rx="6" stroke="#f0b429" width="46" x="20" y="88"></rect><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="43" y="107">K</text>
+<rect fill="rgba(232,121,75,0.16)" height="28" rx="6" stroke="#e8794b" width="46" x="20" y="150"></rect><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="43" y="169">V</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="82" x="104" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="145" y="77">QKᵀ 打分</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="60" x="210" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="240" y="77">÷√dₖ</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="96" x="294" y="52"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="342" y="72">softmax</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="342" y="87">→ 权重</text>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="6" stroke="#f0b429" width="120" x="418" y="96"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="478" y="121">×V 加权求和</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="66" x2="102" y1="46" y2="64"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="66" x2="102" y1="100" y2="80"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="186" x2="208" y1="72" y2="72"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="270" x2="292" y1="72" y2="72"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="390" x2="440" y1="80" y2="94"></line>
+<line marker-end="url(#a2)" stroke="#e8794b" stroke-dasharray="4 3" x1="66" x2="440" y1="164" y2="128"></line>
+<text fill="#f0b429" font-size="13" text-anchor="middle" x="561" y="120">→ z</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="538" x2="552" y1="116" y2="116"></line>
 </svg>
 <figcaption>图 2 · 缩放点积注意力：Q 与所有 K 打分 → 缩放 → softmax 成权重 → 对 V 加权求和 → 得到该词的新表示 z。</figcaption>
 </figure>
-
 <p>那个不起眼的 <code>√dₖ</code>（除以键维度的平方根）不能省：维度高时点积数值会很大，把 softmax 推进「几乎全 1 或全 0」的饱和区，那里梯度接近零、训不动。<strong>除以 √dₖ 是把数值方差拉回正常，让训练稳定</strong>——小细节，却是能不能训起来的关键。</p>
 <p>为什么它真能抓住语义？经典例子：「<em>The animal didn't cross the street because it was too tired</em>」——「it」指动物还是马路？自注意力让「it」的 Query 去和全句打分，结果给「animal」高权重、给「street」低——<strong>模型于是学会：更新「it」时主要从「animal」取信息</strong>。把原因改成「too wide（太宽）」，同一套机制会让「it」自动改指「street」。这种「一个词动态决定该听谁的」正是它的威力。</p>
-
-<h3>多头注意力：同时用好几种「关注视角」</h3>
+<h3 data-tts="3bfae907c3b00987">多头注意力：同时用好几种「关注视角」</h3>
 <p>作者不做一次注意力，而是做 8 次（<em>多头 multi-head</em>）：把 Q/K/V 投影到 8 组更低维的子空间，各自独立算注意力，再拼接。因为<strong>单个「头」只能学一种关注模式</strong>（比如盯语法邻接），而语言里有指代、句法、语义等多种关系——多头让模型<strong>在不同子空间同时关注不同类型的关系</strong>。论文可视化发现这些头真的自发分了工：有的连动词和宾语，有的把代词连回它指代的名词。</p>
-
-<h3>位置编码：给「没有顺序感」的注意力补上词序</h3>
+<h3 data-tts="0dfa9c9e8c39378b">位置编码：给「没有顺序感」的注意力补上词序</h3>
 <p>纯注意力有个副作用：它<strong>对词序无感</strong>（它是对一个集合加权求和，打乱输入结果只是跟着换位，分不清「狗咬人」和「人咬狗」）。解法是<em>位置编码（positional encoding）</em>：用一组不同频率的正弦/余弦函数给每个位置造一个向量，<strong>直接加</strong>到词向量上——好比每个位置戴上一串独特的「波形条码」，词向量里从此既有「我是什么词」，也有「我在第几位」。用三角函数还有个好处：相对位置能被线性地表示，方便学「相隔 k 个词」这种关系。</p>
-
-<h3>整体架构：编码器 + 解码器</h3>
+<h3 data-tts="6d17f5a57c2ece3e">整体架构：编码器 + 解码器</h3>
 <p>Transformer 是经典的<em>编码器–解码器</em>。<strong>编码器</strong>把 6 个相同的层摞起来，每层 = 多头自注意力 + 前馈网络；<strong>解码器</strong>也 6 层，每层多一个「编码器–解码器注意力」（生成译文时回头关注源句），且它的自注意力<strong>带掩码（masked）</strong>——生成第 <code>t</code> 个词时把「未来位置」的分数压成负无穷，softmax 后权重为零，保证<strong>逐词生成时不偷看答案</strong>。摞 6 层是为了<strong>逐层抽象</strong>：底层处理词与词的表层邻接，越往上越能拼出短语、句法乃至语义结构。</p>
-
 <figure>
-<svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a3g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="34" y="118" width="212" height="212" rx="10" fill="none" stroke="rgba(240,180,41,0.3)" stroke-dasharray="5 4"/>
-<text x="140" y="110" fill="#f0b429" font-size="12" text-anchor="middle" font-family="monospace">编码器 × 6</text>
-<rect x="60" y="340" width="160" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="140" y="361" fill="#b9c0ca" font-size="11.5" text-anchor="middle">输入 + 位置编码</text>
-<rect x="60" y="256" width="160" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="140" y="277" fill="#d9dee5" font-size="11.5" text-anchor="middle">多头自注意力</text>
-<rect x="60" y="176" width="160" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="140" y="197" fill="#b9c0ca" font-size="11.5" text-anchor="middle">前馈网络 FFN</text>
-<line x1="140" y1="340" x2="140" y2="292" stroke="#7c8593" marker-end="url(#a3)"/>
-<line x1="140" y1="256" x2="140" y2="212" stroke="#7c8593" marker-end="url(#a3)"/>
-<rect x="394" y="70" width="212" height="288" rx="10" fill="none" stroke="rgba(232,121,75,0.3)" stroke-dasharray="5 4"/>
-<text x="500" y="62" fill="#e8794b" font-size="12" text-anchor="middle" font-family="monospace">解码器 × 6</text>
-<rect x="420" y="340" width="164" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="502" y="361" fill="#b9c0ca" font-size="11" text-anchor="middle">输出(右移) + 位置编码</text>
-<rect x="420" y="284" width="164" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="502" y="305" fill="#d9dee5" font-size="11" text-anchor="middle">带掩码 多头自注意力</text>
-<rect x="420" y="228" width="164" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="502" y="249" fill="#d9dee5" font-size="11" text-anchor="middle">编码器–解码器注意力</text>
-<rect x="420" y="172" width="164" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="502" y="193" fill="#b9c0ca" font-size="11" text-anchor="middle">前馈网络 FFN</text>
-<rect x="420" y="98" width="164" height="40" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="502" y="114" fill="#e7ebf1" font-size="11" text-anchor="middle">线性 + Softmax</text><text x="502" y="129" fill="#f5c451" font-size="10.5" text-anchor="middle">→ 下一个词</text>
-<line x1="502" y1="340" x2="502" y2="320" stroke="#7c8593" marker-end="url(#a3)"/>
-<line x1="502" y1="284" x2="502" y2="264" stroke="#7c8593" marker-end="url(#a3)"/>
-<line x1="502" y1="228" x2="502" y2="208" stroke="#7c8593" marker-end="url(#a3)"/>
-<line x1="502" y1="172" x2="502" y2="140" stroke="#7c8593" marker-end="url(#a3)"/>
-<path d="M220,193 C300,193 330,245 418,245" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#a3g)"/>
-<text x="320" y="235" fill="#f0b429" font-size="10.5" text-anchor="middle" font-family="monospace">源句表示</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 640 400" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a3g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="none" height="212" rx="10" stroke="rgba(240,180,41,0.3)" stroke-dasharray="5 4" width="212" x="34" y="118"></rect>
+<text fill="#f0b429" font-family="monospace" font-size="12" text-anchor="middle" x="140" y="110">编码器 × 6</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="160" x="60" y="340"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="140" y="361">输入 + 位置编码</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="6" stroke="#f0b429" width="160" x="60" y="256"></rect><text fill="#d9dee5" font-size="11.5" text-anchor="middle" x="140" y="277">多头自注意力</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="160" x="60" y="176"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="140" y="197">前馈网络 FFN</text>
+<line marker-end="url(#a3)" stroke="#7c8593" x1="140" x2="140" y1="340" y2="292"></line>
+<line marker-end="url(#a3)" stroke="#7c8593" x1="140" x2="140" y1="256" y2="212"></line>
+<rect fill="none" height="288" rx="10" stroke="rgba(232,121,75,0.3)" stroke-dasharray="5 4" width="212" x="394" y="70"></rect>
+<text fill="#e8794b" font-family="monospace" font-size="12" text-anchor="middle" x="500" y="62">解码器 × 6</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="164" x="420" y="340"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="502" y="361">输出(右移) + 位置编码</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="6" stroke="#f0b429" width="164" x="420" y="284"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="502" y="305">带掩码 多头自注意力</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="6" stroke="#f0b429" width="164" x="420" y="228"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="502" y="249">编码器–解码器注意力</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="164" x="420" y="172"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="502" y="193">前馈网络 FFN</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="6" stroke="#e8794b" width="164" x="420" y="98"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="502" y="114">线性 + Softmax</text><text fill="#f5c451" font-size="10.5" text-anchor="middle" x="502" y="129">→ 下一个词</text>
+<line marker-end="url(#a3)" stroke="#7c8593" x1="502" x2="502" y1="340" y2="320"></line>
+<line marker-end="url(#a3)" stroke="#7c8593" x1="502" x2="502" y1="284" y2="264"></line>
+<line marker-end="url(#a3)" stroke="#7c8593" x1="502" x2="502" y1="228" y2="208"></line>
+<line marker-end="url(#a3)" stroke="#7c8593" x1="502" x2="502" y1="172" y2="140"></line>
+<path d="M220,193 C300,193 330,245 418,245" fill="none" marker-end="url(#a3g)" stroke="#f0b429" stroke-width="1.6"></path>
+<text fill="#f0b429" font-family="monospace" font-size="10.5" text-anchor="middle" x="320" y="235">源句表示</text>
 </svg>
 <figcaption>图 3 · Transformer 整体：编码器读懂源句，解码器带掩码地逐词生成，并通过「编码器–解码器注意力」回看源句。</figcaption>
 </figure>
-
 <p>还有两个不起眼却缺不得的配件。每个子层外都套一层<em>残差连接（residual）+ 层归一化（layer norm）</em>：残差把输入直接加到输出上（接 ResNet 思想），给梯度一条捷径，几十层也能稳训。每层还有个<em>前馈网络（FFN）</em>对每个位置独立做非线性加工——<strong>注意力在词之间搬运信息，FFN 在每个词内部深加工</strong>。顺带一提：Transformer 大部分参数其实躺在 FFN 里，所以「注意力就是全部」这话，别忘了装知识的大仓库是 FFN。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="a43b796c956ab7fe">关键结果</h2>
 <p>在 <strong>WMT 2014 英译德</strong>上，大模型拿到 <strong>28.4 BLEU</strong>（BLEU 是翻译质量分，越高越好），刷新当时最好成绩、比含集成的前最强还高 2 个 BLEU 以上；<strong>英译法 41.8 BLEU</strong>，单模型新高。更惊人的是成本：大模型只在 8 张 P100 GPU 上训了 3.5 天，远低于当时动辄数周的顶尖模型。省从哪来？正是甩掉了顺序依赖——整句一次并行算，GPU 喂满，墙上时钟大降。<strong>更好 + 更快 + 更省一起拿到，是它被全领域迅速接受的直接原因。</strong></p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="09a475adfef6ef3c">为什么重要 / 影响</h2>
 <p>这是一次范式转变。后来的大模型把这套编码器–解码器拆成<strong>三个家族</strong>各自发扬：<strong>只用编码器</strong>的（BERT 一系）擅长理解，用双向注意力读懂整句；<strong>只用解码器</strong>的（GPT 一系）擅长生成，带掩码一个词一个词往下写；<strong>编码器–解码器都要</strong>的（T5、翻译）擅长「输入一段、输出一段」。「预训练一个大模型、再微调或提示」的整个时代由此开始。</p>
 <p>更深一层是<strong>可并行 → 可规模化</strong>：甩掉顺序枷锁后，把模型和数据堆到千亿级才在工程上可行，铺就了规模化之路。它还带来一种<strong>惊人的统一</strong>——只要能把东西切成一串「token」（词、图像块、音频片段、氨基酸、一步棋），就能塞进同一个 Transformer；从前各领域各有专用架构，如今被一个通用序列模型大面积收编。<strong>今天几乎每个前沿 AI 系统的心脏，都是这块积木。</strong></p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="4b95151ba0f89b7b">局限与批评</h2>
 <ul>
 <li><strong>O(n²) 复杂度（最该知道的）</strong>：自注意力要算每一对位置的相似度，计算与显存随序列长度<strong>平方级</strong>增长，长文档/高分辨率吃紧——催生了一大批「高效注意力」（Longformer、Performer、FlashAttention 等）。</li>
 <li><strong>位置编码是权宜之计</strong>：原始正弦编码外推能力有限，后被相对位置编码、RoPE、ALiBi 等替代。</li>
@@ -214,8 +189,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>标题其实夸张</strong>：前馈层、残差、层归一化、位置编码<strong>一个都不能少</strong>，纯注意力并不够——「注意力就是全部」是句响亮但过头的标语。</li>
 <li><strong>「注意力权重=可解释性」被质疑</strong>：注意力权重不等于特征重要性，拿它当「模型在看哪」的解释要小心。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="4d49e08bd36c27e5">要点</h2>
 <div class="tl">
 <p>① 一句话：<strong>丢掉 RNN 和卷积、只用注意力</strong>，既能并行训练、又能让任意两词一步直连。</p>
 <p>② 痛点：RNN 顺序计算不能并行，长距离依赖沿时间步传递、容易丢。</p>
@@ -229,12 +203,12 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整推导与消融实验，再去翻原文。</footer>
 </div>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>
