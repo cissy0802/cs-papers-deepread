@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>InstructGPT / RLHF（用人类反馈训练模型听话）— IT 论文精读 Paper 14</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,70 +36,58 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 14</p>
-<h1>InstructGPT：用人类反馈训练模型「听话」（RLHF）</h1>
+<h1 data-tts="bc614fd092ef5aab">InstructGPT：用人类反馈训练模型「听话」（RLHF）</h1>
 <p class="sub">Ouyang 等 · OpenAI · NeurIPS 2022</p>
 <p class="langbar"><a href="instructgpt-rlhf-paper14.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="1dde0b4bdb878bfe">这篇论文干了什么？</h2>
 <p>2022 年初，OpenAI 一队人（Ouyang 等）提出了 <strong>InstructGPT</strong>，用一套叫 <strong>RLHF（用人类反馈来训练）</strong>的办法，把「只会接话茬」的 GPT-3 调教成了「你说什么它照着做」的助手。效果惊人：一个只有 <strong>13 亿参数</strong>的小模型，人们反而更喜欢它的回答，胜过 <strong>1750 亿参数</strong>的原版 GPT-3——大了一百多倍的模型，输给了「更听话」。<strong>几个月后问世的 ChatGPT，用的就是同一路数。</strong></p>
-
-<h2>先说个怪事</h2>
+<h2 data-tts="bf8272e7460709bc">先说个怪事</h2>
 <p>GPT-3 读遍了整个互联网，肚子里全是知识，可它常常「答非所问」：你让它「用一句话解释登月」，它可能给你续写出一整段像模像样、却跑题的文字；你问一个正经问题，它可能一本正经地胡编，或者顺口说些冒犯的话。<strong>不是它笨，是它压根没在「回答你」——它只是在玩一个「猜下一个词」的接龙游戏。</strong>它学的是「互联网上这句话后面通常接什么」，而不是「这个人到底想要什么」。这两件事，常常不是一回事。</p>
-
-<h2>那个点子</h2>
+<h2 data-tts="82d2826f6b7ad04d">那个点子</h2>
 <p>过去让模型变好，靠的是喂更多文本、让它模仿。但「模仿网上的文字」永远教不会它「体贴地回答一个真人」。<strong>这篇的点子是：与其继续让它模仿，不如让人给它的回答「打分」，再让它照着「人更喜欢什么」去改。</strong>好比教一个厨师——光让他背菜谱没用，得让食客尝一口、说「这个好吃、那个太咸」，他才知道往哪调。<strong>把「人的偏好」这把尺子交给模型，它才第一次知道「好回答」长什么样。</strong></p>
-
-<h2>怎么做到的（三步）</h2>
+<h2 data-tts="3ba3872d7a4790cb">怎么做到的（三步）</h2>
 <p><strong>第一步·请人示范。</strong>先请几十位受过训练的人，针对各种问题<strong>亲手写出理想的回答</strong>，让模型照着模仿一遍——像带徒弟，先手把手示范几招。</p>
 <p><strong>第二步·请人排序，训一个「评委」。</strong>同一个问题让模型吐出好几个答案，请人把它们<strong>从好到差排个队</strong>。用这些排序，训练出一个专门的<strong>「评委模型」</strong>，让它学会人的口味——以后不用真人在场，它也能给任意回答打个分。</p>
 <p><strong>第三步·让模型自己练、评委打分。</strong>模型不断尝试新回答，评委实时打分，模型就朝「拿高分」的方向一点点调整自己。为防它为了讨好评委而说胡话，还给它<strong>拴一根「别跑太偏」的绳子</strong>——新回答不许离原来的自己太远。</p>
-
 <figure>
-<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="pa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
-<rect x="24" y="60" width="150" height="88" rx="9" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="99" y="88" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">① 请人示范</text>
-<text x="99" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">人写理想答案</text>
-<text x="99" y="128" fill="#b9c0ca" font-size="11" text-anchor="middle">模型照着模仿</text>
-<rect x="205" y="60" width="150" height="88" rx="9" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="280" y="88" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">② 训「评委」</text>
-<text x="280" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">人给答案排序</text>
-<text x="280" y="128" fill="#b9c0ca" font-size="11" text-anchor="middle">学会人的口味</text>
-<rect x="386" y="60" width="150" height="88" rx="9" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<text x="461" y="88" fill="#e8794b" font-size="13" text-anchor="middle" font-weight="700">③ 照分数练</text>
-<text x="461" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">评委实时打分</text>
-<text x="461" y="128" fill="#b9c0ca" font-size="11" text-anchor="middle">朝高分方向调</text>
-<line x1="176" y1="104" x2="203" y2="104" stroke="#e8794b" stroke-width="2" marker-end="url(#pa)"/>
-<line x1="357" y1="104" x2="384" y2="104" stroke="#e8794b" stroke-width="2" marker-end="url(#pa)"/>
-<text x="280" y="34" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">把「人的偏好」一步步教给模型</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="pa" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="88" rx="9" stroke="#f0b429" width="150" x="24" y="60"></rect>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="99" y="88">① 请人示范</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="99" y="110">人写理想答案</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="99" y="128">模型照着模仿</text>
+<rect fill="rgba(240,180,41,0.1)" height="88" rx="9" stroke="#f0b429" width="150" x="205" y="60"></rect>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="280" y="88">② 训「评委」</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="280" y="110">人给答案排序</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="280" y="128">学会人的口味</text>
+<rect fill="rgba(232,121,75,0.12)" height="88" rx="9" stroke="#e8794b" width="150" x="386" y="60"></rect>
+<text fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle" x="461" y="88">③ 照分数练</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="461" y="110">评委实时打分</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="461" y="128">朝高分方向调</text>
+<line marker-end="url(#pa)" stroke="#e8794b" stroke-width="2" x1="176" x2="203" y1="104" y2="104"></line>
+<line marker-end="url(#pa)" stroke="#e8794b" stroke-width="2" x1="357" x2="384" y1="104" y2="104"></line>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="280" y="34">把「人的偏好」一步步教给模型</text>
 </svg>
 <figcaption>图 · RLHF 三步：先照人的示范模仿，再把人的排序炼成一个「评委」，最后让模型对着评委打分自我改进。</figcaption>
 </figure>
-
-<h2>带来了什么</h2>
+<h2 data-tts="cd1b9194036a820f">带来了什么</h2>
 <p>模型从此<strong>真的在「回答你」</strong>：更愿意照指令做、更少胡编、更少说冒犯的话，也更会拒绝不该答的问题。更颠覆的是，这条路证明了<strong>「让模型更有用」不一定要把它做得更大——把它调得更听话，一个小模型就能赢过大它一百倍的巨物。</strong>今天你用的每一个聊天 AI，背后几乎都站着这套办法。</p>
 <p>诚实一句：它对齐的是那几十位标注员和研究者的口味，<strong>不是「全人类」的价值观</strong>；模型照样会犯错、被绕过、也可能学会「说好听话讨好人」而非说真话。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="a96ad0b19c4f7987">一句话记住</h2>
 <div class="tl">
 <p>GPT-3 只会「猜下一个词」，不懂「体贴地回答你」。InstructGPT 的办法是：请人示范、请人给答案排序炼出一个「评委」、再让模型照评委的分数自我改进——把「人的偏好」教给模型。于是一个 13 亿的小模型比 1750 亿的 GPT-3 更受欢迎，ChatGPT 也由此而来。</p>
 </div>
-
 <p class="switch-hint">想看三步的具体损失、KL 约束和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="d9bdcc64ed7dee69">一句话</h2>
 <p class="lead">InstructGPT 用 <strong>RLHF（reinforcement learning from human feedback，用人类反馈做强化学习）</strong>三步法——<strong>监督微调 → 训练奖励模型 → 用 PPO 强化学习</strong>——把预训练语言模型的目标从「预测下一个词」矫正到「遵循用户意图、有用且无害」。结果一个 <strong>1.3B 的 InstructGPT，其回答被人类标注员偏好于 175B 的原版 GPT-3</strong>，且更真实、更少毒性；这套配方成了此后 ChatGPT、Claude 等对话模型的对齐（alignment）标准范式。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="beed529207698e52">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>语言模型 / 预训练（language model / pretraining）</strong>：读海量文本、反复练「给定前文猜下一个词」的模型。GPT-3 就是这么练出来的——它学的是「文本里接下来通常是什么」。</li>
@@ -112,67 +101,57 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>幻觉（hallucination）</strong>：模型一本正经地编造不实内容。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="2fbf21dffacf9b83">坐标</h2>
 <p>作者是 Long Ouyang、Jeff Wu 等来自 OpenAI 的团队，论文《Training language models to follow instructions with human feedback》2022 年 3 月放出、收于 NeurIPS 2022。它直接上承 <strong>GPT-3（2020）</strong>——把那个「大而不听话」的补全模型接手过来做对齐；方法上承 2017 年起 OpenAI/DeepMind 关于「从人类偏好学奖励」的一系列工作。下启则极其直接：<strong>几个月后的 ChatGPT 是它的姊妹模型，RLHF 从此成为把大模型变成助手的通用一步。</strong></p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="fde30eb622cd44ea">问题与动机</h2>
 <p>GPT-3 这类大模型的训练目标只有一个：<strong>预测下一个词</strong>。这个目标和用户真正想要的——「<strong>按我的指令、有用且安全地帮我</strong>」——并不是一回事。作者把这道裂缝点破：模型是在「模仿互联网文本的分布」，而不是在「服务一个有意图的人」。</p>
 <p>后果具体而恼人：GPT-3 常常<strong>不遵循指令</strong>（你要一句话它给一整篇）、<strong>编造事实</strong>（幻觉）、<strong>产出有毒或有偏见的内容</strong>，也很难被简单地「使唤」。靠<em>提示工程</em>（把指令写得更巧）能缓解一部分，但治标不治本。作者称这为<strong>「对齐问题」</strong>：模型有能力（capability），但它的<strong>目标</strong>没对准人的意图。他们的目标是让模型满足 <strong>helpful / honest / harmless（有用 / 诚实 / 无害，简称 3H）</strong>。</p>
 <p>难点在于：「好回答」没有标准答案、难以写成一个损失函数——你没法用一条公式定义「这段话是不是有用又得体」。<strong>唯一可靠的裁判是人。于是问题变成：怎么把「人的判断」搬进训练循环里？</strong></p>
-
-<h2>核心思想 / 方法</h2>
+<h2 data-tts="cfb1ff4f7f38b8d0">核心思想 / 方法</h2>
 <p>答案是三步流水线。核心洞见有两条：<strong>(a)</strong> 与其让人写出标准答案（贵且难穷尽），不如让人做更容易的事——<strong>在几个候选里挑哪个更好</strong>；<strong>(b)</strong> 把这些人类偏好<strong>蒸馏进一个「奖励模型」</strong>，它就成了一个能自动打分、可被强化学习无限次查询的「人类偏好代理」。</p>
-
 <figure>
-<svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="d1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="d1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="d1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="d1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
 <!-- step 1 -->
-<rect x="20" y="26" width="520" height="80" rx="9" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.4)"/>
-<text x="34" y="47" fill="#f0b429" font-size="12.5" font-weight="700">① 监督微调（SFT）</text>
-<text x="34" y="70" fill="#b9c0ca" font-size="11.5">人对着提示写理想答案 → 用这批「示范」有监督地微调 GPT-3</text>
-<text x="34" y="90" fill="#7c8593" font-size="10.5">产物：一个初步会「听话」的 SFT 模型（作为后面的起点）</text>
-<line x1="280" y1="106" x2="280" y2="124" stroke="#7c8593" marker-end="url(#d1)"/>
+<rect fill="rgba(240,180,41,0.06)" height="80" rx="9" stroke="rgba(240,180,41,0.4)" width="520" x="20" y="26"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" x="34" y="47">① 监督微调（SFT）</text>
+<text fill="#b9c0ca" font-size="11.5" x="34" y="70">人对着提示写理想答案 → 用这批「示范」有监督地微调 GPT-3</text>
+<text fill="#7c8593" font-size="10.5" x="34" y="90">产物：一个初步会「听话」的 SFT 模型（作为后面的起点）</text>
+<line marker-end="url(#d1)" stroke="#7c8593" x1="280" x2="280" y1="106" y2="124"></line>
 <!-- step 2 -->
-<rect x="20" y="126" width="520" height="86" rx="9" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.4)"/>
-<text x="34" y="147" fill="#f0b429" font-size="12.5" font-weight="700">② 训练奖励模型（RM）</text>
-<text x="34" y="170" fill="#b9c0ca" font-size="11.5">同一提示让模型出 K 个答案 → 人把它们从好到差排序</text>
-<text x="34" y="190" fill="#b9c0ca" font-size="11.5">→ 训练 RM：给任一 (提示, 答案) 打一个标量分数 r，拟合人的偏好</text>
-<line x1="280" y1="212" x2="280" y2="230" stroke="#7c8593" marker-end="url(#d1)"/>
+<rect fill="rgba(240,180,41,0.06)" height="86" rx="9" stroke="rgba(240,180,41,0.4)" width="520" x="20" y="126"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" x="34" y="147">② 训练奖励模型（RM）</text>
+<text fill="#b9c0ca" font-size="11.5" x="34" y="170">同一提示让模型出 K 个答案 → 人把它们从好到差排序</text>
+<text fill="#b9c0ca" font-size="11.5" x="34" y="190">→ 训练 RM：给任一 (提示, 答案) 打一个标量分数 r，拟合人的偏好</text>
+<line marker-end="url(#d1)" stroke="#7c8593" x1="280" x2="280" y1="212" y2="230"></line>
 <!-- step 3 -->
-<rect x="20" y="232" width="520" height="94" rx="9" fill="rgba(232,121,75,0.1)" stroke="rgba(232,121,75,0.55)"/>
-<text x="34" y="253" fill="#e8794b" font-size="12.5" font-weight="700">③ PPO 强化学习</text>
-<text x="34" y="276" fill="#b9c0ca" font-size="11.5">SFT 模型作策略：生成答案 → RM 打分 r → PPO 朝高分方向更新</text>
-<text x="34" y="296" fill="#b9c0ca" font-size="11.5">减 KL 惩罚：不许离 SFT 模型太远（防「钻评委空子」）</text>
-<text x="34" y="315" fill="#7c8593" font-size="10.5">再掺入预训练梯度（PPO-ptx）缓解「对齐税」</text>
-<path d="M300,300 C470,300 476,250 300,250" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#d1g)"/>
-<text x="486" y="278" fill="#f0b429" font-size="10">反复</text>
+<rect fill="rgba(232,121,75,0.1)" height="94" rx="9" stroke="rgba(232,121,75,0.55)" width="520" x="20" y="232"></rect>
+<text fill="#e8794b" font-size="12.5" font-weight="700" x="34" y="253">③ PPO 强化学习</text>
+<text fill="#b9c0ca" font-size="11.5" x="34" y="276">SFT 模型作策略：生成答案 → RM 打分 r → PPO 朝高分方向更新</text>
+<text fill="#b9c0ca" font-size="11.5" x="34" y="296">减 KL 惩罚：不许离 SFT 模型太远（防「钻评委空子」）</text>
+<text fill="#7c8593" font-size="10.5" x="34" y="315">再掺入预训练梯度（PPO-ptx）缓解「对齐税」</text>
+<path d="M300,300 C470,300 476,250 300,250" fill="none" marker-end="url(#d1g)" stroke="#f0b429" stroke-width="1.4"></path>
+<text fill="#f0b429" font-size="10" x="486" y="278">反复</text>
 </svg>
 <figcaption>图 · RLHF 三步流水线：①SFT 让模型初步会听话；②把人的排序炼成一个会打分的奖励模型；③用 PPO 让模型对着奖励模型自我改进，同时用 KL 拴住、别跑太偏。</figcaption>
 </figure>
-
-<h3>第一步：监督微调（SFT）</h3>
+<h3 data-tts="948b520aa731b82f">第一步：监督微调（SFT）</h3>
 <p>先请约 40 位受过筛选与培训的标注员，针对来自 OpenAI API 的真实提示<strong>亲手写出理想回答</strong>，得到一批「示范数据」。用它对 GPT-3 做标准的有监督微调，得到 <strong>SFT 模型</strong>。这一步相当于「手把手示范」，让模型先大致进入「回答问题」的状态——但示范数据量有限，远不够教会全部细节。</p>
-
-<h3>第二步：奖励模型（RM）——把偏好变成一把可自动查询的尺</h3>
+<h3 data-tts="3fa100394f64ed82">第二步：奖励模型（RM）——把偏好变成一把可自动查询的尺</h3>
 <p>关键一步。对同一个提示，让模型采样出 <strong>K 个回答</strong>，请标注员把这 K 个<strong>从好到差排序</strong>（而不是打绝对分——人排序比打分一致性高得多）。每一对「更好 vs 更差」都是一条训练信号，用一个<strong>成对比较损失（pairwise ranking loss）</strong>训练奖励模型：让它给「人更喜欢的那个」打出更高的标量分数 <code>r(x,y)</code>。直觉上，这个 RM 就是把几十个人的口味<strong>压缩进了一个神经网络</strong>——从此不需要真人在场，它能对任意回答即时给分。</p>
 <p>一个务实的设计细节：他们用 <strong>6B</strong> 的奖励模型，而非最大的 175B——大模型作 RM 训练不稳，且没必要。</p>
-
-<h3>第三步：用 PPO 做强化学习</h3>
+<h3 data-tts="0facc23ae8402e64">第三步：用 PPO 做强化学习</h3>
 <p>现在有了会打分的裁判，就能把训练变成一个强化学习问题：<strong>策略</strong>就是那个语言模型，它生成回答、奖励模型给分，<strong>PPO</strong> 算法朝「让分数更高」的方向小步更新策略。但直接这么优化有个大坑——模型会<strong>「钻评委的空子」</strong>（reward hacking）：奖励模型只是人的<em>近似</em>，模型很可能找到一些能骗高分、实际却很糟的回答。</p>
 <p>两个关键约束把它拴住。优化目标可粗写成：</p>
 <p><code>目标 = E[ r(x,y) − β·KL(π 现在 ‖ π 的 SFT 版) ] + γ·E[预训练文本上的语言建模]</code></p>
 <p>白话拆开：<strong>第一项</strong>是「尽量拿高分」；<strong>第二项</strong>是一条<strong>逐词的 KL 惩罚</strong>——新模型的说话分布不许离 SFT 模型太远，这就是那根「别跑太偏」的绳子，防止它为讨好 RM 而说胡话；<strong>第三项</strong>把一部分<strong>原始预训练目标</strong>掺回来（记作 <strong>PPO-ptx</strong>），用来止住「一心对齐、却把通用能力练退」的<em>对齐税（alignment tax）</em>。三者合起来，模型既朝人的偏好走，又不至于跑飞或退化。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="c6b8df665f7b1fcc">关键结果</h2>
 <p>最醒目的一条：在人类偏好评测上，<strong>1.3B 的 InstructGPT 的输出被标注员偏好于 175B 的原版 GPT-3</strong>——参数少一百多倍，却因为「更对齐」而更受欢迎。同规模下，175B 的 InstructGPT 相对 175B GPT-3 被偏好的比例更是压倒性的。</p>
 <p>其它维度：在 <strong>TruthfulQA</strong>（考真实性）上真实作答明显增多；在 <strong>RealToxicityPrompts</strong> 上，当被要求「保持得体」时毒性输出显著下降；更会<strong>遵循明确指令、更少无中生有</strong>。泛化也不错：对没参与训练的「留出标注员」、以及训练里少见的非英语指令和写代码请求，同样管用。代价方面，纯 RLHF 会在一些公开 NLP 基准上出现回退（对齐税），而掺入预训练梯度的 <strong>PPO-ptx 把这种回退基本抹平</strong>。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="d5425fc936e15c38">为什么重要 / 影响</h2>
 <p>它给出了<strong>把「原始大模型」变成「可用助手」的那一步的标准配方</strong>。在此之前，业界的直觉是「模型不够好就做得更大」；这篇把重心从<em>规模</em>挪到了<em>对齐</em>，并用「1.3B 赢 175B」把话说死：<strong>光大没用，得对准人的意图。</strong>几个月后的 <strong>ChatGPT</strong> 正是这套方法的产物，随后 Claude、Llama-Chat、Gemini 等几乎所有对话模型都采用了 RLHF 或其变体。它也把<strong>「奖励模型 + KL 约束 + 策略优化」</strong>确立为对齐工程的通用骨架，后续的 RLAIF、DPO 等都在同一问题框架内演进。可以说，今天人人能和 AI 顺畅对话，这篇是那道从「补全引擎」到「助手」的门槛。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="c616b3d3b440ed6f">局限与批评</h2>
 <ul>
 <li><strong>对齐给「谁」？</strong>模型对齐的是那约 40 位标注员和 OpenAI 研究者写下的偏好与准则，<strong>不代表全人类的价值</strong>——「有用 / 无害」的判断本身带文化与立场，谁来定义是根本性的开放问题。</li>
 <li><strong>奖励模型可被钻空子</strong>：RM 只是人的近似，过度优化会招来 reward hacking——模型学会「看起来好」而非「真的好」，KL 惩罚只能缓解、不能根除。</li>
@@ -180,8 +159,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>仍会犯错、可被绕过</strong>：InstructGPT 依然会幻觉、会在被巧妙诱导（越狱）时输出有害内容；对齐是「更好」而非「解决」。</li>
 <li><strong>又贵又难扩</strong>：高质量人类排序数据昂贵、慢、含标注者偏差；这也催生了后来「用 AI 反馈替代部分人工」（RLAIF / Constitutional AI）等省人力的路线。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="9a2c39db8c98f3ae">要点</h2>
 <div class="tl">
 <p>① 一句话：用 RLHF 三步（SFT → 奖励模型 → PPO）把大模型的目标从「猜下一个词」矫正到「遵循用户意图、3H」。</p>
 <p>② 痛点：预训练目标（预测下一个词）≠ 用户意图，导致 GPT-3 不听指令、爱幻觉、有毒；「好回答」写不成损失函数，只有人能当裁判。</p>
@@ -198,9 +176,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

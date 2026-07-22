@@ -54,7 +54,10 @@ MAX_CHARS_PER_CALL = 3000
 # and diagrams are for the eye — the narration should carry the prose around
 # them. Used instead of .get_text() when collecting narration.
 _SKIP_TEXT_PARENTS = ("pre", "code", "svg", "style", "script", "figure")
-_READABLE_CODE = _re_mod.compile(r"^[\w .,-]{1,24}$")
+# Read short code that is a name or a relation (model_version, w + r > n);
+# skip anything with call/index syntax — "now()" and "hash(key) % N" only
+# add noise when spoken.
+_READABLE_CODE = _re_mod.compile(r"^[\w .,+\-*/^<>=%≥≤]{1,24}$")
 
 
 def _in_diagram(s) -> bool:
@@ -117,6 +120,7 @@ def normalize_for_tts(text: str) -> str:
     text = _re.sub(r"\s*×\s*", " 乘以 ", text)
     text = _re.sub(r"\s*÷\s*", " 除以 ", text)
     text = _re.sub(r"\s*±\s*", " 正负 ", text)
+    text = _re.sub(r"(?<=[\w\)])\s*\+\s*(?=[\w\(])", " 加 ", text)
     # `=` gets spoken as "等于" only when surrounded by spaces or between
     # obviously numeric/short-word contexts; leave "A=B" style alone since
     # it's often used as inline labelling in Chinese copy.
@@ -132,7 +136,8 @@ def normalize_for_tts(text: str) -> str:
     text = _re.sub(r"[─━―]{2,}", " ", text)          # decorative rules
     text = _re.sub(r"\s*[•·]\s*(?=[A-Za-z\u4e00-\u9fff])", "，", text)
     text = _re.sub(r"(?<=\d)\s*→\s*(?=\d)", " 到 ", text)
-    text = _re.sub(r"\s*[→←]\s*", "，", text)       # arrows → pause
+    text = _re.sub(r"\s*[→←⇒⇐↔⇔]\s*", "，", text)   # flow arrows → pause
+    text = _re.sub(r"\s*[↗↘↖↙↑↓]\s*", " ", text)     # decorative (外链标记)
     # Strip decorative icons. Azure narrates them by name (🌀 → "龙卷风"),
     # which derails a heading like "🌀 越界 · 跨学科的联想". Runs AFTER the
     # ✓/✗/⚠ replacements above, which need those glyphs intact.
@@ -621,8 +626,15 @@ def main():
     if args.files:
         files = [Path(f) if Path(f).is_absolute() else REPO_DIR / f for f in args.files]
     else:
+        # Every content page, whatever the naming scheme. Sites vary:
+        # foo-day12.html, foo-paper3.html, entropy.html, ref-thalamus.html.
+        # Excludes the English mirrors and index/landing pages.
         files = sorted(
-            p for p in REPO_DIR.iterdir() if re.match(r".+-day\d+\.html$", p.name)
+            p for p in REPO_DIR.iterdir()
+            if p.suffix == ".html"
+            and not p.name.endswith(".en.html")
+            and not p.name.startswith("index.")
+            and not p.name.endswith("-index.html")
         )
 
     for path in files:

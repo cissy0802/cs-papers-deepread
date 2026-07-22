@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>The Google File System（GFS）— IT 论文精读 Paper 17</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,46 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 17</p>
-<h1>The Google File System（GFS）</h1>
+<h1 data-tts="99cd974b5439a17f">The Google File System（GFS）</h1>
 <p class="sub">Ghemawat, Gobioff &amp; Leung · Google · SOSP 2003</p>
 <p class="langbar"><a href="google-file-system-paper17.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="31cf4b5aec01da62">这篇论文干了什么？</h2>
 <p>2003 年，Google 的三位工程师公开了他们自己造的一套<strong>存文件的系统</strong>——GFS。它要解决的事很实在：Google 的搜索、爬下来的整个网页库、日志……全都大得离谱，一台机器根本装不下，得摊到<strong>成千上万台便宜机器</strong>上一起存。GFS 就是把这几千台机器<strong>粘成「一块超级大硬盘」</strong>的那层软件。它后来成了 MapReduce、Bigtable 的地基，也直接催生了开源的 Hadoop。</p>
-
-<h2>先说个扎心的前提</h2>
+<h2 data-tts="454966d1e2c8d775">先说个扎心的前提</h2>
 <p>他们造这套系统时认准一件事：<strong>机器坏，是常态，不是意外。</strong>几千台廉价机器摆在一起，每天都有硬盘冒烟、电源挂掉、网线松动——不是「会不会坏」，而是「此刻正有几台坏着」。传统存储系统把「硬件基本可靠」当默认前提，到这个规模就彻底不成立了。GFS 的全部设计，都是从「<strong>随时有东西在坏</strong>」这个假设倒推出来的。</p>
-
-<h2>它换了个思路</h2>
+<h2 data-tts="b2874aacaaab79f6">它换了个思路</h2>
 <p>GFS 的安排出奇地简单，就两种角色：一个<strong>「总管」</strong>（master）和一大群<strong>「仓库工」</strong>（chunkserver）。</p>
 <p>关键的取巧在于：<strong>总管只管账本，从不碰货。</strong>真正的文件数据被切成一个个大块，每块<strong>存三份、扔在三台不同的机器上</strong>；总管手里只有一本「账」——哪个文件由哪些块组成、每块的三份分别在谁那儿。你要读文件，先问总管「东西在哪」，总管报个地址，你就<strong>直接去那台仓库工机器搬货</strong>，不再经过总管。</p>
-
-<h2>它凭什么撑得住？</h2>
+<h2 data-tts="ea83ea867e7499cf">它凭什么撑得住？</h2>
 <p>几个朴素但管用的决定。<strong>一、切成大块。</strong>文件按 64 MB 一大块来切（而不是按几 KB 的小格子），账本一下就小了很多——总管用一台机器的内存就能把整个系统的账记下。<strong>二、每块存三份。</strong>一台机器挂了，另两份还在；总管发现哪块少了一份，会悄悄再复制一份补齐，你几乎无感。<strong>三、总管不碰数据。</strong>所有搬货都是客户端和仓库工「点对点」直连，总管永远不会因为「所有流量都从我这过」而堵成瓶颈。<strong>四、为「往后追加」优化。</strong>Google 的活儿大多是「把新数据不断加到文件末尾」（比如源源不断的日志），GFS 专门把「很多人同时往一个文件末尾追加」这件事做得又快又安全。</p>
-
-<h2>它带来了什么</h2>
+<h2 data-tts="a0e720927f51de40">它带来了什么</h2>
 <p>GFS 第一次让人相信：<strong>用一堆随时会坏的廉价机器，真能拼出一个又大、又扛造、还好用的存储系统</strong>——靠的不是让每台机器更可靠，而是让整套系统「容忍机器坏」。这套「便宜机器 + 多副本 + 软件兜底」的路子，成了此后十几年大数据基础设施的通用模板。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="e971a7015c3b0ca4">一句话记住</h2>
 <div class="tl">
 <p>把几千台会坏的廉价机器粘成一块超级大硬盘：数据切成大块、每块存三份、机器坏了自动补；一个「总管」只记账不碰货，读写都由客户端和仓库工直连——于是系统又大、又扛坏、又不堵。这是大数据时代存储的第一块地基。</p>
 </div>
-
 <p class="switch-hint">想看它的架构图、租约与追加写的机制、还有真实集群的数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="a6b3f2fe249bf71c">一句话</h2>
 <p class="lead">GFS 是 Google 为自己的超大规模工作负载量身定做的<strong>分布式文件系统</strong>：它把「<strong>硬件故障是常态</strong>」当作设计出发点，用<strong>单一 master 管元数据 + 大量 chunkserver 存数据</strong>的架构，把文件切成 64 MB 的大块、每块默认<strong>存三副本</strong>，并靠<strong>租约（lease）、原子记录追加（atomic record append）、松弛一致性模型</strong>把控制与数据流彻底解耦——用一群随时会坏的廉价机器，稳定支撑起 PB 级、以「大文件顺序读 + 追加写」为主的存储。它是 MapReduce、Bigtable 的底座，也直接启发了开源的 HDFS。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="7476f7ccdf638597">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>文件系统（file system）</strong>：操作系统里管理「文件怎么存、怎么找」的那层软件，给你「目录 / 文件 / 读写」这些抽象，替你打理底下的磁盘。</li>
@@ -86,11 +76,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>机架（rack）</strong>：数据中心里一个机柜，装几十台机器共用交换机和电源；整机架可能一起断电，所以副本要跨机架放。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="7d77def1a9de1780">坐标</h2>
 <p>作者是 Sanjay Ghemawat、Howard Gobioff、Shun-Tak Leung，来自 Google，论文发表于 SOSP 2003。它是 Google「分布式系统老三件套」的第一件——次年的 <strong>MapReduce</strong>（大规模并行计算）和两年后的 <strong>Bigtable</strong>（结构化存储）都直接建在它之上。它上承传统分布式文件系统（如 AFS、xFS），却大胆抛掉「通用 / POSIX 兼容」的包袱、只服务 Google 自己的工作负载；下启开源世界的 <strong>HDFS</strong>（Hadoop 的文件系统，几乎是 GFS 的公开复刻），并在 Google 内部逐步演进为更强的 <strong>Colossus</strong>。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="97e49fad57676a86">问题与动机</h2>
 <p>2000 年代初，Google 要处理的数据量超出当时任何现成存储方案能优雅承受的范围。团队没有硬套通用文件系统，而是先<strong>老老实实观察自己的工作负载长什么样</strong>，得出四条与传统假设截然不同的前提：</p>
 <ul>
 <li><strong>故障是常态，不是异常。</strong>系统由成百上千台廉价机器搭成，在任一时刻，总有一批磁盘、内存、网络、电源正在出问题。所以「持续监控、容错、自动恢复」不是附加功能，而是<strong>系统的核心职责</strong>。</li>
@@ -99,81 +87,70 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>把应用和文件系统一起设计更划算。</strong>既然 GFS 只服务 Google 自己的应用，就不必死守通用接口——可以放宽一致性、增加像「原子记录追加」这样非标准但好用的操作，让整体更简单高效。</li>
 </ul>
 <p>一句话：<strong>别造一个通用的完美文件系统，造一个正好匹配这批工作负载、且默认硬件天天坏的文件系统。</strong></p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>一个 master + 一群 chunkserver：账货分离</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="940c35e4cfb55123">一个 master + 一群 chunkserver：账货分离</h3>
 <p>GFS 集群里只有两类角色。<strong>单一 master</strong> 掌管所有<em>元数据</em>：命名空间（目录树）、访问控制、每个文件由哪些块组成、以及每个块的三份副本当前在哪些机器上。<strong>大量 chunkserver</strong> 才是真正存数据的地方。</p>
 <p>文件被切成固定大小的<strong>块（chunk），每块 64 MB</strong>，创建时由 master 分配一个全局唯一的 64 位<em>块句柄（chunk handle）</em>。每个块作为一个普通 Linux 文件存在 chunkserver 的本地磁盘上，并<strong>默认复制 3 份</strong>、分散到不同机器（且尽量跨机架）。</p>
 <p>最关键的设计是<strong>「账货分离」</strong>：master 只管账、绝不经手数据。客户端读文件时，先拿「文件名 + 块序号」问 master「这个块的副本都在哪」，master 回一串 chunkserver 地址（客户端会缓存一阵）；之后客户端<strong>直接找 chunkserver 搬数据，完全绕开 master</strong>。这样 master 就不会因为「所有数据都从我流过」而变成带宽瓶颈，一台 master 就能服务整个集群。</p>
-
 <figure>
-<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
-<rect x="30" y="128" width="120" height="44" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="90" y="147" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">客户端</text>
-<text x="90" y="163" fill="#7c8593" font-size="10.5" text-anchor="middle">client</text>
-<rect x="220" y="30" width="130" height="44" rx="8" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/>
-<text x="285" y="49" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">master</text>
-<text x="285" y="65" fill="#7c8593" font-size="10.5" text-anchor="middle">只存元数据</text>
-<rect x="430" y="96" width="110" height="34" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="485" y="117" fill="#e7ebf1" font-size="11.5" text-anchor="middle">chunkserver</text>
-<rect x="430" y="146" width="110" height="34" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="485" y="167" fill="#e7ebf1" font-size="11.5" text-anchor="middle">chunkserver</text>
-<rect x="430" y="196" width="110" height="34" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="485" y="217" fill="#e7ebf1" font-size="11.5" text-anchor="middle">chunkserver</text>
-<path d="M110,126 C150,80 175,58 218,54" fill="none" stroke="#7c8593" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#a1)"/>
-<text x="120" y="92" fill="#f0b429" font-size="10.5">①问：块在哪？</text>
-<path d="M218,60 C176,96 150,110 152,138" fill="none" stroke="#7c8593" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#a1)"/>
-<text x="182" y="126" fill="#7c8593" font-size="10.5">②答：地址</text>
-<path d="M152,150 C280,150 320,113 428,113" fill="none" stroke="#e8794b" stroke-width="2" marker-end="url(#a1g)"/>
-<path d="M152,158 C300,190 320,163 428,163" fill="none" stroke="#e8794b" stroke-width="2" marker-end="url(#a1g)"/>
-<path d="M152,166 C300,230 320,213 428,213" fill="none" stroke="#e8794b" stroke-width="2" marker-end="url(#a1g)"/>
-<text x="300" y="252" fill="#e8794b" font-size="11">③数据：客户端 ↔ chunkserver 直连（绕开 master）</text>
-<text x="485" y="88" fill="#7c8593" font-size="10" text-anchor="middle">每块存 3 份</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="44" rx="8" stroke="#f0b429" width="120" x="30" y="128"></rect>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="90" y="147">客户端</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="90" y="163">client</text>
+<rect fill="rgba(240,180,41,0.14)" height="44" rx="8" stroke="#f0b429" width="130" x="220" y="30"></rect>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="285" y="49">master</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="285" y="65">只存元数据</text>
+<rect fill="rgba(232,121,75,0.12)" height="34" rx="6" stroke="#e8794b" width="110" x="430" y="96"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="485" y="117">chunkserver</text>
+<rect fill="rgba(232,121,75,0.12)" height="34" rx="6" stroke="#e8794b" width="110" x="430" y="146"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="485" y="167">chunkserver</text>
+<rect fill="rgba(232,121,75,0.12)" height="34" rx="6" stroke="#e8794b" width="110" x="430" y="196"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="485" y="217">chunkserver</text>
+<path d="M110,126 C150,80 175,58 218,54" fill="none" marker-end="url(#a1)" stroke="#7c8593" stroke-dasharray="5 4" stroke-width="1.6"></path>
+<text fill="#f0b429" font-size="10.5" x="120" y="92">①问：块在哪？</text>
+<path d="M218,60 C176,96 150,110 152,138" fill="none" marker-end="url(#a1)" stroke="#7c8593" stroke-dasharray="5 4" stroke-width="1.6"></path>
+<text fill="#7c8593" font-size="10.5" x="182" y="126">②答：地址</text>
+<path d="M152,150 C280,150 320,113 428,113" fill="none" marker-end="url(#a1g)" stroke="#e8794b" stroke-width="2"></path>
+<path d="M152,158 C300,190 320,163 428,163" fill="none" marker-end="url(#a1g)" stroke="#e8794b" stroke-width="2"></path>
+<path d="M152,166 C300,230 320,213 428,213" fill="none" marker-end="url(#a1g)" stroke="#e8794b" stroke-width="2"></path>
+<text fill="#e8794b" font-size="11" x="300" y="252">③数据：客户端 ↔ chunkserver 直连（绕开 master）</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="485" y="88">每块存 3 份</text>
 </svg>
 <figcaption>图 1 · 账货分离：master 只回答「块在哪」（虚线控制流），真正的数据搬运由客户端和 chunkserver 点对点直连（实线），master 永不成为数据瓶颈。</figcaption>
 </figure>
-
 <p><strong>为什么块要那么大（64 MB）？</strong>好处有三：① 大块 → 块的总数少 → 元数据小，master 能把<strong>整份元数据放进内存</strong>，查得飞快；② 客户端一次问址能读写很大一段，<strong>大幅减少和 master 打交道的次数</strong>；③ 客户端在一个块上会做很多次操作，可复用与 chunkserver 的连接。代价（诚实说）：小文件只占一两个块，容易变成<strong>热点</strong>——很多客户端同时挤向同一台 chunkserver。</p>
-
-<h3>master 只在内存里记账，靠操作日志兜底</h3>
+<h3 data-tts="61a5c4ab53e6b127">master 只在内存里记账，靠操作日志兜底</h3>
 <p>master 把三类元数据<strong>全放在内存</strong>：命名空间、文件→块的映射、每块的副本位置。前两类会持久化——写进一份<strong>操作日志（operation log）</strong>，这份日志既是崩溃恢复的依据，也定义了并发操作的<strong>逻辑先后顺序</strong>；日志会复制到多台远程机器，master 重启时<strong>重放日志</strong>即可恢复状态（并定期做<em>检查点 checkpoint</em> 压缩重放量）。</p>
 <p>唯独<strong>「块的副本位置」不写进日志</strong>——因为 chunkserver 才是这件事的权威。master 启动时以及之后靠<strong>心跳（HeartBeat）</strong>反复问每台 chunkserver「你手上有哪些块」。这么做省去了「master 和 chunkserver 状态不一致」的一大类麻烦：机器加入、退出、改名、重启是家常便饭，与其费劲维护一致，不如<strong>让 chunkserver 说了算、master 定期同步</strong>。</p>
-
-<h3>租约与变更顺序：让 master 退出写路径</h3>
+<h3 data-tts="d06220bc71b7a14e">租约与变更顺序：让 master 退出写路径</h3>
 <p>一个块有三份副本，多个客户端还可能同时写——怎么保证三份最后内容一致？GFS 的答案是<strong>租约（lease）</strong>：master 把某个块的一份短期「话事权」（租约，约 60 秒、可续）交给其中一个副本，称为<strong>主副本（primary）</strong>。之后这个块上所有变更的<strong>先后顺序，由 primary 一家说了算</strong>，其余副本照着同样的顺序执行。这样一来，<strong>master 完全不必参与每一次写</strong>——它只发一次租约，把「给变更排序」这件重活下放给 primary，自己继续轻装管元数据。</p>
-
-<h3>控制流与数据流分离：数据像接力一样流水线推送</h3>
+<h3 data-tts="c06ee1f1bae93d93">控制流与数据流分离：数据像接力一样流水线推送</h3>
 <p>写一个块时，GFS 把「<strong>指挥</strong>」和「<strong>搬运</strong>」拆开走两条路。<strong>数据</strong>不走星形（都推给 primary 再分发），而是沿一条<strong>链</strong>流水线传递：客户端只把数据推给<em>最近</em>的一个副本，它一边收一边转发给链上下一个，如此接力。这样每台机器的<strong>出口带宽都只用来发给「下一个」</strong>、不被瓜分，网络利用率拉满。数据在各副本内存里备好后，客户端才向 primary 发一个很小的<strong>「写」控制指令</strong>，primary 定序、通知各副本按序落盘。<strong>数据流按网络远近选路、控制流走 primary 定序，两者解耦</strong>——这是 GFS 吞吐高的关键工程细节。</p>
-
 <figure>
-<svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker>
-<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="24" y="110" width="96" height="40" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="72" y="134" fill="#e7ebf1" font-size="12" text-anchor="middle">客户端</text>
-<rect x="180" y="110" width="96" height="40" rx="7" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="228" y="129" fill="#e7ebf1" font-size="12" text-anchor="middle">副本 A</text><text x="228" y="144" fill="#f0b429" font-size="10" text-anchor="middle">primary</text>
-<rect x="330" y="110" width="96" height="40" rx="7" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="378" y="134" fill="#e7ebf1" font-size="12" text-anchor="middle">副本 B</text>
-<rect x="464" y="110" width="80" height="40" rx="7" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="504" y="134" fill="#e7ebf1" font-size="12" text-anchor="middle">副本 C</text>
-<path d="M120,124 L178,124" stroke="#e8794b" stroke-width="2.4" marker-end="url(#a2)"/>
-<path d="M276,124 L328,124" stroke="#e8794b" stroke-width="2.4" marker-end="url(#a2)"/>
-<path d="M426,124 L462,124" stroke="#e8794b" stroke-width="2.4" marker-end="url(#a2)"/>
-<text x="278" y="100" fill="#e8794b" font-size="11" text-anchor="middle">① 数据沿链流水线推送（就近接力）</text>
-<path d="M72,152 C72,210 200,210 224,156" fill="none" stroke="#f0b429" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a2g)"/>
-<text x="150" y="228" fill="#f0b429" font-size="11" text-anchor="middle">② 小小的「写」指令 → primary 定序</text>
-<path d="M228,150 C228,186 360,186 372,152" fill="none" stroke="#7c8593" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a2g)"/>
-<path d="M228,150 C260,200 470,196 500,152" fill="none" stroke="#7c8593" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a2g)"/>
-<text x="410" y="182" fill="#7c8593" font-size="10.5" text-anchor="middle">③ primary 把顺序转达 B、C</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker>
+<marker id="a2g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="7" stroke="#f0b429" width="96" x="24" y="110"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="72" y="134">客户端</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="7" stroke="#e8794b" width="96" x="180" y="110"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="228" y="129">副本 A</text><text fill="#f0b429" font-size="10" text-anchor="middle" x="228" y="144">primary</text>
+<rect fill="rgba(232,121,75,0.1)" height="40" rx="7" stroke="#e8794b" width="96" x="330" y="110"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="378" y="134">副本 B</text>
+<rect fill="rgba(232,121,75,0.1)" height="40" rx="7" stroke="#e8794b" width="80" x="464" y="110"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="504" y="134">副本 C</text>
+<path d="M120,124 L178,124" marker-end="url(#a2)" stroke="#e8794b" stroke-width="2.4"></path>
+<path d="M276,124 L328,124" marker-end="url(#a2)" stroke="#e8794b" stroke-width="2.4"></path>
+<path d="M426,124 L462,124" marker-end="url(#a2)" stroke="#e8794b" stroke-width="2.4"></path>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="278" y="100">① 数据沿链流水线推送（就近接力）</text>
+<path d="M72,152 C72,210 200,210 224,156" fill="none" marker-end="url(#a2g)" stroke="#f0b429" stroke-dasharray="5 4" stroke-width="1.8"></path>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="150" y="228">② 小小的「写」指令 → primary 定序</text>
+<path d="M228,150 C228,186 360,186 372,152" fill="none" marker-end="url(#a2g)" stroke="#7c8593" stroke-dasharray="4 4" stroke-width="1.5"></path>
+<path d="M228,150 C260,200 470,196 500,152" fill="none" marker-end="url(#a2g)" stroke="#7c8593" stroke-dasharray="4 4" stroke-width="1.5"></path>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="410" y="182">③ primary 把顺序转达 B、C</text>
 </svg>
 <figcaption>图 2 · 写流程：数据（橙实线）沿最近路径流水线接力到全部副本；控制（金虚线）走 primary 定序，primary 再把统一顺序转达其余副本。搬运与指挥分两条路。</figcaption>
 </figure>
-
-<h3>原子记录追加：并发追加不用加锁</h3>
+<h3 data-tts="afd1f94ba5919ae0">原子记录追加：并发追加不用加锁</h3>
 <p>这是 GFS 最有特色、也最贴合 Google 工作负载的操作。传统「写到指定偏移量」在多客户端并发时要么加锁、要么互相覆盖。GFS 提供<strong>原子记录追加（record append）</strong>：客户端只说「把这段数据加到文件末尾」，<strong>由 GFS 自己挑一个偏移量</strong>写入、再把该偏移量告诉客户端。于是<strong>成百个客户端能同时往同一个文件追加、无需额外加锁</strong>——非常适合「多个生产者往一个结果 / 队列文件里汇数据」的场景。</p>
 <p>代价是它只保证<strong>「至少写入一次（at-least-once）」</strong>：某副本追加失败时客户端会重试，可能留下<strong>重复记录或填充空隙（padding）</strong>。GFS 把这点复杂性<strong>推给应用</strong>——应用用校验和、唯一 ID 去重、跳过填充即可。这正是「应用与文件系统协同设计」的体现：放宽一点保证，换来系统整体的简单与高并发。</p>
-
-<h3>松弛的一致性模型</h3>
+<h3 data-tts="8978f6e8004da151">松弛的一致性模型</h3>
 <p>GFS 不追求强一致，而是给出一个<strong>「松弛但够用」</strong>的模型。元数据操作（如创建文件）由 master 用命名空间锁保证<strong>原子</strong>。对文件数据区域，成功变更后可能是：<em>consistent（一致）</em>——所有客户端无论读哪份副本都看到相同数据；<em>defined（已定义）</em>——不仅一致，还能看到这次变更的完整结果。并发的普通写可能「一致但未定义」（各写都在、但交错难辨）；记录追加则保证「已定义」，但中间可能夹着重复或填充。<strong>关键取舍：用更弱的一致性承诺，换取在故障频发的大集群上依然能跑得又快又稳。</strong></p>
-
-<h3>master 的日常运维与容错</h3>
+<h3 data-tts="a2ba669c109d1eed">master 的日常运维与容错</h3>
 <ul>
 <li><strong>副本放置与再复制</strong>：副本跨机架分散（防整机架断电 / 交换机故障）；一旦某块副本数掉到目标值以下，master 会<strong>自动再复制</strong>补齐，并适时做负载再平衡。</li>
 <li><strong>惰性垃圾回收</strong>：删文件不立刻回收空间，只把它改名为隐藏文件；之后 master 在例行扫描中才真正回收，并顺手清掉<strong>孤儿块</strong>（没有文件引用的块）。比即时删除更简单、更能容忍各种失败。</li>
@@ -181,14 +158,11 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>数据完整性</strong>：chunkserver 把每块切成 64 KB 的小段、各配一个 32 位<strong>校验和</strong>，读取时先校验，坏了就从别的好副本恢复——防的是磁盘悄悄「烂位」。</li>
 <li><strong>快速恢复与影子 master</strong>：master 与 chunkserver 都能在几秒内重启恢复；还有只读的<strong>影子 master（shadow master）</strong>在主 master 宕机时提供（可能略陈旧的）读服务。</li>
 </ul>
-
-<h2>关键结果</h2>
+<h2 data-tts="cc05867c2dd741f2">关键结果</h2>
 <p>论文用微基准和<strong>两个真实生产集群</strong>说话。真实集群各有<strong>数百台 chunkserver、上百 TB 磁盘、几十万到上百万个文件</strong>，日常承载 Google 内部的研发与生产负载。数据显示：<strong>读远多于写、追加远多于覆盖写</strong>——与设计假设高度吻合；聚合读吞吐可达每秒数百 MB 量级，接近网络上限。恢复实验也很有说服力：<strong>杀掉一台 chunkserver、其上数千个块副本，master 能在几十分钟内把副本数全部补齐</strong>，期间服务不中断。更重要的结论是定性的——<strong>用廉价、天天坏的机器，真的能拼出一个大规模、高吞吐、扛得住故障的存储系统</strong>，且它已在 Google 内部大规模上线、支撑真实业务。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="4bbd19f4510b7f60">为什么重要 / 影响</h2>
 <p>GFS 是<strong>大数据基础设施的第一块地基</strong>。次年的 MapReduce、两年后的 Bigtable 都直接建在它之上，构成 Google「老三件套」；开源世界几乎照它复刻出 <strong>HDFS</strong>，撑起了整个 Hadoop 生态，进而影响了此后十余年几乎所有大数据系统的设计。它真正确立并普及了一整套思想：<strong>把可靠性从「单机硬件」层面上移到「软件 + 多副本」层面</strong>、<strong>用大量廉价机器横向扩展</strong>、<strong>元数据与数据分离</strong>、<strong>为具体工作负载放宽通用语义</strong>。今天你听到的「分布式存储」「副本容错」「主从架构」，很多默认套路都能追到这篇。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="4f5353d1cd59adbe">局限与批评</h2>
 <ul>
 <li><strong>单一 master 是天花板</strong>：所有元数据在一台 master 的内存里，文件数量受内存限制；所有元数据请求都过它，吞吐也受限。规模再涨，master 就成了扩展性与可用性的双重瓶颈——这是 GFS 最被诟病的一点。</li>
 <li><strong>对小文件不友好</strong>：64 MB 的大块和「大文件顺序读 / 追加」假设，让海量小文件既浪费元数据、又制造热点。Google 后来的实际负载（如 Gmail、Bigtable 上的小写）越来越不符合原始假设。</li>
@@ -196,8 +170,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>非 POSIX、场景专用</strong>：它不是通用文件系统，随机写、低延迟、小文件、强一致都不是它的菜；照搬到别的负载会水土不服。</li>
 <li><strong>Google 自己也超越了它</strong>：官方回顾（McKusick &amp; Quinlan，2009）坦承单 master 与小文件之痛，后续用 <strong>Colossus</strong>（多 master 分片元数据、更小的块、Reed-Solomon 纠删码替代三副本以省存储）接棒。GFS 是奠基之作，但并非终点。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="f528973efe264658">要点</h2>
 <div class="tl">
 <p>① 一句话：为超大规模、以「大文件顺序读 + 追加写」为主的负载设计的分布式文件系统，把「硬件故障是常态」当出发点。</p>
 <p>② 架构：单一 <strong>master 管元数据</strong> + 大量 <strong>chunkserver 存数据</strong>；文件切成 <strong>64 MB 大块、每块存 3 副本</strong>、跨机架分散。</p>
@@ -215,9 +188,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

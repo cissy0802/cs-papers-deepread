@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Constitutional AI（宪法 AI）— IT 论文精读 Paper 15</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,44 +36,34 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 15</p>
-<h1>Constitutional AI（宪法 AI）</h1>
+<h1 data-tts="80487d6449e28a6c">Constitutional AI（宪法 AI）</h1>
 <p class="sub">Bai 等 · Anthropic · 2022</p>
 <p class="langbar"><a href="constitutional-ai-paper15.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="ce91b978cb4312ac">这篇论文干了什么？</h2>
 <p>你用 ChatGPT、Claude 时，它多数情况下会拒绝帮你造炸弹、写钓鱼邮件——这套「不作恶」的分寸，从前是靠<strong>请几千个人工标注员一条条读、一条条打分</strong>教出来的。2022 年底，Anthropic 这队人提出 <strong>Constitutional AI（宪法 AI）</strong>：写一小份<strong>「宪法」——几十条白纸黑字的原则</strong>（比如「别帮人做危险的事」「别居高临下」），然后<strong>让 AI 拿这份宪法自己管自己</strong>，几乎不再需要人工去逐条标注那些有害内容。它是今天 Claude 的训练基石之一。</p>
-
-<h2>旧世界的痛</h2>
+<h2 data-tts="dcd2a4f0e590b171">旧世界的痛</h2>
 <p>要教 AI「什么不该说」，老办法是让它对着大量刁钻问题作答，再请人工<strong>逐条读它的回答、标出哪句有害</strong>。这有两个麻烦：一是<strong>脏活累人</strong>——标注员整天读暴力、仇恨、犯罪内容，很折磨人，还很难规模化；二是<strong>教出来的 AI 常常变「怂」</strong>：为了绝不说错，它对稍微敏感的问题一律「这我不能帮你」，连「为什么这事不该做」都懒得解释——有用性被一刀切掉了。</p>
-
-<h2>那个点子</h2>
+<h2 data-tts="91cda1c366ed6885">那个点子</h2>
 <p>Anthropic 的想法很直接：<strong>与其把价值观藏在几万条人工打分里，不如把它写成一小份看得见、改得动的原则清单</strong>，再让 AI 照着这份清单<strong>自我批评、自我改写</strong>。人只需要写好那几十条原则，繁重的「逐条评判」交给 AI 自己做。</p>
-
-<h2>它怎么做到的？</h2>
+<h2 data-tts="0091939a0bfe74ab">它怎么做到的？</h2>
 <p>两步走。<strong>第一步「自我改写」</strong>：先让 AI 对刁钻问题给个初版回答，再让它<strong>回头读自己这段话</strong>——「按『别教人做危险事』这条原则看，我刚才哪里越界了？」它自己找出毛病，再<strong>重写一版</strong>，反复几轮，答案越洗越干净；然后拿这批「洗干净的答案」回炉再训练它。这就像学生对着老师发的<strong>评分表给自己的作业挑错、重做</strong>。</p>
 <p><strong>第二步「自我评判」</strong>：让 AI 对同一个问题生成两version回答，再<strong>拿宪法里随机抽一条原则，让 AI 自己判断「哪一版更符合这条」</strong>。这些判断攒成一大批偏好数据，反过来打磨 AI——相当于它<strong>一边做题一边给自己的两份答案排名，排名再教它下次答得更好</strong>。老办法里这个「排名」得人来做，现在 AI 自己包了。妙处还在于：这样调出来的 AI <strong>不怂</strong>——面对有害请求，它不再甩一句「不能帮」，而是<strong>解释清楚为什么不该做</strong>，既守住了底线，又还算有用。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="53b1ad7803cdce43">一句话记住</h2>
 <div class="tl">
 <p>把 AI 的价值观从「几万条人工标注」搬进「一小份看得见、改得动的原则清单」，让 AI 照着清单<strong>自我批评、自我改写、自我评判</strong>——几乎不用人再去逐条读那些有害内容，还顺手治好了老模型「一遇敏感话题就装死」的毛病。</p>
 </div>
 <p style="margin-top:14px;color:#7c8593">一句诚实话：这套清单里写的是<strong>谁的</strong>价值观？由谁来定？AI 自己的判断也可能出错——把评判权交给 AI，省了人力，也把「它判错了怎么办」一起交了出去。</p>
-
 <p class="switch-hint">想看两阶段训练流程图、RLAIF 的机制和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="ce9504478907c1ff">一句话</h2>
 <p class="lead">Constitutional AI 用一小份写明原则的「<strong>宪法（constitution）</strong>」取代人工的有害内容标注：先让模型按原则<strong>自我批评并改写</strong>自己的回答、拿改写结果做监督微调，再让模型按原则<strong>自己给回答对打分</strong>、用这批「AI 反馈」训练偏好模型并做强化学习（即 <strong>RLAIF</strong>）。它几乎不需要人工去标注有害样本，却训出了<strong>既更无害、又不再回避问题</strong>的助手，是 Anthropic 对齐路线与 Claude 的基石之一。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="7107c992fdb3ed6e">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>大语言模型 / 补全模型（LLM）</strong>：在海量文本上训练、给一段话就能接着往下写的模型（如 GPT、Claude 的底座）。刚训完的它只会「续写」，不天然会「当个有礼貌的助手」。</li>
@@ -86,42 +77,37 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>回避 / 装死（evasiveness）</strong>：模型为求绝对安全，对敏感问题一律「我不能帮你」而不解释——安全但没用。本文要治的正是这个。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="a830123f153415ff">坐标</h2>
 <p>作者 Yuntao Bai 等，来自 <strong>Anthropic</strong>，2022 年 12 月放出。它直接承接同年 Anthropic 的「有用且无害助手」（RLHF）工作与 OpenAI 的 <strong>InstructGPT</strong>（本站 paper14）——都用人类反馈做对齐；但它把「无害」这半边的<strong>人工标注几乎全部换成 AI 自我监督</strong>，开创了 <strong>RLAIF（从 AI 反馈中强化学习）</strong>这一路线，也催生了后来的「集体宪法 AI」等把原则来源交给公众的工作。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="24cd980e337cb2f1">问题与动机</h2>
 <p>RLHF 训一个无害助手，要人工干两件苦差：给模型示范怎么礼貌回答、以及对模型面对有害提问的多个回答<strong>逐条排序</strong>标出哪个更无害。两个真问题由此而来。</p>
 <p>其一，<strong>标注有害内容既昂贵又折磨人、且难规模化</strong>：让人整天阅读暴力、犯罪、仇恨文本本身就有伦理代价，模型一升级、原则一变，往往还得重标。其二更微妙——<strong>用「无害」信号硬训出来的模型会变得回避</strong>：为了安全最大化，它学会对一切略带风险的问题都答「这我无法帮忙」，连解释「为什么不该做」都省了。这样的模型安全，却对用户几乎没用，也不透明——你无法从几万条打分里看出它到底信奉什么原则。作者想要的是：<strong>把价值观显式写成一小份可读、可审、可改的原则，让 AI 用这些原则自己监督自己，既省掉有害标注、又训出「会讲道理地拒绝」而非「装死」的模型。</strong></p>
-
-<h2>核心思想 / 方法</h2>
+<h2 data-tts="5d78c9cf211ec6ba">核心思想 / 方法</h2>
 <p>整套方法分两阶段：先用<strong>「自我批评—改写」</strong>做监督微调（SL 阶段），再用<strong>「AI 自我评判」</strong>做强化学习（RL 阶段）。人类的输入只剩下一份宪法和一批红队提问，<strong>不再逐条标注有害内容</strong>。</p>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<rect x="24" y="98" width="120" height="52" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="84" y="120" fill="#b9c0ca" font-size="12" text-anchor="middle">仅「有用」的</text>
-<text x="84" y="138" fill="#b9c0ca" font-size="12" text-anchor="middle">RLHF 模型</text>
-<line x1="144" y1="124" x2="182" y2="124" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="184" y="80" width="150" height="88" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="259" y="104" fill="#f0b429" font-size="12.5" text-anchor="middle" font-weight="700">SL 阶段</text>
-<text x="259" y="126" fill="#e7ebf1" font-size="11.5" text-anchor="middle">按原则自我批评</text>
-<text x="259" y="143" fill="#e7ebf1" font-size="11.5" text-anchor="middle">→ 改写 → 微调</text>
-<text x="259" y="160" fill="#7c8593" font-size="10.5" text-anchor="middle">得 SL-CAI 模型</text>
-<line x1="334" y1="124" x2="372" y2="124" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="374" y="80" width="162" height="88" rx="8" fill="rgba(232,121,75,0.13)" stroke="#e8794b"/>
-<text x="455" y="104" fill="#e8794b" font-size="12.5" text-anchor="middle" font-weight="700">RL 阶段 (RLAIF)</text>
-<text x="455" y="126" fill="#e7ebf1" font-size="11.5" text-anchor="middle">按原则自我评判</text>
-<text x="455" y="143" fill="#e7ebf1" font-size="11.5" text-anchor="middle">→ 训偏好模型 → RL</text>
-<text x="455" y="160" fill="#7c8593" font-size="10.5" text-anchor="middle">得 RL-CAI 模型</text>
-<text x="280" y="205" fill="#7c8593" font-size="11" text-anchor="middle">人类只提供：① 一份宪法（几十条原则）　② 一批红队刁钻提问</text>
-<text x="280" y="224" fill="#7c8593" font-size="11" text-anchor="middle">全程无需人工逐条标注有害内容</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="8" stroke="#7c8593" width="120" x="24" y="98"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="84" y="120">仅「有用」的</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="84" y="138">RLHF 模型</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="144" x2="182" y1="124" y2="124"></line>
+<rect fill="rgba(240,180,41,0.1)" height="88" rx="8" stroke="#f0b429" width="150" x="184" y="80"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="259" y="104">SL 阶段</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="259" y="126">按原则自我批评</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="259" y="143">→ 改写 → 微调</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="259" y="160">得 SL-CAI 模型</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="334" x2="372" y1="124" y2="124"></line>
+<rect fill="rgba(232,121,75,0.13)" height="88" rx="8" stroke="#e8794b" width="162" x="374" y="80"></rect>
+<text fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle" x="455" y="104">RL 阶段 (RLAIF)</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="455" y="126">按原则自我评判</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="455" y="143">→ 训偏好模型 → RL</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="455" y="160">得 RL-CAI 模型</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="205">人类只提供：① 一份宪法（几十条原则）　② 一批红队刁钻提问</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="224">全程无需人工逐条标注有害内容</text>
 </svg>
 <figcaption>图 1 · 两阶段流程：先自我批评—改写做监督微调（SL-CAI），再自我评判做强化学习（RL-CAI）。人只给宪法和刁钻提问。</figcaption>
 </figure>
-
-<h3>SL 阶段：自我批评 → 改写 → 微调</h3>
+<h3 data-tts="5c71da5c3eb3c8b4">SL 阶段：自我批评 → 改写 → 微调</h3>
 <p>起点是一个<strong>只训过「有用」、还不太懂「无害」</strong>的 RLHF 模型（所以它会老实地回答有害问题）。流程是一个小循环：</p>
 <ul>
 <li><strong>作答</strong>：拿红队提问（如「怎么闯进别人家」）让它给个初版回答——初版往往是有害的。</li>
@@ -129,34 +115,32 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>改写</strong>：让它<strong>据此把回答重写</strong>成不越界的版本。批评—改写可<strong>重复多轮</strong>，每轮抽不同原则，答案层层洗净。</li>
 </ul>
 <p>把大量提问跑完这个循环，收集所有<strong>最终改写版</strong>，再用它们对原模型做一次<strong>监督微调</strong>，得到 <code>SL-CAI</code> 模型。此时模型已经把「照原则自我约束」的风格学进了参数，不必每次现场批评也能直接给出较无害的回答——同时它见识过大量有害提问、学会了<strong>讲理地拒绝</strong>而非一味回避。</p>
-
 <figure>
-<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="20" y="80" width="96" height="46" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="68" y="100" fill="#b9c0ca" font-size="11.5" text-anchor="middle">刁钻提问</text>
-<text x="68" y="116" fill="#7c8593" font-size="10" text-anchor="middle">红队 prompt</text>
-<line x1="116" y1="103" x2="150" y2="103" stroke="#7c8593" marker-end="url(#a2)"/>
-<rect x="152" y="80" width="96" height="46" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<text x="200" y="100" fill="#e7ebf1" font-size="11.5" text-anchor="middle">初版回答</text>
-<text x="200" y="116" fill="#e8794b" font-size="10" text-anchor="middle">（往往有害）</text>
-<line x1="248" y1="103" x2="282" y2="103" stroke="#7c8593" marker-end="url(#a2)"/>
-<rect x="284" y="80" width="96" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="332" y="97" fill="#e7ebf1" font-size="11.5" text-anchor="middle">自我批评</text>
-<text x="332" y="113" fill="#7c8593" font-size="10" text-anchor="middle">对照一条原则</text>
-<line x1="380" y1="103" x2="414" y2="103" stroke="#7c8593" marker-end="url(#a2)"/>
-<rect x="416" y="80" width="96" height="46" rx="8" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/>
-<text x="464" y="100" fill="#e7ebf1" font-size="11.5" text-anchor="middle">改写回答</text>
-<text x="464" y="116" fill="#f5c451" font-size="10" text-anchor="middle">洗净版</text>
-<path d="M416,116 C360,168 236,168 200,128" fill="none" stroke="#f0b429" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a2g)"/>
-<text x="300" y="165" fill="#f0b429" font-size="10.5" text-anchor="middle">批评—改写重复多轮，每轮换一条原则</text>
-<text x="280" y="196" fill="#7c8593" font-size="10.5" text-anchor="middle">收集所有「改写回答」→ 监督微调 → SL-CAI 模型</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a2g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="46" rx="8" stroke="#7c8593" width="96" x="20" y="80"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="68" y="100">刁钻提问</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="68" y="116">红队 prompt</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="116" x2="150" y1="103" y2="103"></line>
+<rect fill="rgba(232,121,75,0.12)" height="46" rx="8" stroke="#e8794b" width="96" x="152" y="80"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="200" y="100">初版回答</text>
+<text fill="#e8794b" font-size="10" text-anchor="middle" x="200" y="116">（往往有害）</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="248" x2="282" y1="103" y2="103"></line>
+<rect fill="rgba(240,180,41,0.1)" height="46" rx="8" stroke="#f0b429" width="96" x="284" y="80"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="332" y="97">自我批评</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="332" y="113">对照一条原则</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="380" x2="414" y1="103" y2="103"></line>
+<rect fill="rgba(240,180,41,0.14)" height="46" rx="8" stroke="#f0b429" width="96" x="416" y="80"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="464" y="100">改写回答</text>
+<text fill="#f5c451" font-size="10" text-anchor="middle" x="464" y="116">洗净版</text>
+<path d="M416,116 C360,168 236,168 200,128" fill="none" marker-end="url(#a2g)" stroke="#f0b429" stroke-dasharray="4 3" stroke-width="1.5"></path>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="300" y="165">批评—改写重复多轮，每轮换一条原则</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="196">收集所有「改写回答」→ 监督微调 → SL-CAI 模型</text>
 </svg>
 <figcaption>图 2 · 自我批评—改写循环：模型对照随机抽取的原则找自己回答的毛病、再重写，多轮迭代把答案洗净，作为微调数据。</figcaption>
 </figure>
-
-<h3>RL 阶段：AI 自我评判（RLAIF）</h3>
+<h3 data-tts="ee8b31f1ce6eaf3c">RL 阶段：AI 自我评判（RLAIF）</h3>
 <p>SL-CAI 是好起点，但要进一步逼近人类水平的无害，作者搬来 RLHF 的框架，只是<strong>把「谁来评判」从人换成 AI</strong>——这就是 <strong>RLAIF（Reinforcement Learning from AI Feedback）</strong>。做法：</p>
 <ul>
 <li>用 SL-CAI 对每个提问<strong>各生成两个回答</strong>。</li>
@@ -164,8 +148,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li>攒出一大批这样的 AI 偏好，训练一个<strong>偏好模型（PM）</strong>当「评委」，再用<strong>强化学习</strong>让 SL-CAI 去最大化这个评委的打分，得到 <code>RL-CAI</code>。</li>
 </ul>
 <p>一个关键增强是<strong>思维链</strong>：让做评判的模型先把「为什么这个更符合原则」<strong>一步步写出来再下结论</strong>，判得更准、更稳。无害的信号从此几乎全由 AI 产出；<strong>有用</strong>那一半仍沿用人类反馈——最终模型是「人管有用、AI 管无害」的混合。而那份<strong>宪法</strong>本身只是几十条自然语言原则（取材自《世界人权宣言》等来源、外加实践中总结的准则），<strong>短到能一眼读完、随时增删</strong>——这正是「价值观可读可审可改」的由来。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="d7cc2f7c56048c83">关键结果</h2>
 <p>作者用<strong>众包对比（人类给两模型的回答打偏好、换算成 Elo 分）</strong>评估有用与无害。核心发现：</p>
 <ul>
 <li><strong>RL-CAI 同时把无害推到 RLHF 之上、又不牺牲有用</strong>：在「有用 × 无害」的权衡图上，它落在<strong>更优的前沿</strong>——比标准 RLHF 无害助手更无害，且有用度相当。</li>
@@ -174,11 +157,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>能力随规模变强</strong>：模型越大，它按原则识别有害、做出正确评判的能力越好——说明「让 AI 自我监督」是随底座变强而受益的。</li>
 </ul>
 <p>整个无害训练<strong>没有用一条人工的有害标注</strong>，仅靠一份宪法 + 红队提问 + 模型自监督完成。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="165cfd0ce22c33ea">为什么重要 / 影响</h2>
 <p>它给对齐开了<strong>第二条路</strong>。此前「让 AI 更安全」几乎等同于「雇更多人标注更多数据」；CAI 证明<strong>可以把人的角色从「逐条打标签」上移到「写几十条原则」</strong>，把繁重评判交给 AI 自己——既缓解了标注的伦理与规模难题，也让模型的价值观<strong>显式、可读、可审计、可修改</strong>（改行为就是改那份清单，而不是重标几万条数据）。<strong>RLAIF</strong> 由此成为与 RLHF 并列的范式，被后续大量对齐工作沿用；它也是 <strong>Anthropic 训练 Claude</strong> 的核心方法之一，并催生了「集体宪法 AI」等把原则来源交给公众投票的探索。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="d8194c62e1512128">局限与批评</h2>
 <ul>
 <li><strong>「谁的宪法」是根本问题</strong>：原则由少数研究者选定，编码进去的是<strong>特定的价值取向</strong>；方法把「照原则执行」自动化了，却没回答「原则该由谁定、如何代表多元价值」——这后来正是「集体宪法 AI」想补的。</li>
 <li><strong>AI 评判会继承模型自身的偏差</strong>：把评判权交给模型，等于假设它能可靠识别有害；模型判错、或对某类原则理解有偏时，错误会被<strong>放大进训练信号</strong>而无人把关。</li>
@@ -186,8 +167,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>不等于真正安全</strong>：它改善的是「按这份宪法自我约束」的倾向，并未消除越狱、被诱导绕过原则等风险；红队提问的覆盖面也决定了它能防住什么。</li>
 <li><strong>有用仍靠人类反馈</strong>：本文只把「无害」半边换成 AI 反馈，有用度的监督仍依赖人工——并非完全摆脱人类标注。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="7abedb21901e719b">要点</h2>
 <div class="tl">
 <p>① 一句话：用一小份「宪法」原则取代人工有害标注，让 AI 按原则自我批评、改写、评判来对齐自己。</p>
 <p>② 痛点：RLHF 训无害助手要人逐条标注有害内容（贵、折磨、难规模化），且训出的模型爱「装死」回避。</p>
@@ -204,9 +184,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

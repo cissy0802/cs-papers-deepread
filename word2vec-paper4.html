@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Word2Vec — IT 论文精读 Paper 4</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,45 +36,34 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 4</p>
-<h1>Word2Vec（词向量）</h1>
+<h1 data-tts="1e6598d037d735fa">Word2Vec（词向量）</h1>
 <p class="sub">Mikolov 等 · Google · ICLR Workshop 2013</p>
 <p class="langbar"><a href="word2vec-paper4.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="399fc3f38c0b6f26">这篇论文干了什么？</h2>
 <p>2013 年，Google 的 Tomas Mikolov 团队发布了 <strong>Word2Vec</strong>：一种让计算机自己读海量文章、然后给每个词发一个「<strong>意义坐标</strong>」的方法。神奇之处在于，这些坐标居然能做算术：<strong>「国王 − 男人 + 女人 ≈ 女王」</strong>。今天你用的搜索、推荐，以及 ChatGPT 读懂你每个字的第一步——「把词变成向量」——都是从它这里普及开的。</p>
-
-<h2>先说个怪事</h2>
+<h2 data-tts="800787bfc107709b">先说个怪事</h2>
 <p>在这之前，计算机眼里的词只是<strong>编号</strong>：「猫」是 4102 号，「狗」是 9527 号，「冰箱」是 233 号。在它看来，「猫」和「狗」的关系，跟「猫」和「冰箱」的关系<strong>一模一样——毫无关系</strong>。想让它知道「猫和狗都是宠物」，只能靠人一条条编词典：编不完、跟不上新词，还搬不到别的语言去。</p>
-
-<h2>那个点子</h2>
+<h2 data-tts="dd50f2f532bb409d">那个点子</h2>
 <p>Word2Vec 的想法可以叫「<strong>物以类聚</strong>」：一个词的意思，就藏在它<strong>常跟哪些词待在一起</strong>。「猫」和「狗」都常出现在「喂」「掉毛」「宠物医院」旁边，所以它们意思近；「冰箱」的邻居则是「保鲜」「插电」。既然如此，就给每个词在一张巨大的「<strong>意义地图</strong>」上安个家——<strong>让邻居相似的词住得近</strong>。这张地图不用人来画，机器自己读文章就能画出来。</p>
-
-<h2>怎么画出这张地图？</h2>
+<h2 data-tts="3008070d5bc6ec60">怎么画出这张地图？</h2>
 <p>靠一场做了亿万次的「<strong>完形填空</strong>」。把一句话里的某个词遮住，让机器根据周围的词去猜；<strong>猜错了，就把相关的词在地图上挪一挪位置</strong>，让下次更容易猜对。就这么一句句读、一次次挪，读完几十亿个词之后，用法相似的词自然被推到了一起。更妙的是，地图上的「<strong>方向</strong>」也有了意义：从「男人」走到「女人」的那段路，跟从「国王」走到「女王」的那段路，方向和长短几乎一样——所以才算得出开头那道著名的算术。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="41d989882d3ba906">带来了什么</h2>
 <p>从此「<strong>把任何东西变成坐标</strong>」成了 AI 的通用招式：词、句子、商品、用户、歌曲……都能安进各自的地图，「找相似」变成了「量距离」。搜索、翻译、推荐系统都靠它上了一个台阶，它也是后来 BERT、ChatGPT 这条路线的起点。诚实说一句短板：每个词在地图上<strong>只有一个固定位置</strong>，「苹果」是水果还是公司，它分不开——这得等后来的模型来解决。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="5c64bba3e8dacc36">一句话记住</h2>
 <div class="tl">
 <p>让机器读海量文章做「完形填空」，给每个词在意义地图上安个家：意思近的住得近、语义关系变成方向，连「国王 − 男人 + 女人 ≈ 女王」都算得出来。「万物皆可变坐标」的时代由此开始。</p>
 </div>
-
 <p class="switch-hint">想看 CBOW / Skip-gram 结构图、负采样和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="b7082e775866cb29">一句话</h2>
 <p class="lead">Word2Vec 提出两个<strong>砍掉隐藏层的极简模型</strong>——CBOW（用上下文猜中心词）和 Skip-gram（用中心词猜上下文）——配上层次 softmax、负采样等高效近似，让单机一天就能从十几亿词的语料里学出高质量<strong>词向量（word embedding）</strong>：意思相近的词在空间里彼此靠近，语义/句法关系变成稳定的方向，支持 <code>king − man + woman ≈ queen</code> 式的向量算术。它把「embedding」变成了整个 AI 领域的通用积木。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="833890d73e82f9ad">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>神经网络（neural network）</strong>：从数据里学规律的分层模型；这里只需知道它靠「预测 → 出错 → 调参数」的循环来学习。</li>
@@ -86,87 +76,75 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>自监督（self-supervised）</strong>：不需要人工标注，直接拿文本自身（遮词猜词）当练习题。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="3d594c53570072dd">坐标</h2>
 <p>作者是 Tomas Mikolov、Kai Chen、Greg Corrado、Jeff Dean，来自 Google，2013 年发在 ICLR Workshop；同年的 NIPS 姊妹篇《Distributed Representations of Words and Phrases and their Compositionality》补上了负采样等关键加速。它上承 Bengio 2003 年的神经语言模型与语言学的<strong>分布假说</strong>（distributional hypothesis，「观其伴、知其词」），下启 GloVe、fastText，把「预训练词向量」变成 NLP 标配，直到被 BERT 一代的上下文向量接棒。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="e85c3e264d485881">问题与动机</h2>
 <p>当时主流 NLP 把词当作<strong>原子符号</strong>（one-hot）：词表一百万，每个词就是一百万维、只有一位是 1 的向量。这种表示里<strong>任何两个词都互相垂直</strong>——「猫」与「狗」的距离和「猫」与「冰箱」完全一样。想要相似性，只能靠人工词典（如 WordNet）或简单的共现统计，又稀疏又难维护，也没法泛化：模型在「猫很可爱」上学到的东西，一点都帮不上「狗很可爱」。</p>
 <p>神经语言模型（Bengio 等 2003）已经证明：让网络在预测下一个词的过程中<strong>顺便学出一套稠密词向量</strong>，质量很好。但它太贵——每一步都要过非线性隐藏层、再对整个词表做 softmax 归一化，训练几亿词就要数周，几十亿词想都别想。所以当时的词向量普遍只能在几亿词的语料上训练、维度只有 50–100。</p>
 <p>Mikolov 等的判断很直接：<strong>词向量的质量瓶颈在数据量，不在模型复杂度。</strong>与其用复杂模型啃小语料，不如把模型砍到极简、让它吞得下数量级更大的语料——押注「简单模型 × 海量数据」赢过「复杂模型 × 少量数据」。整篇论文就是围绕这个押注做的设计与验证。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>想法一：把「词义来自邻居」变成一道可训练的填空题</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="c69a231b9afac0e1">想法一：把「词义来自邻居」变成一道可训练的填空题</h3>
 <p>分布假说是语言学的老结论：一个词的意思由它出现的上下文决定。Word2Vec 把它落地成<strong>自监督任务</strong>：扫过语料，对每个位置做「完形填空」——要么用周围的词猜中间的词，要么反过来。不需要任何人工标注，几十亿词就是几十亿道免费练习题。</p>
 <p>关键在于<strong>为什么做填空就能逼出语义</strong>：模型想把这道题答好，最省参数的办法就是把上下文分布相似的词映射到相近的向量——「猫」「狗」既然总出现在相似的语境里，共享相近的坐标就能一份知识两用。<strong>语义不是被教出来的，是被「预测要省力」逼出来的。</strong></p>
-
-<h3>想法二：把模型砍到只剩「查表 + 点积」</h3>
+<h3 data-tts="2d3f471a2e7070f5">想法二：把模型砍到只剩「查表 + 点积」</h3>
 <p>论文给了两个架构（图 1）。<strong>CBOW</strong>（continuous bag-of-words，连续词袋）：把窗口内几个上下文词的向量<strong>取平均</strong>，用这个平均向量预测中心词。<strong>Skip-gram</strong>：反过来，用中心词的向量去<strong>逐个预测</strong>窗口内的每个上下文词。共同点是激进的减法：<strong>没有隐藏层、没有非线性</strong>，一次预测就是查一次表、做一次点积再过 softmax：<code>p(o|c) ∝ exp(u_o · v_c)</code>——白话：两个词的向量点积越大，模型就越相信它们该出现在同一个窗口里。</p>
 <p>为什么敢砍掉非线性？因为目标不是把语言模型做准，而是<strong>把向量学好</strong>——作者的经验是：向量质量对模型复杂度不敏感、对数据量敏感。模型「笨」到只会量方向，但正因为笨，单步训练极快，快到能用海量数据喂饱。取舍上：CBOW 更快（一个窗口只做一次预测）；Skip-gram 对低频词更友好（每个词都会作为中心词被反复训练），语义题上更强。</p>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="w1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<text x="140" y="32" fill="#f0b429" font-size="14" text-anchor="middle" font-weight="700">CBOW</text>
-<text x="420" y="32" fill="#f0b429" font-size="14" text-anchor="middle" font-weight="700">Skip-gram</text>
-<line x1="280" y1="44" x2="280" y2="230" stroke="rgba(240,180,41,0.2)" stroke-dasharray="4 4"/>
-<rect x="22" y="52" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="70" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₋₂</text>
-<rect x="22" y="92" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="110" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₋₁</text>
-<rect x="22" y="132" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="150" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₊₁</text>
-<rect x="22" y="172" width="60" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="52" y="190" fill="#e7ebf1" font-size="11.5" text-anchor="middle">w₊₂</text>
-<text x="52" y="222" fill="#7c8593" font-size="11" text-anchor="middle">上下文词</text>
-<line x1="82" y1="65" x2="126" y2="115" stroke="#7c8593" marker-end="url(#w1)"/>
-<line x1="82" y1="105" x2="126" y2="121" stroke="#7c8593" marker-end="url(#w1)"/>
-<line x1="82" y1="145" x2="126" y2="129" stroke="#7c8593" marker-end="url(#w1)"/>
-<line x1="82" y1="185" x2="126" y2="135" stroke="#7c8593" marker-end="url(#w1)"/>
-<circle cx="148" cy="125" r="20" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="148" y="130" fill="#e7ebf1" font-size="11" text-anchor="middle">平均</text>
-<line x1="168" y1="125" x2="188" y2="125" stroke="#7c8593" marker-end="url(#w1)"/>
-<rect x="190" y="110" width="72" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="226" y="130" fill="#e7ebf1" font-size="11.5" text-anchor="middle">猜中心词</text>
-<rect x="300" y="110" width="72" height="30" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="336" y="130" fill="#e7ebf1" font-size="11.5" text-anchor="middle">中心词 w</text>
-<line x1="372" y1="118" x2="450" y2="66" stroke="#7c8593" marker-end="url(#w1)"/>
-<line x1="372" y1="123" x2="450" y2="105" stroke="#7c8593" marker-end="url(#w1)"/>
-<line x1="372" y1="130" x2="450" y2="146" stroke="#7c8593" marker-end="url(#w1)"/>
-<line x1="372" y1="136" x2="450" y2="186" stroke="#7c8593" marker-end="url(#w1)"/>
-<rect x="452" y="52" width="60" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="482" y="70" fill="#e7ebf1" font-size="11.5" text-anchor="middle">猜 w₋₂</text>
-<rect x="452" y="92" width="60" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="482" y="110" fill="#e7ebf1" font-size="11.5" text-anchor="middle">猜 w₋₁</text>
-<rect x="452" y="132" width="60" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="482" y="150" fill="#e7ebf1" font-size="11.5" text-anchor="middle">猜 w₊₁</text>
-<rect x="452" y="172" width="60" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/><text x="482" y="190" fill="#e7ebf1" font-size="11.5" text-anchor="middle">猜 w₊₂</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="w1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#f0b429" font-size="14" font-weight="700" text-anchor="middle" x="140" y="32">CBOW</text>
+<text fill="#f0b429" font-size="14" font-weight="700" text-anchor="middle" x="420" y="32">Skip-gram</text>
+<line stroke="rgba(240,180,41,0.2)" stroke-dasharray="4 4" x1="280" x2="280" y1="44" y2="230"></line>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="60" x="22" y="52"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="52" y="70">w₋₂</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="60" x="22" y="92"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="52" y="110">w₋₁</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="60" x="22" y="132"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="52" y="150">w₊₁</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="60" x="22" y="172"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="52" y="190">w₊₂</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="52" y="222">上下文词</text>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="82" x2="126" y1="65" y2="115"></line>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="82" x2="126" y1="105" y2="121"></line>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="82" x2="126" y1="145" y2="129"></line>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="82" x2="126" y1="185" y2="135"></line>
+<circle cx="148" cy="125" fill="rgba(232,121,75,0.16)" r="20" stroke="#e8794b"></circle><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="148" y="130">平均</text>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="168" x2="188" y1="125" y2="125"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="5" stroke="#e8794b" width="72" x="190" y="110"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="226" y="130">猜中心词</text>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="5" stroke="#f0b429" width="72" x="300" y="110"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="336" y="130">中心词 w</text>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="372" x2="450" y1="118" y2="66"></line>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="372" x2="450" y1="123" y2="105"></line>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="372" x2="450" y1="130" y2="146"></line>
+<line marker-end="url(#w1)" stroke="#7c8593" x1="372" x2="450" y1="136" y2="186"></line>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#e8794b" width="60" x="452" y="52"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="482" y="70">猜 w₋₂</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#e8794b" width="60" x="452" y="92"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="482" y="110">猜 w₋₁</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#e8794b" width="60" x="452" y="132"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="482" y="150">猜 w₊₁</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#e8794b" width="60" x="452" y="172"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="482" y="190">猜 w₊₂</text>
 </svg>
 <figcaption>图 1 · 两个架构：CBOW 把上下文词向量取平均来猜中心词；Skip-gram 用中心词逐个猜上下文词。都没有隐藏层——一次预测只是查表 + 点积。</figcaption>
 </figure>
-
-<h3>想法三：绕过 softmax 这堵墙</h3>
+<h3 data-tts="24d0e2bd763964f6">想法三：绕过 softmax 这堵墙</h3>
 <p>模型再简单，softmax 仍要对整个词表（百万级）归一化——每一步都算一遍，等于没省。论文用两招绕过。<strong>层次 softmax（hierarchical softmax）</strong>：把词表挂成一棵二叉树，预测一个词变成从树根走到叶子的一连串「二选一」，代价从「整个词表」降到「树的深度」（百万词表约 20 步）。<strong>负采样（negative sampling，NIPS 姊妹篇提出）</strong>：干脆不做归一化，把任务改成二分类——给定中心词，把真正的邻居和随机抽来的几个「假邻居」区分开，每步只更新这十来个词的向量。再配一招<strong>高频词下采样</strong>：「的」「是」这类信息量低的词按概率跳过，省下无效练习。三招合力，<strong>单机一天能训完 16 亿词</strong>——对当时的神经方法是数量级的飞跃。</p>
-
-<h3>意外之喜：方向本身有意义</h3>
+<h3 data-tts="7ef607d2d31bde08">意外之喜：方向本身有意义</h3>
 <p>学出的空间不只「近 = 相似」，还出现了<strong>线性规律</strong>：<code>vector("King") − vector("Man") + vector("Woman")</code> 最接近 <code>vector("Queen")</code>；Paris − France + Italy ≈ Rome；复数、时态、比较级也各自对应稳定的方向（图 2）。直觉是：「男 → 女」这个关系，在成千上万对词（king/queen、uncle/aunt、actor/actress）的上下文里造成的是<strong>同一种系统性差异</strong>，模型最省参数的编码方式，就是把这种共同差异压成同一个位移向量——<strong>关系被编码成了几何</strong>。</p>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="w2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<line x1="60" y1="215" x2="520" y2="215" stroke="rgba(124,133,147,0.4)"/>
-<line x1="60" y1="215" x2="60" y2="30" stroke="rgba(124,133,147,0.4)"/>
-<circle cx="170" cy="180" r="5" fill="#e8794b"/><text x="170" y="202" fill="#e7ebf1" font-size="12.5" text-anchor="middle">男人 man</text>
-<circle cx="340" cy="140" r="5" fill="#e8794b"/><text x="340" y="162" fill="#e7ebf1" font-size="12.5" text-anchor="middle">女人 woman</text>
-<circle cx="230" cy="90" r="5" fill="#f0b429"/><text x="230" y="78" fill="#e7ebf1" font-size="12.5" text-anchor="middle">国王 king</text>
-<circle cx="400" cy="50" r="5" fill="#f0b429"/><text x="400" y="38" fill="#e7ebf1" font-size="12.5" text-anchor="middle">王后 queen</text>
-<line x1="178" y1="177" x2="330" y2="143" stroke="#f0b429" stroke-width="1.8" marker-end="url(#w2)"/>
-<line x1="238" y1="87" x2="390" y2="53" stroke="#f0b429" stroke-width="1.8" marker-end="url(#w2)"/>
-<text x="262" y="130" fill="#f0b429" font-size="11.5" transform="rotate(-12 262 130)">同一个「性别」方向</text>
-<text x="290" y="240" fill="#7c8593" font-size="12" text-anchor="middle" font-family="Menlo,monospace">king − man + woman ≈ queen</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="w2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<line stroke="rgba(124,133,147,0.4)" x1="60" x2="520" y1="215" y2="215"></line>
+<line stroke="rgba(124,133,147,0.4)" x1="60" x2="60" y1="215" y2="30"></line>
+<circle cx="170" cy="180" fill="#e8794b" r="5"></circle><text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="170" y="202">男人 man</text>
+<circle cx="340" cy="140" fill="#e8794b" r="5"></circle><text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="340" y="162">女人 woman</text>
+<circle cx="230" cy="90" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="230" y="78">国王 king</text>
+<circle cx="400" cy="50" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="400" y="38">王后 queen</text>
+<line marker-end="url(#w2)" stroke="#f0b429" stroke-width="1.8" x1="178" x2="330" y1="177" y2="143"></line>
+<line marker-end="url(#w2)" stroke="#f0b429" stroke-width="1.8" x1="238" x2="390" y1="87" y2="53"></line>
+<text fill="#f0b429" font-size="11.5" transform="rotate(-12 262 130)" x="262" y="130">同一个「性别」方向</text>
+<text fill="#7c8593" font-family="Menlo,monospace" font-size="12" text-anchor="middle" x="290" y="240">king − man + woman ≈ queen</text>
 </svg>
 <figcaption>图 2 · 向量空间里的语义算术：「男人 → 女人」与「国王 → 王后」几乎是同一个位移方向，所以 king − man + woman 落在 queen 附近。</figcaption>
 </figure>
-
-<h2>关键结果</h2>
+<h2 data-tts="d9312da8ef9c2ee5">关键结果</h2>
 <p>作者自建了一个<strong>语义-句法类比测试集</strong>（共 19,544 道「雅典之于希腊，如奥斯陆之于？」式的题目），它后来成了词向量的标准评测。同语料、同 640 维向量的对照下：<strong>Skip-gram 的语义类比准确率约 55%</strong>，是此前前馈神经语言模型（约 23%）的两倍多，也远超循环网络模型；<strong>CBOW 在句法题上最强（约 64%）且训练最快</strong>。效率上，训练成本从旧模型的「数周」降到<strong>「一天内训完 16 亿词」</strong>。NIPS 姊妹篇进一步显示负采样比层次 softmax 又快又好；Google 随代码放出的、在约千亿词 Google News 语料上训练的 <strong>300 维、300 万词与短语</strong>的向量包，成了此后多年整个社区的默认起点。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="621152e8ed6d5369">为什么重要 / 影响</h2>
 <p>它把「embedding」从论文里的概念变成了工业标配。<strong>「一切皆可向量」</strong>：词之后是句子、文档、商品、用户、图节点、蛋白质——「找相似」统一变成「量距离」，这正是今天搜索、推荐、以及大模型 RAG 里向量检索的通用范式。</p>
 <p>它也是<strong>「预训练 + 复用」</strong>思路的先声：在无标注大语料上白捡一套通用表示，再搬到任何下游任务。GloVe（2014）、fastText（2016）是直接后继；ELMo、BERT 把「一词一向量」升级成「一词随句变」，但「用向量表示语义、靠自监督预测来学」这条主线正是从这篇确立的——今天每个大模型输入端的词嵌入层，都是它的直系后代。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="ff136d16ddde89a8">局限与批评</h2>
 <ul>
 <li><strong>一词只有一个向量</strong>：「苹果」（公司/水果）、bank（银行/河岸）被压进同一个点，多义混杂。这是后来 ELMo/BERT 上下文向量要解决的核心问题，也最终让静态词向量退居二线。</li>
 <li><strong>类比算术被部分夸大</strong>：标准评测会把输入的三个词排除在候选之外——若不排除，很多题的「最近邻」就是输入词自己；后续分析（Levy &amp; Goldberg 等）还证明，带负采样的 Skip-gram 隐式等价于分解一个词-上下文的 PMI（点互信息，衡量两词共现是否超出随机）矩阵——它并不比调好参的传统计数方法「神秘」多少。</li>
@@ -174,8 +152,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>词表封闭</strong>：没见过的词（新词、错拼）没有向量；fastText 后来用「子词拼装」补上这一课。</li>
 <li><strong>窗口内不看语序</strong>：「狗咬人」和「人咬狗」贡献完全一样的共现信号，句法结构无从谈起。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="899f1472e381541f">要点</h2>
 <div class="tl">
 <p>① 一句话：两个砍掉隐藏层的浅模型（CBOW / Skip-gram）+ 高效近似，从海量无标注文本里自学出高质量词向量。</p>
 <p>② 痛点：one-hot 把每个词当孤岛、看不出远近；神经语言模型能学好向量但贵到训不动大语料。</p>
@@ -192,9 +169,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

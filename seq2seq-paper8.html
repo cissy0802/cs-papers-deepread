@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Sequence to Sequence Learning（Seq2Seq）— IT 论文精读 Paper 8</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,46 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 8</p>
-<h1>Sequence to Sequence Learning（Seq2Seq）</h1>
+<h1 data-tts="8dfe197b23b57107">Sequence to Sequence Learning（Seq2Seq）</h1>
 <p class="sub">Sutskever, Vinyals &amp; Le · Google · NIPS 2014</p>
 <p class="langbar"><a href="seq2seq-paper8.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="43d9777ee078ca8e">这篇论文干了什么？</h2>
 <p>2014 年，Google 的三个人——其中的 Ilya Sutskever 后来当了 OpenAI 首席科学家——提出了 <strong>Seq2Seq（序列到序列）</strong>：让<strong>两个神经网络接力</strong>，一个专门「读」、一个专门「说」，第一次让机器翻译整句话从头到尾由神经网络独立完成，成绩还超过了打磨多年的传统翻译系统。今天你跟 ChatGPT「你一句、我一句」的样子，最早的雏形就是它。</p>
-
-<h2>打个比方</h2>
+<h2 data-tts="66e56c1eb3b7a90e">打个比方</h2>
 <p>想想同声传译员是怎么工作的：<strong>先听完一整句，在脑子里形成一个「意思」，再用另一种语言把这个意思重新说出来</strong>——绝不是听一个词翻一个词。而 Seq2Seq 之前的机器翻译恰恰更像后者：把句子剁成小块，逐块查对照表替换，再想办法把碎块拼通顺。Seq2Seq 让机器第一次学会了传译员的路子：<strong>先读懂，再重说。</strong></p>
-
-<h2>新在哪</h2>
+<h2 data-tts="0e536cd38f5b950f">新在哪</h2>
 <p>旧世界的翻译系统是一条<strong>流水线</strong>：切短语的、查表的、调语序的、打分挑最顺的……几十个零件各管一段，每个零件都要专家单独设计调教，哪里出错都难追查。Seq2Seq 把这一切换成<strong>一个整体</strong>：只要喂给它海量「原文–译文」句子对，它自己从头学会整个翻译过程，中间不需要任何人手工设计规则。</p>
-
-<h2>怎么做到的</h2>
+<h2 data-tts="2c26fbdcbfb3f2a5">怎么做到的</h2>
 <p>「读」的网络逐词读入原句，一边读一边更新自己的「脑内状态」；读完最后一个词，这个状态就是整句话被浓缩成的一个「<strong>念头</strong>」。「说」的网络接过这个念头，<strong>一个词一个词往外说</strong>：每说一个词，都看着这个念头加上自己刚说过的话，决定下一个词说什么，直到说出一个特殊的「句号」记号才停笔——所以译文想多长就多长，不用提前规定。</p>
 <p>论文里还有个出了名的妙招：<strong>把原句倒着喂进去</strong>。这样一来，原句的开头和译文的开头在时间上离得特别近，模型先轻松学会「开头对开头」，再顺藤摸瓜把后面对上——就像接力赛把交棒的两个人安排得更近，成绩立刻明显提高。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="01e4f4235455437e">带来了什么</h2>
 <p>它第一次证明：<strong>不靠语言学规则、不靠手工零件，纯神经网络就能在正式比赛数据上打败传统翻译系统</strong>。两年后，Google 翻译把运行了十年的旧系统整个换成了这套架构的后代；「先读懂、再生成」也从翻译蔓延到摘要、对话、语音、看图说话，成了 AI 的通用套路。也得诚实说一句：把整句话压进一个固定大小的「念头」，句子越长越记不全——第二年为治这个毛病发明的「注意力」，后来长成了 Transformer。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="1d2c69be41c63c6f">一句话记住</h2>
 <div class="tl">
 <p>两个网络接力：一个把整句话读成一个「念头」，另一个从这个念头出发一个词一个词地重说出来——翻译从「流水线拼积木」变成「先读懂、再重说」，今天大模型「你问我答」的形态就是从这里长出来的。</p>
 </div>
-
 <p class="switch-hint">想看编码器–解码器的结构图、倒序技巧和真实比分？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="0dc27a1d1f851343">一句话</h2>
 <p class="lead">Seq2Seq 用两个多层 LSTM 组成「<strong>编码器–解码器（encoder–decoder）</strong>」：编码器把任意长的输入序列读成<strong>一个固定长度的向量</strong>，解码器再从这个向量出发逐词生成任意长的输出序列；配合「<strong>倒序输入</strong>」这个技巧，它在 WMT'14 英法翻译上让端到端神经网络第一次超过强大的统计机器翻译基线（BLEU 34.8 对 33.3），从此确立了「一切皆序列到序列」的范式。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="205884632b69335d">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>神经网络</strong>：由许多「层」堆叠、靠海量数据自动学规律的模型；训练就是不断微调内部参数让预测更准。</li>
@@ -87,113 +77,104 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>束搜索（beam search）</strong>：逐词生成时不每步只押一个最优词，而是同时保留 B 条候选句子往下扩展，最后挑整体得分最高的——比「一条道走到黑」的贪心更稳。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="3383222458aab2b2">坐标</h2>
 <p>作者是 Ilya Sutskever、Oriol Vinyals、Quoc V. Le，来自 Google，论文发在 NIPS 2014。它上承 LSTM（1997，Paper 7）和更早提出类似「编码–解码」想法的 Kalchbrenner &amp; Blunsom（2013）、Cho 等（2014），下启 Bahdanau 注意力（2014）与 Transformer（2017）——现代大模型这条线，正是从这里开始成形。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="b86959fd164d4d5f">问题与动机</h2>
 <p>到 2014 年，深度网络已在语音、图像上大放异彩，但有个死穴：<strong>输入和输出都得是事先定好维度的向量</strong>。而现实里最有价值的一批问题——翻译、语音识别、问答——都是「<strong>序列进、序列出</strong>」，且两头的长度都不定、还不知道怎么对应。</p>
 <p>当时统治翻译的 SMT 是一条庞大流水线：词对齐、短语表、调序模型、语言模型分头训练，再手工调权重拼在一起。它 work，但每个模块要专家伺候、错误层层传递、优化目标支离破碎。真正的问题是：<strong>能不能用一个神经网络，端到端地直接学「给定输入序列、输出序列的概率」，把整条流水线换成一个可训练的整体？</strong>缺的就是一个能对付「变长进、变长出」的通用架构。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>想法一：编码器–解码器——「读」和「说」分成两个网络</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="6e89e00b37938434">想法一：编码器–解码器——「读」和「说」分成两个网络</h3>
 <p>Seq2Seq 用<strong>两个独立的 LSTM</strong>。<strong>编码器</strong>逐词读入原句，每读一个词更新一次隐状态；读完整句（以结束符 <code>&lt;EOS&gt;</code> 收尾），此刻的隐状态就是整句话的<strong>固定长度向量 v</strong>——论文里俗称「思想向量（thought vector）」，整句的意思被压缩在这一个向量里。</p>
 <p><strong>解码器</strong>本质上是一个「被 v 定了调」的语言模型：以 v 作为自己的初始记忆，逐词生成译文——用行内式子写就是 <code>p(y₁…yₜ | x) = ∏ p(yₜ | v, y₁…yₜ₋₁)</code>，白话是「每个新词的选择，都取决于整句原文的念头 v，加上我已经说出口的部分」。每步它对整个词表给出一个概率分布，选出的词又作为下一步的输入；直到生成 <code>&lt;EOS&gt;</code> 才停——<strong>输出长度由模型自己决定</strong>，这就是变长输出的解法。</p>
 <p><strong>为什么拆成两个网络？</strong>一是输入输出往往是两种语言，各用一套参数各司其职；二是这个「接口」极其干净——两边只交接一个向量 v，于是编码端和解码端可以各自加深加宽。论文里两边都是 <strong>4 层深 LSTM</strong>（每层 1000 个单元、词向量 1000 维，输入词表 16 万、输出词表 8 万），深版本明显好于浅版本。</p>
-
 <figure>
-<svg viewBox="0 0 560 262" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 262" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
 <!-- encoder cells -->
-<rect x="14" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="37" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<rect x="76" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="99" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<rect x="138" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="161" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<rect x="200" y="118" width="46" height="32" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="223" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<line x1="60" y1="134" x2="74" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="122" y1="134" x2="136" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="184" y1="134" x2="198" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="46" x="14" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="37" y="139">LSTM</text>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="46" x="76" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="99" y="139">LSTM</text>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="46" x="138" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="161" y="139">LSTM</text>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="46" x="200" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="223" y="139">LSTM</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="60" x2="74" y1="134" y2="134"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="122" x2="136" y1="134" y2="134"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="184" x2="198" y1="134" y2="134"></line>
 <!-- encoder inputs -->
-<text x="37" y="196" fill="#b9c0ca" font-size="13" text-anchor="middle">A</text>
-<text x="99" y="196" fill="#b9c0ca" font-size="13" text-anchor="middle">B</text>
-<text x="161" y="196" fill="#b9c0ca" font-size="13" text-anchor="middle">C</text>
-<text x="223" y="196" fill="#b9c0ca" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
-<line x1="37" y1="182" x2="37" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="99" y1="182" x2="99" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="161" y1="182" x2="161" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="223" y1="182" x2="223" y2="152" stroke="#7c8593" marker-end="url(#a1)"/>
-<text x="130" y="226" fill="#f0b429" font-size="11.5" text-anchor="middle">编码器：逐词读入，把整句压进隐状态</text>
+<text fill="#b9c0ca" font-size="13" text-anchor="middle" x="37" y="196">A</text>
+<text fill="#b9c0ca" font-size="13" text-anchor="middle" x="99" y="196">B</text>
+<text fill="#b9c0ca" font-size="13" text-anchor="middle" x="161" y="196">C</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="223" y="196">&lt;EOS&gt;</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="37" x2="37" y1="182" y2="152"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="99" x2="99" y1="182" y2="152"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="161" x2="161" y1="182" y2="152"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="223" x2="223" y1="182" y2="152"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="130" y="226">编码器：逐词读入，把整句压进隐状态</text>
 <!-- vector v -->
-<line x1="246" y1="134" x2="266" y2="134" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a1g)"/>
-<rect x="268" y="116" width="34" height="36" rx="8" fill="rgba(240,180,41,0.22)" stroke="#f0b429" stroke-width="1.6"/><text x="285" y="140" fill="#f5c451" font-size="14" text-anchor="middle" font-weight="700">v</text>
-<text x="285" y="102" fill="#f0b429" font-size="10.5" text-anchor="middle">固定长度向量</text>
-<line x1="304" y1="134" x2="324" y2="134" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a1g)"/>
+<line marker-end="url(#a1g)" stroke="#f0b429" stroke-width="1.8" x1="246" x2="266" y1="134" y2="134"></line>
+<rect fill="rgba(240,180,41,0.22)" height="36" rx="8" stroke="#f0b429" stroke-width="1.6" width="34" x="268" y="116"></rect><text fill="#f5c451" font-size="14" font-weight="700" text-anchor="middle" x="285" y="140">v</text>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="285" y="102">固定长度向量</text>
+<line marker-end="url(#a1g)" stroke="#f0b429" stroke-width="1.8" x1="304" x2="324" y1="134" y2="134"></line>
 <!-- decoder cells -->
-<rect x="326" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="349" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<rect x="388" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="411" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<rect x="450" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="473" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<rect x="510" y="118" width="46" height="32" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="533" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">LSTM</text>
-<line x1="372" y1="134" x2="386" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="434" y1="134" x2="448" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="496" y1="134" x2="508" y2="134" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect fill="rgba(232,121,75,0.12)" height="32" rx="6" stroke="#e8794b" width="46" x="326" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="349" y="139">LSTM</text>
+<rect fill="rgba(232,121,75,0.12)" height="32" rx="6" stroke="#e8794b" width="46" x="388" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="411" y="139">LSTM</text>
+<rect fill="rgba(232,121,75,0.12)" height="32" rx="6" stroke="#e8794b" width="46" x="450" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="473" y="139">LSTM</text>
+<rect fill="rgba(232,121,75,0.12)" height="32" rx="6" stroke="#e8794b" width="46" x="510" y="118"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="533" y="139">LSTM</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="372" x2="386" y1="134" y2="134"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="434" x2="448" y1="134" y2="134"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="496" x2="508" y1="134" y2="134"></line>
 <!-- decoder outputs -->
-<text x="349" y="66" fill="#e7ebf1" font-size="13" text-anchor="middle">W</text>
-<text x="411" y="66" fill="#e7ebf1" font-size="13" text-anchor="middle">X</text>
-<text x="473" y="66" fill="#e7ebf1" font-size="13" text-anchor="middle">Y</text>
-<text x="533" y="66" fill="#e7ebf1" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
-<line x1="349" y1="116" x2="349" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="411" y1="116" x2="411" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="473" y1="116" x2="473" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="533" y1="116" x2="533" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="349" y="66">W</text>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="411" y="66">X</text>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="473" y="66">Y</text>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="533" y="66">&lt;EOS&gt;</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="349" x2="349" y1="116" y2="80"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="411" x2="411" y1="116" y2="80"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="473" x2="473" y1="116" y2="80"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="533" x2="533" y1="116" y2="80"></line>
 <!-- feedback: generated word as next input -->
-<path d="M357,72 C384,72 400,96 407,114" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#a1)"/>
-<path d="M419,72 C446,72 462,96 469,114" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#a1)"/>
-<path d="M481,72 C506,72 522,96 529,114" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#a1)"/>
-<text x="440" y="40" fill="#7c8593" font-size="10.5" text-anchor="middle">刚生成的词，作为下一步的输入</text>
-<text x="440" y="226" fill="#e8794b" font-size="11.5" text-anchor="middle">解码器：从 v 出发逐词生成，遇 &lt;EOS&gt; 停</text>
+<path d="M357,72 C384,72 400,96 407,114" fill="none" marker-end="url(#a1)" stroke="#7c8593" stroke-dasharray="4 3"></path>
+<path d="M419,72 C446,72 462,96 469,114" fill="none" marker-end="url(#a1)" stroke="#7c8593" stroke-dasharray="4 3"></path>
+<path d="M481,72 C506,72 522,96 529,114" fill="none" marker-end="url(#a1)" stroke="#7c8593" stroke-dasharray="4 3"></path>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="440" y="40">刚生成的词，作为下一步的输入</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="440" y="226">解码器：从 v 出发逐词生成，遇 &lt;EOS&gt; 停</text>
 </svg>
 <figcaption>图 1 · 编码器–解码器：编码器把输入序列「A B C」读成固定长度向量 v，解码器以 v 为初始记忆逐词生成「W X Y」，生成的词回喂作下一步输入，直到产出 &lt;EOS&gt;。</figcaption>
 </figure>
-
-<h3>想法二：倒序输入——一个便宜到离谱的大招</h3>
+<h3 data-tts="bbf8c0ed803aa8bb">想法二：倒序输入——一个便宜到离谱的大招</h3>
 <p>论文最出名的技巧：<strong>把源句倒过来喂</strong>（「A B C → W X Y」训练成「C B A → W X Y」，目标句不动）。为什么有用？正着喂时，源句开头的词要等整句读完、再生成大半译文才被用到，隔了太多步；倒过来后，<strong>源句开头恰好紧挨着译文开头</strong>，凭空造出一批「短程依赖」。优化器先轻松学会「开头对开头」，建立起对齐后，长距离的对应也跟着顺了——虽然词与词的<strong>平均</strong>距离根本没变。</p>
 <p>效果惊人：困惑度（perplexity，衡量模型对下个词有多「不确定」，越低越好）从 5.8 降到 4.7，<strong>BLEU 从 25.9 涨到 30.6</strong>。也要诚实说：这是个纯经验的技巧，作者当时也没有完整的理论解释。</p>
-
 <figure>
-<svg viewBox="0 0 560 212" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 212" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
 <!-- row 1: normal order -->
-<text x="14" y="52" fill="#7c8593" font-size="11.5">正着喂</text>
-<text x="120" y="52" fill="#e7ebf1" font-size="14" text-anchor="middle">A</text>
-<text x="180" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">B</text>
-<text x="240" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">C</text>
-<text x="300" y="52" fill="#7c8593" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
-<text x="360" y="52" fill="#e7ebf1" font-size="14" text-anchor="middle">W</text>
-<text x="420" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">X</text>
-<text x="480" y="52" fill="#b9c0ca" font-size="14" text-anchor="middle">Y</text>
-<path d="M124,38 C190,-2 300,-2 356,38" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#a2g)"/>
-<text x="240" y="16" fill="#e8794b" font-size="11">A 和它的译词 W 隔了 4 步——远</text>
+<text fill="#7c8593" font-size="11.5" x="14" y="52">正着喂</text>
+<text fill="#e7ebf1" font-size="14" text-anchor="middle" x="120" y="52">A</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="180" y="52">B</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="240" y="52">C</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="300" y="52">&lt;EOS&gt;</text>
+<text fill="#e7ebf1" font-size="14" text-anchor="middle" x="360" y="52">W</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="420" y="52">X</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="480" y="52">Y</text>
+<path d="M124,38 C190,-2 300,-2 356,38" fill="none" marker-end="url(#a2g)" stroke="#e8794b" stroke-width="1.6"></path>
+<text fill="#e8794b" font-size="11" x="240" y="16">A 和它的译词 W 隔了 4 步——远</text>
 <!-- row 2: reversed -->
-<text x="14" y="150" fill="#7c8593" font-size="11.5">倒着喂</text>
-<text x="120" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">C</text>
-<text x="180" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">B</text>
-<text x="240" y="150" fill="#e7ebf1" font-size="14" text-anchor="middle">A</text>
-<text x="300" y="150" fill="#7c8593" font-size="11" text-anchor="middle">&lt;EOS&gt;</text>
-<text x="360" y="150" fill="#e7ebf1" font-size="14" text-anchor="middle">W</text>
-<text x="420" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">X</text>
-<text x="480" y="150" fill="#b9c0ca" font-size="14" text-anchor="middle">Y</text>
-<path d="M244,136 C280,108 320,108 356,136" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a2g)"/>
-<text x="300" y="106" fill="#f0b429" font-size="11" text-anchor="middle">只隔 2 步——先把「开头对开头」学会</text>
-<text x="280" y="192" fill="#7c8593" font-size="11" text-anchor="middle">平均距离没变，但句首出现了大量「短程依赖」，优化一下子容易了</text>
+<text fill="#7c8593" font-size="11.5" x="14" y="150">倒着喂</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="120" y="150">C</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="180" y="150">B</text>
+<text fill="#e7ebf1" font-size="14" text-anchor="middle" x="240" y="150">A</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="300" y="150">&lt;EOS&gt;</text>
+<text fill="#e7ebf1" font-size="14" text-anchor="middle" x="360" y="150">W</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="420" y="150">X</text>
+<text fill="#b9c0ca" font-size="14" text-anchor="middle" x="480" y="150">Y</text>
+<path d="M244,136 C280,108 320,108 356,136" fill="none" marker-end="url(#a2g)" stroke="#f0b429" stroke-width="1.8"></path>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="300" y="106">只隔 2 步——先把「开头对开头」学会</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="192">平均距离没变，但句首出现了大量「短程依赖」，优化一下子容易了</text>
 </svg>
 <figcaption>图 2 · 倒序输入：源句倒过来后，句首词 A 与其译词 W 从相隔 4 步变成 2 步；BLEU 因此从 25.9 涨到 30.6。</figcaption>
 </figure>
-
-<h3>想法三：训练与解码的工程细节</h3>
+<h3 data-tts="9a0f17a64bb13e15">想法三：训练与解码的工程细节</h3>
 <p>训练目标很朴素：在海量句对上<strong>最大化正确译文的概率</strong>（逐词的交叉熵）。解码时用<strong>束搜索</strong>：每步保留 B 个最有希望的部分译文往下扩展；有意思的是 <strong>B=2 就已接近最佳</strong>，说明模型本身的概率估计相当准。为防训练中梯度突然变得巨大（梯度爆炸），超过阈值就整体缩放（梯度裁剪）。整个系统在 8 块 GPU 上（4 块跑 LSTM 各层、4 块算词表概率）训练了约 10 天。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="74b437e3942e3d78">关键结果</h2>
 <p>基准是 <strong>WMT'14 英→法</strong>翻译任务，训练用其中 1200 万句对。代表性数字：</p>
 <ul>
 <li><strong>5 个深 LSTM 集成 + 束搜索：BLEU 34.8</strong>，超过同数据上强大的 SMT 基线 <strong>33.3</strong>——<strong>纯神经网络第一次在大规模翻译任务上超过统计系统</strong>。</li>
@@ -202,11 +183,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li>出乎所有人意料，它在<strong>长句</strong>上也翻得不错——本以为固定向量记不住长句，倒序缓解了不少。</li>
 <li>把句向量 v 降维可视化（PCA）：<strong>意思相近的句子聚成一团，对词序敏感、对主动/被动语态不敏感</strong>——说明 v 编码的确实是「意思」而非字面。</li>
 </ul>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="6a451d3e9fa83fa5">为什么重要 / 影响</h2>
 <p>它确立了一个统治此后十年的范式：<strong>「一切皆序列到序列」</strong>。翻译、摘要、对话、语音识别、看图说话（CNN 当编码器 + LSTM 当解码器）、代码生成——全都套这一个框架。2016 年 Google 翻译上线 GNMT（本架构加注意力的工业化版本），一夜之间替换了运行十年的 SMT 流水线，是神经网络第一次整体接管一个大型互联网产品的核心。更深远的是：今天大模型「prompt 进、回答出」的形态，正是这个<strong>条件逐词生成</strong>框架的直系后代——只不过编码器和解码器合并成了一个 Transformer。三位作者也都成了这波浪潮的核心人物：Sutskever 后来任 OpenAI 首席科学家，Vinyals 领导 DeepMind 的深度学习研究。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="c7949709fb1d023e">局限与批评</h2>
 <ul>
 <li><strong>固定向量是瓶颈</strong>：不管句子多长，全被压进同一个向量 v，长句必然丢信息。第二年 Bahdanau 等提出<strong>注意力机制</strong>——让解码器每生成一个词都能回看整个输入序列——正面解决了它，也让倒序技巧变得多余；这条线三年后长成 Transformer。</li>
 <li><strong>倒序是 hack 不是解法</strong>：它对英法这类语序相近的语言对有效，恰恰说明模型并没有真正学会处理长程依赖，只是把问题挪得更容易了。</li>
@@ -214,8 +193,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>又慢又难并行</strong>：RNN 必须逐步算，训练无法像 Transformer 那样整句并行；逐词解码也慢。这是它最终被取代的根本原因。</li>
 <li><strong>想法并非凭空首创</strong>：Kalchbrenner &amp; Blunsom（2013）和 Cho 等（2014，比它早几个月）已提出类似的编码–解码框架；这篇的独特贡献是用<strong>足够深的 LSTM + 倒序 + 大算力</strong>第一次把端到端翻译做到超过 SMT，证明这条路走得通。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="2be785806fd57d16">要点</h2>
 <div class="tl">
 <p>① 一句话：两个深 LSTM 组成编码器–解码器，中间只交接一个固定长度向量 v，端到端学会「变长序列 → 变长序列」。</p>
 <p>② 痛点：深度网络只吃定长输入输出，而翻译等核心问题是变长序列进出；SMT 流水线模块多、难优化。</p>
@@ -232,9 +210,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

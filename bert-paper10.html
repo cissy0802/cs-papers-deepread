@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>BERT — IT 论文精读 Paper 10</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,45 +36,34 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 10</p>
-<h1>BERT：双向预训练 + 微调</h1>
+<h1 data-tts="7fce77f66ffebdda">BERT：双向预训练 + 微调</h1>
 <p class="sub">Devlin 等 · Google AI Language · NAACL 2019</p>
 <p class="langbar"><a href="bert-paper10.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="45aff655eba37b36">这篇论文干了什么？</h2>
 <p>2018 年，Google 一队人提出了 <strong>BERT</strong>：先让模型把维基百科和上万本书<strong>「裸读」一遍、自学语言</strong>，再针对每个具体任务（判断评论好评差评、回答问题……）<strong>花很小的功夫「补个课」</strong>就能上岗——一口气刷新了 11 项语言理解任务的纪录，有的还超过了人类。今天所有大模型（包括 ChatGPT）都遵循的「<strong>先预训练、再调教</strong>」的路子，就是被这篇论文在语言领域彻底带火的。2019 年起，你每一次 Google 搜索背后都跑着它。</p>
-
-<h2>先说个怪事</h2>
+<h2 data-tts="ca2c49e952beca50">先说个怪事</h2>
 <p>教机器「读懂」语言，最自然的功课是<strong>接龙</strong>：给它半句话，让它猜下一个词。但接龙有个天生的别扭——<strong>只准看左边、不准看右边</strong>，像拿一张纸挡着后文读书。可人理解一个词，明明是两头一起看的：「他走进＿＿把钱存了进去」，空里是「银行」，答案的线索<strong>在右边的「存钱」里</strong>；只看左边的「他走进」，猜什么都有可能。当时最强的模型就这么别扭着：要么只从左往右读，要么把「从左读一遍」和「从右读一遍」两个各自挡着半边的模型硬拼在一起——始终没有一个模型能<strong>真正同时看两边</strong>。</p>
-
-<h2>换一道功课：完形填空</h2>
+<h2 data-tts="c8170efcccfafaea">换一道功课：完形填空</h2>
 <p>BERT 的解法妙在换题型：别玩接龙了，<strong>玩完形填空</strong>。把一句话随机挖掉几个词，让模型猜被挖掉的是什么。要猜对空里的词，模型<strong>必须左右两边一起看</strong>——这道题天生就逼它双向理解。而且这种练习题<strong>不要钱</strong>：随便一段文字，挖几个空，就是一道自带标准答案的题。维基百科加上万本书，就是几十亿道免费练习题，不需要任何人来批改。做题、对答案、改错，重复几十亿遍，模型就把词义、语法、常识一点点「吸」了进去。</p>
-
-<h2>先读大学，再岗前培训</h2>
+<h2 data-tts="1ba0c643e01d6140">先读大学，再岗前培训</h2>
 <p>光会填空还不能干活。BERT 的第二个点子是把学习拆成两段，就像人的培养：先花大成本读一次「<strong>通识大学</strong>」（在海量文本上做完形填空，练出通用的语言底子——这一步只需做一次），然后每个岗位只需一次「<strong>岗前速成</strong>」：拿几千条带标注的例子，把同一个底子稍微调一调，几个小时就能上岗。以前每个任务都得从零培养一个「文盲」，费时费力还学不好；现在人人都从「大学毕业生」起步。<strong>一次昂贵的自学，无数次廉价的上岗</strong>——这买卖太划算了。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="0ca9ccfae5f462be">带来了什么</h2>
 <p>BERT 一出，11 项语言理解任务全线破纪录，整个领域几乎在一年内全面转向「预训练 + 微调」的范式；Google 把它装进了搜索引擎，去理解你搜的那句话到底想问什么。也说句诚实的：BERT 是个「阅读理解型」选手，<strong>擅长读懂、不擅长写作</strong>——后来能聊天能写文章的 GPT 路线走的是另一条路，规模大了之后风头盖过了它；但「先预训练再调教」这个范式，正是从它这里成为全行业共识的。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="8e631f2d606206cf">一句话记住</h2>
 <div class="tl">
 <p>把「接龙」换成「完形填空」，模型就能左右两边一起看地读几十亿句话、免费自学出语言底子；之后每个任务只需在这个底子上「岗前速成」一下。先读大学、再岗前培训——这个范式从 BERT 起统治了整个 AI。</p>
 </div>
-
 <p class="switch-hint">想看挖空的具体玩法、模型结构和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="0d13c90728f2c1bb">一句话</h2>
 <p class="lead">BERT 用「<strong>掩码语言模型</strong>」（masked language model，完形填空式的自监督任务）在无标注文本上预训练一个<strong>深度双向</strong>的 Transformer 编码器，再针对每个下游任务只加一层输出、整体微调（fine-tuning），一举刷新 11 项 NLP 任务纪录（GLUE 提升 7.7 个百分点、SQuAD 问答超过人类水平），把「<strong>预训练 + 微调</strong>」确立为 NLP 的统治范式。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="511f7b64cc39e71c">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>神经网络 / 层</strong>：由许多「层」堆叠、从数据里自动学规律的模型；层越多（越深），能表达的模式越复杂。</li>
@@ -86,110 +76,97 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>GLUE / SQuAD</strong>：当年衡量「语言理解」的两大公开基准——GLUE 是 9 个理解任务（情感判断、两句话是否矛盾等）的套餐；SQuAD 是「读一段维基百科、回答问题」的问答数据集。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="399203b4b0ccaacf">坐标</h2>
 <p>作者是 Jacob Devlin、Ming-Wei Chang、Kenton Lee、Kristina Toutanova，来自 Google AI Language；2018 年 10 月放出，发表于 NAACL 2019 并获最佳论文。它上承 Transformer（2017，提供架构）、ELMo 与 GPT-1（2018，提供「预训练语言模型再迁移」的雏形），下启 RoBERTa、ALBERT、DistilBERT 等庞大家族，并与 GPT 系的「生成式」路线分庭抗礼，成为 NLP「预训练时代」的分水岭。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="821901b526af225f">问题与动机</h2>
 <p>2018 年初，NLP 界已经隐约看到方向：与其为每个任务从零训练小模型，不如先在无标注大语料上预训练语言模型、再迁移。但两个先行者各有硬伤：</p>
 <ul>
 <li><strong>GPT-1（OpenAI）</strong>：用 Transformer 做标准语言模型——从左往右预测下一个词。架构现代、可微调，但<strong>每个词只能看见自己左边的上文</strong>。对生成来说这是天经地义（写作只能顺着写），对<em>理解</em>来说却是自缚手脚：「他走进银行」里的「银行」是金融机构还是河岸（英文 bank 两义），线索往往在右边。</li>
 <li><strong>ELMo</strong>：意识到要看两边，但做法是训练两个<em>各自单向</em>的 LSTM（一个从左读、一个从右读），把两者的输出<strong>浅浅地拼接</strong>——两个「半盲」模型各读各的，直到最后一刻才见面，任何一层内部都没有真正的双向交互。</li>
 </ul>
 <p>那为什么不干脆训一个双向的？因为「预测下一个词」这道题<strong>与双向天然矛盾</strong>：自注意力允许每个位置看到全句，多层堆叠后，每个词都能经由别的词「绕道看见自己」——预测任务瞬间变成抄答案，模型什么也学不到。<strong>不是没人想双向，是旧题型不允许双向。</strong>这就是真正的卡点：想要深度双向的表示，必须先换一道不会泄漏答案的训练题。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>想法一：掩码语言模型（MLM）——换一道不泄题的功课</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="1cf079e166db95d5">想法一：掩码语言模型（MLM）——换一道不泄题的功课</h3>
 <p>BERT 借了语言学里 1953 年就有的老练习——<strong>完形填空（Cloze task）</strong>：把输入句子里随机 <strong>15%</strong> 的 token 挖掉（换成特殊符号 <code>[MASK]</code>），让模型根据<strong>剩下的全部上下文</strong>预测被挖掉的词。这一换，泄题问题不存在了——答案已经被挖走，看遍全句也抄不到；而要猜对，模型恰恰<strong>必须</strong>融合左右两边的线索。双向不再是禁忌，反而成了必需。</p>
-
 <figure>
-<svg viewBox="0 0 560 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ma" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
-<marker id="mg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<text x="20" y="30" fill="#7c8593" font-size="12">单向（GPT）：只准看左边</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 268" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ma" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="mg" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="12" x="20" y="30">单向（GPT）：只准看左边</text>
 <g font-size="13" text-anchor="middle">
-<rect x="20" y="42" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="46" y="62" fill="#b9c0ca">他</text>
-<rect x="80" y="42" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="106" y="62" fill="#b9c0ca">走进</text>
-<rect x="140" y="42" width="52" height="30" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="166" y="62" fill="#e7ebf1">？？</text>
-<rect x="200" y="42" width="52" height="30" rx="6" fill="rgba(255,255,255,0.02)" stroke="#3a414b"/><text x="226" y="62" fill="#5a6069">把钱</text>
-<rect x="260" y="42" width="52" height="30" rx="6" fill="rgba(255,255,255,0.02)" stroke="#3a414b"/><text x="286" y="62" fill="#5a6069">存了</text>
-<rect x="320" y="42" width="52" height="30" rx="6" fill="rgba(255,255,255,0.02)" stroke="#3a414b"/><text x="346" y="62" fill="#5a6069">进去</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="20" y="42"></rect><text fill="#b9c0ca" x="46" y="62">他</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="80" y="42"></rect><text fill="#b9c0ca" x="106" y="62">走进</text>
+<rect fill="rgba(232,121,75,0.14)" height="30" rx="6" stroke="#e8794b" width="52" x="140" y="42"></rect><text fill="#e7ebf1" x="166" y="62">？？</text>
+<rect fill="rgba(255,255,255,0.02)" height="30" rx="6" stroke="#3a414b" width="52" x="200" y="42"></rect><text fill="#5a6069" x="226" y="62">把钱</text>
+<rect fill="rgba(255,255,255,0.02)" height="30" rx="6" stroke="#3a414b" width="52" x="260" y="42"></rect><text fill="#5a6069" x="286" y="62">存了</text>
+<rect fill="rgba(255,255,255,0.02)" height="30" rx="6" stroke="#3a414b" width="52" x="320" y="42"></rect><text fill="#5a6069" x="346" y="62">进去</text>
 </g>
-<path d="M46,80 C70,102 130,102 158,82" fill="none" stroke="#7c8593" stroke-width="1.4" marker-end="url(#mg)"/>
-<path d="M106,80 C124,94 146,94 160,82" fill="none" stroke="#7c8593" stroke-width="1.4" marker-end="url(#mg)"/>
-<text x="400" y="62" fill="#7c8593" font-size="11.5">右边线索全被挡住 →</text>
-<text x="400" y="78" fill="#7c8593" font-size="11.5">「？？」猜不出来</text>
-<text x="20" y="146" fill="#f0b429" font-size="12">BERT 完形填空：挖掉词，两边一起看</text>
+<path d="M46,80 C70,102 130,102 158,82" fill="none" marker-end="url(#mg)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M106,80 C124,94 146,94 160,82" fill="none" marker-end="url(#mg)" stroke="#7c8593" stroke-width="1.4"></path>
+<text fill="#7c8593" font-size="11.5" x="400" y="62">右边线索全被挡住 →</text>
+<text fill="#7c8593" font-size="11.5" x="400" y="78">「？？」猜不出来</text>
+<text fill="#f0b429" font-size="12" x="20" y="146">BERT 完形填空：挖掉词，两边一起看</text>
 <g font-size="13" text-anchor="middle">
-<rect x="20" y="158" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="46" y="178" fill="#b9c0ca">他</text>
-<rect x="80" y="158" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="106" y="178" fill="#b9c0ca">走进</text>
-<rect x="140" y="158" width="52" height="30" rx="6" fill="rgba(240,180,41,0.16)" stroke="#f0b429"/><text x="166" y="178" fill="#f5c451">[MASK]</text>
-<rect x="200" y="158" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="226" y="178" fill="#b9c0ca">把钱</text>
-<rect x="260" y="158" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="286" y="178" fill="#b9c0ca">存了</text>
-<rect x="320" y="158" width="52" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="346" y="178" fill="#b9c0ca">进去</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="20" y="158"></rect><text fill="#b9c0ca" x="46" y="178">他</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="80" y="158"></rect><text fill="#b9c0ca" x="106" y="178">走进</text>
+<rect fill="rgba(240,180,41,0.16)" height="30" rx="6" stroke="#f0b429" width="52" x="140" y="158"></rect><text fill="#f5c451" x="166" y="178">[MASK]</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="200" y="158"></rect><text fill="#b9c0ca" x="226" y="178">把钱</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="260" y="158"></rect><text fill="#b9c0ca" x="286" y="178">存了</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="320" y="158"></rect><text fill="#b9c0ca" x="346" y="178">进去</text>
 </g>
-<path d="M46,196 C74,220 132,220 160,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
-<path d="M106,196 C124,212 148,212 162,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
-<path d="M226,196 C208,212 184,212 170,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
-<path d="M286,196 C258,220 200,220 172,198" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
-<path d="M346,196 C310,226 204,226 166,200" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ma)"/>
-<text x="400" y="178" fill="#f0b429" font-size="11.5">「存了钱」在右边 →</text>
-<text x="400" y="194" fill="#b9c0ca" font-size="11.5">答案是「银行」</text>
-<text x="280" y="256" fill="#7c8593" font-size="11.5" text-anchor="middle">预测目标已被挖走，看遍全句也抄不到答案 —— 双向从「作弊」变成「必需」</text>
+<path d="M46,196 C74,220 132,220 160,198" fill="none" marker-end="url(#ma)" stroke="#f0b429" stroke-width="1.6"></path>
+<path d="M106,196 C124,212 148,212 162,198" fill="none" marker-end="url(#ma)" stroke="#f0b429" stroke-width="1.6"></path>
+<path d="M226,196 C208,212 184,212 170,198" fill="none" marker-end="url(#ma)" stroke="#f0b429" stroke-width="1.6"></path>
+<path d="M286,196 C258,220 200,220 172,198" fill="none" marker-end="url(#ma)" stroke="#f0b429" stroke-width="1.6"></path>
+<path d="M346,196 C310,226 204,226 166,200" fill="none" marker-end="url(#ma)" stroke="#f0b429" stroke-width="1.6"></path>
+<text fill="#f0b429" font-size="11.5" x="400" y="178">「存了钱」在右边 →</text>
+<text fill="#b9c0ca" font-size="11.5" x="400" y="194">答案是「银行」</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="256">预测目标已被挖走，看遍全句也抄不到答案 —— 双向从「作弊」变成「必需」</text>
 </svg>
 <figcaption>图 1 · 接龙式语言模型只准看左边，「银行」猜不出；完形填空挖掉目标词，逼模型融合左右两侧线索。</figcaption>
 </figure>
-
 <p>还有个精细的补丁。<code>[MASK]</code> 这个符号只在预训练时出现，微调和实际使用时输入里根本没有它——模型若只学会「盯着 [MASK] 干活」，一到真实任务就水土不服（<em>预训练-微调失配</em>）。所以对选中的 15% 位置，BERT 并不总放 [MASK]：<strong>80% 换成 [MASK]、10% 换成随机词、10% 保留原词</strong>——但都要求预测原词。这样模型永远不知道哪个位置可信、哪个被动了手脚，只好<strong>对每一个位置都维护一份高质量的上下文表示</strong>，而不是只伺候 [MASK]。</p>
-
-<h3>想法二：下一句预测（NSP）——学句子之间的关系</h3>
+<h3 data-tts="8f06d3dfce835643">想法二：下一句预测（NSP）——学句子之间的关系</h3>
 <p>完形填空练的是词级理解，但问答、推理这类任务要理解<strong>两个句子的关系</strong>。于是预训练时再加一道判断题：给模型一对句子，50% 是语料里真实相邻的两句、50% 是随机凑的，让它判断「B 是不是 A 的下一句」。（诚实注：这道题后来被证明作用有限，见「局限」。）</p>
-
-<h3>想法三：一个底座，处处上岗——预训练 + 微调</h3>
+<h3 data-tts="35419d36f5b7a7df">想法三：一个底座，处处上岗——预训练 + 微调</h3>
 <p>BERT 的架构就是 Transformer 编码器原样堆叠：<strong>BERT-Base</strong> 12 层、约 1.1 亿参数（刻意与 GPT-1 同规模以便公平对比）；<strong>BERT-Large</strong> 24 层、约 3.4 亿参数。输入设计让「一切理解任务」都能塞进同一个模型：每句开头加特殊符号 <code>[CLS]</code>，句子之间用 <code>[SEP]</code> 隔开；每个 token 的输入向量 = <em>词向量 + 段落向量（标记属于句 A 还是句 B）+ 位置向量</em> 三者相加。预训练完，<strong>[CLS] 位置的输出向量就是「整段话的摘要表示」</strong>，拿它接一层分类器就能做分类；问答则拿每个 token 的输出预测「答案从哪个词开始、到哪个词结束」。</p>
 <p><strong>微调便宜得惊人</strong>：不冻结、不重构，把预训练好的整个模型连同新加的一层输出头一起，在任务数据上再训 2–4 轮（epoch）即可——论文里所有任务的微调在单块 TPU 上不到 1 小时。预训练用了 BooksCorpus（8 亿词）加英文维基百科（25 亿词），这份大成本<strong>只花一次</strong>，之后所有任务共享。</p>
-
 <figure>
-<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="fa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<text x="140" y="26" fill="#f0b429" font-size="12.5" text-anchor="middle" font-weight="700">① 预训练（一次，很贵）</text>
-<rect x="30" y="38" width="220" height="44" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="140" y="56" fill="#b9c0ca" font-size="11.5" text-anchor="middle">无标注文本：维基百科 25 亿词</text>
-<text x="140" y="72" fill="#b9c0ca" font-size="11.5" text-anchor="middle">+ 图书 8 亿词</text>
-<line x1="140" y1="82" x2="140" y2="104" stroke="#f0b429" stroke-width="1.6" marker-end="url(#fa)"/>
-<text x="152" y="98" fill="#7c8593" font-size="10.5">完形填空 MLM + 下一句判断 NSP</text>
-<rect x="42" y="106" width="196" height="66" rx="10" fill="rgba(240,180,41,0.1)" stroke="#f0b429" stroke-width="1.6"/>
-<text x="140" y="132" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">BERT：Transformer 编码器</text>
-<text x="140" y="152" fill="#7c8593" font-size="11" text-anchor="middle">Base 12 层 1.1 亿参 · Large 24 层 3.4 亿参</text>
-<text x="140" y="200" fill="#f0b429" font-size="12" text-anchor="middle">通用语言底座（所有任务共享）</text>
-<text x="430" y="26" fill="#e8794b" font-size="12.5" text-anchor="middle" font-weight="700">② 微调（每任务一次，很便宜）</text>
-<line x1="238" y1="120" x2="330" y2="66" stroke="#e8794b" stroke-width="1.5" marker-end="url(#fa)"/>
-<line x1="238" y1="139" x2="330" y2="139" stroke="#e8794b" stroke-width="1.5" marker-end="url(#fa)"/>
-<line x1="238" y1="158" x2="330" y2="212" stroke="#e8794b" stroke-width="1.5" marker-end="url(#fa)"/>
-<rect x="334" y="44" width="196" height="44" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
-<text x="432" y="62" fill="#e7ebf1" font-size="12" text-anchor="middle">情感分类：+1 层输出头</text>
-<text x="432" y="79" fill="#7c8593" font-size="10.5" text-anchor="middle">几千条标注 · 训 2–4 轮</text>
-<rect x="334" y="117" width="196" height="44" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
-<text x="432" y="135" fill="#e7ebf1" font-size="12" text-anchor="middle">问答 SQuAD：+起止位置头</text>
-<text x="432" y="152" fill="#7c8593" font-size="10.5" text-anchor="middle">同一底座 · 全参数微调</text>
-<rect x="334" y="190" width="196" height="44" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
-<text x="432" y="208" fill="#e7ebf1" font-size="12" text-anchor="middle">推理 / 标注 / 相似度……</text>
-<text x="432" y="225" fill="#7c8593" font-size="10.5" text-anchor="middle">单块 TPU 不到 1 小时</text>
-<text x="280" y="282" fill="#7c8593" font-size="11.5" text-anchor="middle">一次昂贵的自学，换来所有任务的廉价上岗——架构不换，只加一层薄薄的输出头</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="fa" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="140" y="26">① 预训练（一次，很贵）</text>
+<rect fill="rgba(255,255,255,0.03)" height="44" rx="8" stroke="#7c8593" width="220" x="30" y="38"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="140" y="56">无标注文本：维基百科 25 亿词</text>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="140" y="72">+ 图书 8 亿词</text>
+<line marker-end="url(#fa)" stroke="#f0b429" stroke-width="1.6" x1="140" x2="140" y1="82" y2="104"></line>
+<text fill="#7c8593" font-size="10.5" x="152" y="98">完形填空 MLM + 下一句判断 NSP</text>
+<rect fill="rgba(240,180,41,0.1)" height="66" rx="10" stroke="#f0b429" stroke-width="1.6" width="196" x="42" y="106"></rect>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="140" y="132">BERT：Transformer 编码器</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="140" y="152">Base 12 层 1.1 亿参 · Large 24 层 3.4 亿参</text>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="140" y="200">通用语言底座（所有任务共享）</text>
+<text fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle" x="430" y="26">② 微调（每任务一次，很便宜）</text>
+<line marker-end="url(#fa)" stroke="#e8794b" stroke-width="1.5" x1="238" x2="330" y1="120" y2="66"></line>
+<line marker-end="url(#fa)" stroke="#e8794b" stroke-width="1.5" x1="238" x2="330" y1="139" y2="139"></line>
+<line marker-end="url(#fa)" stroke="#e8794b" stroke-width="1.5" x1="238" x2="330" y1="158" y2="212"></line>
+<rect fill="rgba(232,121,75,0.1)" height="44" rx="8" stroke="#e8794b" width="196" x="334" y="44"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="432" y="62">情感分类：+1 层输出头</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="432" y="79">几千条标注 · 训 2–4 轮</text>
+<rect fill="rgba(232,121,75,0.1)" height="44" rx="8" stroke="#e8794b" width="196" x="334" y="117"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="432" y="135">问答 SQuAD：+起止位置头</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="432" y="152">同一底座 · 全参数微调</text>
+<rect fill="rgba(232,121,75,0.1)" height="44" rx="8" stroke="#e8794b" width="196" x="334" y="190"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="432" y="208">推理 / 标注 / 相似度……</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="432" y="225">单块 TPU 不到 1 小时</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="282">一次昂贵的自学，换来所有任务的廉价上岗——架构不换，只加一层薄薄的输出头</text>
 </svg>
 <figcaption>图 2 · 预训练 + 微调范式：左边的通用底座只训一次；右边每个任务只加一层输出头、用小数据快速微调。</figcaption>
 </figure>
-
 <p>为什么这样设计有效？可以这么理解：完形填空逼模型内化了词义消歧、句法结构、乃至一部分世界常识——这些正是几乎所有语言理解任务的<strong>公共地基</strong>。微调不过是在坚实地基上盖一间小房，自然又快又稳；而以前的做法等于每盖一间房都从打地基开始。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="cd4724bcdb396278">关键结果</h2>
 <p>2018 年 10 月放榜时，BERT 在 <strong>11 项 NLP 任务上全部刷新纪录</strong>。代表性数字：<strong>GLUE</strong> 综合得分 80.5%，比之前最好成绩<strong>绝对提升 7.7 个百分点</strong>（这个榜以前是零点几分地涨的）；其中自然语言推理 MultiNLI 达 86.7%（+4.6）。<strong>SQuAD v1.1</strong> 阅读理解 F1 达 93.2 分（衡量答案与标准答案重合度的指标），超过人类标注者的 91.2；SQuAD v2.0 上 F1 83.1（+5.1）。消融实验同样有说服力：把 MLM 换回「从左往右」的传统目标，GLUE 全线掉分，SQuAD 问答暴跌约 10 分 F1——<strong>「深度双向」正是涨分的主力</strong>；而且 Large 全面强于 Base，预示「更大还会更好」。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="cdffc6c18ad0e117">为什么重要 / 影响</h2>
 <p>BERT 是 NLP 的「ImageNet 时刻」：此前视觉界早已习惯「ImageNet 预训练 + 微调」，而 NLP 直到 BERT 才真正拥有了自己的通用底座。此后几年，「拿 BERT 微调」成了几乎所有语言理解任务的默认起手式，衍生出庞大家族：RoBERTa（训得更久更好）、ALBERT（参数共享减重）、DistilBERT（蒸馏小型化）、多语言 mBERT，以及中文的各种变体。2019 年 Google 宣布将 BERT 用于搜索排序，称其为「搜索史上最大的跃进之一」。更深远的是范式本身：<strong>「在无标注数据上自监督预训练大模型、再对齐到具体任务」</strong>——今天的 GPT、Claude 全都站在这条路线上；只是把「微调」换成了更大规模的指令对齐。encoder 双向架构本身也没退场：今天检索系统、向量数据库里的 embedding 模型，大多仍是 BERT 的直系后代。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="a6813cfa1843274d">局限与批评</h2>
 <ul>
 <li><strong>NSP 基本没用</strong>：RoBERTa（2019）系统消融后发现，去掉「下一句预测」不掉分甚至略涨——这道判断题太容易（判断话题是否相同即可蒙对），没教会模型多少东西。后续模型普遍弃用。</li>
 <li><strong>训练不充分</strong>：同是 RoBERTa 证明，同样架构只要数据更多、训得更久、批量更大，就能显著超过 BERT——原版远没把这套方法的潜力吃满。</li>
@@ -198,8 +175,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只会理解、不会生成</strong>：encoder-only 架构无法逐词写出长文本，摘要、翻译、对话都不擅长——后来 GPT 系（decoder-only）在规模化后既能生成、理解也不差，抢走了主赛道。</li>
 <li><strong>工程限制</strong>：输入最长 512 个 token，长文档得切块；预训练成本当年即需大量 TPU 资源，非大厂难以复现。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="2796b79da23aea15">要点</h2>
 <div class="tl">
 <p>① 一句话：用完形填空（MLM）预训练深度双向 Transformer 编码器，再逐任务加一层输出头微调，11 项任务全破纪录。</p>
 <p>② 痛点：「预测下一个词」的旧题型与双向天然矛盾（多层注意力会让词绕道看见自己、抄到答案），所以 GPT-1 只能单向、ELMo 只能两个单向浅拼。</p>
@@ -216,9 +192,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

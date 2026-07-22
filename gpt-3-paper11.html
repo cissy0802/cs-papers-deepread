@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>GPT-3（Language Models are Few-Shot Learners）— IT 论文精读 Paper 11</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,46 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 11</p>
-<h1>GPT-3（Language Models are Few-Shot Learners）</h1>
+<h1 data-tts="9726e4c75f43d4ea">GPT-3（Language Models are Few-Shot Learners）</h1>
 <p class="sub">Brown 等 · OpenAI · NeurIPS 2020</p>
 <p class="langbar"><a href="gpt-3-paper11.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="c63196a142fc67c6">这篇论文干了什么？</h2>
 <p>2020 年，OpenAI 发布了 <strong>GPT-3</strong>——ChatGPT 的直系前身。这篇论文干的事听起来简单粗暴：把语言模型做到前所未有的 <strong>1750 亿参数</strong>，让它读了海量的互联网文字。然后他们展示了一件怪事：这个模型<strong>不用再针对任何任务做训练</strong>——你只要在输入里给它看几个例子，它就能当场做翻译、答题、写文章、做算术，像人一样「看两眼就上手」。</p>
-
-<h2>先说旧世界的麻烦</h2>
+<h2 data-tts="7f977a95307cbb08">先说旧世界的麻烦</h2>
 <p>在这之前，AI 是「一岗一训」的：想让模型做翻译，得先收集上万条人工标注的翻译例句，专门训练一遍；想让它判断影评是好评还是差评，又得再收集、再训练一遍。<strong>每换一个任务，就要请人标数据、跑一轮训练</strong>——像每换一个岗位都得把员工送去上几个月的培训班。贵、慢，还只有懂技术的人玩得起。</p>
-
-<h2>新点子：别办培训班了，雇个见多识广的老手</h2>
+<h2 data-tts="f8d389b5c3b5e50f">新点子：别办培训班了，雇个见多识广的老手</h2>
 <p>GPT-3 的思路是：与其每个任务开一个培训班，不如养一个<strong>读过天下文章的「老江湖」</strong>。它在训练时只做一件事——读海量文字、反复练习「猜下一个词」。练成之后，你不用再动它一根汗毛：<strong>把任务用人话写在纸条上、附上两三个示范，它照着就能做</strong>。论文把这叫「少样本学习」——不是重新教它，而是提醒它。</p>
-
-<h2>为什么「给几个例子」就够了？</h2>
+<h2 data-tts="7092392ee9a0b989">为什么「给几个例子」就够了？</h2>
 <p>关键在于：那几个例子<strong>不是在「教」它新本领，而是在告诉它「该拿出哪套本领」</strong>。想象一台巨大的点唱机——歌（能力）在它读遍互联网时就已经录进去了：语法、常识、语言之间的对应、一问一答的套路……你写下的示范就像在点歌，帮它锁定「哦，现在玩的是英译法游戏」。</p>
 <p>而这篇论文最重要的发现是：<strong>模型越大，这招越灵</strong>。小模型看例子基本没用；模型大到一定程度后，「看例子上手」的能力才突然好使起来。「大」带来的不只是量变。也得说句诚实话：它本质上仍是在「接话」，接得流畅不等于接得对——<strong>它会一本正经地编造事实</strong>，这个毛病从 GPT-3 一直延续到今天的聊天机器人。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="d6c2180fc83d73c9">带来了什么</h2>
 <p>从此用 AI 的方式变了：不再是「程序员收集数据、训练模型」，而是「<strong>任何人用一段话指挥模型</strong>」——今天人人都在写的「提示词」，就是从这篇论文开始成为一门手艺的。两年后，OpenAI 在它的续作上加了一层「听懂人话」的训练，就成了 ChatGPT。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="7d1bcc2298c18331">一句话记住</h2>
 <div class="tl">
 <p>把「猜下一个词」练到 1750 亿参数的规模，模型就能不经专门训练、只看几个例子当场上手新任务——GPT-3 证明了「大」本身能换来「通用」，开启了提示词时代，也是 ChatGPT 的直系前身。</p>
 </div>
-
 <p class="switch-hint">想看三种提示方式的结构图、规模曲线和真实评测数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="0d49d79c0ccb01da">一句话</h2>
 <p class="lead">GPT-3 把只做「预测下一个词」的 decoder-only Transformer 放大到 <strong>1750 亿参数</strong>、在约 3000 亿 token 的网络文本上预训练，然后证明：<strong>不做任何梯度更新</strong>，仅靠在输入里写上任务描述加几个示范（<strong>上下文学习，in-context learning</strong>），它就能在几十个 NLP 基准上逼近甚至超过专门微调过的模型——<strong>规模本身能换来通用性</strong>。这条路线两年后直接长成 ChatGPT。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="214d6b4267f8a3fe">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>语言模型（language model）</strong>：给定前文、算「下一个词最可能是什么」的模型——本质是台接龙机器。</li>
@@ -87,81 +77,71 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>基准测试（benchmark）</strong>：学界公认的标准考题集（问答、翻译、完形填空等），用来横向比较模型。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="e6bce96a3c265306">坐标</h2>
 <p>Tom Brown、Benjamin Mann、Nick Ryder 等 31 位作者，OpenAI，2020 年 5 月放出、NeurIPS 2020 发表。上承 GPT-2（2019，已露出「不微调也能做任务」的苗头）与同年的 Scaling Laws（Kaplan 等，「损失随规模幂律下降」的定量依据，见 TOPICS 下一篇）；下启 InstructGPT / ChatGPT（在它之上加指令微调与 RLHF），以及整个「大模型 + 提示词」的行业范式。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="939cf5582c3164b8">问题与动机</h2>
 <p>到 2019 年，NLP 的主流是 BERT 确立的「<strong>预训练 + 微调</strong>」两段式：先在无标注文本上预训练，再为每个下游任务收集成千上万条标注样本做微调。痛点有三个。<strong>一是贵</strong>：每个新任务都要一份专属标注数据集，长尾需求根本覆盖不起。<strong>二是窄</strong>：微调出来的是「窄专家」，容易钻训练集分布的捷径，分数虚高、换个分布就露馅，泛化能力存疑。<strong>三是不像人</strong>：人类接一个新任务，通常一句说明、至多一两个示范就够了，不需要一万道练习题。</p>
 <p>GPT-2 已经展示过「零样本做任务」的可能性，但成绩远不能打。这篇论文要回答的问题很清晰：<strong>把模型和数据一起放大两个数量级，「看几个例子就上手」能不能从苗头长成真本事？</strong></p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>In-context learning：把「学习」搬进输入框</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="1055f5862ea61cde">In-context learning：把「学习」搬进输入框</h3>
 <p>GPT-3 用三种设定评测<strong>同一个冻结的模型</strong>：<strong>zero-shot</strong> 只给任务的自然语言描述；<strong>one-shot</strong> 额外给 1 个示范；<strong>few-shot</strong> 给 10–100 个示范（以塞得进 2048 token 的上下文窗口为限）。关键在于：<strong>示范只是作为普通文字放进输入里，模型参数一个都不动、没有任何梯度更新</strong>——模型照常做它唯一会做的事「接下一个词」，答案就在接龙中产生。</p>
-
 <figure>
-<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="g1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="g1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<line x1="280" y1="20" x2="280" y2="310" stroke="rgba(124,133,147,0.25)" stroke-dasharray="4 4"/>
-<text x="140" y="30" fill="#7c8593" font-size="13" text-anchor="middle" font-weight="700">微调范式（旧）</text>
-<rect x="40" y="48" width="200" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="140" y="70" fill="#b9c0ca" font-size="12" text-anchor="middle">预训练模型</text>
-<line x1="140" y1="82" x2="140" y2="150" stroke="#7c8593" marker-end="url(#g1)"/>
-<text x="140" y="105" fill="#e8794b" font-size="11" text-anchor="middle">上万条人工标注样本</text>
-<text x="140" y="122" fill="#e8794b" font-size="11" text-anchor="middle">反复梯度更新（改参数）</text>
-<rect x="40" y="154" width="200" height="34" rx="6" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
-<text x="140" y="176" fill="#e7ebf1" font-size="12" text-anchor="middle">翻译专用模型</text>
-<text x="140" y="216" fill="#7c8593" font-size="11" text-anchor="middle">每换一个任务，</text>
-<text x="140" y="232" fill="#7c8593" font-size="11" text-anchor="middle">收数据 + 训练全部重来一遍</text>
-<text x="420" y="30" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">上下文学习（GPT-3）</text>
-<rect x="308" y="42" width="224" height="118" rx="6" fill="rgba(240,180,41,0.06)" stroke="#f0b429"/>
-<text x="320" y="64" fill="#e7ebf1" font-size="11.5" font-family="Menlo,monospace">把英文译成法文：</text>
-<text x="320" y="86" fill="#b9c0ca" font-size="11.5" font-family="Menlo,monospace">sea otter =&gt; loutre de mer</text>
-<text x="320" y="108" fill="#b9c0ca" font-size="11.5" font-family="Menlo,monospace">plush girafe =&gt; girafe peluche</text>
-<text x="320" y="130" fill="#f5c451" font-size="11.5" font-family="Menlo,monospace">cheese =&gt;</text>
-<text x="320" y="150" fill="#7c8593" font-size="10.5">↑ 任务描述 + 几个示范 + 新问题，全是输入文字</text>
-<line x1="420" y1="160" x2="420" y2="222" stroke="#f0b429" marker-end="url(#g1g)"/>
-<text x="432" y="186" fill="#f0b429" font-size="11">一次前向计算</text>
-<text x="432" y="202" fill="#7c8593" font-size="11">参数冻结 · 零梯度更新</text>
-<rect x="360" y="226" width="120" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<text x="420" y="248" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-family="Menlo,monospace">fromage</text>
-<text x="420" y="288" fill="#7c8593" font-size="11" text-anchor="middle">示范只是「提醒」它用哪套本领，</text>
-<text x="420" y="304" fill="#7c8593" font-size="11" text-anchor="middle">同一个模型服务所有任务</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 330" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="g1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="g1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<line stroke="rgba(124,133,147,0.25)" stroke-dasharray="4 4" x1="280" x2="280" y1="20" y2="310"></line>
+<text fill="#7c8593" font-size="13" font-weight="700" text-anchor="middle" x="140" y="30">微调范式（旧）</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="200" x="40" y="48"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="140" y="70">预训练模型</text>
+<line marker-end="url(#g1)" stroke="#7c8593" x1="140" x2="140" y1="82" y2="150"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="140" y="105">上万条人工标注样本</text>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="140" y="122">反复梯度更新（改参数）</text>
+<rect fill="rgba(232,121,75,0.1)" height="34" rx="6" stroke="#e8794b" width="200" x="40" y="154"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="140" y="176">翻译专用模型</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="140" y="216">每换一个任务，</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="140" y="232">收数据 + 训练全部重来一遍</text>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="420" y="30">上下文学习（GPT-3）</text>
+<rect fill="rgba(240,180,41,0.06)" height="118" rx="6" stroke="#f0b429" width="224" x="308" y="42"></rect>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="320" y="64">把英文译成法文：</text>
+<text fill="#b9c0ca" font-family="Menlo,monospace" font-size="11.5" x="320" y="86">sea otter =&gt; loutre de mer</text>
+<text fill="#b9c0ca" font-family="Menlo,monospace" font-size="11.5" x="320" y="108">plush girafe =&gt; girafe peluche</text>
+<text fill="#f5c451" font-family="Menlo,monospace" font-size="11.5" x="320" y="130">cheese =&gt;</text>
+<text fill="#7c8593" font-size="10.5" x="320" y="150">↑ 任务描述 + 几个示范 + 新问题，全是输入文字</text>
+<line marker-end="url(#g1g)" stroke="#f0b429" x1="420" x2="420" y1="160" y2="222"></line>
+<text fill="#f0b429" font-size="11" x="432" y="186">一次前向计算</text>
+<text fill="#7c8593" font-size="11" x="432" y="202">参数冻结 · 零梯度更新</text>
+<rect fill="rgba(240,180,41,0.12)" height="34" rx="6" stroke="#f0b429" width="120" x="360" y="226"></rect>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="12.5" text-anchor="middle" x="420" y="248">fromage</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="288">示范只是「提醒」它用哪套本领，</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="304">同一个模型服务所有任务</text>
 </svg>
 <figcaption>图 1 · 微调 vs 上下文学习：旧范式每个任务都要标注数据 + 改参数；GPT-3 把任务描述和示范直接写进输入，模型冻结、接龙出答案。</figcaption>
 </figure>
-
 <p>为什么这可能有效？训练语料（网页、书籍）里本来就充满「示范」形状的文字——题目后面跟着答案、英文后面跟着法文、差评后面跟着一星。<strong>为了把「下一个词」猜准，模型被迫内化了这些模式</strong>。推理时你给的几个示范，等于在提示它「现在是哪个模式」。论文的说法是：预训练让模型学会了一种<strong>从上下文里认出任务、当场适应</strong>的元能力（一种广义的 meta-learning）。</p>
-
-<h3>规模是主角：八个模型的对照实验</h3>
+<h3 data-tts="1010ec276b08367c">规模是主角：八个模型的对照实验</h3>
 <p>架构上 GPT-3 几乎没有新东西：与 GPT-2 相同的 decoder-only Transformer（最大版 96 层、上下文窗口 2048 token），只把注意力换成<strong>密集与局部稀疏交替</strong>的版本以省算力。真正的设计在实验上：<strong>训练 8 个不同大小的模型，从 1.25 亿到 1750 亿参数</strong>，用同一套几十个基准、按三种设定统一评测。训练数据约 3000 亿 token：以过滤加权后的 Common Crawl 网页为主体，混入 WebText2、两个书籍语料和英文维基百科——质量越高的语料被重复采样得越勤。1750 亿的最大版训练耗算约 3640 petaflop/s-day，成本以百万美元计。</p>
 <p>结果给出全文最重要的一张图：<strong>模型越大，三条曲线都在涨，但 few-shot 涨得最陡——few-shot 与 zero-shot 的差距随规模越拉越大</strong>。这说明「看例子上手」不是小模型也有的便宜技巧，而是随规模才变强的能力：大模型不只是「知道得更多」，而是<strong>更会从上下文里现学</strong>。</p>
-
 <figure>
-<svg viewBox="0 0 560 270" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="g2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<line x1="70" y1="30" x2="70" y2="215" stroke="#7c8593"/>
-<line x1="70" y1="215" x2="530" y2="215" stroke="#7c8593" marker-end="url(#g2)"/>
-<text x="70" y="20" fill="#7c8593" font-size="11.5" text-anchor="middle">几十个基准的平均成绩</text>
-<text x="300" y="242" fill="#7c8593" font-size="11.5" text-anchor="middle">模型规模（对数）：1.25 亿 ──→ 1750 亿参数</text>
-<path d="M85,200 C220,190 380,140 515,62" fill="none" stroke="#f0b429" stroke-width="2.4"/>
-<path d="M85,203 C220,196 380,162 515,102" fill="none" stroke="#e8794b" stroke-width="2"/>
-<path d="M85,206 C220,201 380,180 515,132" fill="none" stroke="#7c8593" stroke-width="2"/>
-<text x="510" y="54" fill="#f0b429" font-size="12" text-anchor="end" font-weight="700">few-shot（10–100 例）</text>
-<text x="510" y="96" fill="#e8794b" font-size="12" text-anchor="end">one-shot（1 例）</text>
-<text x="510" y="152" fill="#7c8593" font-size="12" text-anchor="end">zero-shot（只有描述）</text>
-<line x1="470" y1="76" x2="470" y2="122" stroke="#f5c451" stroke-dasharray="3 3"/>
-<text x="300" y="80" fill="#e7ebf1" font-size="12" text-anchor="middle">差距随规模拉大：</text>
-<text x="300" y="98" fill="#e7ebf1" font-size="12" text-anchor="middle">越大的模型，越会「看例子上手」</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 270" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="g2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<line stroke="#7c8593" x1="70" x2="70" y1="30" y2="215"></line>
+<line marker-end="url(#g2)" stroke="#7c8593" x1="70" x2="530" y1="215" y2="215"></line>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="70" y="20">几十个基准的平均成绩</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="300" y="242">模型规模（对数）：1.25 亿 ──→ 1750 亿参数</text>
+<path d="M85,200 C220,190 380,140 515,62" fill="none" stroke="#f0b429" stroke-width="2.4"></path>
+<path d="M85,203 C220,196 380,162 515,102" fill="none" stroke="#e8794b" stroke-width="2"></path>
+<path d="M85,206 C220,201 380,180 515,132" fill="none" stroke="#7c8593" stroke-width="2"></path>
+<text fill="#f0b429" font-size="12" font-weight="700" text-anchor="end" x="510" y="54">few-shot（10–100 例）</text>
+<text fill="#e8794b" font-size="12" text-anchor="end" x="510" y="96">one-shot（1 例）</text>
+<text fill="#7c8593" font-size="12" text-anchor="end" x="510" y="152">zero-shot（只有描述）</text>
+<line stroke="#f5c451" stroke-dasharray="3 3" x1="470" x2="470" y1="76" y2="122"></line>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="300" y="80">差距随规模拉大：</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="300" y="98">越大的模型，越会「看例子上手」</text>
 </svg>
 <figcaption>图 2 · 论文的核心发现（示意）：三种设定的成绩都随规模上升，但 few-shot 最陡——上下文学习是随规模变强的能力。</figcaption>
 </figure>
-
 <p>为什么「接词」能逼出这么多本领？一个常用的直觉是<strong>压缩</strong>：要在海量文本上把下一个词猜得足够准，最省力的办法不是死记硬背，而是学会文字背后的规律——语法、事实、逻辑、语言间的对应。规模给了它足够的容量去装这些规律，few-shot 提示则是取用它们的钥匙。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="d93d069b9b3900a1">关键结果</h2>
 <ul>
 <li><strong>LAMBADA</strong>（读一大段话、猜最后一个词，考长程理解）：few-shot 准确率 <strong>86.4%</strong>，大幅刷新之前的最好成绩。</li>
 <li><strong>TriviaQA</strong>（闭卷问答，不查资料）：few-shot <strong>71.2%</strong>，超过了当时同为闭卷设定的微调模型——知识真的被存进了参数里。</li>
@@ -171,11 +151,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>新闻生成</strong>：让人判断约 500 词的生成新闻是真是假，平均准确率约 <strong>52%</strong>——几乎等于瞎猜。</li>
 </ul>
 <p>诚实的另一面：在自然语言推理（ANLI）、词义辨析（WiC）等任务上 few-shot 接近乱猜水平；论文还披露了训练数据与测试集重叠（数据污染）的过滤 bug，并附上了长篇的污染影响分析。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="9735942dd496347c">为什么重要 / 影响</h2>
 <p><strong>范式换了。</strong>与模型交互的方式从「收集数据 → 微调」变成「写提示词」——prompt engineering、few-shot prompting 从此成为一门基本功，用 AI 的门槛从「会训练模型」降到「会打字」。<strong>路线定了。</strong>它是 Scaling Laws 的落地实证，把「做大」确立为通往通用能力的主路线，引发此后 PaLM、LLaMA、GPT-4 等全行业的规模竞赛。<strong>产品形态也定了。</strong>GPT-3 不公开模型权重、只开放 API 调用，开创「模型即服务」的商业形态。而它最著名的后代：在 GPT-3 系列之上做指令微调加 RLHF，就是 InstructGPT（2022），再往前一步就是 ChatGPT——今天所有对话大模型「预训练底座 + 提示」的结构，都在这篇里定型。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="35fd64966d183cc5">局限与批评</h2>
 <ul>
 <li><strong>一本正经地编造</strong>：它只保证接得像、不保证接得对——「幻觉」问题从此成为大模型的核心顽疾。</li>
 <li><strong>few-shot 的机制存疑</strong>：后续研究发现示范的顺序、格式对成绩影响巨大，有时模型并没在「学」例子，只是被激活了预训练里已有的能力——「上下文学习」到底是不是学习，至今有争论。</li>
@@ -184,8 +162,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>不听指挥</strong>：原始 GPT-3 只会接龙、不会听话，得靠精心构造提示才能用对——这正是后来 InstructGPT / RLHF 要解决的问题。</li>
 <li><strong>闭源与成本</strong>：训练花费以百万美元计、权重不公开，学界批评它加剧了研究资源的不平等，也让结果难以独立复现。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="18c00cac2c0b1d53">要点</h2>
 <div class="tl">
 <p>① 一句话：1750 亿参数的「接龙」模型，不改参数、只看几个例子就能上手几十种任务。</p>
 <p>② 痛点：「预训练 + 微调」每个任务都要上万条标注、产出窄专家；人类只要一句说明加个示范。</p>
@@ -203,9 +180,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

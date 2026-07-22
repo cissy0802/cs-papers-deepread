@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Bigtable — IT 论文精读 Paper 19</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,45 +36,34 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 19</p>
-<h1>Bigtable：一张能长到 PB 级的稀疏大表</h1>
+<h1 data-tts="86c7aa1276da60d4">Bigtable：一张能长到 PB 级的稀疏大表</h1>
 <p class="sub">Chang, Dean, Ghemawat 等 · Google · OSDI 2006</p>
 <p class="langbar"><a href="bigtable-paper19.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="06921aaeece0cbbf">这篇论文干了什么？</h2>
 <p>2006 年，Google 公开了 <strong>Bigtable</strong>——它内部用来存海量数据的「<strong>一张超级大表</strong>」。Google Earth 的卫星图、每个网页的历史快照、亿万用户的个性化数据，全塞在这类表里，横跨成千上万台机器。它是继 GFS（Paper 17）、MapReduce（Paper 18）之后 Google「老三件套」的第三件，也是开源世界 HBase、Cassandra 这一整类「宽列数据库」的祖师爷。</p>
-
-<h2>先说说那个头疼的活儿</h2>
+<h2 data-tts="1fd6fa6abe22ed2b">先说说那个头疼的活儿</h2>
 <p>我们熟悉的数据库（就是银行、电商背后那种，规规矩矩的表格 + SQL 查询）在几百万、几千万行时又快又好用。可 Google 要存的东西是<strong>另一个量级</strong>：给全网每个网页存一行，就是<strong>几百亿行</strong>；每个网页每被爬一次还要留一个带日期的旧版本；不同网页有的字段有、有的没有，<strong>乱七八糟、大部分格子是空的</strong>。这么大、这么稀、还随时在长的数据，硬塞进传统数据库既装不下、也太贵。Google 需要一个专门为「<strong>大到离谱、形态松散</strong>」而生的存储系统。</p>
-
-<h2>它的点子：一张几乎无限大的稀疏表</h2>
+<h2 data-tts="c6aaf634efa0fd1e">它的点子：一张几乎无限大的稀疏表</h2>
 <p>想象一张 Excel，但把它的三条限制全撤了：<strong>行可以有几百亿</strong>、<strong>列可以随时随地加</strong>、每个格子还能同时存<strong>好几个带时间戳的历史版本</strong>。更关键的是它「<strong>稀疏</strong>」——绝大多数格子是空的，而<strong>空格子完全不占地方</strong>，所以你尽管随意加列、留白，不心疼。这张表还有个讲究：<strong>所有行按名字（行键）排好序</strong>。于是你只要给行起个好名字（比如把网址反过来写，让同一网站的页面挨在一起），相关的数据天然就排在相邻位置，成片地查特别快。</p>
-
-<h2>它怎么把这张大表摊到上千台机器</h2>
+<h2 data-tts="7386a464f93548a1">它怎么把这张大表摊到上千台机器</h2>
 <p>表太大，一台机器装不下，就把它<strong>按行横着切成一段一段</strong>，每段（Google 叫一个 tablet）交给一台机器保管；因为行是排好序的，切出来的每段都是一个连续区间。真正的巧思在<strong>怎么读写又快又不怕机器坏</strong>：新数据进来，先在一个「<strong>流水账</strong>」上记一笔（这本流水账放在可靠的 GFS 上，机器烧了也丢不了），再顺手塞进内存里的一个「<strong>小账本</strong>」；小账本满了，就把它整理誊清、<strong>冻成一个只读的文件</strong>存到硬盘，然后换本新的接着记。查数据时，把内存里的小账本和硬盘上那一摞只读文件「<strong>合着看</strong>」——新的盖旧的。这套「先记账、攒够了誊清、旧账本只读不改」的打法，让写入飞快、机器随时坏了也能照着流水账恢复。系统还会时不时把一摞旧文件<strong>合并成一个</strong>，免得越查越慢。</p>
-
-<h2>它带来了什么</h2>
+<h2 data-tts="f5d5384da45d87bd">它带来了什么</h2>
 <p>Bigtable 撑起了 Google Analytics、Google Earth、个性化搜索、网页索引等一大批产品；论文发表时，Google 内部已有几百个 Bigtable 集群、几万台机器在跑它。开源世界照着这篇论文做出了 <strong>HBase</strong>、又结合 Amazon Dynamo 的思路做出了 <strong>Cassandra</strong>，「宽列 NoSQL」从此成为一大类主流数据库；它那套「先写内存+流水账、再誊清成只读文件」的引擎思想，还长成了 LevelDB、RocksDB，今天无数数据库的底子。<strong>诚实的代价</strong>：它只保证<strong>单独一行</strong>内的改动是「要么全成、要么全不成」，跨很多行的复杂交易、SQL 那种花哨的多表关联，它一概不做——正是靠砍掉这些，它才换来了近乎无限的横向扩展。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="11633f4060804e48">一句话记住</h2>
 <div class="tl">
 <p>Bigtable 是 Google 的「一张能长到 PB 级的稀疏大表」：行按名字排序、可有几百亿，列随手加，格子存带时间戳的多版本，空格不占地方。它按行把表切成段摊到上千台机器，用「先记流水账+写内存、攒满了誊成只读文件、旧文件定期合并」的引擎读写。它砍掉了通用事务和 SQL，换来近乎无限的规模——是宽列 NoSQL 的开山之作。</p>
 </div>
-
 <p class="switch-hint">想看它的数据模型长什么样、三级寻址怎么在上千台机器里定位一行、还有 memtable + SSTable 的读写与合并机制？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="0dd629a3e161f71c">一句话</h2>
 <p class="lead">Bigtable 是 Google 提出的一套<strong>分布式结构化数据存储系统</strong>。它把数据组织成一张<strong>稀疏、有序、多维的大表</strong>——每个单元格由 <code>(行键, 列, 时间戳)</code> 三元组定位，值是一串不被系统解释的字节。这张表能横跨上千台机器、长到 PB 级：它按行键有序地把表切成一段段 <strong>tablet</strong> 分摊到众多机器，底层用 <strong>LSM-tree 式引擎</strong>（内存中的 memtable + GFS 上一摞只读 SSTable + 定期合并）读写，用 <strong>GFS</strong> 存文件、用 <strong>Chubby</strong> 做协调与选主。它主动放弃了关系数据库的通用事务与 SQL，换来近乎无限的横向扩展，是 Google「老三件套」的第三件，也是宽列 NoSQL（HBase、Cassandra）的直接源头。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="4c10dbdc020c6e07">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>结构化数据（structured data）</strong>：有明确字段/列的数据（如「网址、标题、抓取时间」），区别于纯文本。Bigtable 存的是这类带结构、但字段可以很松散的数据。</li>
@@ -88,11 +78,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>RPC（远程过程调用）</strong>：一台机器像调用本地函数一样调用另一台机器上的服务，是分布式系统的基本通信方式。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="e09bc0805e2bb11a">坐标</h2>
 <p>作者是 Fay Chang、Jeffrey Dean、Sanjay Ghemawat、Mike Burrows 等一众 Google 工程师，论文发表于 <strong>OSDI 2006</strong>。它是 Google「分布式系统老三件套」的收官之作，站在前两件的肩膀上：<strong>数据文件与日志都存在 GFS（Paper 17）上</strong>，<strong>很多批量数据加工用 MapReduce（Paper 18）完成</strong>，<strong>协调与选主交给 Chubby</strong>（Burrows 正是 Chubby 的作者，也在此列）。它对外启发深远：开源界照它做出 <strong>HBase</strong>，Facebook 把它的数据模型与 Dynamo 的去中心化分布结合成 <strong>Cassandra</strong>；它的单机引擎思想后来被 Dean 与 Ghemawat 提炼成开源的 <strong>LevelDB</strong>，再长成 Facebook 的 <strong>RocksDB</strong>，成为今天大量数据库的存储底座。Google 自己也在它之上继续演进出 Percolator（加事务）、Spanner（全球一致），并把它作为公有云服务 <strong>Cloud Bigtable</strong> 对外开放。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="87c562a765a6aa76">问题与动机</h2>
 <p>2000 年代中期，Google 内部涌现出大量既<strong>要存海量数据、又对形态和访问方式有特殊要求</strong>的场景：为全网数十亿网页各存一行、每次抓取留一个带时间戳的版本；Google Earth 的 TB 级卫星与地图瓦片；亿级用户的个性化搜索偏好；各种爬虫、分析产生的中间数据。它们的共同点是——</p>
 <ul>
 <li><strong>规模远超单机、甚至超出传统并行数据库的舒适区</strong>：动辄几百亿行、上百 TB，必须摊到成千上万台廉价机器，还要能随时加机器扩容。</li>
@@ -101,10 +89,8 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>但查询模式其实很简单</strong>：绝大多数访问是「按行键读/写一行」或「扫一段行区间」，几乎用不到关系数据库那套复杂的多表关联与通用事务。</li>
 </ul>
 <p>关系型数据库为「中等规模 + 复杂查询」而生，硬撑这种「<strong>超大规模 + 简单查询 + 松散多版本</strong>」的负载既贵又难扩。于是 Google 决定<strong>不通用、只解决自己这类问题</strong>：设计一个能横向扩到上千台机器、面向稀疏多版本数据、只保留最必要语义的存储系统——用<strong>放弃通用性</strong>来换<strong>极致的规模与简单</strong>。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>数据模型：一张稀疏、有序、多维的大表</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="7713855ade18737e">数据模型：一张稀疏、有序、多维的大表</h3>
 <p>Bigtable 最漂亮的一步是它的数据模型。论文一句话定义它：一个<strong>稀疏的、分布式的、持久化的、多维有序 map（映射表）</strong>。这个 map 的「钥匙」是一个三元组、「锁开出来」的是一串字节：</p>
 <p><code>(行键 row, 列 column, 时间戳 timestamp) → 值 value（不被解释的字节串）</code></p>
 <p>拆开看四个维度：</p>
@@ -114,32 +100,30 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>时间戳（timestamp）</strong>：同一个单元格可以存<strong>多个版本</strong>，用 64 位时间戳区分，按<strong>时间倒序</strong>存放（最新的先被读到）。可设自动垃圾回收：只留最近 N 个版本，或只留最近若干天的版本。Webtable 里，一个网页被抓的每个时点各留一版。</li>
 <li><strong>稀疏</strong>：没写过的格子<strong>完全不占空间</strong>。所以一张表哪怕逻辑上有几百万列，某一行只用到其中几列也毫不浪费——这正是它能容纳「松散、字段各异」数据的关键。</li>
 </ul>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="20" y="22" fill="#7c8593" font-size="10.5">行键（网址反转）</text>
-<text x="180" y="22" fill="#f0b429" font-size="10.5">列族 contents:</text>
-<text x="330" y="22" fill="#e8794b" font-size="10.5">列族 anchor:</text>
-<rect x="16" y="34" width="150" height="150" rx="6" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/>
-<text x="91" y="105" fill="#e7ebf1" font-size="12" text-anchor="middle" font-weight="700">"com.cnn.www"</text>
-<text x="91" y="126" fill="#7c8593" font-size="9.5" text-anchor="middle">（一行 = 一个网页）</text>
-<rect x="178" y="34" width="150" height="150" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="253" y="52" fill="#7c8593" font-size="9" text-anchor="middle">contents:（网页正文，多版本）</text>
-<rect x="190" y="60" width="126" height="26" rx="4" fill="rgba(240,180,41,0.1)" stroke="#5a6069"/><text x="253" y="77" fill="#e7ebf1" font-size="9.5" text-anchor="middle">"&lt;html&gt;…"  @ t6</text>
-<rect x="190" y="92" width="126" height="26" rx="4" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/><text x="253" y="109" fill="#b9c0ca" font-size="9.5" text-anchor="middle">"&lt;html&gt;…"  @ t5</text>
-<rect x="190" y="124" width="126" height="26" rx="4" fill="rgba(240,180,41,0.04)" stroke="#5a6069"/><text x="253" y="141" fill="#7c8593" font-size="9.5" text-anchor="middle">"&lt;html&gt;…"  @ t3</text>
-<text x="253" y="170" fill="#7c8593" font-size="8.5" text-anchor="middle">时间倒序 · 最新在上</text>
-<rect x="340" y="34" width="206" height="150" rx="6" fill="rgba(232,121,75,0.08)" stroke="#e8794b"/>
-<text x="443" y="52" fill="#7c8593" font-size="9" text-anchor="middle">anchor:（谁链到我 · 列名=来源站）</text>
-<rect x="352" y="64" width="182" height="30" rx="4" fill="rgba(232,121,75,0.1)" stroke="#5a6069"/><text x="443" y="76" fill="#7c8593" font-size="8.5" text-anchor="middle">anchor:cnnsi.com</text><text x="443" y="89" fill="#e7ebf1" font-size="10" text-anchor="middle">"CNN"</text>
-<rect x="352" y="100" width="182" height="30" rx="4" fill="rgba(232,121,75,0.1)" stroke="#5a6069"/><text x="443" y="112" fill="#7c8593" font-size="8.5" text-anchor="middle">anchor:my.look.ca</text><text x="443" y="125" fill="#e7ebf1" font-size="10" text-anchor="middle">"CNN.com"</text>
-<text x="443" y="152" fill="#7c8593" font-size="8.5" text-anchor="middle">这两列此行才有 · 别的行可为空（稀疏）</text>
-<text x="443" y="168" fill="#7c8593" font-size="8.5" text-anchor="middle">限定词可无限多 · 空格不占地方</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="10.5" x="20" y="22">行键（网址反转）</text>
+<text fill="#f0b429" font-size="10.5" x="180" y="22">列族 contents:</text>
+<text fill="#e8794b" font-size="10.5" x="330" y="22">列族 anchor:</text>
+<rect fill="rgba(240,180,41,0.06)" height="150" rx="6" stroke="#5a6069" width="150" x="16" y="34"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="91" y="105">"com.cnn.www"</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="91" y="126">（一行 = 一个网页）</text>
+<rect fill="rgba(240,180,41,0.08)" height="150" rx="6" stroke="#f0b429" width="150" x="178" y="34"></rect>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="253" y="52">contents:（网页正文，多版本）</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="4" stroke="#5a6069" width="126" x="190" y="60"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="253" y="77">"&lt;html&gt;…"  @ t6</text>
+<rect fill="rgba(240,180,41,0.06)" height="26" rx="4" stroke="#5a6069" width="126" x="190" y="92"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="253" y="109">"&lt;html&gt;…"  @ t5</text>
+<rect fill="rgba(240,180,41,0.04)" height="26" rx="4" stroke="#5a6069" width="126" x="190" y="124"></rect><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="253" y="141">"&lt;html&gt;…"  @ t3</text>
+<text fill="#7c8593" font-size="8.5" text-anchor="middle" x="253" y="170">时间倒序 · 最新在上</text>
+<rect fill="rgba(232,121,75,0.08)" height="150" rx="6" stroke="#e8794b" width="206" x="340" y="34"></rect>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="443" y="52">anchor:（谁链到我 · 列名=来源站）</text>
+<rect fill="rgba(232,121,75,0.1)" height="30" rx="4" stroke="#5a6069" width="182" x="352" y="64"></rect><text fill="#7c8593" font-size="8.5" text-anchor="middle" x="443" y="76">anchor:cnnsi.com</text><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="443" y="89">"CNN"</text>
+<rect fill="rgba(232,121,75,0.1)" height="30" rx="4" stroke="#5a6069" width="182" x="352" y="100"></rect><text fill="#7c8593" font-size="8.5" text-anchor="middle" x="443" y="112">anchor:my.look.ca</text><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="443" y="125">"CNN.com"</text>
+<text fill="#7c8593" font-size="8.5" text-anchor="middle" x="443" y="152">这两列此行才有 · 别的行可为空（稀疏）</text>
+<text fill="#7c8593" font-size="8.5" text-anchor="middle" x="443" y="168">限定词可无限多 · 空格不占地方</text>
 </svg>
 <figcaption>图 1 · Webtable 数据模型：一行是一个网页；<code>contents:</code> 列族存正文的多个时间戳版本，<code>anchor:</code> 列族每个来源站是一列。格子稀疏、可多版本，钥匙是 (行, 列, 时间戳)。</figcaption>
 </figure>
-
-<h3>切片与三级寻址：怎么在上千台机器里定位一行</h3>
+<h3 data-tts="8916879335b1dcd8">切片与三级寻址：怎么在上千台机器里定位一行</h3>
 <p>表按行键有序，于是可以<strong>按行键区间横切</strong>成一段段 <strong>tablet</strong>（每个约 100–200 MB），tablet 是<strong>分布与负载均衡的基本单位</strong>——一台 <strong>tablet server</strong> 负责若干个 tablet，机器多了就多切几段、摊得更开。系统有三类角色：一个轻量的 <strong>master</strong>（分配 tablet、监控服务器上下线、均衡负载、回收 GFS 垃圾、处理建表/改列族），众多 <strong>tablet server</strong>（真正处理读写），和链接进每个应用的<strong>客户端库</strong>。</p>
 <p>难点是：几百亿行切出海量 tablet，客户端怎么快速找到「某一行归哪台服务器管」？Bigtable 借鉴 B+ 树，用<strong>三级寻址</strong>：</p>
 <ul>
@@ -148,31 +132,29 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>第三级 · METADATA 表</strong>：每一行记录一个<strong>用户 tablet 的位置</strong>（行键 = 表名 + 该 tablet 的末行）。</li>
 </ul>
 <p>顺着「Chubby → 根 tablet → METADATA → 用户 tablet」三跳，就能定位任意一行；论文算过，这套结构足以寻址 <strong>2³⁴ 个 tablet</strong>。客户端还会<strong>缓存</strong>已查到的位置，绝大多数请求根本不碰 master——这正是 master 能保持轻载、不成瓶颈的原因。tablet 到底归谁，用 Chubby 锁裁定：每台 tablet server 在 Chubby 的一个目录里创建并独占一个锁文件，<strong>锁在则活、锁丢则停</strong>；master 监视这个目录来发现服务器上线，并靠「能否抢到某台的锁」来判定它是真死还是只是网络隔断，从而安全地把它的 tablet 重新分配。</p>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="24" y="100" width="104" height="48" rx="7" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="76" y="122" fill="#e7ebf1" font-size="11.5" text-anchor="middle" font-weight="700">Chubby 文件</text><text x="76" y="138" fill="#7c8593" font-size="9" text-anchor="middle">存根 tablet 位置</text>
-<rect x="176" y="100" width="104" height="48" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="228" y="120" fill="#e7ebf1" font-size="11" text-anchor="middle" font-weight="700">根 tablet</text><text x="228" y="136" fill="#7c8593" font-size="9" text-anchor="middle">METADATA 首段·不分裂</text>
-<rect x="328" y="70" width="120" height="34" rx="6" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="388" y="91" fill="#e7ebf1" font-size="10.5" text-anchor="middle">METADATA tablet</text>
-<rect x="328" y="146" width="120" height="34" rx="6" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="388" y="167" fill="#e7ebf1" font-size="10.5" text-anchor="middle">METADATA tablet …</text>
-<rect x="480" y="48" width="66" height="28" rx="5" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="513" y="66" fill="#e7ebf1" font-size="9.5" text-anchor="middle">用户 tablet</text>
-<rect x="480" y="84" width="66" height="28" rx="5" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="513" y="102" fill="#e7ebf1" font-size="9.5" text-anchor="middle">用户 tablet</text>
-<rect x="480" y="140" width="66" height="28" rx="5" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="513" y="158" fill="#e7ebf1" font-size="9.5" text-anchor="middle">用户 tablet</text>
-<rect x="480" y="176" width="66" height="28" rx="5" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="513" y="194" fill="#e7ebf1" font-size="9.5" text-anchor="middle">用户 tablet</text>
-<path d="M128,124 L174,124" stroke="#f0b429" stroke-width="1.5" marker-end="url(#a1)"/>
-<path d="M280,116 L326,92" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1)"/>
-<path d="M280,132 L326,160" stroke="#f0b429" stroke-width="1.4" marker-end="url(#a1)"/>
-<path d="M448,84 L478,66" stroke="#e8794b" stroke-width="1.3" marker-end="url(#a1)"/>
-<path d="M448,90 L478,96" stroke="#e8794b" stroke-width="1.3" marker-end="url(#a1)"/>
-<path d="M448,162 L478,152" stroke="#e8794b" stroke-width="1.3" marker-end="url(#a1)"/>
-<path d="M448,170 L478,188" stroke="#e8794b" stroke-width="1.3" marker-end="url(#a1)"/>
-<text x="280" y="228" fill="#7c8593" font-size="10.5" text-anchor="middle">三跳定位任意一行；客户端缓存结果，绝大多数请求不碰 master（足以寻址 2³⁴ 个 tablet）。</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.14)" height="48" rx="7" stroke="#f0b429" width="104" x="24" y="100"></rect><text fill="#e7ebf1" font-size="11.5" font-weight="700" text-anchor="middle" x="76" y="122">Chubby 文件</text><text fill="#7c8593" font-size="9" text-anchor="middle" x="76" y="138">存根 tablet 位置</text>
+<rect fill="rgba(240,180,41,0.1)" height="48" rx="7" stroke="#f0b429" width="104" x="176" y="100"></rect><text fill="#e7ebf1" font-size="11" font-weight="700" text-anchor="middle" x="228" y="120">根 tablet</text><text fill="#7c8593" font-size="9" text-anchor="middle" x="228" y="136">METADATA 首段·不分裂</text>
+<rect fill="rgba(240,180,41,0.08)" height="34" rx="6" stroke="#5a6069" width="120" x="328" y="70"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="388" y="91">METADATA tablet</text>
+<rect fill="rgba(240,180,41,0.08)" height="34" rx="6" stroke="#5a6069" width="120" x="328" y="146"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="388" y="167">METADATA tablet …</text>
+<rect fill="rgba(232,121,75,0.1)" height="28" rx="5" stroke="#e8794b" width="66" x="480" y="48"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="513" y="66">用户 tablet</text>
+<rect fill="rgba(232,121,75,0.1)" height="28" rx="5" stroke="#e8794b" width="66" x="480" y="84"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="513" y="102">用户 tablet</text>
+<rect fill="rgba(232,121,75,0.1)" height="28" rx="5" stroke="#e8794b" width="66" x="480" y="140"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="513" y="158">用户 tablet</text>
+<rect fill="rgba(232,121,75,0.1)" height="28" rx="5" stroke="#e8794b" width="66" x="480" y="176"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="513" y="194">用户 tablet</text>
+<path d="M128,124 L174,124" marker-end="url(#a1)" stroke="#f0b429" stroke-width="1.5"></path>
+<path d="M280,116 L326,92" marker-end="url(#a1)" stroke="#f0b429" stroke-width="1.4"></path>
+<path d="M280,132 L326,160" marker-end="url(#a1)" stroke="#f0b429" stroke-width="1.4"></path>
+<path d="M448,84 L478,66" marker-end="url(#a1)" stroke="#e8794b" stroke-width="1.3"></path>
+<path d="M448,90 L478,96" marker-end="url(#a1)" stroke="#e8794b" stroke-width="1.3"></path>
+<path d="M448,162 L478,152" marker-end="url(#a1)" stroke="#e8794b" stroke-width="1.3"></path>
+<path d="M448,170 L478,188" marker-end="url(#a1)" stroke="#e8794b" stroke-width="1.3"></path>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="228">三跳定位任意一行；客户端缓存结果，绝大多数请求不碰 master（足以寻址 2³⁴ 个 tablet）。</text>
 </svg>
 <figcaption>图 2 · 三级 tablet 寻址：Chubby 文件 → 根 tablet → METADATA tablet → 用户 tablet，形如一棵 B+ 树。客户端缓存位置，master 因此保持轻载。</figcaption>
 </figure>
-
-<h3>tablet 怎么读写：memtable + SSTable + 合并（LSM 引擎）</h3>
+<h3 data-tts="b1c4be69a6a020e8">tablet 怎么读写：memtable + SSTable + 合并（LSM 引擎）</h3>
 <p>这是全篇工程上最精彩的部分，也是被后世抄得最多的一招。一个 tablet 的持久状态存在 GFS 上，由三样东西构成：</p>
 <ul>
 <li><strong>提交日志（commit log）</strong>：所有更新先<strong>追加</strong>到一份写在 GFS 上的重做日志里——顺序写、极快，且因在 GFS 上有多副本而<strong>丢不了</strong>。</li>
@@ -191,36 +173,34 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>主压实（major compaction）</strong>：把一个 tablet 的<strong>所有</strong> SSTable 重写成<strong>唯一一个</strong>、且丢弃所有已删除标记——被删的数据到此才真正从磁盘消失，回收空间、也让敏感数据得以及时清除。</li>
 </ul>
 <p>这套「<strong>写只追加、旧文件只读、后台定期合并</strong>」正是 <strong>LSM-tree（日志结构合并树）</strong>的思路：用「顺序写 + 批量整理」换来了极高的写吞吐与简单的容错。<strong>为什么这么设计能又快又稳</strong>——写不做随机磁盘改写（分布式文件系统上最贵的操作），全是顺序追加；SSTable 一旦生成就不可变，<strong>读它无需加锁、并发天然安全</strong>，机器坏了直接从 GFS 上重新加载 SSTable + 重放日志即可，恢复干净利落。</p>
-
 <figure>
-<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="s1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="s2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
-<text x="60" y="30" fill="#f0b429" font-size="12" text-anchor="middle" font-weight="700">写</text>
-<rect x="20" y="42" width="80" height="26" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="60" y="59" fill="#e7ebf1" font-size="10" text-anchor="middle">改动进来</text>
-<text x="500" y="30" fill="#e8794b" font-size="12" text-anchor="middle" font-weight="700">读</text>
-<rect x="460" y="42" width="80" height="26" rx="5" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="500" y="59" fill="#e7ebf1" font-size="10" text-anchor="middle">读请求</text>
-<rect x="200" y="96" width="160" height="40" rx="7" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="280" y="112" fill="#e7ebf1" font-size="11.5" text-anchor="middle" font-weight="700">memtable（内存·有序）</text><text x="280" y="128" fill="#7c8593" font-size="9" text-anchor="middle">最近更新</text>
-<rect x="20" y="150" width="150" height="34" rx="6" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/><text x="95" y="167" fill="#e7ebf1" font-size="10" text-anchor="middle">提交日志 commit log</text><text x="95" y="179" fill="#7c8593" font-size="8.5" text-anchor="middle">GFS·顺序追加·多副本</text>
-<rect x="210" y="196" width="90" height="30" rx="5" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="255" y="215" fill="#b9c0ca" font-size="9.5" text-anchor="middle">SSTable（只读）</text>
-<rect x="310" y="196" width="90" height="30" rx="5" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="355" y="215" fill="#b9c0ca" font-size="9.5" text-anchor="middle">SSTable（只读）</text>
-<rect x="410" y="196" width="90" height="30" rx="5" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="455" y="215" fill="#b9c0ca" font-size="9.5" text-anchor="middle">SSTable …</text>
-<text x="355" y="244" fill="#7c8593" font-size="9" text-anchor="middle">GFS 上一摞不可变文件</text>
-<path d="M100,55 C150,60 170,80 205,98" fill="none" stroke="#7c8593" stroke-width="1.4" marker-end="url(#s1)"/>
-<path d="M60,68 L92,148" stroke="#7c8593" stroke-width="1.4" marker-end="url(#s1)"/>
-<text x="120" y="120" fill="#7c8593" font-size="8.5" text-anchor="middle">①记日志</text>
-<text x="165" y="88" fill="#7c8593" font-size="8.5" text-anchor="middle">②插内存</text>
-<path d="M460,55 C400,62 370,82 340,94" fill="none" stroke="#e8794b" stroke-width="1.5" marker-end="url(#s2)"/>
-<path d="M470,68 C430,120 400,170 400,194" fill="none" stroke="#e8794b" stroke-width="1.5" marker-end="url(#s2)"/>
-<text x="437" y="150" fill="#e8794b" font-size="9" text-anchor="middle">读=memtable + 所有 SSTable 合并看</text>
-<path d="M270,138 L258,194" stroke="#7c8593" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#s1)"/>
-<text x="150" y="210" fill="#7c8593" font-size="8.5" text-anchor="middle">memtable 满→次压实</text>
-<text x="150" y="222" fill="#7c8593" font-size="8.5" text-anchor="middle">冻结誊成新 SSTable</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="s1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="s2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle" x="60" y="30">写</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="80" x="20" y="42"></rect><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="60" y="59">改动进来</text>
+<text fill="#e8794b" font-size="12" font-weight="700" text-anchor="middle" x="500" y="30">读</text>
+<rect fill="rgba(232,121,75,0.1)" height="26" rx="5" stroke="#e8794b" width="80" x="460" y="42"></rect><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="500" y="59">读请求</text>
+<rect fill="rgba(240,180,41,0.14)" height="40" rx="7" stroke="#f0b429" width="160" x="200" y="96"></rect><text fill="#e7ebf1" font-size="11.5" font-weight="700" text-anchor="middle" x="280" y="112">memtable（内存·有序）</text><text fill="#7c8593" font-size="9" text-anchor="middle" x="280" y="128">最近更新</text>
+<rect fill="rgba(232,121,75,0.1)" height="34" rx="6" stroke="#e8794b" width="150" x="20" y="150"></rect><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="95" y="167">提交日志 commit log</text><text fill="#7c8593" font-size="8.5" text-anchor="middle" x="95" y="179">GFS·顺序追加·多副本</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="5" stroke="#5a6069" width="90" x="210" y="196"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="255" y="215">SSTable（只读）</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="5" stroke="#5a6069" width="90" x="310" y="196"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="355" y="215">SSTable（只读）</text>
+<rect fill="rgba(240,180,41,0.08)" height="30" rx="5" stroke="#5a6069" width="90" x="410" y="196"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="455" y="215">SSTable …</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="355" y="244">GFS 上一摞不可变文件</text>
+<path d="M100,55 C150,60 170,80 205,98" fill="none" marker-end="url(#s1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M60,68 L92,148" marker-end="url(#s1)" stroke="#7c8593" stroke-width="1.4"></path>
+<text fill="#7c8593" font-size="8.5" text-anchor="middle" x="120" y="120">①记日志</text>
+<text fill="#7c8593" font-size="8.5" text-anchor="middle" x="165" y="88">②插内存</text>
+<path d="M460,55 C400,62 370,82 340,94" fill="none" marker-end="url(#s2)" stroke="#e8794b" stroke-width="1.5"></path>
+<path d="M470,68 C430,120 400,170 400,194" fill="none" marker-end="url(#s2)" stroke="#e8794b" stroke-width="1.5"></path>
+<text fill="#e8794b" font-size="9" text-anchor="middle" x="437" y="150">读=memtable + 所有 SSTable 合并看</text>
+<path d="M270,138 L258,194" marker-end="url(#s1)" stroke="#7c8593" stroke-dasharray="4 3" stroke-width="1.3"></path>
+<text fill="#7c8593" font-size="8.5" text-anchor="middle" x="150" y="210">memtable 满→次压实</text>
+<text fill="#7c8593" font-size="8.5" text-anchor="middle" x="150" y="222">冻结誊成新 SSTable</text>
 </svg>
 <figcaption>图 3 · tablet 读写引擎（LSM 式）：写 = 追加提交日志 + 插入内存 memtable；读 = 把 memtable 与磁盘上的 SSTable 合并看；memtable 满则「次压实」冻成只读 SSTable，后台再定期合并——写快、读靠合并、容错靠日志。</figcaption>
 </figure>
-
-<h3>让它真正好用的一批精调</h3>
+<h3 data-tts="fd994e2e536a6853">让它真正好用的一批精调</h3>
 <p>光有上面的骨架还不够快，论文用一组务实的优化把性能拉满：</p>
 <ul>
 <li><strong>局部性组（locality group）</strong>：客户端可把几个常一起访问的列族归成一个局部性组，<strong>每组单独存成 SSTable</strong>。于是只想读网页元数据时，不必把巨大的正文也从磁盘捞出来——把不常同时用的数据物理分开，读得更省。还能把某个组声明为<strong>常驻内存</strong>（如存 tablet 位置的那个列族），查得飞快。</li>
@@ -230,8 +210,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>每台服务器一份提交日志</strong>：若每个 tablet 各写一份日志，一台机器上上千个 tablet 就要同时向 GFS 写上千个文件、还丢了 group commit 的好处。于是<strong>整台 tablet server 共用一份物理日志</strong>，代价是恢复时要按 (表, 行, 日志序号) 把混在一起的日志排个序，让同一 tablet 的记录连成一片、一次读入。</li>
 <li><strong>利用不可变性</strong>：SSTable 永不变，因此读它不需要任何加锁；被删数据靠对 SSTable 的「标记—清除」式垃圾回收真正抹掉；<strong>tablet 分裂几乎零成本</strong>——两个子 tablet 直接共享父亲的 SSTable 即可。</li>
 </ul>
-
-<h2>关键结果</h2>
+<h2 data-tts="6e3ef569ab060a78">关键结果</h2>
 <p>论文在一个 tablet server 数从 1 加到 500 的集群上，用 1000 字节的值测了随机读、随机写、顺序读/写、扫描等负载。几个要点：</p>
 <ul>
 <li><strong>单台服务器的吞吐（值/秒，1000 字节值）大致是</strong>：从磁盘随机读最慢（约 1200），随机写和顺序读写居中（约 8500 上下），<strong>内存随机读</strong>与<strong>扫描</strong>最快（约 1 万～1.5 万）。</li>
@@ -240,11 +219,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>真实规模</strong>：论文发表时，Google 内部已有 <strong>388 个</strong>生产 Bigtable 集群、共约 <strong>24500 台</strong> tablet server 在服务；单表可达数百 TB（如 Google Analytics 的原始点击表约 200 TB 量级），支撑着 Google Earth、个性化搜索、爬虫等一批产品。</li>
 </ul>
 <p>这些数字要传达的不是「它是最快的数据库」，而是——<strong>在这种超大规模、简单负载下，一套受限但可横向扩展的设计，能把成千上万台廉价机器聚成一个几乎无限大的存储层</strong>。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="2b5c4c8b829eef94">为什么重要 / 影响</h2>
 <p>Bigtable 的贡献和 MapReduce 一样，主要在<strong>抽象与工程取舍</strong>，而非某个算法。它证明了一件事：<strong>放弃关系数据库的通用性（通用事务、SQL、多表关联），只保留「按行键读写 + 扫区间 + 多版本」这组最必要的语义，就能换来近乎无限的横向扩展。</strong>它开创的「<strong>宽列（wide-column）</strong>」数据模型——行键有序、列族 + 无限限定词、稀疏多版本——成了一整类数据库的范式：开源界的 <strong>HBase</strong> 几乎是它的直接复刻，Facebook 的 <strong>Cassandra</strong> 把它的数据模型嫁接到 Dynamo 的去中心化分布上，还有 Hypertable、Accumulo 等。它与 GFS、MapReduce 合成 Google「老三件套」，共同定义了「大数据基础设施」的样貌。更深远的是它普及的一整套心法：<strong>用有序行键把逻辑局部性变成物理局部性</strong>、<strong>LSM 式「顺序写 + 只读文件 + 后台合并」的存储引擎</strong>、<strong>用不可变数据换免锁并发</strong>、<strong>把协调/选主外包给一个 Chubby 这样的小而可靠的锁服务</strong>——这些都被后来无数系统继承。它的单机引擎更被 Dean 与 Ghemawat 提炼成 <strong>LevelDB</strong>，再演化出 <strong>RocksDB</strong>，如今是从 MySQL 的存储引擎到各种 NoSQL 的共同底座。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="de25fa647f3b0d9e">局限与批评</h2>
 <ul>
 <li><strong>只有单行事务，没有跨行/跨表事务</strong>：这是最被诟病的一点。要维护跨多行的一致关系，应用得自己想办法。Google 自己随后用 <strong>Percolator</strong> 给 Bigtable 加上跨行事务与增量处理，又用 <strong>Spanner</strong> 做到全球尺度的分布式事务——都是在补 Bigtable 这块短板。</li>
 <li><strong>没有 SQL、没有二级索引、不做关系查询</strong>：只能按行键或行区间访问。想按「非行键的某个字段」查，得自己另建索引表或全表扫。数据建模要反范式、要精心设计行键，学习曲线陡。</li>
@@ -252,8 +229,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>调优是门手艺</strong>：局部性组怎么分、要不要压缩、布隆过滤器、内存组、行键怎么设计——用好 Bigtable 很吃经验，用不好性能差很多。</li>
 <li><strong>原版是单数据中心</strong>：论文里的 Bigtable 主要在单集群内工作，跨数据中心的复制与全球一致是后来（Megastore、Spanner）才补上的。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="02adc005754ce9f2">要点</h2>
 <div class="tl">
 <p>① 一句话：Google 的分布式结构化存储系统，把数据组织成能横跨上千台机器、长到 PB 级的「稀疏、有序、多维大表」，用 GFS 存文件、Chubby 做协调。</p>
 <p>② 数据模型：<code>(行键, 列, 时间戳) → 字节值</code>。行按行键<strong>字典序</strong>、单行读写<strong>原子</strong>；列归<strong>列族</strong>（访问控制单位）+ 无限限定词；每格<strong>多版本</strong>；<strong>稀疏</strong>（空格不占地）。</p>
@@ -272,9 +248,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

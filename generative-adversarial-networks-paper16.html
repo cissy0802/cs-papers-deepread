@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Generative Adversarial Networks（GAN）— IT 论文精读 Paper 16</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,46 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 16</p>
-<h1>Generative Adversarial Networks（GAN）</h1>
+<h1 data-tts="2148bf36b7d4f9c9">Generative Adversarial Networks（GAN）</h1>
 <p class="sub">Ian Goodfellow 等 · Université de Montréal · NIPS 2014</p>
 <p class="langbar"><a href="generative-adversarial-networks-paper16.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="afcf4b2e702eb45e">这篇论文干了什么？</h2>
 <p>2014 年，Ian Goodfellow 等人提出了 <strong>GAN（生成对抗网络）</strong>。今天你见过的 AI 换脸（deepfake）、以假乱真的「不存在的人脸」、把黑白老照片自动上色、把马变成斑马——这类「无中生有造出逼真图像」的技术，很多都从这篇的思路发端。它教会机器一件很难的事：不是<strong>认出</strong>一张图，而是自己<strong>画出</strong>一张以前从没存在、却像真的一样的图。</p>
-
-<h2>先说个难题</h2>
+<h2 data-tts="89feae7b4040404d">先说个难题</h2>
 <p>让机器认出「这是猫」不算太难——喂它一堆标好的猫图去学就行。可反过来让它「画一只从没见过、但一看就是真猫」的猫，难得多：<strong>怎么判断它画得像不像？</strong>「像不像真的」是个说不清、也写不出打分公式的东西。你没法给机器一把尺子说「照这个量，越接近满分越逼真」。这正是老办法卡住的地方。</p>
-
-<h2>它的点子：让两个网络打架</h2>
+<h2 data-tts="41f04d082502083d">它的点子：让两个网络打架</h2>
 <p>GAN 不去硬写「像不像」的评分公式，而是<strong>再造一个网络专门当裁判</strong>。于是场上有两个网络：一个<strong>「造假者」</strong>（生成器），负责凭空造图；一个<strong>「验钞员」</strong>（判别器），负责分辨手里的图是真数据、还是造假者伪造的。两个互为对手：造假者拼命想骗过验钞员，验钞员拼命想识破它。</p>
-
-<h2>它们怎么就越练越强？</h2>
+<h2 data-tts="5b7483d4889741ac">它们怎么就越练越强？</h2>
 <p>关键在这场「猫鼠游戏」会自己往上卷。一开始造假者画得很烂，验钞员一眼识破；但每被识破一次，造假者就知道「哪儿露馅了」、朝更逼真改一点点；验钞员为了不被骗，也被逼着练出更毒的眼力。你追我赶之下，造假者被逼得越来越真，直到验钞员再也分不清真假、只能靠掷硬币瞎猜——这时造假者造出的图，就和真的几乎一样了。<strong>最妙的地方是：从头到尾没有人写过「什么算逼真」，这把尺子是两个网络在对抗里自己长出来的。</strong></p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="0e9fd4aa4f8259ef">带来了什么</h2>
 <p>这一下打开了「机器搞创作」的闸门。之后几年，GAN 造出的人脸逼真到能骗过人眼、能换脸、能把素描变照片、能给老电影上色，「生成」从一个冷门角落变成 AI 最热的方向之一。</p>
 <p>一句诚实的代价：这场对抗很<strong>难调平</strong>——两边一旦失衡，造假者可能会偷懒、只反复画同一张「稳赢」的图，或者整个训练直接崩掉；这也是 GAN 出了名难伺候的地方。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="492ee98beee418c0">一句话记住</h2>
 <div class="tl">
 <p>让一个「造假网络」和一个「验假网络」互相对抗、彼此把对方逼着进步，不用人写「什么算逼真」的评分规则，机器就能自己造出以假乱真的图。</p>
 </div>
-
 <p class="switch-hint">想看两个网络的结构图、那道博弈公式和它凭什么会收敛？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="39b39361cffabaeb">一句话</h2>
 <p class="lead">GAN 用一个<strong>生成器 G</strong> 与一个<strong>判别器 D</strong> 互相对抗的<strong>博弈（minimax game）</strong>来学会造数据：G 把随机噪声变成假样本、力求骗过 D，D 力求分辨真样本与 G 造的假样本。两者交替训练、彼此把对方逼强，最终 G 造出的分布逼近真实数据分布、D 再也分不清真假。它第一次让「<strong>不写任何逼真度评分函数</strong>」的生成成为可能——评判标准由对抗过程自己涌现——开启了生成式建模（generative modeling）的一整个时代。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="727e3adac590a7d8">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>生成模型（generative model）</strong>：不是判断「这是不是猫」，而是学会「猫长什么样」、能自己生成新样本的模型。GAN 属于这一类。</li>
@@ -86,18 +76,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>最大似然（maximum likelihood）</strong>：老一代生成模型常用的训练目标——让模型觉得「真实数据出现」的概率尽量大；GAN 绕开了它。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="3298d2e0a03869d2">坐标</h2>
 <p>作者是 Ian Goodfellow 等（含深度学习先驱 Yoshua Bengio），出自蒙特利尔大学 Bengio 实验室，论文发在 NIPS 2014。它接续深度学习在<strong>判别任务</strong>（分类、识别）上的胜利，把矛头转向更难的<strong>生成</strong>；上承受限玻尔兹曼机、变分自编码器（VAE，同年）等生成路线，却另起炉灶——不去估计概率密度，而用一场对抗博弈。下启 DCGAN、pix2pix / CycleGAN、StyleGAN 等一整片工作，也与后来的扩散模型（diffusion）分庭抗礼。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="a32b441f6d2c5d25">问题与动机</h2>
 <p>到 2014 年，判别任务（给图贴标签）在深度学习里已经大获全胜，但<strong>生成</strong>——让机器自己造出逼真的新样本——一直很难。难在两处。</p>
 <p>其一，多数生成模型要<strong>显式写出数据的概率密度</strong>并做最大似然，可对高维复杂数据（如自然图像），这个概率往往算不出来、只能靠昂贵的近似（如马尔可夫链蒙特卡洛采样），又慢又不稳。</p>
 <p>其二，也更本质：<strong>「一张图像像不像真的」，根本没有一个简单、可导的打分公式。</strong>如果退而用像素级误差（把生成图和某张真图逐像素比差）当目标，模型会被逼着去画所有可能答案的「平均」，结果糊成一团。旧世界的痛就在这里——你想教模型「画得真」，却写不出「真」的数学定义，自然也没法顺着它做梯度下降。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>对抗博弈：把「评价」也交给一个网络</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="6ab32a730b1b1076">对抗博弈：把「评价」也交给一个网络</h3>
 <p>GAN 的釜底抽薪之招是：<strong>既然写不出逼真度函数，那就训练另一个网络来充当这个函数。</strong>设两个神经网络：</p>
 <ul>
 <li><strong>生成器 G</strong>：吃一串随机噪声 <code>z</code>，输出一张假样本 <code>G(z)</code>。它想让假样本像真的。</li>
@@ -105,64 +91,57 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>两者目标正好相反，构成一场<strong>二人零和博弈</strong>。用一道式子概括这场博弈：<code>min_G max_D  E[log D(x)] + E[log(1 − D(G(z)))]</code>——白话说：D 想把这个式子<strong>调大</strong>（把真样本 x 判高、把假样本 G(z) 判低），G 想把它<strong>调小</strong>（让 D 连 G(z) 也判高、被骗过去）。训练就是让两者交替走：固定一个、优化另一个。</p>
 <p>打个比方（也是原论文的比喻）：G 是<strong>造假钞的</strong>、D 是<strong>验钞的警察</strong>。造假者不断改进假钞去骗警察，警察不断练火眼金睛去识破；两边你追我赶，最后假钞逼真到警察只能靠掷硬币猜——这时造假者就「毕业」了。</p>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
 <defs>
-<marker id="g1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="gg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
+<marker id="g1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="gg" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
 </defs>
-<rect x="20" y="48" width="92" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="66" y="70" fill="#b9c0ca" font-size="12" text-anchor="middle">随机噪声 z</text>
-<line x1="112" y1="65" x2="146" y2="65" stroke="#7c8593" marker-end="url(#g1)"/>
-<rect x="148" y="46" width="104" height="38" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="200" y="70" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">生成器 G</text>
-<line x1="252" y1="65" x2="286" y2="65" stroke="#7c8593" marker-end="url(#g1)"/>
-<rect x="288" y="48" width="104" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="340" y="70" fill="#e7ebf1" font-size="12" text-anchor="middle">假样本 G(z)</text>
-<rect x="288" y="186" width="104" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="340" y="208" fill="#b9c0ca" font-size="12" text-anchor="middle">真实数据 x</text>
-<rect x="430" y="94" width="104" height="86" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="482" y="132" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">判别器 D</text><text x="482" y="152" fill="#7c8593" font-size="11" text-anchor="middle">真？假？</text>
-<path d="M392,65 C414,65 414,116 430,116" fill="none" stroke="#7c8593" marker-end="url(#g1)"/>
-<path d="M392,203 C414,203 414,158 430,158" fill="none" stroke="#7c8593" marker-end="url(#g1)"/>
-<line x1="482" y1="180" x2="482" y2="204" stroke="#7c8593" marker-end="url(#g1)"/>
-<text x="482" y="220" fill="#b9c0ca" font-size="11.5" text-anchor="middle">输出概率 D∈[0,1]</text>
-<path d="M482,94 C482,26 200,22 200,44" fill="none" stroke="#f0b429" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#gg)"/>
-<text x="330" y="20" fill="#f0b429" font-size="11.5" text-anchor="middle">反传梯度：逼 G 造得更像、逼 D 看得更准</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="92" x="20" y="48"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="66" y="70">随机噪声 z</text>
+<line marker-end="url(#g1)" stroke="#7c8593" x1="112" x2="146" y1="65" y2="65"></line>
+<rect fill="rgba(240,180,41,0.12)" height="38" rx="6" stroke="#f0b429" width="104" x="148" y="46"></rect><text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="200" y="70">生成器 G</text>
+<line marker-end="url(#g1)" stroke="#7c8593" x1="252" x2="286" y1="65" y2="65"></line>
+<rect fill="rgba(232,121,75,0.14)" height="34" rx="6" stroke="#e8794b" width="104" x="288" y="48"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="340" y="70">假样本 G(z)</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="104" x="288" y="186"></rect><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="340" y="208">真实数据 x</text>
+<rect fill="rgba(240,180,41,0.12)" height="86" rx="6" stroke="#f0b429" width="104" x="430" y="94"></rect><text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="482" y="132">判别器 D</text><text fill="#7c8593" font-size="11" text-anchor="middle" x="482" y="152">真？假？</text>
+<path d="M392,65 C414,65 414,116 430,116" fill="none" marker-end="url(#g1)" stroke="#7c8593"></path>
+<path d="M392,203 C414,203 414,158 430,158" fill="none" marker-end="url(#g1)" stroke="#7c8593"></path>
+<line marker-end="url(#g1)" stroke="#7c8593" x1="482" x2="482" y1="180" y2="204"></line>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="482" y="220">输出概率 D∈[0,1]</text>
+<path d="M482,94 C482,26 200,22 200,44" fill="none" marker-end="url(#gg)" stroke="#f0b429" stroke-dasharray="5 3" stroke-width="1.5"></path>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="330" y="20">反传梯度：逼 G 造得更像、逼 D 看得更准</text>
 </svg>
 <figcaption>图 1 · 对抗结构：G 把噪声 z 变成假样本，与真实数据一起送进 D；D 判真假、并把梯度反传回去，两个网络在博弈中互相逼强。</figcaption>
 </figure>
-
-<h3>它为什么会收敛到「真假难分」</h3>
+<h3 data-tts="a9368eaa5da180b2">它为什么会收敛到「真假难分」</h3>
 <p>这场博弈有个漂亮的理论落点。先固定 G，最优的判别器是 <code>D*(x) = p_data(x) / (p_data(x) + p_g(x))</code>——即某一点上「真实数据的密度」占「真 + 假密度之和」的比例；白话：某处真样本比假样本多，D 就该往「真」判。把这个最优 D 代回博弈，G 要最小化的东西，其实<strong>等价于在缩小真实分布 <code>p_data</code> 与生成分布 <code>p_g</code> 之间的一种距离</strong>（Jensen–Shannon 散度，一种衡量两个分布差多远的量）。这个距离当且仅当 <strong><code>p_g = p_data</code></strong>（生成分布完全等于真实分布）时取到最小，此时 <code>D(x)</code> 恒等于 <code>1/2</code>——<strong>判别器彻底分不清、只能瞎猜</strong>。这就从数学上说明：博弈的理想终点，正是「造出的分布和真实分布一模一样」。</p>
-
 <figure>
-<svg viewBox="0 0 560 232" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="150" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">训练早期：分得开</text>
-<text x="410" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">收敛后：真假重合</text>
-<line x1="34" y1="180" x2="270" y2="180" stroke="#7c8593"/>
-<path d="M56,180 Q104,66 152,180" fill="none" stroke="#f0b429" stroke-width="2.2"/>
-<path d="M150,180 Q198,96 246,180" fill="none" stroke="#e8794b" stroke-width="2.2"/>
-<path d="M40,92 C110,94 150,150 262,162" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="5 3"/>
-<text x="150" y="200" fill="#9aa3ad" font-size="10.5" text-anchor="middle">D 能把真假分两边</text>
-<line x1="300" y1="180" x2="536" y2="180" stroke="#7c8593"/>
-<path d="M338,180 Q416,72 494,180" fill="none" stroke="#f0b429" stroke-width="2.2"/>
-<path d="M342,180 Q420,82 498,180" fill="none" stroke="#e8794b" stroke-width="2.2" stroke-dasharray="4 3"/>
-<line x1="308" y1="132" x2="528" y2="132" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="5 3"/>
-<text x="418" y="124" fill="#9aa3ad" font-size="10.5" text-anchor="middle">D ≈ 1/2，只能瞎猜</text>
-<rect x="366" y="188" width="12" height="4" fill="#f0b429"/><text x="384" y="196" fill="#7c8593" font-size="10.5">真实分布 p_data</text>
-<rect x="470" y="188" width="12" height="4" fill="#e8794b"/><text x="488" y="196" fill="#7c8593" font-size="10.5">生成分布 p_g</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 232" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="150" y="24">训练早期：分得开</text>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="410" y="24">收敛后：真假重合</text>
+<line stroke="#7c8593" x1="34" x2="270" y1="180" y2="180"></line>
+<path d="M56,180 Q104,66 152,180" fill="none" stroke="#f0b429" stroke-width="2.2"></path>
+<path d="M150,180 Q198,96 246,180" fill="none" stroke="#e8794b" stroke-width="2.2"></path>
+<path d="M40,92 C110,94 150,150 262,162" fill="none" stroke="#9aa3ad" stroke-dasharray="5 3" stroke-width="1.6"></path>
+<text fill="#9aa3ad" font-size="10.5" text-anchor="middle" x="150" y="200">D 能把真假分两边</text>
+<line stroke="#7c8593" x1="300" x2="536" y1="180" y2="180"></line>
+<path d="M338,180 Q416,72 494,180" fill="none" stroke="#f0b429" stroke-width="2.2"></path>
+<path d="M342,180 Q420,82 498,180" fill="none" stroke="#e8794b" stroke-dasharray="4 3" stroke-width="2.2"></path>
+<line stroke="#9aa3ad" stroke-dasharray="5 3" stroke-width="1.6" x1="308" x2="528" y1="132" y2="132"></line>
+<text fill="#9aa3ad" font-size="10.5" text-anchor="middle" x="418" y="124">D ≈ 1/2，只能瞎猜</text>
+<rect fill="#f0b429" height="4" width="12" x="366" y="188"></rect><text fill="#7c8593" font-size="10.5" x="384" y="196">真实分布 p_data</text>
+<rect fill="#e8794b" height="4" width="12" x="470" y="188"></rect><text fill="#7c8593" font-size="10.5" x="488" y="196">生成分布 p_g</text>
 </svg>
 <figcaption>图 2 · 博弈收敛：早期生成分布（铜色）与真实分布（金色）分得开、D 能判；训练到位后两分布重合，D 处处约等于 1/2、彻底分不清。</figcaption>
 </figure>
-
-<h3>一个关键的工程修补：别让造假者一上场就泄气</h3>
+<h3 data-tts="2a1deead6d623069">一个关键的工程修补：别让造假者一上场就泄气</h3>
 <p>理论式子里 G 要最小化 <code>log(1 − D(G(z)))</code>。但训练早期 G 画得太烂、D 轻松识破（<code>D(G(z))≈0</code>），这一项的<strong>梯度几乎为零</strong>——造假者刚上场就「学不动」。于是实践中改成让 G <strong>最大化 <code>log D(G(z))</code></strong>（称为非饱和目标，non-saturating loss）：目标一致（都想骗过 D），但早期梯度足够强，造假者能顺利起步。这个小改动，是 GAN 能真正训起来的关键之一。</p>
 <p>训练流程是<strong>交替进行</strong>：先更新 D（可走 k 步）把眼力练一练，再更新 G 一步去骗它；两者各自反向传播、你强我也强。值得一提的是，G 从头到尾<strong>没直接看过一张真图</strong>——它只透过「D 的反馈」间接地学习真实数据长什么样。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="49582a8a630deb6d">关键结果</h2>
 <p>论文在 <strong>MNIST</strong>（手写数字）、<strong>TFD</strong>（多伦多人脸库）、<strong>CIFAR-10</strong>（小尺寸自然图）上训练并展示生成样本：视觉上清晰、可辨，且不是简单照抄训练集——作者展示了在噪声隐空间 <code>z</code> 里平滑插值时，生成图也<strong>平滑过渡</strong>，说明模型学到的是结构而非死记硬背。定量上，受限于当时缺乏好指标，作者只能用 <strong>Parzen 窗</strong>估计对数似然做对比，并坦承这个指标本身很弱。<strong>真正的说服力来自样本质量本身</strong>：在当时，这是少有的能<strong>直接采样、无需马尔可夫链、一次前向就出图</strong>的生成模型。诚实地说，2014 年的原始 GAN 图像还偏小、偏糊，惊艳的高清结果要等两年后的 DCGAN 及之后。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="bc8d02f4fffadb54">为什么重要 / 影响</h2>
 <p>GAN 点燃了生成式建模的一整波浪潮。它证明了「用<strong>对抗</strong>、而非显式似然」这条全新路线可行，直接催生 <strong>DCGAN</strong>（稳定的卷积版）、条件生成、<strong>pix2pix / CycleGAN</strong>（图到图翻译，把马变斑马）、<strong>StyleGAN</strong>（以假乱真的高清人脸）、超分辨率、数据增广等大量工作，也把「deepfake」「AI 生成人脸」带进大众视野。Yann LeCun 曾称对抗训练是「近十年机器学习最酷的想法」。即便后来扩散模型在很多图像任务上超过了 GAN，「<strong>让两个网络对抗、把评价标准交给一个可学习的对手</strong>」这个思想，已沉淀为深度学习的通用武器（对抗鲁棒性、对抗训练等都由此延展）。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="d3882a87dde68c84">局限与批评</h2>
 <ul>
 <li><strong>训练不稳定</strong>：这是一场动态博弈，而非简单的最小化；两个网络的强弱要精细配平，配不好就震荡、不收敛，对超参数与结构极其敏感，出了名难调。</li>
 <li><strong>模式坍缩（mode collapse）</strong>：G 可能偷懒，只反复生成少数几种「稳赢」的样本（如永远画同一张脸），骗过了 D 却丢掉了真实数据的多样性。</li>
@@ -170,8 +149,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>理论保证与现实有距离</strong>：那套「收敛到 <code>p_g=p_data</code>」的证明假设模型容量无限、且能在概率密度空间里直接优化；真用有限的神经网络加梯度下降交替训练时，并不保证到达那个理想解。</li>
 <li><strong>后浪超越</strong>：扩散模型（DDPM 等）以更稳的训练与更高的样本质量，在许多生成任务上取代了 GAN——它的王座并非永久。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="f61f613c55154b44">要点</h2>
 <div class="tl">
 <p>① 一句话：用生成器 G 与判别器 D 的对抗博弈来学造数据，不写任何逼真度函数、评价标准由对抗自己涌现。</p>
 <p>② 痛点：显式概率密度的生成模型算不出/不稳；而「像不像真的」没有简单可导的打分公式。</p>
@@ -189,9 +167,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>MapReduce — IT 论文精读 Paper 18</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,46 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 18</p>
-<h1>MapReduce：把「大规模并行」缩成两个函数</h1>
+<h1 data-tts="9be42d2ed63caca5">MapReduce：把「大规模并行」缩成两个函数</h1>
 <p class="sub">Jeffrey Dean &amp; Sanjay Ghemawat · Google · OSDI 2004</p>
 <p class="langbar"><a href="map-reduce-paper18.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="77dd0f4edf0b2e61">这篇论文干了什么？</h2>
 <p>2004 年，Google 两位工程师公开了一套叫 <strong>MapReduce</strong> 的做法，专治一个头疼问题：<strong>有一大堆数据要算，一台机器算不完，得摊到上千台机器上一起算。</strong>问题是，「让一千台机器协同干一件活」本身极其难写——谁分到哪块数据、机器算到一半坏了怎么办、算完的碎片怎么拼回去……写这些琐事比写正经算法还累。MapReduce 的贡献是：<strong>把这些琐事一次性打包藏起来，只让你填两个空。</strong>它后来直接催生了开源的 Hadoop，开启了「大数据」这十几年。</p>
-
-<h2>先说说那个头疼的活儿</h2>
+<h2 data-tts="9f1b6d867cdea4e2">先说说那个头疼的活儿</h2>
 <p>假设老板让你数一数：Google 爬回来的<strong>整个网页库里，每个单词各出现了多少次</strong>。逻辑简单到不能再简单——从头到尾扫一遍、见一个词就给它记一笔。可数据有几十 TB，一台机器扫到天荒地老。你只能拆给一千台机器分头数，最后再把一千份「小账本」合成一份大账本。<strong>真正折磨人的不是「数数」，而是「怎么把这件事安全地摊到一千台机器上」</strong>：怎么切、怎么分、哪台掉线了谁来补、结果怎么归拢——每写一个新的大数据任务，你都要把这套烂摊子重新收拾一遍。</p>
-
-<h2>它的点子：你只填两个空</h2>
+<h2 data-tts="6846349ba1992647">它的点子：你只填两个空</h2>
 <p>MapReduce 说：这类活儿其实都能拆成同样的<strong>两步</strong>，你只要分别写清这两步，剩下的我全包。</p>
 <p><strong>第一步「Map（分头处理）」</strong>：告诉我，拿到一小片数据，你想吐出哪些「<strong>标签 → 数值</strong>」的小纸条。数单词就是：每见一个词，吐一张 <code>(这个词, 1)</code>。<strong>第二步「Reduce（按标签归总）」</strong>：告诉我，把<em>同一个标签</em>的所有小纸条收到一起后，你想怎么把它们并成一个答案。数单词就是：把某个词收到的那一堆 1 加起来。<strong>你只写这两个「怎么做」，至于「谁去做、坏了怎么办、纸条怎么按标签归堆」——全是框架替你干的。</strong></p>
-
-<h2>它凭什么又快又不怕坏</h2>
+<h2 data-tts="2d0e260beb28cfc2">它凭什么又快又不怕坏</h2>
 <p>几个朴素但极管用的招。<strong>一、坏了就重算那一小块。</strong>框架有个「工头」盯着上千个「工人」，哪个工人算到一半没气了，工头把它那一小块活儿<strong>另派一个人重做</strong>即可，整个任务不用推倒重来——机器天天坏，也照跑不误。<strong>二、把活儿送到数据身边。</strong>数据本来就分散存在这些机器的硬盘上，框架尽量<strong>让「算某块数据的工人」正好就是「存着那块数据的机器」</strong>，省下海量网络搬运。<strong>三、专治「拖后腿的」。</strong>一千个工人里总有那么几个机器抽风、干得奇慢，拖着整个任务收不了尾；框架在快结束时会给这些慢活儿<strong>再找个人抢着做一遍，谁先干完算谁的</strong>——这一招能把总耗时砍掉一大截。</p>
-
-<h2>它带来了什么</h2>
+<h2 data-tts="2c24d90ff5174b29">它带来了什么</h2>
 <p>MapReduce 把「写一个能在上千台机器上跑、还扛得住机器随时坏的大规模程序」这件从前只有分布式高手才敢碰的事，<strong>变成了普通工程师填两个函数就能做</strong>。Google 内部很快跑起成千上万个这样的任务，连它的搜索索引都用这套重写了一遍。开源世界照着它做出 Hadoop，几乎整个「大数据」行业都建在这个思路上。<strong>诚实的代价</strong>：它只擅长「从头到尾扫一大批数据」这种批量活儿，要你反复迭代、或要秒级实时响应，它就笨重了——后来的 Spark 等正是冲这点来的。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="5b91d355d8d73eb2">一句话记住</h2>
 <div class="tl">
 <p>把「让上千台机器协同算一大堆数据」这件苦差，缩成你只需填的两个函数：Map（分头把数据变成「标签→数值」的小纸条）和 Reduce（按标签把纸条归总成答案）。谁去算、机器坏了怎么补、慢的怎么救、结果怎么拼——框架全包。这一下让普通人也能写大规模并行程序，开启了大数据时代。</p>
 </div>
-
-<p class="switch-hint">想看它的执行流程图、容错与「抢跑救慢」机制、还有真实集群排序 1&nbsp;TB 的数字？ <a data-mode="deep">→ 切到精读版</a></p>
+<p class="switch-hint">想看它的执行流程图、容错与「抢跑救慢」机制、还有真实集群排序 1 TB 的数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="b206ac67f7fc721e">一句话</h2>
 <p class="lead">MapReduce 是 Google 提出的一套<strong>编程模型 + 运行时框架</strong>：用户只写两个函数——<code>map</code>（把输入映射成一批中间「键→值」对）和 <code>reduce</code>（把同一个键的所有值归并成结果）——框架就自动把计算<strong>并行摊到上千台机器</strong>上，并替你打理<strong>数据切分、任务调度、机器容错、慢节点补救、跨机数据洗牌（shuffle）</strong>这一切脏活。它让不懂分布式的工程师也能写出扛得住机器故障的大规模并行程序，是「老三件套」的第二件，直接催生了开源的 Hadoop 与整个大数据生态。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="c83002408067524c">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>并行 / 并行计算（parallel computing）</strong>：把一件大活拆成很多小块、让多台机器（或多个核）同时干，以缩短总时间。</li>
@@ -86,57 +76,51 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>吞吐 vs 延迟（throughput / latency）</strong>：吞吐 = 单位时间能处理多少数据；延迟 = 单个请求要等多久。MapReduce 是<strong>高吞吐、高延迟</strong>的批处理，不是实时系统。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="f37d1cd75b27991e">坐标</h2>
 <p>作者是 Jeffrey Dean 与 Sanjay Ghemawat，来自 Google，论文发表于 OSDI 2004。它是 Google「分布式系统老三件套」的第二件：<strong>下承</strong> Paper 17 的 <strong>GFS</strong>（数据就存在 GFS 上、靠 GFS 提供容错的存储），<strong>上启</strong>两年后的 <strong>Bigtable</strong>（很多批量数据加工用 MapReduce 生成）。思想上它把函数式编程里古老的 <code>map</code>／<code>reduce</code> 原语搬到了千机规模；工程上它启发了开源的 <strong>Hadoop MapReduce</strong>，几乎定义了此后十余年「大数据」的入门范式，也为后来的 Spark、Dataflow 等更灵活的数据处理引擎立下了要超越的靶子。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="d37a009ddf6e9e07">问题与动机</h2>
 <p>2000 年代初，Google 内部到处是「概念简单、数据巨大」的计算：统计词频、构建倒排索引、分析爬取日志、计算网页图的各种统计……<strong>算法逻辑往往一眼就懂，难的是数据量大到必须摊到上千台机器上跑。</strong></p>
 <p>而一旦要摊到上千台机器，工程师就被迫反复重写同一批与业务无关的<strong>脏活</strong>：怎么切分输入、怎么把任务调度到成百上千台机器、机器算到一半崩了怎么办、怎么把散在各机的中间结果按键归拢、怎么处理慢机器拖后腿……这些容错与并行的样板代码，把一个本该几十行的简单计算，<strong>淹没在几千行分布式管道里</strong>。Google 团队发现：<strong>这些计算虽然五花八门，但它们的「并行骨架」惊人地一致。</strong>于是他们把这套通用骨架抽出来做成框架，只在两个地方留出「填空位」交给用户，其余全部由框架承担——<strong>让工程师重新只关心「算什么」，把「怎么在千机上又并行又容错地算」彻底交出去。</strong></p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>编程模型：只写 map 和 reduce 两个函数</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="5230071c0c8b027f">编程模型：只写 map 和 reduce 两个函数</h3>
 <p>用户把计算表达成两个函数，二者都以<strong>键值对</strong>为进出货：</p>
 <ul>
 <li><code>map: (k1, v1) → list(k2, v2)</code>　拿到一条输入（如一个文件名和它的一行内容），吐出<strong>零到多条中间键值对</strong>。</li>
 <li><code>reduce: (k2, list(v2)) → list(v2)</code>　框架已把<em>同一个中间键</em> <code>k2</code> 的所有值收集成一个列表交给你，你把它们<strong>归并成更小的结果</strong>（通常零或一个值）。</li>
 </ul>
 <p><strong>经典例子——数词频</strong>：<code>map</code> 对文档里每个词吐一张 <code>(词, "1")</code>；框架自动把同一个词的所有 <code>"1"</code> 聚到一起；<code>reduce</code> 收到 <code>("cat", ["1","1","1"])</code>，把它们加起来吐 <code>("cat", "3")</code>。用户全程<strong>没写一行关于「并行」「机器」「网络」的代码</strong>——这正是模型的魔力：只要你的问题能套进「先逐条 map、再按键 reduce」这个模具，就能白拿千机并行与容错。</p>
-
 <figure>
-<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<rect x="14" y="40" width="92" height="26" rx="5" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="60" y="57" fill="#b9c0ca" font-size="11" text-anchor="middle">the cat sat</text>
-<rect x="14" y="92" width="92" height="26" rx="5" fill="rgba(240,180,41,0.08)" stroke="#5a6069"/><text x="60" y="109" fill="#b9c0ca" font-size="11" text-anchor="middle">the dog ran</text>
-<text x="60" y="30" fill="#7c8593" font-size="10.5" text-anchor="middle">输入分片</text>
-<rect x="150" y="34" width="118" height="90" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="209" y="26" fill="#f0b429" font-size="11" text-anchor="middle">map：吐 (词,1)</text>
-<text x="209" y="54" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(the,1)(cat,1)</text>
-<text x="209" y="70" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(sat,1)</text>
-<text x="209" y="92" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(the,1)(dog,1)</text>
-<text x="209" y="108" fill="#e7ebf1" font-size="10.5" text-anchor="middle">(ran,1)</text>
-<rect x="300" y="30" width="120" height="98" rx="7" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
-<text x="360" y="22" fill="#e8794b" font-size="11" text-anchor="middle">按键归堆 (shuffle)</text>
-<text x="360" y="50" fill="#e7ebf1" font-size="10.5" text-anchor="middle">the → [1,1]</text>
-<text x="360" y="68" fill="#e7ebf1" font-size="10.5" text-anchor="middle">cat → [1]</text>
-<text x="360" y="86" fill="#e7ebf1" font-size="10.5" text-anchor="middle">sat → [1]　dog → [1]</text>
-<text x="360" y="104" fill="#e7ebf1" font-size="10.5" text-anchor="middle">ran → [1]</text>
-<rect x="452" y="40" width="96" height="82" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="500" y="32" fill="#f0b429" font-size="11" text-anchor="middle">reduce：求和</text>
-<text x="500" y="60" fill="#e7ebf1" font-size="10.5" text-anchor="middle">the → 2</text>
-<text x="500" y="78" fill="#e7ebf1" font-size="10.5" text-anchor="middle">cat → 1</text>
-<text x="500" y="96" fill="#e7ebf1" font-size="10.5" text-anchor="middle">sat → 1 …</text>
-<defs><marker id="w1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<path d="M108,66 L148,72" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
-<path d="M108,104 L148,92" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
-<path d="M270,79 L298,79" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
-<path d="M422,79 L450,80" stroke="#7c8593" stroke-width="1.4" marker-end="url(#w1)"/>
-<text x="280" y="168" fill="#7c8593" font-size="11" text-anchor="middle">用户只写「吐 (词,1)」和「把值加起来」两段；中间「按键归堆」全由框架完成。</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<rect fill="rgba(240,180,41,0.08)" height="26" rx="5" stroke="#5a6069" width="92" x="14" y="40"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="60" y="57">the cat sat</text>
+<rect fill="rgba(240,180,41,0.08)" height="26" rx="5" stroke="#5a6069" width="92" x="14" y="92"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="60" y="109">the dog ran</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="60" y="30">输入分片</text>
+<rect fill="rgba(240,180,41,0.1)" height="90" rx="7" stroke="#f0b429" width="118" x="150" y="34"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="209" y="26">map：吐 (词,1)</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="209" y="54">(the,1)(cat,1)</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="209" y="70">(sat,1)</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="209" y="92">(the,1)(dog,1)</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="209" y="108">(ran,1)</text>
+<rect fill="rgba(232,121,75,0.1)" height="98" rx="7" stroke="#e8794b" width="120" x="300" y="30"></rect>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="360" y="22">按键归堆 (shuffle)</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="360" y="50">the → [1,1]</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="360" y="68">cat → [1]</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="360" y="86">sat → [1]　dog → [1]</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="360" y="104">ran → [1]</text>
+<rect fill="rgba(240,180,41,0.1)" height="82" rx="7" stroke="#f0b429" width="96" x="452" y="40"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="500" y="32">reduce：求和</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="500" y="60">the → 2</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="500" y="78">cat → 1</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="500" y="96">sat → 1 …</text>
+<defs><marker id="w1" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<path d="M108,66 L148,72" marker-end="url(#w1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M108,104 L148,92" marker-end="url(#w1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M270,79 L298,79" marker-end="url(#w1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M422,79 L450,80" marker-end="url(#w1)" stroke="#7c8593" stroke-width="1.4"></path>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="168">用户只写「吐 (词,1)」和「把值加起来」两段；中间「按键归堆」全由框架完成。</text>
 </svg>
 <figcaption>图 1 · 数词频（word count）的数据流：map 把每个词变成 (词, 1)，框架自动把同一个词的值聚成列表，reduce 求和。用户从不接触并行与机器。</figcaption>
 </figure>
-
-<h3>执行流程：一个 master 指挥，M 个 map 任务 + R 个 reduce 任务</h3>
+<h3 data-tts="48e6bff33e5388e5">执行流程：一个 master 指挥，M 个 map 任务 + R 个 reduce 任务</h3>
 <p>框架怎么把上面这件事跑到千机上？核心是<strong>把输入切成 M 份、把中间结果分成 R 桶</strong>，再由一个 master 把这 M+R 个任务派给一群 worker：</p>
 <ul>
 <li><strong>切分与派活</strong>：输入被自动切成 <strong>M 个分片</strong>（每片约 16–64 MB），对应 M 个 <em>map 任务</em>；中间键按一个<strong>分区函数</strong>（默认 <code>hash(key) mod R</code>）分成 <strong>R 桶</strong>，对应 R 个 <em>reduce 任务</em>。一个特殊的 <strong>master</strong> 进程把这些任务不断派给空闲的 worker。</li>
@@ -144,72 +128,64 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>洗牌 + reduce 阶段</strong>：reduce worker 从 master 拿到位置后，用 RPC 去各 map worker 的本地磁盘<strong>拉取属于自己那一桶</strong>的数据（这一步就是 <em>shuffle</em>），<strong>按键排序</strong>让相同键聚在一起，再对每个键跑用户的 <code>reduce</code>，结果写回 GFS。</li>
 </ul>
 <p>整个 job 的最终输出是 <strong>R 个文件</strong>（每个 reduce 任务一份），通常无需再合并——直接当作下一个 MapReduce 的输入即可。<strong>注意一个关键取舍</strong>：map 的中间结果写在 <em>本地磁盘</em>（便宜、快），最终结果才写进 <em>GFS</em>（贵、可靠）——这个区别，稍后决定了两种任务失败时截然不同的处理方式。</p>
-
 <figure>
-<svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="m1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="m1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
-<rect x="220" y="8" width="120" height="34" rx="7" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="280" y="30" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">master · 派活/监控</text>
-<text x="34" y="66" fill="#7c8593" font-size="10.5">输入（GFS）</text>
-<rect x="22" y="74" width="70" height="22" rx="4" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/><text x="57" y="89" fill="#b9c0ca" font-size="10" text-anchor="middle">分片 1</text>
-<rect x="22" y="104" width="70" height="22" rx="4" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/><text x="57" y="119" fill="#b9c0ca" font-size="10" text-anchor="middle">分片 2</text>
-<rect x="22" y="134" width="70" height="22" rx="4" fill="rgba(240,180,41,0.06)" stroke="#5a6069"/><text x="57" y="149" fill="#b9c0ca" font-size="10" text-anchor="middle">分片 … M</text>
-<rect x="140" y="74" width="96" height="82" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="188" y="100" fill="#e7ebf1" font-size="11.5" text-anchor="middle">map</text><text x="188" y="118" fill="#e7ebf1" font-size="11.5" text-anchor="middle">worker</text><text x="188" y="140" fill="#7c8593" font-size="9.5" text-anchor="middle">就近读分片</text>
-<rect x="264" y="74" width="86" height="82" rx="6" fill="rgba(232,121,75,0.09)" stroke="#e8794b"/><text x="307" y="98" fill="#e7ebf1" font-size="10.5" text-anchor="middle">本地磁盘</text><text x="307" y="116" fill="#7c8593" font-size="9.5" text-anchor="middle">中间结果</text><text x="307" y="132" fill="#7c8593" font-size="9.5" text-anchor="middle">分成 R 区</text>
-<rect x="392" y="74" width="92" height="36" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="438" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">reduce</text><text x="438" y="104" fill="#7c8593" font-size="9.5" text-anchor="middle">排序+归并</text>
-<rect x="392" y="120" width="92" height="36" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="438" y="136" fill="#e7ebf1" font-size="11" text-anchor="middle">reduce</text><text x="438" y="150" fill="#7c8593" font-size="9.5" text-anchor="middle">… R 个</text>
-<rect x="502" y="86" width="46" height="60" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="525" y="112" fill="#e7ebf1" font-size="10" text-anchor="middle">输出</text><text x="525" y="128" fill="#7c8593" font-size="9" text-anchor="middle">GFS</text>
-<path d="M92,85 L138,95" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
-<path d="M92,115 L138,112" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
-<path d="M92,145 L138,130" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
-<path d="M236,115 L262,115" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
-<path d="M350,105 L390,95" stroke="#e8794b" stroke-width="1.7" marker-end="url(#m1g)"/>
-<path d="M350,128 L390,132" stroke="#e8794b" stroke-width="1.7" marker-end="url(#m1g)"/>
-<text x="330" y="188" fill="#e8794b" font-size="10" text-anchor="middle">reduce 用 RPC 拉取属于自己那一桶的数据（shuffle）</text>
-<path d="M484,95 L500,100" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
-<path d="M484,138 L500,128" stroke="#7c8593" stroke-width="1.4" marker-end="url(#m1)"/>
-<path d="M240,42 C200,52 195,60 190,72" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m1)"/>
-<path d="M320,42 C360,54 400,60 430,72" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m1)"/>
-<text x="280" y="232" fill="#7c8593" font-size="10.5" text-anchor="middle">切成 M 个 map 任务 + R 个 reduce 任务；master 把任务派给空闲 worker，</text>
-<text x="280" y="250" fill="#7c8593" font-size="10.5" text-anchor="middle">map 中间结果落在<tspan fill="#e8794b">本地磁盘</tspan>，最终结果才写进<tspan fill="#e8794b">GFS</tspan>。</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="m1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="m1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.14)" height="34" rx="7" stroke="#f0b429" width="120" x="220" y="8"></rect><text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="30">master · 派活/监控</text>
+<text fill="#7c8593" font-size="10.5" x="34" y="66">输入（GFS）</text>
+<rect fill="rgba(240,180,41,0.06)" height="22" rx="4" stroke="#5a6069" width="70" x="22" y="74"></rect><text fill="#b9c0ca" font-size="10" text-anchor="middle" x="57" y="89">分片 1</text>
+<rect fill="rgba(240,180,41,0.06)" height="22" rx="4" stroke="#5a6069" width="70" x="22" y="104"></rect><text fill="#b9c0ca" font-size="10" text-anchor="middle" x="57" y="119">分片 2</text>
+<rect fill="rgba(240,180,41,0.06)" height="22" rx="4" stroke="#5a6069" width="70" x="22" y="134"></rect><text fill="#b9c0ca" font-size="10" text-anchor="middle" x="57" y="149">分片 … M</text>
+<rect fill="rgba(240,180,41,0.1)" height="82" rx="7" stroke="#f0b429" width="96" x="140" y="74"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="188" y="100">map</text><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="188" y="118">worker</text><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="188" y="140">就近读分片</text>
+<rect fill="rgba(232,121,75,0.09)" height="82" rx="6" stroke="#e8794b" width="86" x="264" y="74"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="307" y="98">本地磁盘</text><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="307" y="116">中间结果</text><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="307" y="132">分成 R 区</text>
+<rect fill="rgba(240,180,41,0.1)" height="36" rx="7" stroke="#f0b429" width="92" x="392" y="74"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="438" y="90">reduce</text><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="438" y="104">排序+归并</text>
+<rect fill="rgba(240,180,41,0.1)" height="36" rx="7" stroke="#f0b429" width="92" x="392" y="120"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="438" y="136">reduce</text><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="438" y="150">… R 个</text>
+<rect fill="rgba(232,121,75,0.12)" height="60" rx="6" stroke="#e8794b" width="46" x="502" y="86"></rect><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="525" y="112">输出</text><text fill="#7c8593" font-size="9" text-anchor="middle" x="525" y="128">GFS</text>
+<path d="M92,85 L138,95" marker-end="url(#m1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M92,115 L138,112" marker-end="url(#m1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M92,145 L138,130" marker-end="url(#m1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M236,115 L262,115" marker-end="url(#m1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M350,105 L390,95" marker-end="url(#m1g)" stroke="#e8794b" stroke-width="1.7"></path>
+<path d="M350,128 L390,132" marker-end="url(#m1g)" stroke="#e8794b" stroke-width="1.7"></path>
+<text fill="#e8794b" font-size="10" text-anchor="middle" x="330" y="188">reduce 用 RPC 拉取属于自己那一桶的数据（shuffle）</text>
+<path d="M484,95 L500,100" marker-end="url(#m1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M484,138 L500,128" marker-end="url(#m1)" stroke="#7c8593" stroke-width="1.4"></path>
+<path d="M240,42 C200,52 195,60 190,72" fill="none" marker-end="url(#m1)" stroke="#f0b429" stroke-dasharray="4 3" stroke-width="1.2"></path>
+<path d="M320,42 C360,54 400,60 430,72" fill="none" marker-end="url(#m1)" stroke="#f0b429" stroke-dasharray="4 3" stroke-width="1.2"></path>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="232">切成 M 个 map 任务 + R 个 reduce 任务；master 把任务派给空闲 worker，</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="250">map 中间结果落在<tspan fill="#e8794b">本地磁盘</tspan>，最终结果才写进<tspan fill="#e8794b">GFS</tspan>。</text>
 </svg>
 <figcaption>图 2 · 执行流程：master 把 M 个 map、R 个 reduce 任务派给 worker；map 就近读输入、把中间结果按 R 分区落本地磁盘；reduce 拉取（shuffle）、排序、归并，写回 GFS。</figcaption>
 </figure>
-
-<h3>容错：坏了就重算，且 map 与 reduce 待遇不同</h3>
+<h3 data-tts="dd2005473c1fa949">容错：坏了就重算，且 map 与 reduce 待遇不同</h3>
 <p>上千台机器同时跑，故障是家常便饭，容错是框架的立身之本。master 周期性 <strong>ping</strong> 每个 worker；一段时间没回应就判它挂了。妙处在于<strong>两类任务的失败处理截然不同</strong>，而这正源于「中间结果落本地磁盘、最终结果落 GFS」的取舍：</p>
 <ul>
 <li><strong>map 任务失败要重做</strong>——哪怕它已经<em>完成</em>。因为它的产出躺在<strong>那台已经挂掉的机器的本地磁盘</strong>上，别人拿不到了。master 把它重新标为「待做」，另派一台机器重跑；所有还没拉到它数据的 reduce worker 会被告知去新地方拉。</li>
 <li><strong>已完成的 reduce 任务不必重做</strong>——因为它的结果已经<strong>安全写进了 GFS</strong>（有多副本，个别机器挂了数据还在）。</li>
 </ul>
 <p>因为 <code>map</code>／<code>reduce</code> 都是<strong>确定性函数</strong>（同样输入必得同样输出），重算一遍结果完全一致，框架能放心地对失败任务「一键重跑」，最终产出和「从没坏过」时一模一样。<strong>master 本身失败</strong>的概率极低，论文里的实现直接让整个 job 重来（也可周期性存检查点后从检查点恢复）。</p>
-
-<h3>本地性：把计算送到数据身边</h3>
+<h3 data-tts="418b0ecda31a81b8">本地性：把计算送到数据身边</h3>
 <p>集群里网络带宽是稀缺资源。因为输入本就存在 GFS 上、每块有多份副本散落各机，master 派 map 任务时会<strong>刻意挑「输入副本正好在本机、或同机架邻居」的那台 worker</strong>。于是大量输入数据是<strong>从本地磁盘读的、根本不过网</strong>——在大 job 上，这让绝大部分输入不消耗任何网络带宽，是吞吐能拉满的关键工程细节。这也呼应了 GFS 的设计：<strong>存储与计算贴在一起</strong>。</p>
-
-<h3>慢节点补救：临近收尾时给「拖后腿的」找人抢跑</h3>
+<h3 data-tts="8ae8ee43f2c45a83">慢节点补救：临近收尾时给「拖后腿的」找人抢跑</h3>
 <p>一个常被忽视却极其致命的问题叫 <strong>straggler（掉队者）</strong>：整个 job 已经算完 99%，就剩少数几个任务卡在某台<strong>抽风的机器</strong>上——磁盘将坏、CPU 被别的进程抢、配置出错……它一个人能把整个 job 的收尾拖长几倍。MapReduce 的解法朴素而有效：<strong>当 job 接近完成，master 为仍在进行的任务额外启动「备份任务（backup task）」</strong>，让另一台机器同时抢做同一份活，<strong>谁先完成就采用谁的、另一个作废</strong>。代价只是多花一点点资源，却能把长尾大幅削平——论文里，关掉这个机制会让排序任务<strong>多花约 44% 的时间</strong>。</p>
-
-<h3>好用的小配件</h3>
+<h3 data-tts="2fc0996f1db87428">好用的小配件</h3>
 <ul>
 <li><strong>combiner（本地预归并）</strong>：很多任务里，一个 map 会吐出大量键相同的对（如同一个 map 里 <code>(the,1)</code> 出现上千次）。允许用户提供一个 <code>combiner</code>，<strong>在 map 端先局部合并一次</strong>（把上千个 <code>(the,1)</code> 先并成 <code>(the,1000)</code>），大幅减少要跨网 shuffle 的数据量。它通常就是 reduce 的逻辑。</li>
 <li><strong>分区函数可换</strong>：默认 <code>hash(key) mod R</code>，用户也可自定义（如按 URL 的域名分区，让同一网站的数据落进同一个输出文件）。</li>
 <li><strong>跳过坏记录</strong>：某些输入记录会让用户代码必崩（如库里的 bug）。开启后，任务连崩几次的那条记录会被 master 记下并<strong>在重试时跳过</strong>——牺牲极少数据，换整个大 job 不因几条脏数据而永远跑不完。</li>
 <li><strong>排序保证与计数器</strong>：每个 reduce 分区内的键有序输出；框架还提供分布式<strong>计数器</strong>，方便统计「处理了多少条记录」这类全局量。</li>
 </ul>
-
-<h2>关键结果</h2>
+<h2 data-tts="a29e59e844f8cda4">关键结果</h2>
 <p>论文在约 <strong>1800 台机器</strong>的集群（每台约 2 GHz、4 GB 内存、两块 IDE 硬盘、千兆网）上用两个代表性任务实测：</p>
 <ul>
 <li><strong>grep（分布式查找）</strong>：在 <code>10¹⁰</code> 条、每条 100 字节的记录（约 <strong>1 TB</strong>）里找一个稀有的三字符模式。切成 M≈15000 个分片，整个计算约 <strong>150 秒</strong>完成（含约一分钟启动开销）。</li>
 <li><strong>sort（分布式排序）</strong>：把约 <strong>1 TB</strong>（同样 <code>10¹⁰</code> 条 100 字节记录）排序，M≈15000、R=4000。正常约 <strong>891 秒</strong>完成。</li>
 </ul>
 <p>两个对照实验最能说明设计的价值：<strong>① 关掉备份任务</strong>——同一排序任务变成约 <strong>1283 秒</strong>，慢了约 44%，长尾被几个 straggler 拖住；<strong>② 故意杀机器</strong>——排序途中人为干掉 200 个 worker 进程，框架自动把丢失的 map 任务在别处重跑，整个 job 仅<strong>多花约 5%</strong> 就正确完成。这两组数字直接证明了「备份任务治长尾」「重算治故障」确实管用。论文还给出 Google 内部的采用情况：MapReduce 上线一年多，内部已写出<strong>上千个不同的 MapReduce 程序</strong>、每天跑成百上千个 job，并<strong>用它彻底重写了生产环境的搜索索引流水线</strong>——代码更短、更好懂、更易改。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="e7d00a9fd6ca2e6d">为什么重要 / 影响</h2>
 <p>MapReduce 的伟大不在算法，而在<strong>抽象</strong>。它把「大规模并行 + 容错」这件从前需要分布式专家小心手写的事，<strong>一次性沉淀进框架、只给用户留两个填空位</strong>，从此普通工程师也能驾驭上千台机器。它与 GFS、Bigtable 合成 Google「老三件套」，而在开源世界，Yahoo 等照着这两篇做出了 <strong>Hadoop</strong>（HDFS + Hadoop MapReduce），几乎以一己之力点燃了「大数据」产业——此后十余年的数据仓库、日志分析、推荐系统、机器学习特征工程，大多先从一个 MapReduce 作业起步。更深远的是它普及的一整套心法：<strong>用简单而受限的编程模型换取自动并行</strong>、<strong>把容错做进框架而非应用</strong>、<strong>移动计算而非移动数据</strong>、<strong>用备份任务对抗长尾</strong>——这些理念被后来的 Spark、Flink、Google Dataflow / Beam 继承并发扬。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="6f78ec0f2b115f1f">局限与批评</h2>
 <ul>
 <li><strong>只擅长批处理，迭代与实时是短板</strong>：每个 job 都要「读 GFS → 算 → 写回 GFS」，中间结果频繁落盘。机器学习、图算法这类要<strong>反复迭代几十上百轮</strong>的任务，用它就是一轮一轮重读重写、慢得离谱。Spark 正是靠「把中间结果留在内存」来专治这点，在迭代任务上快出一个数量级。</li>
 <li><strong>模型太死板</strong>：现实计算常常是「多步 map/reduce 串成的复杂 DAG」，硬塞进「一趟 map 一趟 reduce」既别扭又低效，逼得人手写一长串 job、自己串管道。后来的 FlumeJava、Spark、Dataflow 都改用更自由的<strong>数据流算子图</strong>。</li>
@@ -217,8 +193,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>shuffle 是瓶颈、调优是门玄学</strong>：跨网按键搬运海量中间数据（shuffle）常是全程最慢的一环；M、R、分区、combiner 怎么设，很吃经验。</li>
 <li><strong>Google 自己也超越了它</strong>：内部逐步转向 FlumeJava、<strong>Cloud Dataflow</strong>（Apache Beam 的前身）等更高层、更灵活的模型，经典的 MapReduce 已退居次要。它是奠基之作与思想启蒙，而非终点。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="22fab39071952089">要点</h2>
 <div class="tl">
 <p>① 一句话：一套编程模型 + 运行时，让用户只写 <code>map</code>／<code>reduce</code> 两个函数，框架自动把计算并行摊到上千台机器并全程容错。</p>
 <p>② 模型：<code>map:(k1,v1)→list(k2,v2)</code> 逐条产出中间键值对；框架按键归堆；<code>reduce:(k2,list(v2))→list(v2)</code> 归并。数词频是典型例子。</p>
@@ -237,9 +212,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Percolator — IT 论文精读 Paper 21</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,50 +36,38 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 21</p>
-<h1>Percolator — 大规模增量处理</h1>
+<h1 data-tts="e9c2538512a41eb3">Percolator — 大规模增量处理</h1>
 <p class="sub">Peng &amp; Dabek · Google · OSDI 2010</p>
 <p class="langbar"><a href="percolator-paper21.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="3403e46fc2570b02">这篇论文干了什么？</h2>
 <p>2010 年，谷歌两位工程师（Peng 和 Dabek）造了一个叫 <strong>Percolator</strong> 的系统，用它重建了<strong>谷歌搜索的索引</strong>。作用一句话说清：让一个新网页从被爬到、到能在搜索结果里被搜到，<strong>从「等一整批重算」变成「来一篇、更新一篇」</strong>。上线后，搜索结果里文档的平均「年龄」降了一半——网页更新得更快了。</p>
-
-<h2>先说旧世界的痛</h2>
+<h2 data-tts="bbe3fec2e426e145">先说旧世界的痛</h2>
 <p>在此之前，谷歌用的是上一代神器 <strong>MapReduce</strong>：把全网上百亿网页当成一大锅，<strong>整锅一起算</strong>，算完产出一版新索引。问题是——<strong>你只改了一个网页，也得把整锅重炒一遍</strong>。全网重算一轮要好几天，于是你今天发的文章，可能过好几天才被搜到。想让它更新快，唯一的办法是更频繁地整锅重炒，可那太贵了，炒不起。</p>
-
-<h2>新点子：别整锅重炒，只补那一勺</h2>
+<h2 data-tts="1ca8df1ec579e9d3">新点子：别整锅重炒，只补那一勺</h2>
 <p>Percolator 的想法是：<strong>当一个网页变了，只去更新「跟它有关」的那一小部分，别碰其余几十亿个没变的。</strong>这就是「增量处理」——像往一锅汤里补一勺料，而不是倒掉重熬。</p>
 <p>可这事以前做不了，卡在两个坎上，Percolator 正好补上两样东西：</p>
-
-<h3>第一样：让「一次改动」要么全成、要么全不成</h3>
+<h3 data-tts="8d216d97ceb4f3bc">第一样：让「一次改动」要么全成、要么全不成</h3>
 <p>更新一个网页往往要同时改好几处记录（这个词指向那篇文、那篇文的排名、反向链接……）。要是改到一半机器崩了，索引就成了「一半新一半旧」的烂账。<strong>Percolator 给这些散落各处的改动套上一个「事务」：要么全部生效，要么当作啥也没发生，绝不留半拉子。</strong></p>
 <p>它怎么保证「全成或全不成」？打个比方：搬家时你给每个箱子贴张便利贴锁住，其中<strong>指定一个「主箱子」当总开关</strong>——只有主箱子那张便利贴一翻面，整场搬家才算「正式完成」；翻面之前谁来看都是「还没搬」。这样哪怕搬到一半停电，别人一看主箱子没翻面，就知道这趟不算数，安全。<strong>一个原子的小动作，锁定了一大堆改动的命运。</strong></p>
-
-<h3>第二样：某处一变，自动通知该跟着变的下游</h3>
+<h3 data-tts="f2d4b097d7f570b9">第二样：某处一变，自动通知该跟着变的下游</h3>
 <p>索引是一环扣一环的：网页内容变了 → 得重算它的关键词 → 关键词变了 → 得更新倒排表……Percolator 加了一套<strong>「触发器」</strong>：你盯着某类数据，只要它一被改动，系统就自动叫醒一段你写好的处理逻辑去跟进，跟进又可能触发下一环——<strong>像 Excel 里改一个单元格，依赖它的公式格自动重算、连锁刷新一整片。</strong>一小撮改动就这样自己「渗」遍了整个索引——系统的名字 Percolator（渗滤器）正是这意思。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="d9f52282ef61bb33">带来了什么</h2>
 <p>谷歌用它替掉了老的 MapReduce 索引流水线（这套新系统对外叫 <strong>Caffeine</strong>）。处理同样多的网页，<strong>搜索结果的平均新鲜度提升了一倍</strong>——你刚发的内容能更快被搜到。诚实说一句代价：这份「随时更新」不是白来的——比起 MapReduce 顺畅地整锅扫，Percolator 每更新一篇文档要东一下西一下地读写几十次，<strong>更费机器</strong>；谷歌是拿资源换新鲜度，觉得划算才这么干。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="de2f6fd73ad25e87">一句话记住</h2>
 <div class="tl">
 <p>Percolator 让谷歌搜索索引从「整批重算、慢好几天」变成「来一篇更新一篇」。它靠两样东西做到：给散落各处的改动套上「要么全成要么全不成」的事务（用一个「主锁」当总开关），再加一套「某处一变、自动通知下游跟进」的触发器。新鲜度翻倍，代价是更费机器。</p>
 </div>
-
 <p class="switch-hint">想看它怎么在 Bigtable 上用时间戳和「主锁」做出事务、观察者怎么级联？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="aa4d881c83ec5918">一句话</h2>
 <p class="lead">Percolator 在 <strong>Bigtable</strong> 之上加了两样东西——<strong>跨行跨表的 ACID 事务</strong>（快照隔离，snapshot isolation）和<strong>观察者 / 通知机制</strong>（observers / notifications）——把谷歌网页索引从「用 MapReduce 整批重建」改造成「增量处理：来一篇、只更新受影响的那一小部分」。上线后（这套系统即 <strong>Caffeine</strong>）在处理同样吞吐的前提下，把搜索结果中文档的<strong>平均年龄降低了约 50%</strong>。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="bcc82871cb8443d5">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>索引 / 倒排索引（inverted index）</strong>：搜索引擎的核心数据结构——「哪个词出现在哪些网页」的大表。用户搜一个词，靠它秒查出候选网页。构建索引 = 爬网页、抽内容、算排名、更新这张大表。</li>
@@ -91,43 +80,37 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>多版本（MVCC）</strong>：同一份数据保留多个带时间戳的历史版本，读旧版本和写新版本互不打架。Bigtable 天生按时间戳存多版本，Percolator 借力于此。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="27c5cfe255d68186">坐标</h2>
 <p>作者 Daniel Peng 与 Frank Dabek，谷歌，论文发在 <strong>OSDI 2010</strong>。它上承谷歌「老三件套」——建在 <strong>Bigtable</strong>（存储）之上、替换掉 <strong>MapReduce</strong>（批处理）搭的索引流水线，并借助类似 <strong>Chubby</strong>（Paper 20）的轻量锁服务做故障判定；被视作谷歌「新三驾马车」之一（与 Pregel、Dremel 并列）。它把「大规模分布式事务」从学界的「不可能高效」变成了工业现实，直接启发了后来的 <strong>TiDB / TiKV</strong> 等分布式数据库——它们的事务模型几乎照搬了 Percolator。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="6d515c9cead7ec5f">问题与动机</h2>
 <p>谷歌的网页索引本质是一套流水线：爬到一个网页 → 抽取内容、算 PageRank、聚类去重 → 更新倒排索引。2010 年前，这套流水线是用 <strong>MapReduce 整批跑</strong>的：把当时的整个网络仓库（数十 PB）当输入，跑一连串 MapReduce，产出一整版新索引。</p>
 <p>痛点是<strong>批处理的粒度</strong>：MapReduce 要求把输入整个扫一遍。哪怕这一轮只有极小一部分网页真的变了，你也得<strong>重新处理整个仓库</strong>——因为一个新网页可能改变别的网页的排名、聚类归属，牵一发而动全身，批处理没法「只算受影响的部分」。结果就是：一个网页从爬到、到进入线上索引，要<strong>等上一整轮全量重算（数天量级）</strong>。想更新更快，就得更频繁地全量重算，成本高到不可行。</p>
 <p>那为什么不干脆上一个数据库、来一篇网页就发一个事务改几行？因为<strong>规模</strong>：当时没有任何 DBMS 能在几千台机器上撑住这个体量的随机读写吞吐。<strong>于是问题变成：能不能在能扛住规模的存储（Bigtable）之上，补出「只更新受影响部分」所需的两样能力——多行事务，和「谁变了通知谁」的触发机制？</strong></p>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="150" y="26" fill="#e8794b" font-size="13" text-anchor="middle" font-weight="700">旧：MapReduce 整批重算</text>
-<rect x="40" y="42" width="220" height="70" rx="8" fill="rgba(232,121,75,0.08)" stroke="#e8794b"/>
-<text x="150" y="66" fill="#e7ebf1" font-size="11.5" text-anchor="middle">改 1 个网页</text>
-<text x="150" y="86" fill="#b9c0ca" font-size="11" text-anchor="middle">→ 重扫整个网络仓库</text>
-<text x="150" y="103" fill="#7c8593" font-size="10.5" text-anchor="middle">数十 PB · 数天一轮</text>
-<text x="410" y="26" fill="#f0b429" font-size="13" text-anchor="middle" font-weight="700">新：Percolator 增量</text>
-<rect x="300" y="42" width="220" height="70" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="410" y="66" fill="#e7ebf1" font-size="11.5" text-anchor="middle">改 1 个网页</text>
-<text x="410" y="86" fill="#b9c0ca" font-size="11" text-anchor="middle">→ 只更新受影响的记录</text>
-<text x="410" y="103" fill="#7c8593" font-size="10.5" text-anchor="middle">分钟级 · 新鲜度翻倍</text>
-<g stroke="#7c8593" stroke-width="1"><line x1="45" y1="150" x2="515" y2="150"/></g>
-<text x="60" y="145" fill="#7c8593" font-size="10.5">时间轴</text>
-<g fill="#e8794b"><rect x="70" y="160" width="90" height="16" rx="3" opacity="0.7"/><rect x="180" y="160" width="90" height="16" rx="3" opacity="0.7"/><rect x="290" y="160" width="90" height="16" rx="3" opacity="0.7"/></g>
-<text x="115" y="192" fill="#7c8593" font-size="10" text-anchor="middle">大批 · 大批 · 大批</text>
-<g fill="#f0b429"><rect x="70" y="205" width="10" height="16" rx="2"/><rect x="90" y="205" width="10" height="16" rx="2"/><rect x="110" y="205" width="10" height="16" rx="2"/><rect x="130" y="205" width="10" height="16" rx="2"/><rect x="150" y="205" width="10" height="16" rx="2"/><rect x="170" y="205" width="10" height="16" rx="2"/><rect x="190" y="205" width="10" height="16" rx="2"/><rect x="210" y="205" width="10" height="16" rx="2"/><rect x="230" y="205" width="10" height="16" rx="2"/><rect x="250" y="205" width="10" height="16" rx="2"/></g>
-<text x="165" y="237" fill="#7c8593" font-size="10" text-anchor="middle">来一篇 · 更一篇（细水长流）</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle" x="150" y="26">旧：MapReduce 整批重算</text>
+<rect fill="rgba(232,121,75,0.08)" height="70" rx="8" stroke="#e8794b" width="220" x="40" y="42"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="150" y="66">改 1 个网页</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="150" y="86">→ 重扫整个网络仓库</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="150" y="103">数十 PB · 数天一轮</text>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="410" y="26">新：Percolator 增量</text>
+<rect fill="rgba(240,180,41,0.08)" height="70" rx="8" stroke="#f0b429" width="220" x="300" y="42"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="410" y="66">改 1 个网页</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="410" y="86">→ 只更新受影响的记录</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="410" y="103">分钟级 · 新鲜度翻倍</text>
+<g stroke="#7c8593" stroke-width="1"><line x1="45" x2="515" y1="150" y2="150"></line></g>
+<text fill="#7c8593" font-size="10.5" x="60" y="145">时间轴</text>
+<g fill="#e8794b"><rect height="16" opacity="0.7" rx="3" width="90" x="70" y="160"></rect><rect height="16" opacity="0.7" rx="3" width="90" x="180" y="160"></rect><rect height="16" opacity="0.7" rx="3" width="90" x="290" y="160"></rect></g>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="115" y="192">大批 · 大批 · 大批</text>
+<g fill="#f0b429"><rect height="16" rx="2" width="10" x="70" y="205"></rect><rect height="16" rx="2" width="10" x="90" y="205"></rect><rect height="16" rx="2" width="10" x="110" y="205"></rect><rect height="16" rx="2" width="10" x="130" y="205"></rect><rect height="16" rx="2" width="10" x="150" y="205"></rect><rect height="16" rx="2" width="10" x="170" y="205"></rect><rect height="16" rx="2" width="10" x="190" y="205"></rect><rect height="16" rx="2" width="10" x="210" y="205"></rect><rect height="16" rx="2" width="10" x="230" y="205"></rect><rect height="16" rx="2" width="10" x="250" y="205"></rect></g>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="165" y="237">来一篇 · 更一篇（细水长流）</text>
 </svg>
 <figcaption>图 1 · 从「整批重算」到「增量更新」：MapReduce 一次一大批、间隔数天；Percolator 来一篇更新一篇，网页更快进入索引。</figcaption>
 </figure>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>为什么是「事务 + 通知」这两样</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="985a725798d24d99">为什么是「事务 + 通知」这两样</h3>
 <p>增量处理的本质是：<strong>维护一堆互相依赖的数据，当上游变了、把变化「渗」到下游。</strong>做这件事，你需要两样：一是<strong>多行事务</strong>——一次更新常要一致地改多处，不能改一半就崩（否则索引出烂账）；二是<strong>通知</strong>——你得知道「谁变了、接下来该唤醒哪段计算」，否则只能又回到「全扫一遍找变化」的老路。Percolator 就是把这两样，架在 Bigtable 之上。</p>
-
-<h3>能力一：Bigtable 上的快照隔离事务</h3>
+<h3 data-tts="1d89f6b50cf6979c">能力一：Bigtable 上的快照隔离事务</h3>
 <p>Bigtable 只保证单行原子。Percolator 要跨行、跨表做 ACID，办法是给每个数据列<strong>额外配几个「元数据」列</strong>，把锁和版本信息直接存进 Bigtable 里，再用一个<strong>两阶段提交</strong>协议把它们串成事务。核心用到三种列：</p>
 <ul>
 <li><strong><code>data</code>（数据）</strong>：某时间戳下这个格子的实际值。Bigtable 天生按时间戳存多版本。</li>
@@ -140,85 +123,78 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>提交（Commit）</strong>：拿 commit_ts，<strong>先提交主锁那一格</strong>——检查主锁还在，然后原子地写下 <code>write</code> 记录（指向 start_ts 的数据）并抹掉主锁。<strong>这一步是整笔事务的「生效瞬间」：主锁一提交，交易就算数了。</strong>之后再从容地把各副锁逐个转成 write 记录。</li>
 </ul>
 <p>妙处在<strong>「主锁当总开关」</strong>：一笔事务改了几十个格子，但它算不算数，只由「主锁那一格有没有变成 write 记录」这一个原子动作决定。若客户端在提交主锁后、清理副锁前崩溃了，副锁虽还留着，但别的事务撞见它，会<strong>顺着副锁记的地址去查主锁</strong>：主锁已提交 → 帮它把这个副锁也提交（前滚 roll-forward）；主锁还在/已回滚 → 把这个副锁清掉（回滚 roll-back）。判定客户端是否真死，用一个类似 Chubby 的轻量锁服务加超时。<strong>于是不需要一个专门的事务管理器，清理是懒惰、去中心化的，由后来的事务顺手完成。</strong></p>
-
 <figure>
-<svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="280" y="22" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">一笔事务：把值写到 Bob 与 Joe 两行（主锁在 Bob）</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="22">一笔事务：把值写到 Bob 与 Joe 两行（主锁在 Bob）</text>
 <!-- headers -->
-<text x="118" y="52" fill="#7c8593" font-size="11" text-anchor="middle">行 / 时刻</text>
-<text x="250" y="52" fill="#f5c451" font-size="11" text-anchor="middle">data</text>
-<text x="350" y="52" fill="#f5c451" font-size="11" text-anchor="middle">lock</text>
-<text x="465" y="52" fill="#f5c451" font-size="11" text-anchor="middle">write</text>
-<line x1="40" y1="60" x2="520" y2="60" stroke="#7c8593"/>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="118" y="52">行 / 时刻</text>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="250" y="52">data</text>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="350" y="52">lock</text>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="465" y="52">write</text>
+<line stroke="#7c8593" x1="40" x2="520" y1="60" y2="60"></line>
 <!-- prewrite row Bob -->
-<text x="60" y="92" fill="#f0b429" font-size="11" font-weight="700">预写</text>
-<text x="60" y="108" fill="#b9c0ca" font-size="10.5">@start_ts</text>
-<text x="118" y="88" fill="#e7ebf1" font-size="11">Bob</text>
-<rect x="205" y="76" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="92" fill="#e7ebf1" font-size="10.5" text-anchor="middle">新值</text>
-<rect x="308" y="76" width="90" height="24" rx="4" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="353" y="92" fill="#e7ebf1" font-size="9.5" text-anchor="middle">主锁 primary</text>
-<text x="465" y="92" fill="#5a6069" font-size="11" text-anchor="middle">—</text>
-<text x="118" y="126" fill="#e7ebf1" font-size="11">Joe</text>
-<rect x="205" y="114" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="130" fill="#e7ebf1" font-size="10.5" text-anchor="middle">新值</text>
-<rect x="308" y="114" width="90" height="24" rx="4" fill="rgba(232,121,75,0.08)" stroke="#e8794b"/><text x="353" y="130" fill="#e7ebf1" font-size="9" text-anchor="middle">副锁→Bob</text>
-<text x="465" y="130" fill="#5a6069" font-size="11" text-anchor="middle">—</text>
-<line x1="40" y1="150" x2="520" y2="150" stroke="rgba(240,180,41,0.25)" stroke-dasharray="4 4"/>
+<text fill="#f0b429" font-size="11" font-weight="700" x="60" y="92">预写</text>
+<text fill="#b9c0ca" font-size="10.5" x="60" y="108">@start_ts</text>
+<text fill="#e7ebf1" font-size="11" x="118" y="88">Bob</text>
+<rect fill="rgba(240,180,41,0.1)" height="24" rx="4" stroke="#f0b429" width="90" x="205" y="76"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="250" y="92">新值</text>
+<rect fill="rgba(232,121,75,0.16)" height="24" rx="4" stroke="#e8794b" width="90" x="308" y="76"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="353" y="92">主锁 primary</text>
+<text fill="#5a6069" font-size="11" text-anchor="middle" x="465" y="92">—</text>
+<text fill="#e7ebf1" font-size="11" x="118" y="126">Joe</text>
+<rect fill="rgba(240,180,41,0.1)" height="24" rx="4" stroke="#f0b429" width="90" x="205" y="114"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="250" y="130">新值</text>
+<rect fill="rgba(232,121,75,0.08)" height="24" rx="4" stroke="#e8794b" width="90" x="308" y="114"></rect><text fill="#e7ebf1" font-size="9" text-anchor="middle" x="353" y="130">副锁→Bob</text>
+<text fill="#5a6069" font-size="11" text-anchor="middle" x="465" y="130">—</text>
+<line stroke="rgba(240,180,41,0.25)" stroke-dasharray="4 4" x1="40" x2="520" y1="150" y2="150"></line>
 <!-- commit primary -->
-<text x="60" y="188" fill="#f0b429" font-size="11" font-weight="700">提交主锁</text>
-<text x="60" y="204" fill="#b9c0ca" font-size="10.5">@commit_ts</text>
-<text x="118" y="184" fill="#e7ebf1" font-size="11">Bob</text>
-<rect x="205" y="172" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="188" fill="#e7ebf1" font-size="10.5" text-anchor="middle">新值</text>
-<rect x="308" y="172" width="90" height="24" rx="4" fill="rgba(255,255,255,0.02)" stroke="#3a4048"/><text x="353" y="188" fill="#7c8593" font-size="9.5" text-anchor="middle">锁已清</text>
-<rect x="420" y="172" width="90" height="24" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"/><text x="465" y="188" fill="#e7ebf1" font-size="9.5" text-anchor="middle">→start_ts</text>
-<text x="118" y="220" fill="#e7ebf1" font-size="11">Joe</text>
-<rect x="205" y="208" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="224" fill="#e7ebf1" font-size="10.5" text-anchor="middle">新值</text>
-<rect x="308" y="208" width="90" height="24" rx="4" fill="rgba(232,121,75,0.08)" stroke="#e8794b"/><text x="353" y="224" fill="#e7ebf1" font-size="9" text-anchor="middle">副锁（待清）</text>
-<text x="465" y="224" fill="#5a6069" font-size="11" text-anchor="middle">—</text>
-<text x="500" y="163" fill="#f0b429" font-size="10.5" text-anchor="end">↑ 主锁转成 write 的这一刻＝生效瞬间</text>
-<line x1="40" y1="244" x2="520" y2="244" stroke="rgba(240,180,41,0.25)" stroke-dasharray="4 4"/>
+<text fill="#f0b429" font-size="11" font-weight="700" x="60" y="188">提交主锁</text>
+<text fill="#b9c0ca" font-size="10.5" x="60" y="204">@commit_ts</text>
+<text fill="#e7ebf1" font-size="11" x="118" y="184">Bob</text>
+<rect fill="rgba(240,180,41,0.1)" height="24" rx="4" stroke="#f0b429" width="90" x="205" y="172"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="250" y="188">新值</text>
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="4" stroke="#3a4048" width="90" x="308" y="172"></rect><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="353" y="188">锁已清</text>
+<rect fill="rgba(240,180,41,0.22)" height="24" rx="4" stroke="#f0b429" width="90" x="420" y="172"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="465" y="188">→start_ts</text>
+<text fill="#e7ebf1" font-size="11" x="118" y="220">Joe</text>
+<rect fill="rgba(240,180,41,0.1)" height="24" rx="4" stroke="#f0b429" width="90" x="205" y="208"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="250" y="224">新值</text>
+<rect fill="rgba(232,121,75,0.08)" height="24" rx="4" stroke="#e8794b" width="90" x="308" y="208"></rect><text fill="#e7ebf1" font-size="9" text-anchor="middle" x="353" y="224">副锁（待清）</text>
+<text fill="#5a6069" font-size="11" text-anchor="middle" x="465" y="224">—</text>
+<text fill="#f0b429" font-size="10.5" text-anchor="end" x="500" y="163">↑ 主锁转成 write 的这一刻＝生效瞬间</text>
+<line stroke="rgba(240,180,41,0.25)" stroke-dasharray="4 4" x1="40" x2="520" y1="244" y2="244"></line>
 <!-- commit secondary -->
-<text x="60" y="282" fill="#f0b429" font-size="11" font-weight="700">提交副锁</text>
-<text x="60" y="298" fill="#b9c0ca" font-size="10.5">（收尾）</text>
-<text x="118" y="290" fill="#e7ebf1" font-size="11">Joe</text>
-<rect x="205" y="278" width="90" height="24" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="250" y="294" fill="#e7ebf1" font-size="10.5" text-anchor="middle">新值</text>
-<rect x="308" y="278" width="90" height="24" rx="4" fill="rgba(255,255,255,0.02)" stroke="#3a4048"/><text x="353" y="294" fill="#7c8593" font-size="9.5" text-anchor="middle">锁已清</text>
-<rect x="420" y="278" width="90" height="24" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"/><text x="465" y="294" fill="#e7ebf1" font-size="9.5" text-anchor="middle">→start_ts</text>
+<text fill="#f0b429" font-size="11" font-weight="700" x="60" y="282">提交副锁</text>
+<text fill="#b9c0ca" font-size="10.5" x="60" y="298">（收尾）</text>
+<text fill="#e7ebf1" font-size="11" x="118" y="290">Joe</text>
+<rect fill="rgba(240,180,41,0.1)" height="24" rx="4" stroke="#f0b429" width="90" x="205" y="278"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="250" y="294">新值</text>
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="4" stroke="#3a4048" width="90" x="308" y="278"></rect><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="353" y="294">锁已清</text>
+<rect fill="rgba(240,180,41,0.22)" height="24" rx="4" stroke="#f0b429" width="90" x="420" y="278"></rect><text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="465" y="294">→start_ts</text>
 </svg>
 <figcaption>图 2 · 两阶段提交：预写给每行上锁（一主一副）、写入 data；提交时先把主锁原子地转成 write 记录（＝生效瞬间），再收尾各副锁。读只认 write 列，故半成品对读者不可见。</figcaption>
 </figure>
-
-<h3>时间戳预言机：全局排队号发放器</h3>
+<h3 data-tts="18eba79cb39f1e16">时间戳预言机：全局排队号发放器</h3>
 <p>快照隔离要求时间戳<strong>严格递增</strong>。Percolator 用一个专门的<em>时间戳预言机</em>服务集中发号。它不是每来一个请求就写一次磁盘——那样太慢；而是<strong>一次性把「已分配到的最大号」批量写进稳定存储</strong>，之后在这段区间内纯内存发号，攒够一批请求一起回。靠批处理，单台机器能发到<strong>每秒约 200 万个时间戳</strong>，足以支撑整个集群。（这是个中心化组件，但状态极小、可复制，且批量分摊后不成瓶颈。）</p>
-
-<h3>能力二：观察者与通知——让变化自己「渗」下去</h3>
+<h3 data-tts="b6f0e04e43bc074f">能力二：观察者与通知——让变化自己「渗」下去</h3>
 <p>光有事务还不够增量：你还得知道「哪块数据脏了、该唤醒哪段计算」。Percolator 给列加了<strong>观察者（observer）</strong>：程序员把「哪些列被写时、该跑什么逻辑」注册好；当某列被写入，就在它的 <code>notify</code>（通知）列打个标记。一批常驻的 worker 进程<strong>随机扫描这些通知标记</strong>，撞见就运行对应的观察者代码——而观察者自己又会写别的列、触发下一批通知，如此级联。像 Excel 改一格、依赖它的公式格连锁重算。为防重复触发与死循环，Percolator 保证<strong>每条通知至多触发一次观察者</strong>（用 <code>ack</code> 确认列去重）。<strong>这套「写→通知→观察者→再写」的链条，就是「增量把变化渗遍索引」的引擎</strong>——系统名 Percolator（渗滤）由此而来。</p>
-
 <figure>
-<svg viewBox="0 0 560 190" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="pa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="24" y="70" width="120" height="50" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="84" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">网页内容变了</text>
-<text x="84" y="107" fill="#7c8593" font-size="10" text-anchor="middle">（写 contents 列）</text>
-<line x1="146" y1="95" x2="196" y2="95" stroke="#f0b429" stroke-width="1.6" marker-end="url(#pa)"/>
-<rect x="200" y="70" width="130" height="50" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="265" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">观察者：抽词</text>
-<text x="265" y="107" fill="#7c8593" font-size="10" text-anchor="middle">写 term 列 → 再通知</text>
-<line x1="332" y1="95" x2="382" y2="95" stroke="#f0b429" stroke-width="1.6" marker-end="url(#pa)"/>
-<rect x="386" y="70" width="150" height="50" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="461" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle">观察者：更新倒排表</text>
-<text x="461" y="107" fill="#7c8593" font-size="10" text-anchor="middle">写 index 列 …</text>
-<text x="280" y="34" fill="#e7ebf1" font-size="12" text-anchor="middle" font-weight="700">写 → 通知 → 观察者 → 再写：变化级联渗下去</text>
-<text x="280" y="160" fill="#7c8593" font-size="10.5" text-anchor="middle">worker 随机扫 notify 标记；每条通知至多触发一次观察者（ack 去重），防死循环</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 190" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="pa" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.08)" height="50" rx="8" stroke="#f0b429" width="120" x="24" y="70"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="84" y="90">网页内容变了</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="84" y="107">（写 contents 列）</text>
+<line marker-end="url(#pa)" stroke="#f0b429" stroke-width="1.6" x1="146" x2="196" y1="95" y2="95"></line>
+<rect fill="rgba(240,180,41,0.08)" height="50" rx="8" stroke="#f0b429" width="130" x="200" y="70"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="265" y="90">观察者：抽词</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="265" y="107">写 term 列 → 再通知</text>
+<line marker-end="url(#pa)" stroke="#f0b429" stroke-width="1.6" x1="332" x2="382" y1="95" y2="95"></line>
+<rect fill="rgba(240,180,41,0.08)" height="50" rx="8" stroke="#f0b429" width="150" x="386" y="70"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="461" y="90">观察者：更新倒排表</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="461" y="107">写 index 列 …</text>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="280" y="34">写 → 通知 → 观察者 → 再写：变化级联渗下去</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="160">worker 随机扫 notify 标记；每条通知至多触发一次观察者（ack 去重），防死循环</text>
 </svg>
 <figcaption>图 3 · 观察者级联：一次写入触发通知，worker 扫到后运行观察者、写入下游并再触发通知——变化像渗滤一样自动扩散到整个索引。</figcaption>
 </figure>
-
-<h2>关键结果</h2>
+<h2 data-tts="72928c72e7fcc8ca">关键结果</h2>
 <p>Percolator 落地成了谷歌的网页索引系统 <strong>Caffeine</strong>，替换掉此前基于 MapReduce 的批处理索引。论文给出的核心结论：在<strong>处理相同数量文档 / 相同吞吐</strong>的前提下，把搜索结果中<strong>文档的平均年龄降低了约 50%</strong>——也就是新鲜度翻倍。系统跑在数千台机器上、管理 PB 级数据；时间戳预言机单机可达<strong>每秒约 200 万</strong>次发号。作者也诚实给出代价：相比 MapReduce 顺序扫描的高效，Percolator 每处理一篇文档要做<strong>数十次 Bigtable 随机读写</strong>，资源效率显著更低——这是<strong>用机器换新鲜度</strong>的明确取舍。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="d38c2a7aafa824b5">为什么重要 / 影响</h2>
 <p>它的历史意义有两层。第一，<strong>工程上</strong>：证明了「在能扛规模的存储之上，补出跨行事务 + 增量通知」这条路走得通，让谷歌搜索获得了此前不可能的新鲜度。第二，也更深远——<strong>它把「基于时间戳 + 锁列 + 主锁 2PC」的分布式事务范式，做成了可复制的工程模板。</strong>后来的开源分布式数据库 <strong>TiKV / TiDB</strong> 几乎照搬了 Percolator 的事务模型（start_ts / commit_ts、primary lock、懒惰清理），CockroachDB 等也受其影响。可以说，今天很多「跨节点还能做事务」的系统，血脉里都有 Percolator。它也是谷歌「新三驾马车」中，把<strong>强一致事务</strong>带回大规模系统的那一篇——为两年后的 <strong>Spanner</strong>（全球一致事务）铺了路。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="0df49031945957f6">局限与批评</h2>
 <ul>
 <li><strong>只有快照隔离、不是可串行化</strong>：快照隔离会有<em>写偏斜（write skew）</em>异常——两个事务各读一致快照、各改不同行，合起来违反了某条跨行约束却都不报冲突。对索引场景够用，但不是最强的一致性。</li>
 <li><strong>资源效率低</strong>：每篇文档几十次随机 Bigtable 操作，加上时间戳往返、锁读写，单位工作量的开销远高于 MapReduce 的顺序扫描。它是<strong>拿吞吐 / 资源换延迟与新鲜度</strong>，不适合对成本极敏感、又无需增量的批量场景。</li>
@@ -226,8 +202,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>时间戳预言机是中心点</strong>：虽经批量分摊与复制缓解，它仍是逻辑上的全局单点，是可扩展性与容错设计里要小心对待的一环。</li>
 <li><strong>懒惰锁清理带来阻塞</strong>：客户端崩溃后残留的锁，要等下一个撞上它的事务、结合超时才被清理；期间相关行会被挡住，最坏情况需等超时。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="8a11e6655376fcd5">要点</h2>
 <div class="tl">
 <p>① 一句话：在 Bigtable 上补出「跨行 ACID 事务 + 观察者通知」，把谷歌网页索引从 MapReduce 整批重建改成增量处理。</p>
 <p>② 痛点：MapReduce 改一个网页也得重扫整个仓库，新网页要等数天才进索引；而没有 DBMS 能在这个规模上做随机事务。</p>
@@ -244,9 +219,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

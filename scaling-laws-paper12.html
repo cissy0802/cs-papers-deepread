@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Scaling Laws（神经语言模型的缩放律）— IT 论文精读 Paper 12</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,46 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 12</p>
-<h1>Scaling Laws（神经语言模型的缩放律）</h1>
+<h1 data-tts="96af654e5151df98">Scaling Laws（神经语言模型的缩放律）</h1>
 <p class="sub">Kaplan、McCandlish 等 · OpenAI · 2020</p>
 <p class="langbar"><a href="scaling-laws-paper12.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="3ce43e8446707b14">这篇论文干了什么？</h2>
 <p>2020 年初，OpenAI 一队人（Kaplan、McCandlish 等）系统研究了一件事：<strong>把语言模型（就是 ChatGPT 那类"猜下一个词"的模型）越做越大，到底能好到什么程度？</strong>他们发现一条惊人整齐的规律——模型的预测水平，随着<strong>三样东西（模型多大、喂多少文本、花多少算力）</strong>的增加，沿着一条<strong>极其平滑、可以提前算出来</strong>的曲线稳步变好。好到什么地步？你还没开始训练，就能算出一个大十倍的模型将会有多强。这条规律，直接给了 OpenAI 底气去造 GPT-3，也点燃了后来整个"越大越强"的大模型军备竞赛。</p>
-
-<h2>一个反常识的发现</h2>
+<h2 data-tts="8c722c346323c445">一个反常识的发现</h2>
 <p>凭直觉，"把模型做大"应该会撞到天花板：一开始进步快，慢慢边际收益递减，最后停在某个水平。可他们把模型从很小做到很大、数据从很少加到很多，画出来的进步曲线居然是<strong>一条笔直的下坡</strong>——没有拐点、没有饱和，横跨好几个数量级都不弯。就像你<strong>每多花十倍的力气，成绩就稳稳往上提固定的一截</strong>，屡试不爽。</p>
-
-<h2>更奇的是：形状不重要</h2>
+<h2 data-tts="19c9296babce4daa">更奇的是：形状不重要</h2>
 <p>人们原本以为网络怎么"搭"很关键——搭多深、多宽、放几个注意力单元。结果发现：只要总的"零件数"（参数量）一样，你把它搭得又高又瘦、还是又矮又胖，最终成绩<strong>几乎一样</strong>。真正决定成绩的，就剩三个朴素的数字：<strong>模型多大、数据多少、算力多少</strong>。这等于说，能不能变强，主要不看你多聪明地设计，而看你舍得投多少资源。</p>
-
-<h2>那这规律怎么用？</h2>
+<h2 data-tts="4b2bed3ce4916f9f">那这规律怎么用？</h2>
 <p>它把一个原本靠猜的问题变成了算术题：<strong>给你一笔固定的算力预算，该拿去买一个更大的模型，还是拿去喂它读更多的书？</strong>他们算出了配比——把大头压在"<strong>把模型做大</strong>"上，而且别傻等模型把手里的书读到滚瓜烂熟，<strong>读个大概就该收手、去投下一批算力</strong>。一句话：与其让小模型死磕到底，不如让大模型囫囵吞枣。正是靠这条账，他们敢一步跳到 GPT-3 那个史无前例的规模。</p>
 <p>诚实说一句代价：这个"配比"后来被 DeepMind 发现<strong>算偏了</strong>——同样的算力，其实该配一个没那么夸张的模型、喂它多得多的书。规律的形状对了，最优点却放错了地方。</p>
-
-<h2>它带来了什么</h2>
+<h2 data-tts="1780c3c2c16697f9">它带来了什么</h2>
 <p>它把"模型该做多大、要喂多少、值不值得"从一门玄学，变成了可以<strong>先在纸上算、再决定烧钱</strong>的工程。今天各家发布大模型前都会先跑一遍"缩放律"预测投入产出——这套先算后做的打法，就是从这篇开始的。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="f95885524bc7b1aa">一句话记住</h2>
 <div class="tl">
 <p>语言模型的水平，会随着"模型多大 + 数据多少 + 算力多少"沿一条平滑、可预测的曲线稳稳变好，跨好几个数量级都不弯；网络具体怎么搭反而不重要。于是"要不要投更多资源、怎么分配"第一次能提前算出答案——这既是 GPT-3 的底气，也是整个"大就是好"时代的定量依据。</p>
 </div>
-
 <p class="switch-hint">想看那几条幂律的确切指数、算力最优配比，以及后来 Chinchilla 的修正？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="7a853a42acaea6fe">一句话</h2>
 <p class="lead">这篇论文用大量对照实验证明：Transformer 语言模型的<strong>测试损失</strong>，随<strong>模型参数量 N、训练数据量 D、训练算力 C</strong> 三者，各自遵循一条平滑的<strong>幂律（power law）</strong>下降——跨越七个数量级仍是一条直线；而网络的深宽比等结构细节几乎不影响结果。由此，给定算力预算，最优做法是<strong>训练很大的模型、在数据上不必训练到收敛就提前停</strong>。这套"缩放律"把大模型的投入产出变成可预测的工程，直接支撑了 GPT-3 的诞生。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="9881104ba6c24d18">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>语言模型（language model）</strong>：读一段文字、预测"下一个词/字"的模型。预测得越准，说明它对语言和世界理解得越好。</li>
@@ -87,49 +77,39 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>过拟合 / 泛化</strong>：模型把训练数据背下来却不会举一反三叫过拟合；能推广到没见过的数据叫泛化。数据太少、模型太大就容易过拟合。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="de8e888af62c2fd1">坐标</h2>
 <p>作者是 Jared Kaplan、Sam McCandlish 领衔的 OpenAI 团队（含 Tom Brown、Dario Amodei、Alec Radford 等），2020 年 1 月放出。它上承 GPT-2（2019）"大模型 + 无监督预训练"的路线，把"越大越好"从口号变成<strong>定量定律</strong>；下启同年的 <strong>GPT-3</strong>（正是照着这套账押注 1750 亿参数）与整个"scaling"时代。两年后，DeepMind 的 <strong>Chinchilla</strong>（Hoffmann 等 2022）修正了它的最优配比，与本文构成必须对读的一组。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="1199235bb7a8fc01">问题与动机</h2>
 <p>2019 年前后，大家已经隐约感到"模型做大、数据加多，效果就更好"，但这只是<strong>经验直觉</strong>：没人说得清好多少、到哪会饱和、钱该花在"更大的模型"还是"更多的数据"上。每训一个大模型都极贵，全靠试错等于烧钱赌博。</p>
 <p>作者想把它变成科学：<strong>固定其他条件、只动一个变量</strong>，系统地测损失怎么变。他们训练了从几千到十亿量级参数的一大批 Transformer，扫过不同的数据量、模型形状、训练时长，看能不能从一堆散点里找出一条干净的定律——好让人"先算后做"。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>发现一：损失对 N、D、C 各是一条幂律</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="f1eb2e5c7fa307a1">发现一：损失对 N、D、C 各是一条幂律</h3>
 <p>最核心的结论：当另外两个因素不成为瓶颈时，测试损失 <code>L</code> 对参数量 <code>N</code>、数据量 <code>D</code>、算力 <code>C</code> 分别是<strong>平滑的幂律下降</strong>：<code>L(N) ∝ N^(−0.076)</code>、<code>L(D) ∝ D^(−0.095)</code>、<code>L(C) ∝ C^(−0.050)</code>。别被数字吓到，白话就是：<strong>把它们画在双对数坐标里，都是一条直线，能一路直到七个数量级都不弯</strong>——没有拐点、没有饱和的迹象。那几个很小的指数（0.05~0.1）说的是"回报虽稳、但要翻倍地投才换来一小截提升"。</p>
 <p>为什么这惊人？因为它意味着<strong>可外推</strong>：在小模型上拟合出这条直线，就能相当准地预告一个大得多的模型能到什么水平——训练前就知道结果，这在深度学习里极罕见。</p>
-
 <figure>
-<svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<line x1="66" y1="34" x2="66" y2="212" stroke="#7c8593"/>
-<line x1="66" y1="212" x2="524" y2="212" stroke="#7c8593"/>
-<text x="66" y="24" fill="#7c8593" font-size="11" text-anchor="middle">损失 L（log）</text>
-<text x="524" y="230" fill="#7c8593" font-size="11" text-anchor="end">模型 / 数据 / 算力（log）→</text>
-<line x1="90" y1="60" x2="500" y2="188" stroke="#f0b429" stroke-width="2.4"/>
-<circle cx="140" cy="76" r="3" fill="#e8794b"/><circle cx="220" cy="101" r="3" fill="#e8794b"/><circle cx="310" cy="129" r="3" fill="#e8794b"/><circle cx="400" cy="158" r="3" fill="#e8794b"/><circle cx="470" cy="179" r="3" fill="#e8794b"/>
-<text x="300" y="112" fill="#e7ebf1" font-size="12.5" text-anchor="middle">双对数坐标里是一条直线</text>
-<text x="300" y="132" fill="#7c8593" font-size="11" text-anchor="middle">斜率 = 那个很小的指数 α（0.05~0.1）</text>
-<text x="452" y="200" fill="#f0b429" font-size="11" text-anchor="end">越投越好、不见饱和</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+<line stroke="#7c8593" x1="66" x2="66" y1="34" y2="212"></line>
+<line stroke="#7c8593" x1="66" x2="524" y1="212" y2="212"></line>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="66" y="24">损失 L（log）</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="524" y="230">模型 / 数据 / 算力（log）→</text>
+<line stroke="#f0b429" stroke-width="2.4" x1="90" x2="500" y1="60" y2="188"></line>
+<circle cx="140" cy="76" fill="#e8794b" r="3"></circle><circle cx="220" cy="101" fill="#e8794b" r="3"></circle><circle cx="310" cy="129" fill="#e8794b" r="3"></circle><circle cx="400" cy="158" fill="#e8794b" r="3"></circle><circle cx="470" cy="179" fill="#e8794b" r="3"></circle>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="300" y="112">双对数坐标里是一条直线</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="300" y="132">斜率 = 那个很小的指数 α（0.05~0.1）</text>
+<text fill="#f0b429" font-size="11" text-anchor="end" x="452" y="200">越投越好、不见饱和</text>
 </svg>
 <figcaption>图 1 · 幂律缩放：损失对"模型 / 数据 / 算力"在双对数坐标里近乎直线下降，横跨多个数量级不弯——可据此外推更大规模的成绩。</figcaption>
 </figure>
-
-<h3>发现二：规模压倒结构</h3>
+<h3 data-tts="9334c86702f0fe8d">发现二：规模压倒结构</h3>
 <p>他们扫了不同的网络"形状"——同样的参数量，做得更深还是更宽、注意力单元多还是少、前馈层比例不同……结果<strong>在很宽的范围内，形状几乎不影响损失</strong>，真正决定成绩的是<em>总参数量 N</em>。这句话分量极重：它把"要不要精雕细琢架构"这件长期投入巨大的事，降格成了次要项，把注意力全部推向了<strong>规模</strong>。</p>
-
-<h3>发现三：大模型更"省样本"，且该提前停</h3>
+<h3 data-tts="c535aa372bf4d5a3">发现三：大模型更"省样本"，且该提前停</h3>
 <p>同样读一批数据，<strong>大模型学得更快、更省样本</strong>——达到同一损失需要看的 token 更少。把 N 和 D 的效应合成一个公式，形如 <code>L(N,D) = [ (Nc/N)^(αN/αD) + Dc/D ]^αD</code>：直觉上，<strong>模型太小时，参数量是瓶颈；数据太少时，会开始过拟合</strong>。要不过拟合，数据只需随模型<em>亚线性</em>增长（约 <code>D ∝ N^0.74</code>），而不必等比例暴涨。</p>
 <p>推到算力预算上就得到那条著名建议：给定固定算力 C，<strong>最优是把大头投给"更大的模型"，并在数据上不训练到收敛就提前停</strong>。按本文的拟合，最优模型大小随算力增长得很快（约 <code>N ∝ C^0.73</code>），数据只需慢慢增（约 <code>D ∝ C^0.27</code>）。翻成人话：<strong>与其让小模型把少量数据啃到烂，不如把钱砸在更大的模型、让它把海量数据囫囵读个大概。</strong>正是这条账，让 OpenAI 敢直接跳到 GPT-3 的规模。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="97c9bf5b4610a934">关键结果</h2>
 <p>证据是几百个训练点连成的干净直线：损失对 N、D、C 的幂律<strong>各自跨越六到七个数量级</strong>都高度吻合，拟合误差极小。合成公式 <code>L(N,D)</code> 同时预测了"参数不够"和"数据不够"两种瓶颈，并给出二者的最优权衡。他们还发现<strong>最优 batch 大小</strong>可由"梯度噪声尺度"预测。最有说服力的是<strong>外推验证</strong>：用小规模拟合出的曲线，去预测更大模型的损失，结果相当准——这正是次年 GPT-3 敢押注的依据。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="d25eb08fdf4b8d35">为什么重要 / 影响</h2>
 <p>它把大模型从"炼丹"推向"工程"：<strong>投多少资源、怎么分配、能得到什么</strong>，第一次能提前算出来。三点深远影响——其一，为 <strong>GPT-3</strong> 直接提供了定量依据，也奠定了此后各家训练前先跑缩放律预测的标准流程；其二，把研究重心从"设计更巧的架构"转向"扩大规模"，塑造了"scale is all you need"的时代信念；其三，它开创的"用小实验拟合定律、外推大模型"的方法论，被后续大量工作沿用（缩放律如今是训练任何前沿模型的必备工具）。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="1d0b5bbce9667744">局限与批评</h2>
 <ul>
 <li><strong>最优配比算偏了（最重要的批评）</strong>：DeepMind 的 <strong>Chinchilla</strong>（2022）指出本文因未对每个规模单独调学习率等设置，<strong>系统性地低估了数据的作用</strong>。修正后的结论是：算力最优时，<strong>模型和数据应大致等比例增长</strong>（约每个参数配 20 个 token），而非本文的"重模型、轻数据"。据此，Chinchilla（70B 参数、1.4T token）用同等算力<strong>击败了大它数倍的 Gopher（280B）</strong>，说明当年包括 GPT-3 在内的许多大模型其实被严重<em>训练不足</em>。</li>
 <li><strong>损失≠能力</strong>：幂律描述的是预测损失（困惑度），而人真正在意的是翻译、推理、写代码等下游能力。损失平滑下降，下游能力却可能"涌现"式跳变——两者关系并不简单（另见本站 Emergent Abilities）。</li>
@@ -137,8 +117,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只解释"是什么"、不解释"为什么"</strong>：幂律是经验拟合，指数为何是这些值、背后的理论机制，本文并未回答，至今仍是开放问题。</li>
 <li><strong>被解读为"唯规模论"</strong>：它常被简化成"大就是好"，助长了对算力与数据的军备竞赛，也带来能耗、成本与集中化的隐忧。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="60526a33dc2fb616">要点</h2>
 <div class="tl">
 <p>① 一句话：Transformer 语言模型的损失，对参数量 N、数据量 D、算力 C 各是一条平滑幂律，跨多个数量级不弯、可外推。</p>
 <p>② 痛点：以前"大就是好"只是直觉，说不清好多少、到哪饱和、钱该投模型还是数据——每次都靠烧钱试错。</p>
@@ -155,9 +134,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

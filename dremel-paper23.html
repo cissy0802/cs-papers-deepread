@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Dremel — IT 论文精读 Paper 23</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,47 +36,36 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 23</p>
-<h1>Dremel：秒级交互式查询万亿行</h1>
+<h1 data-tts="87cf6bbdc549d3f9">Dremel：秒级交互式查询万亿行</h1>
 <p class="sub">Melnik 等 · Google · VLDB 2010</p>
 <p class="langbar"><a href="dremel-paper23.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="1fa5c96940b8ec17">这篇论文干了什么？</h2>
 <p>2010 年，谷歌公开了内部一个叫 <strong>Dremel</strong> 的系统。它能让工程师对着一张<strong>上万亿行</strong>的巨表随手敲一句查询——「过去一小时哪些网页被点得最多？」——然后<strong>几秒钟</strong>就把答案端上来。这在当时几乎是魔法：同样的活，用之前的批处理工具（MapReduce）得跑上几分钟甚至几小时。今天谷歌云上人人可用的 <strong>BigQuery</strong>，底子就是它。</p>
-
-<h2>先说个痛点</h2>
+<h2 data-tts="5879257b13528bf0">先说个痛点</h2>
 <p>数据大了以后，「问一个问题」变得很慢。传统数据库是<strong>一行一行</strong>存的：一条记录的所有字段（网页地址、标题、点击数、时间……）挨在一起。可你想算的往往只是<strong>某一列</strong>（比如「所有网页的点击数之和」）。一行一行地存，就逼着机器把每条记录<strong>整条读进来</strong>、再从里面抠出那一个数——绝大部分读进来的东西都白读了，像为了看一本书里的页码，把每一页整页都翻一遍。</p>
-
-<h2>第一个点子：按列存，不按行存</h2>
+<h2 data-tts="a03a9ddf71078a5c">第一个点子：按列存，不按行存</h2>
 <p>Dremel 反过来：<strong>把同一列的值全都集中放在一起</strong>。所有网页的「点击数」排成一长条、所有「标题」排成另一长条。这样算「点击数之和」时，机器<strong>只去读那一条</strong>、其它列碰都不碰——该读的一点不少，不该读的一点不碰。而且同一列的数长得像（都是数字、都是网址），<strong>挨在一起特别好压缩</strong>，读起来更快。</p>
 <p>难点在于：谷歌的数据不是规规矩矩的表格，而是<strong>层层嵌套</strong>的——一个网页记录里套着「多个作者」，每个作者又套着「多种语言」，像一个俄罗斯套娃、又像一份带二级三级子目录的清单。这种「套娃数据」怎么拆成一条条平整的列、事后还能<strong>原样拼回去</strong>？Dremel 的办法是：给列里每个值<strong>额外记两个小标签</strong>，一个记「它属于第几层套娃」、一个记「它是新一组的开头、还是上一组的续」。靠这两个标签，散开的列随时能<strong>无损还原</strong>成原来的套娃结构。这套编码是它最硬核、也最被后人抄去的贡献。</p>
-
-<h2>第二个点子：把查询摊给几千台机器</h2>
+<h2 data-tts="f2c924322546f21e">第二个点子：把查询摊给几千台机器</h2>
 <p>光按列存还不够快。Dremel 借了<strong>搜索引擎</strong>的架子：一句查询进来，先到「根服务器」，它把活拆开、往下发给一批「中间服务器」，再往下发给<strong>成千上万台「叶子服务器」</strong>——每台只啃整份数据的一小片、各算各的局部答案（比如「我这片的点击数之和」）。然后局部答案<strong>顺着这棵树一层层往上汇总、合并</strong>，到根服务器就拼成最终结果。几千台机器同时开工，万亿行于是几秒扫完。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="1875611f40a59783">带来了什么</h2>
 <p>它让「查大数据」从<strong>「提交任务、去喝杯咖啡等结果」</strong>变成了<strong>「敲一句、看一眼、再改一句」</strong>的交互式探索。数据分析师第一次能像用小数据库那样，对着 PB 级的数据来回追问。它催生了 BigQuery，也把那套「嵌套数据的列式编码」变成了整个大数据界的通用格式（如今开源的 Parquet、ORC 都是这条路）。</p>
 <p>诚实一句：Dremel 快，是因为它<strong>只擅长一件事</strong>——大规模「扫一遍、做统计」的只读分析；它不改数据、不做事务，早期也几乎不支持大表之间的复杂关联，不是用来替代普通数据库的。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="a830449c7525819c">一句话记住</h2>
 <div class="tl">
 <p>把嵌套数据<strong>按列拆开存</strong>（配两个小标签保证能无损拼回）、再<strong>借搜索引擎的多级树把查询摊到几千台机器</strong>并层层汇总——于是万亿行也能几秒出结果，把「查大数据」变成了交互式探索。这就是 BigQuery 的地基。</p>
 </div>
-
 <p class="switch-hint">想看列式编码的两个「层级」标签怎么工作、执行树长什么样、跑多快？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="4abc8a53f237d889">一句话</h2>
 <p class="lead">Dremel 把两样东西拼在一起——<strong>面向嵌套数据的列式存储</strong>（用「重复层级 + 定义层级」两个整数把套娃式记录无损打散成列、再无损拼回）与<strong>借自分布式搜索引擎的多级执行树</strong>（查询从根往下摊到成千上万台叶子服务器、局部结果层层向上汇总）——从而能对<strong>万亿行</strong>只读嵌套数据跑<strong>秒级</strong>的交互式聚合查询，扩展到数千 CPU、PB 级数据。它是谷歌 BigQuery 的前身，其嵌套列式编码后来成了 Parquet、ORC 等开源格式的思想源。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="783d3a134b975816">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>行存 vs 列存（row / columnar storage）</strong>：一张表在磁盘上怎么摆。行存把一条记录的所有字段挨着放（适合「取整条记录」）；列存把同一字段的所有值挨着放（适合「只算某几列」的分析，且同类数据好压缩）。Dremel 是列存。</li>
@@ -88,117 +78,106 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>straggler（掉队者）</strong>：一批并行任务里那台特别慢的机器；在几千台的规模下，总有几台慢，整体延迟被它拖住。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="f8fa21482b8b0c8d">坐标</h2>
 <p>作者是 Sergey Melnik、Andrey Gubarev 等谷歌工程师，论文发在 <strong>VLDB 2010</strong>，但系统 <strong>2006 年起就在谷歌内部生产运行</strong>、服务上千用户。它和 <strong>Percolator</strong>（增量索引）、<strong>Pregel</strong>（图计算）并称谷歌分布式系统的「<strong>新三驾马车</strong>」，都诞生在老三件套（GFS / MapReduce / Bigtable）之后、面向更专门的负载。往下，它 2012 年被产品化为公有云的 <strong>BigQuery</strong>；其嵌套列式编码被 <strong>Apache Parquet / ORC</strong> 继承，成为 Spark、Hadoop 生态的存储标准。谷歌 2020 年还发过一篇《Dremel: A Decade of Interactive SQL Analysis》回顾它十年的演进。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="d1bae2d1aaec53ad">问题与动机</h2>
 <p>2000 年代后期，谷歌内部积累了海量<strong>只读</strong>的大数据：网页爬取结果、爬虫元数据、垃圾邮件分析、地图路况、应用崩溃日志……工程师需要<strong>随手探索</strong>这些数据——「哪类页面异常多？」「这个字段的分布长啥样？」这类问题往往边想边改、要反复试。</p>
 <p>当时的主力工具是 <strong>MapReduce</strong>，但它是为<strong>批处理</strong>设计的：每个作业要调度、启动、把中间结果落盘，<strong>延迟以分钟乃至小时计</strong>。你问一句、等十分钟、发现问错了、再改再等——探索的节奏被彻底打断。人们要的是<strong>交互式</strong>：敲一句、几秒出结果、马上追下一句。</p>
 <p>更麻烦的是数据形状。谷歌的数据大量以 <strong>Protocol Buffers</strong> 存储，是<strong>嵌套、带重复字段</strong>的树状记录，不是关系数据库那种规整的二维表。而传统列式存储（如更早的 C-Store）是给<strong>扁平的表</strong>设计的。<strong>怎么把嵌套记录也享受上列存的好处，是核心技术难题。</strong></p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>思想一：把嵌套记录无损打散成列</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="202c1dbf5efe7921">思想一：把嵌套记录无损打散成列</h3>
 <p>先说为什么要列存。分析查询通常只碰<strong>几百个字段里的几个</strong>。行存下，机器为了读那几个字段，得把整条记录都从磁盘捞上来，绝大部分 I/O 是浪费。列存把<strong>同一字段路径的所有值连续存成一条「列条（column stripe）」</strong>，查询只读它用得到的列——I/O 直接砍到「按需」；而且同一列数据同质，<strong>压缩率极高</strong>，读得更省。</p>
-
 <figure>
-<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="150" y="24" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">一条嵌套记录</text>
-<rect x="30" y="38" width="240" height="230" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
-<text x="46" y="62" fill="#f5c451" font-size="12">Doc</text>
-<text x="60" y="84" fill="#b9c0ca" font-size="11.5">url = "a.com"</text>
-<text x="60" y="106" fill="#e7ebf1" font-size="11.5">Author（可重复）</text>
-<text x="76" y="126" fill="#b9c0ca" font-size="11">name = "Ann"</text>
-<text x="76" y="144" fill="#b9c0ca" font-size="11">Lang = [en, zh]</text>
-<text x="60" y="168" fill="#e7ebf1" font-size="11.5">Author（第二个）</text>
-<text x="76" y="188" fill="#b9c0ca" font-size="11">name = "Bo"</text>
-<text x="76" y="206" fill="#b9c0ca" font-size="11">Lang = [fr]</text>
-<text x="46" y="238" fill="#7c8593" font-size="10.5">…套娃 / 带重复字段</text>
-<line x1="278" y1="150" x2="316" y2="150" stroke="#e8794b" stroke-width="1.6" marker-end="url(#a1)"/>
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
-<text x="410" y="24" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">拆成一条条「列」</text>
-<rect x="324" y="42" width="212" height="40" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="336" y="60" fill="#f5c451" font-size="10.5">列: url</text>
-<text x="336" y="76" fill="#b9c0ca" font-size="10.5">a.com · …</text>
-<rect x="324" y="90" width="212" height="40" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="336" y="108" fill="#f5c451" font-size="10.5">列: Author.name</text>
-<text x="336" y="124" fill="#b9c0ca" font-size="10.5">Ann · Bo · …</text>
-<rect x="324" y="138" width="212" height="48" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="336" y="156" fill="#f5c451" font-size="10.5">列: Author.Lang.code</text>
-<text x="336" y="172" fill="#b9c0ca" font-size="10.5">en · zh · fr · … + (r, d)</text>
-<rect x="324" y="194" width="212" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="336" y="212" fill="#7c8593" font-size="10.5">列: …其它字段</text>
-<text x="336" y="228" fill="#7c8593" font-size="10.5">各存各的一条</text>
-<text x="430" y="262" fill="#7c8593" font-size="10.5" text-anchor="middle">查询只读它用到的那几条列</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 288" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="150" y="24">一条嵌套记录</text>
+<rect fill="rgba(255,255,255,0.02)" height="230" rx="8" stroke="#7c8593" width="240" x="30" y="38"></rect>
+<text fill="#f5c451" font-size="12" x="46" y="62">Doc</text>
+<text fill="#b9c0ca" font-size="11.5" x="60" y="84">url = "a.com"</text>
+<text fill="#e7ebf1" font-size="11.5" x="60" y="106">Author（可重复）</text>
+<text fill="#b9c0ca" font-size="11" x="76" y="126">name = "Ann"</text>
+<text fill="#b9c0ca" font-size="11" x="76" y="144">Lang = [en, zh]</text>
+<text fill="#e7ebf1" font-size="11.5" x="60" y="168">Author（第二个）</text>
+<text fill="#b9c0ca" font-size="11" x="76" y="188">name = "Bo"</text>
+<text fill="#b9c0ca" font-size="11" x="76" y="206">Lang = [fr]</text>
+<text fill="#7c8593" font-size="10.5" x="46" y="238">…套娃 / 带重复字段</text>
+<line marker-end="url(#a1)" stroke="#e8794b" stroke-width="1.6" x1="278" x2="316" y1="150" y2="150"></line>
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="410" y="24">拆成一条条「列」</text>
+<rect fill="rgba(240,180,41,0.08)" height="40" rx="6" stroke="#f0b429" width="212" x="324" y="42"></rect>
+<text fill="#f5c451" font-size="10.5" x="336" y="60">列: url</text>
+<text fill="#b9c0ca" font-size="10.5" x="336" y="76">a.com · …</text>
+<rect fill="rgba(240,180,41,0.08)" height="40" rx="6" stroke="#f0b429" width="212" x="324" y="90"></rect>
+<text fill="#f5c451" font-size="10.5" x="336" y="108">列: Author.name</text>
+<text fill="#b9c0ca" font-size="10.5" x="336" y="124">Ann · Bo · …</text>
+<rect fill="rgba(240,180,41,0.08)" height="48" rx="6" stroke="#f0b429" width="212" x="324" y="138"></rect>
+<text fill="#f5c451" font-size="10.5" x="336" y="156">列: Author.Lang.code</text>
+<text fill="#b9c0ca" font-size="10.5" x="336" y="172">en · zh · fr · … + (r, d)</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="212" x="324" y="194"></rect>
+<text fill="#7c8593" font-size="10.5" x="336" y="212">列: …其它字段</text>
+<text fill="#7c8593" font-size="10.5" x="336" y="228">各存各的一条</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="430" y="262">查询只读它用到的那几条列</text>
 </svg>
 <figcaption>图 1 · 记录切分：一条嵌套记录被打散成多条「列条」，每个叶子字段一条；重复/可选字段的列还附带 (r, d) 两个层级标签，用来无损拼回。</figcaption>
 </figure>
-
 <p>难点是<strong>嵌套 + 重复</strong>。扁平表里「第 5 行的点击数」位置一目了然；可当 <code>Author</code> 能有多个、每个 <code>Author</code> 的 <code>Lang</code> 又能有多个时，把所有 <code>code</code> 值排成一条列后，你怎么知道<strong>某个 code 属于哪条记录的哪个作者</strong>？又怎么区分「这里本来就没有 Lang（空缺）」和「这里是新一组的开始」？Dremel 的答案是：给列里<strong>每个值配两个整数</strong>——</p>
 <ul>
 <li><strong>重复层级（repetition level，r）</strong>：这个值是「在路径上第几层重复字段处」接着上一个值的。<code>r=0</code> 表示一条<strong>新记录</strong>的开始，<code>r=1</code> 表示同一记录里换了一个新 <code>Author</code>，<code>r=2</code> 表示同一 <code>Author</code> 里又多了一门 <code>Lang</code>。一句话：<strong>r 告诉你「新的一组从哪儿断开」。</strong></li>
 <li><strong>定义层级（definition level，d）</strong>：路径上那些「可选 / 可重复」的字段，实际<strong>填到了第几层</strong>。若某记录有 <code>Author</code> 但该作者没填 <code>Lang</code>，就用一个不带真实值、只带 d 的占位来记录「它在第几层就空了」。一句话：<strong>d 告诉你「空值（NULL）是在哪一层空的」。</strong></li>
 </ul>
 <p>有了 (r, d)，散在各列里的值就能被一台<strong>有限状态机</strong>按顺序<strong>无损拼回</strong>原始的嵌套记录——不丢结构、不丢空缺信息。这套「repetition/definition level」编码是全文<strong>最硬核、也影响最深远</strong>的一招：它让列存第一次能优雅地吃下嵌套数据，后来被 Parquet 几乎原样继承。（论文还给出了只读<strong>部分列</strong>就能重组「记录子集」的高效算法，让查询按需组装。）</p>
-
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="280" y="24" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">列 Author.Lang.code 的存储</text>
-<rect x="60" y="44" width="90" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="105" y="66" fill="#e7ebf1" font-size="12" text-anchor="middle">en</text>
-<rect x="60" y="86" width="90" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="105" y="108" fill="#e7ebf1" font-size="12" text-anchor="middle">zh</text>
-<rect x="60" y="128" width="90" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="105" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">fr</text>
-<text x="180" y="40" fill="#f0b429" font-size="11">r</text>
-<text x="230" y="40" fill="#e8794b" font-size="11">d</text>
-<text x="180" y="66" fill="#f0b429" font-size="12">0</text><text x="230" y="66" fill="#e8794b" font-size="12">2</text><text x="270" y="66" fill="#7c8593" font-size="10.5">← 新记录的第一门语言</text>
-<text x="180" y="108" fill="#f0b429" font-size="12">2</text><text x="230" y="108" fill="#e8794b" font-size="12">2</text><text x="270" y="108" fill="#7c8593" font-size="10.5">← 同一作者、再加一门</text>
-<text x="180" y="150" fill="#f0b429" font-size="12">1</text><text x="230" y="150" fill="#e8794b" font-size="12">2</text><text x="270" y="150" fill="#7c8593" font-size="10.5">← 同一记录、换了个作者</text>
-<line x1="60" y1="188" x2="500" y2="188" stroke="rgba(240,180,41,0.2)"/>
-<text x="60" y="212" fill="#f0b429" font-size="11">r（重复层级）</text><text x="180" y="212" fill="#b9c0ca" font-size="11">= 新的一组从哪层断开</text>
-<text x="60" y="232" fill="#e8794b" font-size="11">d（定义层级）</text><text x="180" y="232" fill="#b9c0ca" font-size="11">= 空值是在哪一层空的</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="280" y="24">列 Author.Lang.code 的存储</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="5" stroke="#f0b429" width="90" x="60" y="44"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="105" y="66">en</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="5" stroke="#f0b429" width="90" x="60" y="86"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="105" y="108">zh</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="5" stroke="#f0b429" width="90" x="60" y="128"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="105" y="150">fr</text>
+<text fill="#f0b429" font-size="11" x="180" y="40">r</text>
+<text fill="#e8794b" font-size="11" x="230" y="40">d</text>
+<text fill="#f0b429" font-size="12" x="180" y="66">0</text><text fill="#e8794b" font-size="12" x="230" y="66">2</text><text fill="#7c8593" font-size="10.5" x="270" y="66">← 新记录的第一门语言</text>
+<text fill="#f0b429" font-size="12" x="180" y="108">2</text><text fill="#e8794b" font-size="12" x="230" y="108">2</text><text fill="#7c8593" font-size="10.5" x="270" y="108">← 同一作者、再加一门</text>
+<text fill="#f0b429" font-size="12" x="180" y="150">1</text><text fill="#e8794b" font-size="12" x="230" y="150">2</text><text fill="#7c8593" font-size="10.5" x="270" y="150">← 同一记录、换了个作者</text>
+<line stroke="rgba(240,180,41,0.2)" x1="60" x2="500" y1="188" y2="188"></line>
+<text fill="#f0b429" font-size="11" x="60" y="212">r（重复层级）</text><text fill="#b9c0ca" font-size="11" x="180" y="212">= 新的一组从哪层断开</text>
+<text fill="#e8794b" font-size="11" x="60" y="232">d（定义层级）</text><text fill="#b9c0ca" font-size="11" x="180" y="232">= 空值是在哪一层空的</text>
 </svg>
 <figcaption>图 2 · 两个层级标签：每个列值附带 (r, d)。仅凭这两个整数，就能把打散的列无损还原成嵌套记录——r 标出「组的边界」，d 标出「NULL 的深度」。</figcaption>
 </figure>
-
-<h3>思想二：多级执行树，把查询摊到几千台机器</h3>
+<h3 data-tts="eed2e2e76182cc66">思想二：多级执行树，把查询摊到几千台机器</h3>
 <p>列存省了 I/O，但要在几秒内扫完万亿行，还得靠<strong>大规模并行</strong>。Dremel 直接搬来<strong>分布式搜索引擎</strong>的架构：一棵<strong>多级执行树（serving tree）</strong>。</p>
 <p>一句 SQL 进来，先到<strong>根服务器（root）</strong>：它读表的元数据、把查询改写成可下发的子查询，往下丢给一层<strong>中间服务器（intermediate）</strong>；中间服务器继续改写、再往下丢，最终落到成千上万台<strong>叶子服务器（leaf）</strong>。叶子是唯一真正<strong>读数据</strong>的一层——每台只负责整表的一小片（一个 tablet），在自己那片列数据上做扫描与<strong>局部聚合</strong>（比如「我这片里 <code>GROUP BY country</code> 的计数」）。然后局部结果<strong>顺着树逐层向上合并</strong>：中间层把下面几十台的结果并成一份、根服务器再并成最终答案。</p>
 <p>为什么这样快？因为像 <code>COUNT</code>、<code>SUM</code>、<code>GROUP BY</code> 这类聚合天然可<strong>分而合之</strong>：各片先算局部、上层再合并，通信量小、并行度极高。几千台叶子同时扫，万亿行于是被摊成每台几亿行、几秒钟的活。</p>
-
 <figure>
-<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="dn" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="up" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="238" y="30" width="84" height="34" rx="6" fill="rgba(232,121,75,0.18)" stroke="#e8794b"/><text x="280" y="52" fill="#e7ebf1" font-size="12" text-anchor="middle">根 root</text>
-<rect x="120" y="104" width="96" height="32" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="168" y="125" fill="#e7ebf1" font-size="11" text-anchor="middle">中间层</text>
-<rect x="344" y="104" width="96" height="32" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="392" y="125" fill="#e7ebf1" font-size="11" text-anchor="middle">中间层</text>
-<line x1="264" y1="64" x2="180" y2="102" stroke="#7c8593" marker-end="url(#dn)"/>
-<line x1="296" y1="64" x2="380" y2="102" stroke="#7c8593" marker-end="url(#dn)"/>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 288" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="dn" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="up" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(232,121,75,0.18)" height="34" rx="6" stroke="#e8794b" width="84" x="238" y="30"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="52">根 root</text>
+<rect fill="rgba(240,180,41,0.12)" height="32" rx="6" stroke="#f0b429" width="96" x="120" y="104"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="168" y="125">中间层</text>
+<rect fill="rgba(240,180,41,0.12)" height="32" rx="6" stroke="#f0b429" width="96" x="344" y="104"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="392" y="125">中间层</text>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="264" x2="180" y1="64" y2="102"></line>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="296" x2="380" y1="64" y2="102"></line>
 <g fill="rgba(240,180,41,0.08)" stroke="#f0b429">
-<rect x="60" y="176" width="66" height="30" rx="5"/><rect x="136" y="176" width="66" height="30" rx="5"/><rect x="212" y="176" width="66" height="30" rx="5"/>
-<rect x="300" y="176" width="66" height="30" rx="5"/><rect x="376" y="176" width="66" height="30" rx="5"/><rect x="452" y="176" width="66" height="30" rx="5"/></g>
+<rect height="30" rx="5" width="66" x="60" y="176"></rect><rect height="30" rx="5" width="66" x="136" y="176"></rect><rect height="30" rx="5" width="66" x="212" y="176"></rect>
+<rect height="30" rx="5" width="66" x="300" y="176"></rect><rect height="30" rx="5" width="66" x="376" y="176"></rect><rect height="30" rx="5" width="66" x="452" y="176"></rect></g>
 <g fill="#b9c0ca" font-size="10" text-anchor="middle">
 <text x="93" y="196">叶子</text><text x="169" y="196">叶子</text><text x="245" y="196">叶子</text>
 <text x="333" y="196">叶子</text><text x="409" y="196">叶子</text><text x="485" y="196">叶子</text></g>
-<line x1="150" y1="136" x2="95" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
-<line x1="168" y1="136" x2="169" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
-<line x1="186" y1="136" x2="243" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
-<line x1="374" y1="136" x2="333" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
-<line x1="392" y1="136" x2="409" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
-<line x1="410" y1="136" x2="483" y2="174" stroke="#7c8593" marker-end="url(#dn)"/>
-<rect x="60" y="230" width="458" height="34" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
-<text x="289" y="251" fill="#7c8593" font-size="11" text-anchor="middle">共享存储（GFS）上的列式数据 · 每台叶子只读一个分片 tablet</text>
-<text x="150" y="90" fill="#7c8593" font-size="10">查询下发 ↓</text>
-<text x="360" y="90" fill="#f0b429" font-size="10">局部结果上汇 ↑</text>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="150" x2="95" y1="136" y2="174"></line>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="168" x2="169" y1="136" y2="174"></line>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="186" x2="243" y1="136" y2="174"></line>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="374" x2="333" y1="136" y2="174"></line>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="392" x2="409" y1="136" y2="174"></line>
+<line marker-end="url(#dn)" stroke="#7c8593" x1="410" x2="483" y1="136" y2="174"></line>
+<rect fill="rgba(255,255,255,0.02)" height="34" rx="6" stroke="#7c8593" width="458" x="60" y="230"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="289" y="251">共享存储（GFS）上的列式数据 · 每台叶子只读一个分片 tablet</text>
+<text fill="#7c8593" font-size="10" x="150" y="90">查询下发 ↓</text>
+<text fill="#f0b429" font-size="10" x="360" y="90">局部结果上汇 ↑</text>
 </svg>
 <figcaption>图 3 · 多级执行树：查询自根向下拆分到成千上万台叶子服务器，叶子在各自分片上扫描 + 局部聚合，结果沿树逐层向上合并成最终答案。</figcaption>
 </figure>
-
-<h3>思想三：原地分析 + 治「掉队者」</h3>
+<h3 data-tts="ed20bcd70757307b">思想三：原地分析 + 治「掉队者」</h3>
 <p>Dremel 不搬数据：列数据就<strong>原地</strong>躺在共享存储（GFS）上，查询直接去那儿读，省掉了「先导入专用数据库」的漫长步骤——这叫 <strong>in-situ（原地）分析</strong>。代价是它只读、不为写优化。</p>
 <p>几千台机器一起跑，总会有几台特别慢（<strong>straggler</strong>）拖后腿。Dremel 用一个<strong>查询调度器</strong>：每个 tablet 一般有多个副本，某台叶子迟迟不返回，就把这片活<strong>改派给另一副本</strong>。它还支持<strong>近似早停</strong>——比如已经处理了 99% 的分片、剩下 1% 迟迟不来，可以<strong>提前收工</strong>返回一个足够准的近似结果。对「看趋势、做探索」的分析，这种「用一点点精度换一大截延迟」通常非常划算。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="f169c429e6159b26">关键结果</h2>
 <p>论文用生产系统的真实负载说话：</p>
 <ul>
 <li><strong>列存省 I/O</strong>：在一张 <strong>85 亿条记录、约 87TB</strong> 的表上，只查其中少数字段时，列式读取比按记录读取快<strong>一个数量级以上</strong>；读的字段越少、优势越大。</li>
@@ -206,12 +185,10 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>规模</strong>：实验跑在<strong>约三千个节点</strong>上，系统扩展到数千 CPU、PB 级数据，长期服务谷歌上千名用户。</li>
 <li><strong>吊打批处理</strong>：同样的聚合，Dremel 比在同一列式数据上跑 MapReduce 快得多——把「分钟级批处理」压到「秒级交互」。</li>
 </ul>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="7535e7e0a2efb55d">为什么重要 / 影响</h2>
 <p>Dremel 证明了一件当时很多人不信的事：<strong>不建索引、纯靠「列式 + 大规模并行暴力扫描」，也能对海量数据做到交互式查询。</strong>它把数据分析的工作方式从「提交批作业、等结果」改成了「敲一句、秒回、再追问」，让 PB 级探索性分析第一次变得顺手。</p>
 <p>两条影响线尤其深远：一是它 2012 年被产品化为 <strong>BigQuery</strong>，开创了「<strong>Serverless 数据仓库</strong>」这一云产品品类，用户只管写 SQL、不管机器；二是它的<strong>嵌套列式编码</strong>被 <strong>Apache Parquet、ORC</strong> 继承，成为 Spark、Hadoop、乃至现代数据湖的事实存储标准——你今天在开源大数据栈里存的每个 Parquet 文件，血缘都能追到这篇论文的 (r, d) 编码。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="5204d1a18033fec2">局限与批评</h2>
 <ul>
 <li><strong>专才不是通才</strong>：Dremel 只擅长<strong>只读、扫描式的聚合分析</strong>（OLAP）；它不做事务、不支持更新单条记录，替代不了 OLTP 数据库。用错场景就是灾难。</li>
 <li><strong>早期几乎不做大表 JOIN</strong>：原始 Dremel 的执行树对「分而合之」的聚合极友好，但对需要产生<strong>巨大中间结果</strong>的复杂查询（尤其大表之间的关联）力不从心，早期只能处理「小表广播」式的有限连接。后来（见 2020 回顾）才引入<strong>shuffle（重分区）</strong>机制补上这块，代价是延迟与复杂度上升。</li>
@@ -219,8 +196,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>编码复杂、工程门槛高</strong>：repetition/definition level 无损编码优雅但<strong>不好实现、不好调试</strong>，正确处理各种嵌套 + 空值边界是出了名的容易错。</li>
 <li><strong>存算耦合与近似的取舍</strong>：早期执行树把存储与计算绑得较紧、树形也较固定；近似早停虽降延迟，但返回的是<strong>不完整结果</strong>，不适合要求精确的场景。这些都在后续十年被逐步重构（存算分离、列式向量化等）。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="501eb13acc776269">要点</h2>
 <div class="tl">
 <p>① 一句话：列式存储（吃嵌套数据）+ 多级执行树（摊到几千台机器），对万亿行只读数据做秒级交互式聚合查询。</p>
 <p>② 痛点：MapReduce 批处理延迟以分钟计，打断探索；且谷歌数据是嵌套 + 重复的树状记录，传统列存只会扁平表。</p>
@@ -237,9 +213,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>
