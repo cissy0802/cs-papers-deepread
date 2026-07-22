@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Spanner — IT 论文精读 Paper 24</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 24</p>
+<h1>Spanner — Google 的全球分布式数据库</h1>
+<p class="sub">Corbett 等 · Google · OSDI 2012</p>
+<p class="langbar"><a href="spanner-paper24.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2012 年，Google 造出了 <strong>Spanner</strong>——一个把数据摊在<strong>横跨几个大洲的机房</strong>里、却依然像<strong>一本人人都认同顺序的账本</strong>一样工作的数据库。它撑起了 Google 广告这类最核心的业务，也是后来 Google Cloud Spanner、CockroachDB、TiDB 这些「全球数据库」的思想源头。它最出名的一招，是一个叫 <strong>TrueTime</strong> 的「诚实时钟」。</p>
+<h2>先说旧世界的痛</h2>
+<p>数据库想又快又不丢，就得把数据复制好几份、分散到不同城市的机房。可一旦散开，就冒出一个头疼问题：<strong>到底谁先谁后？</strong> 你在北京下的单，和同事在纽约改的价，哪个先生效？靠各机房自己的钟来判断吗——可每台机器的钟都走得略有快慢，谁也不敢拍胸脯说自己的时间绝对准。于是当时的全球数据库只能二选一：<strong>要么挤在一个地区</strong>、换来「顺序清楚」，<strong>要么摊向全球</strong>、换来「偶尔读到过期数据、顺序错乱」。Spanner 偏要两个都拿。</p>
+<h2>那个点子：让时钟「诚实」</h2>
+<p>普通时钟的毛病是<strong>假装精确</strong>——它告诉你「现在是 3 点整」，可它自己其实心里没底。Spanner 反其道而行：让每台机器的钟<strong>老实交代自己的误差</strong>，不报一个点、而报<strong>一小段区间</strong>——「现在大概在 3 点整前后那几毫秒之间，反正真时间一定落在这段里」。这个「带着诚实误差的时间」，就是 TrueTime。</p>
+<h2>它怎么把顺序理清？</h2>
+<p>光有诚实区间还不够，关键在成交时<strong>「多等一拍」</strong>。每当一笔改动要落定，Spanner 先给它盖一个时间戳，然后<strong>故意等上那么几毫秒</strong>——等到连最「糊涂」的钟都承认「这个时间戳已经是过去时了」，才把改动对外公开。这一等，就保证了：<strong>任何在它之后才开始的改动，拿到的时间戳一定更大。</strong> 于是全球所有机房，哪怕彼此从没商量，也会对「谁先谁后」给出完全一致的答案——那本账本的顺序，人人都认。至于容错，Spanner 把每份数据在几个机房各存一份、靠一轮「投票」保证副本一致，坏掉一两台也照常跑。</p>
+<h2>它带来了什么</h2>
+<p>Spanner 第一次证明：<strong>「全球铺开」和「强一致的事务」可以兼得</strong>，不必二选一。你能在横跨大洲的数据上，像用一台单机数据库那样放心地转账、下单、改库存，系统替你保证顺序不乱、读到的永远是说得通的最新状态。诚实地说，这份「多等一拍」给每次写都添了几毫秒延迟，而且它靠的是每个机房里真装了 <strong>GPS 天线和原子钟</strong>——这套家当不是随便谁都搭得起。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>别再假装全球的钟都分毫不差——让每台钟诚实报出「时间在这一小段区间里」，再在每次成交时多等一小拍、等到误差被「等」了过去，全世界就能对「谁先谁后」给出同一个答案。于是一个铺满地球的数据库，用起来却像一本顺序人人认同的单机账本。</p>
+</div>
+<p class="switch-hint">想看 TrueTime 的区间与 commit-wait 时序、Paxos 组 + 两阶段提交的结构图和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Spanner 是第一个把数据分布到<strong>全球尺度</strong>、同时还支持<strong>外部一致（externally-consistent）分布式事务</strong>的数据库。它的核心创新是 <strong>TrueTime</strong>——一个把时钟不确定性<strong>显式暴露成时间区间</strong>的 API；靠它，Spanner 能给每个事务一个尊重真实先后的<strong>全局时间戳</strong>，从而在跨洲复制的数据上实现强一致的读写事务、无锁快照读，并支撑了 Google 广告后端 F1。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>事务（transaction）</strong>：一组要么全部成功、要么全部作废的操作（如「扣 A 的钱 + 加 B 的钱」不能只做一半）。</li>
+<li><strong>分布式数据库 / 分片（sharding）</strong>：数据太大，切成许多片、分散存在很多台机器上。</li>
+<li><strong>复制 / 副本（replication）</strong>：同一份数据在不同机器或机房各存几份，坏掉一台也不丢、还能继续服务。</li>
+<li><strong>Paxos / 共识（consensus）</strong>：一组副本就「下一条到底写什么」投票达成一致的算法，多数派同意即生效（Chubby 那篇讲过它的落地）。</li>
+<li><strong>两阶段提交（2PC，two-phase commit）</strong>：跨多台机器的事务要么一起提交、要么一起回滚的经典协议，先「都准备好了吗」再「一起提交」。</li>
+<li><strong>强一致 / 线性一致（linearizability）</strong>：系统对外表现得像只有一份数据、所有操作排成单一全序，读到的永远是最新且说得通的状态。</li>
+<li><strong>多版本（MVCC）/ 快照读</strong>：每次写都带一个时间戳、旧值保留不覆盖；给定一个时间戳就能读「截至那一刻」的历史快照。</li>
+<li><strong>时钟漂移 / NTP</strong>：每台机器的石英钟走得快慢不一会偏差；NTP 是常用的网络对时，但误差可达几十上百毫秒、且没有硬上界保证。</li>
+<li><strong>GPS / 原子钟</strong>：两类高精度时间源；GPS 从卫星授时、原子钟靠原子振荡守时，二者失效方式不同，可互为备份。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 James Corbett、Jeffrey Dean、Wilson Hsieh 等一大批人，来自 Google，论文发在 <strong>OSDI 2012</strong>（获最佳论文）。它上承 Bigtable（2006）与 Megastore，底层数据落在 <strong>Colossus</strong>（GFS 的后继）上、副本一致靠 <strong>Paxos</strong>（Lamport）；下启 Google 广告后端 <strong>F1</strong>、商用的 Google Cloud Spanner，以及 CockroachDB、YugabyteDB、TiDB 这一整代「NewSQL / 全球数据库」。</p>
+<h2>问题与动机</h2>
+<p>Bigtable 好用，但只保证<strong>单行</strong>原子，跨行、跨表的事务要应用自己扛，写起来痛苦；后来的 Megastore 补上了同步复制与事务，却<strong>写吞吐很低</strong>。当时业界近乎共识：「全球复制」与「强一致事务」不可兼得——这既是 CAP 的取舍，更卡在一个最根本的<strong>时间难题</strong>上。</p>
+<p>要让分散在各大洲的机器对「事件谁先谁后」达成一致，就得有个<strong>大家都信的时间基准</strong>。可物理时钟总在漂移，NTP 对时的误差可达<strong>几十到上百毫秒、而且没有可靠的上界</strong>——你拿到一个时间戳，却不知道它到底偏了多少。<strong>没有可信的时间，就没法用时间戳给事务定序，也就做不出跨机房的强一致。</strong> 以往系统只能回避：要么放弃全局事务，要么把数据锁在一个地区。Spanner 决定正面啃下这块硬骨头。</p>
+<h2>核心思想 / 方法</h2>
+<h3>TrueTime：把「我不确定」讲出来</h3>
+<p>传统的时钟 API 返回一个<strong>时间点</strong>，却对自己的误差绝口不提——这正是万恶之源。TrueTime 反过来：<code>TT.now()</code> 返回一个<strong>区间</strong> <code>[earliest, latest]</code>，并<strong>保证真实时间一定落在这个区间内</strong>。区间的半宽记作 ε（epsilon），代表「此刻的不确定性」。</p>
+<p>这个保证怎么来的？每个机房部署一批时间主机，用 <strong>GPS 接收机</strong>和<strong>原子钟</strong>两类<em>失效模式不同</em>的时间源交叉校准（GPS 可能天线故障、原子钟可能缓慢漂移，但很难同时出错），再叠加已知的<strong>本地晶振漂移上界</strong>推算出 ε。实测 ε 通常只有<strong>几毫秒</strong>（约 1–7ms、均值约 4ms）。关键不在「消灭误差」——误差消不掉——而在<strong>把误差量化、并交给系统去处理</strong>。TrueTime 还配两个判断：<code>TT.after(t)</code>（t 是否已确定成为过去）与 <code>TT.before(t)</code>。</p>
+<h3>外部一致性 + commit wait：多等一拍</h3>
+<p>Spanner 的最强承诺是<strong>外部一致性</strong>（external consistency，即事务级的线性一致）：若事务 T1 在<strong>真实时间上先于</strong> T2 提交完成，则 <strong>T1 的时间戳 &lt; T2 的时间戳</strong>——全世界看到的顺序，与事情真实发生的顺序完全吻合。</p>
+<p>怎么保证？提交时协调者选一个时间戳 <code>s = TT.now().latest</code>（取区间上界，宁可偏大），然后<strong>故意等到 <code>TT.after(s)</code> 为真</strong>——即等到连最保守的钟都确认「s 已经成为过去」——才放锁、让这次写对外生效。这一步就叫 <strong>commit wait</strong>，大约要等两倍不确定性（<code>≈ 2ε</code>，约 10ms 量级）。<strong>这一等，保证任何后开始的事务读到的 TrueTime 都已越过 s，于是它必然拿到一个更大的时间戳。</strong> 换句话说，Spanner 没有假装时钟完美，而是把不确定性老老实实<strong>「等」了出去</strong>。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="sp1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#d9dee5" font-size="12.5" font-weight="700" x="60" y="34">① TT.now() 返回一段区间，真实时间必在其中</text>
+<line stroke="#f0b429" stroke-width="2" x1="150" x2="150" y1="52" y2="86"></line>
+<line stroke="#f0b429" stroke-width="2" x1="410" x2="410" y1="52" y2="86"></line>
+<line stroke="#f0b429" stroke-width="2" x1="150" x2="410" y1="69" y2="69"></line>
+<circle cx="300" cy="69" fill="#e8794b" r="4.5"></circle>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="150" y="102">earliest</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="410" y="102">latest</text>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="300" y="58">真实时间</text>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="280" y="102">←—— 2ε ——→</text>
+<text fill="#d9dee5" font-size="12.5" font-weight="700" x="60" y="150">② commit wait：盖戳后多等一拍，等误差过去再放行</text>
+<line marker-end="url(#sp1)" stroke="#7c8593" x1="70" x2="520" y1="205" y2="205"></line>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="516" y="223">真实时间 →</text>
+<line stroke="#f0b429" stroke-width="1.6" x1="150" x2="150" y1="178" y2="205"></line>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="150" y="172">盖时间戳 s</text>
+<rect fill="rgba(240,180,41,0.14)" height="27" x="150" y="178" width="180"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="240" y="196">commit wait ≈ 2ε</text>
+<line stroke="#e8794b" stroke-width="1.6" x1="330" x2="330" y1="178" y2="205"></line>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="330" y="172">TT.after(s) 为真</text>
+<text fill="#b9c0ca" font-size="10.5" x="342" y="192">→ 放锁、写生效</text>
+<text fill="#7c8593" font-size="10.5" x="342" y="205">后来的事务：戳必 &gt; s</text>
+</svg>
+<figcaption>图 1 · TrueTime 把不确定性暴露成区间 [earliest, latest]（半宽 ε）；提交时选 s=latest 再等到 TT.after(s) 才放行，这段 commit wait（≈2ε）保证真实上更晚的事务时间戳必更大。</figcaption>
+</figure>
+<h3>架构：Paxos 组 + 目录</h3>
+<p>一个 Spanner 部署叫 <strong>universe</strong>，切成若干 <strong>zone</strong>（约等于一个机房，是物理隔离与部署的单位）。数据切成 <strong>tablet</strong>（多版本的 <code>(key, 时间戳) → 值</code> 映射，底层落在 Colossus 上）。每个 tablet 的若干副本分处不同 zone，组成一个 <strong>Paxos 组</strong>并选出一个 leader：所有写经 Paxos 复制到多数派副本，坏掉少数副本仍能继续服务。一批<strong>连续、同前缀</strong>的 key 组成一个 <strong>目录（directory）</strong>，是数据放置与跨组迁移的最小单位。</p>
+<h3>跨组事务：2PC 架在 Paxos 之上</h3>
+<p>单个 Paxos 组内的事务好办；跨多个组的事务用<strong>两阶段提交（2PC）</strong>协调。经典 2PC 的死穴是<strong>协调者一宕机，参与者就被卡住、锁迟迟放不掉</strong>。Spanner 的巧劲在于：<strong>2PC 里的每个参与者（以及协调者本身）都是一个 Paxos 组</strong>——任何单点宕机，都由该组内的 Paxos 自动选出新 leader 补位。于是 2PC 不再有单点、也不会永久阻塞。读写事务用<strong>两阶段锁（2PL）</strong>做并发控制（悲观加锁）。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="26">一个事务跨两个分片：2PC 协调，每个参与者本身是一个 Paxos 组</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="147" y="54">机房 A</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="54">机房 B</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="413" y="54">机房 C</text>
+<line stroke="rgba(124,133,147,0.25)" stroke-dasharray="3 4" x1="213" x2="213" y1="40" y2="300"></line>
+<line stroke="rgba(124,133,147,0.25)" stroke-dasharray="3 4" x1="347" x2="347" y1="40" y2="300"></line>
+<text fill="#f0b429" font-size="11" x="40" y="112">Paxos 组 1</text>
+<text fill="#7c8593" font-size="9.5" x="40" y="126">（分片 1）</text>
+<rect fill="rgba(240,180,41,0.16)" height="30" rx="6" stroke="#f0b429" stroke-width="1.6" width="72" x="111" y="92"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="147" y="105">副本·leader</text>
+<text fill="#f0b429" font-size="9" text-anchor="middle" x="147" y="117">协调者</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="244" y="92"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="111">副本</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="377" y="92"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="413" y="111">副本</text>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="183" x2="244" y1="107" y2="107"></line>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="316" x2="377" y1="107" y2="107"></line>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="280" y="84">Paxos 复制</text>
+<text fill="#f0b429" font-size="11" x="40" y="232">Paxos 组 2</text>
+<text fill="#7c8593" font-size="9.5" x="40" y="246">（分片 2）</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="111" y="212"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="147" y="231">副本</text>
+<rect fill="rgba(232,121,75,0.16)" height="30" rx="6" stroke="#e8794b" stroke-width="1.6" width="72" x="244" y="212"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="280" y="225">副本·leader</text>
+<text fill="#e8794b" font-size="9" text-anchor="middle" x="280" y="237">参与者</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="377" y="212"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="413" y="231">副本</text>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="183" x2="244" y1="227" y2="227"></line>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="316" x2="377" y1="227" y2="227"></line>
+<line stroke="#f0b429" stroke-width="2" x1="147" x2="280" y1="122" y2="212"></line>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="248" y="170">两阶段提交</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="243" y="184">(2PC)</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="300">单点宕机 → 组内 Paxos 自动补位，2PC 不再有单点、不永久阻塞</text>
+</svg>
+<figcaption>图 2 · 每个分片的多个副本跨机房组成一个 Paxos 组；跨分片事务用 2PC，但 2PC 的协调者与参与者各自都是一个 Paxos 组，任何单点宕机都被组内共识兜住。</figcaption>
+</figure>
+<h3>无锁快照读：全局时间戳的红利</h3>
+<p>因为每次写都带一个<strong>全局有意义的时间戳</strong>、且旧版本都留着（多版本），<strong>只读事务和快照读可以完全不加锁</strong>：指定一个时间戳 <code>t</code>，就读「截至 t 的那个版本」，任何「数据已追上 t」的副本都能<strong>就近服务</strong>——读不阻塞写、写不阻塞读，还能把读分摊到离用户最近的副本上。这正是 TrueTime 给全局时间戳赋予真实意义后，水到渠成的好处。</p>
+<h2>关键结果</h2>
+<ul>
+<li><strong>TrueTime 实测</strong>：ε 通常几毫秒（约 1–7ms、均值约 4ms），commit wait 均值约 2ε；ε 的大头来自本地晶振漂移，随对时周期呈锯齿波动。</li>
+<li><strong>生产落地</strong>：Spanner 已支撑 <strong>F1</strong>——Google 的广告后端，从一套分库分表的 MySQL 迁过来，图的正是<strong>跨洲强一致 + SQL</strong>。</li>
+<li><strong>规模</strong>：论文给出的目标/部署量级是<strong>百万台机器、数百个数据中心、万亿行</strong>数据。</li>
+<li><strong>能力</strong>：提供外部一致的读写事务、无锁只读事务、快照读；数据模型是带模式的<strong>半关系表</strong>，支持类 SQL 查询与层次化的「interleaved」表（即按目录把父子行物理聚在一起）。</li>
+</ul>
+<h2>为什么重要 / 影响</h2>
+<p>Spanner 打破了「<strong>全球分布 vs 强一致事务只能二选一</strong>」的教条，证明<strong>只要有一个把时钟不确定性讲清楚的 API，就能在全球尺度上做外部一致的事务</strong>。它把「时间」——分布式系统里历来最不可靠的东西——变成了可以拿来给事务定序的<strong>一等公民</strong>。工程上，它成了商用 Google Cloud Spanner 的内核；思想上，它点燃了 <strong>NewSQL / 全球数据库</strong>这一整代系统（CockroachDB、YugabyteDB、TiDB 等），只是这些追随者大多没有原子钟，改用更宽松的时钟界或<strong>混合逻辑时钟（HLC）</strong>去近似 TrueTime 的效果。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>写延迟有下限</strong>：commit wait 让每个读写事务至少多等约 2ε（~10ms 量级）；ε 越大等得越久，所以整套体系的价值高度依赖<strong>把 ε 压到很小</strong>——这也是为什么它离不开好硬件。</li>
+<li><strong>要特殊硬件</strong>：每个数据中心都得部署 GPS 接收机 + 原子钟，普通团队搭不起。外部复刻者（如 CockroachDB）多改用 NTP + 混合逻辑时钟，以<strong>更弱的时间保证或更大的不确定性</strong>来换可行性。</li>
+<li><strong>2PC 的代价仍在</strong>：跨组事务要走 2PC + Paxos，延迟与复杂度都不低；高竞争场景下 2PL 悲观锁也会拖慢吞吐。</li>
+<li><strong>CAP 上的取舍</strong>：网络分区时 Spanner 选一致性、牺牲可用性（本质是 CP 系统）。Google 辩称因其专网极可靠而「实际近似 CA」，这个说法有争议（Brewer 后来专门撰文澄清边界）。</li>
+<li><strong>发表时 SQL 尚浅</strong>：2012 版的查询/SQL 能力有限，完整的分布式 SQL 引擎是 2017 年的续作《Spanner: Becoming a SQL System》才补齐。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：Spanner 是第一个既全球分布、又支持外部一致分布式事务的数据库，钥匙是 TrueTime。</p>
+<p>② 痛点：全球复制下机器的钟各自漂移、NTP 误差无上界，没有可信时间就无法用时间戳给跨机房事务定序——于是「全球 vs 强一致」被认为不可兼得。</p>
+<p>③ 核心 idea：TrueTime 不返回时间点，而返回区间 <code>[earliest, latest]</code> 并保证真时间在其中；ε 是不确定性，靠 GPS + 原子钟压到几毫秒。</p>
+<p>④ 定序机制：外部一致性 = 真实上先提交者时间戳更小；靠 commit wait——选 <code>s=now().latest</code> 后等到 <code>TT.after(s)</code>（约 2ε）再放锁，把不确定性「等」出去。</p>
+<p>⑤ 架构：数据切成 tablet，副本跨机房组成 Paxos 组（多数派写）；连续同前缀 key 成一个目录，是放置/迁移单位。</p>
+<p>⑥ 跨组事务：2PC 架在 Paxos 之上——每个参与者/协调者都是一个 Paxos 组，单点宕机被组内共识兜住，2PC 不再永久阻塞。</p>
+<p>⑦ 红利：全局时间戳 + 多版本 → 只读事务和快照读完全无锁，可就近读任一追上的副本。</p>
+<p>⑧ 影响与局限：证明「全球 + 强一致」可兼得，催生 NewSQL/全球数据库；但写有 ~2ε 延迟下限、依赖 GPS+原子钟、跨组走 2PC、分区时选 C 舍 A、初版 SQL 能力有限。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的 TrueTime 实现与事务协议细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

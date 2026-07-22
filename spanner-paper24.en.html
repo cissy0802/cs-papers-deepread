@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Spanner — CS Papers Deep-Read Paper 24</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 24</p>
+<h1>Spanner — Google's Globally-Distributed Database</h1>
+<p class="sub">Corbett et al. · Google · OSDI 2012</p>
+<p class="langbar"><a href="spanner-paper24.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2012 Google built <strong>Spanner</strong> — a database that spreads its data across <strong>data centers on several continents</strong>, yet still behaves like <strong>one ledger whose ordering everyone agrees on</strong>. It runs Google's most critical services (like the advertising backend) and is the intellectual source of later "global databases" such as Google Cloud Spanner, CockroachDB, and TiDB. Its most famous trick is an "honest clock" called <strong>TrueTime</strong>.</p>
+<h2>First, the pain of the old world</h2>
+<p>To be both fast and durable, a database has to copy its data several times and scatter the copies across cities. But once the data is spread out, a nasty question appears: <strong>which happened first?</strong> An order placed in Beijing, a price edited in New York — which takes effect first? Judge by each data center's own clock? Every machine's clock runs a little fast or slow, and none can swear its time is exactly right. So global databases of the day had to choose one of two: <strong>huddle in one region</strong> and keep a clean ordering, or <strong>spread worldwide</strong> and live with occasional stale reads and scrambled ordering. Spanner insisted on having both.</p>
+<h2>The idea: make clocks "honest"</h2>
+<p>An ordinary clock's flaw is <strong>pretending to be precise</strong> — it tells you "it's exactly 3:00," while secretly it isn't sure. Spanner does the opposite: it makes every machine's clock <strong>own up to its error</strong>, reporting not a point but a <strong>small interval</strong> — "it's somewhere within a few milliseconds around 3:00, and the true time is definitely inside this range." That "time with an honest margin of error" is TrueTime.</p>
+<h2>How does it sort out the ordering?</h2>
+<p>An honest interval alone isn't enough; the key is to <strong>"wait a beat"</strong> when finalizing. Every time a change is about to become final, Spanner first stamps it with a timestamp, then <strong>deliberately waits a few milliseconds</strong> — until even the fuzziest clock admits "that timestamp is now in the past" — before revealing the change to anyone. That wait guarantees one thing: <strong>any change that starts after it will get a strictly larger timestamp.</strong> So every data center worldwide, even without ever consulting one another, gives the exact same answer to "which came first" — that ledger's ordering is one everyone accepts. For fault tolerance, Spanner keeps a copy of each piece of data in several data centers and uses a round of "voting" to keep the copies in agreement, so losing a machine or two doesn't stop it.</p>
+<h2>What it brought</h2>
+<p>Spanner was the first to prove that <strong>"span the globe" and "strongly consistent transactions" can coexist</strong> — you don't have to pick one. On data straddling continents, you can transfer money, place orders, and update inventory as confidently as on a single-machine database, and the system guarantees the ordering never scrambles and what you read is always the latest, sensible state. To be honest about the cost: this "wait a beat" adds a few milliseconds of latency to every write, and it relies on real <strong>GPS antennas and atomic clocks</strong> installed in every data center — hardware not everyone can afford to build.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Stop pretending the world's clocks all agree to the microsecond — have each clock honestly report "the time is somewhere in this small interval," then wait a short beat at every commit until that error has been "waited out," and the whole world will give one and the same answer to "which came first." So a database blanketing the planet feels, in use, like one single-machine ledger with an ordering everyone accepts.</p>
+</div>
+<p class="switch-hint">Want the TrueTime interval and commit-wait timeline, the Paxos-group + two-phase-commit diagram, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Spanner is the first database to distribute data at <strong>global scale</strong> while still supporting <strong>externally-consistent distributed transactions</strong>. Its core innovation is <strong>TrueTime</strong> — an API that <strong>exposes clock uncertainty explicitly as a time interval</strong>; with it, Spanner gives every transaction a <strong>global timestamp</strong> that respects real-time ordering, enabling strongly consistent read-write transactions and lock-free snapshot reads over data replicated across continents, and powering Google's advertising backend F1.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Transaction</strong>: a group of operations that all succeed or all get undone (e.g. "debit A, credit B" must not do only half).</li>
+<li><strong>Distributed database / sharding</strong>: the data is too big, so it is split into many pieces spread over many machines.</li>
+<li><strong>Replication / replica</strong>: the same piece of data is stored several times on different machines or data centers, so losing one doesn't lose the data and service continues.</li>
+<li><strong>Paxos / consensus</strong>: an algorithm by which a group of replicas votes to agree on "what to write next"; a majority agreeing makes it final (its productionization was covered in the Chubby paper).</li>
+<li><strong>Two-phase commit (2PC)</strong>: the classic protocol for a transaction spanning machines to either all commit or all roll back — first "are you all prepared?", then "commit together."</li>
+<li><strong>Strong consistency / linearizability</strong>: the system behaves as if there were a single copy of the data with all operations in one total order; a read always sees the latest, sensible state.</li>
+<li><strong>Multi-version (MVCC) / snapshot read</strong>: every write carries a timestamp and old values are kept, not overwritten; given a timestamp you can read the historical snapshot "as of that instant."</li>
+<li><strong>Clock drift / NTP</strong>: every machine's quartz clock runs a little fast or slow; NTP is common network time sync, but its error can reach tens to hundreds of milliseconds with no hard upper bound.</li>
+<li><strong>GPS / atomic clock</strong>: two kinds of high-precision time sources; GPS gets time from satellites, atomic clocks keep time from atomic oscillation — they fail in different ways and can back each other up.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The authors are James Corbett, Jeffrey Dean, Wilson Hsieh and a large team at Google; the paper appeared at <strong>OSDI 2012</strong> (best paper). It builds on Bigtable (2006) and Megastore, stores its data on <strong>Colossus</strong> (the successor to GFS), and keeps replicas consistent via <strong>Paxos</strong> (Lamport). Downstream it powered Google's ad backend <strong>F1</strong> and the commercial Google Cloud Spanner, and inspired a whole generation of "NewSQL / global databases" — CockroachDB, YugabyteDB, TiDB.</p>
+<h2>The problem &amp; motivation</h2>
+<p>Bigtable was useful but only guaranteed <strong>single-row</strong> atomicity; transactions across rows or tables were left for the application to shoulder — painful to write. Megastore added synchronous replication and transactions but had <strong>low write throughput</strong>. The field near-universally believed "global replication" and "strongly consistent transactions" could not coexist — partly the CAP tradeoff, but more fundamentally a <strong>time problem</strong>.</p>
+<p>To make machines scattered across continents agree on "which event came first," you need a <strong>time reference everyone trusts</strong>. But physical clocks always drift, and NTP's error can reach <strong>tens to hundreds of milliseconds with no reliable upper bound</strong> — you get a timestamp but don't know how far off it is. <strong>Without trustworthy time, you can't order transactions by timestamp, and so you can't build cross-data-center strong consistency.</strong> Prior systems dodged this: either give up global transactions, or lock the data into one region. Spanner chose to tackle it head-on.</p>
+<h2>Core idea &amp; method</h2>
+<h3>TrueTime: say "I'm not sure" out loud</h3>
+<p>A traditional clock API returns a <strong>point in time</strong> and says nothing about its error — the root of all evil. TrueTime inverts this: <code>TT.now()</code> returns an <strong>interval</strong> <code>[earliest, latest]</code> and <strong>guarantees the true time lies within it</strong>. Half the interval's width is called ε (epsilon), the "uncertainty right now."</p>
+<p>Where does that guarantee come from? Each data center runs a set of time masters calibrated by two <em>different-failure-mode</em> sources — <strong>GPS receivers</strong> and <strong>atomic clocks</strong> (a GPS antenna can fail, an atomic clock can slowly drift, but they rarely fail together) — plus a known <strong>upper bound on local quartz drift</strong>, from which ε is computed. In practice ε is just <strong>a few milliseconds</strong> (roughly 1–7 ms, averaging about 4 ms). The point is not to <em>eliminate</em> error — that's impossible — but to <strong>quantify it and hand it to the system to deal with</strong>. TrueTime also offers two predicates: <code>TT.after(t)</code> (has t definitely become the past?) and <code>TT.before(t)</code>.</p>
+<h3>External consistency + commit wait: wait a beat</h3>
+<p>Spanner's strongest promise is <strong>external consistency</strong> (transaction-level linearizability): if transaction T1 commits <strong>before</strong> T2 in real time, then <strong>T1's timestamp &lt; T2's timestamp</strong> — the order the world sees matches the order things actually happened.</p>
+<p>How is that enforced? At commit the coordinator picks a timestamp <code>s = TT.now().latest</code> (the upper end of the interval, erring large), then <strong>deliberately waits until <code>TT.after(s)</code> is true</strong> — until even the most conservative clock confirms "s is now in the past" — before releasing locks and making the write visible. That step is <strong>commit wait</strong>, roughly twice the uncertainty (<code>≈ 2ε</code>, on the order of 10 ms). <strong>This wait guarantees any transaction that starts later reads a TrueTime already past s, so it must get a larger timestamp.</strong> In other words, Spanner doesn't pretend clocks are perfect — it honestly <strong>waits the uncertainty out</strong>.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="sp1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#d9dee5" font-size="12.5" font-weight="700" x="40" y="34">1. TT.now() returns an interval; true time is inside it</text>
+<line stroke="#f0b429" stroke-width="2" x1="150" x2="150" y1="52" y2="86"></line>
+<line stroke="#f0b429" stroke-width="2" x1="410" x2="410" y1="52" y2="86"></line>
+<line stroke="#f0b429" stroke-width="2" x1="150" x2="410" y1="69" y2="69"></line>
+<circle cx="300" cy="69" fill="#e8794b" r="4.5"></circle>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="150" y="102">earliest</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="410" y="102">latest</text>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="300" y="58">true time</text>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="280" y="102">←—— 2ε ——→</text>
+<text fill="#d9dee5" font-size="12.5" font-weight="700" x="40" y="150">2. commit wait: after stamping, wait out the error</text>
+<line marker-end="url(#sp1)" stroke="#7c8593" x1="70" x2="520" y1="205" y2="205"></line>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="516" y="223">real time →</text>
+<line stroke="#f0b429" stroke-width="1.6" x1="150" x2="150" y1="178" y2="205"></line>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="150" y="172">stamp s</text>
+<rect fill="rgba(240,180,41,0.14)" height="27" x="150" y="178" width="180"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="240" y="196">commit wait ≈ 2ε</text>
+<line stroke="#e8794b" stroke-width="1.6" x1="330" x2="330" y1="178" y2="205"></line>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="330" y="172">TT.after(s) true</text>
+<text fill="#b9c0ca" font-size="10.5" x="342" y="192">→ release, commit</text>
+<text fill="#7c8593" font-size="10.5" x="342" y="205">later txns: stamp &gt; s</text>
+</svg>
+<figcaption>Fig 1 · TrueTime exposes uncertainty as an interval [earliest, latest] (half-width ε); at commit it picks s=latest and waits until TT.after(s), and that commit wait (≈2ε) guarantees a later real-time transaction gets a larger timestamp.</figcaption>
+</figure>
+<h3>Architecture: Paxos groups + directories</h3>
+<p>A Spanner deployment is a <strong>universe</strong>, divided into <strong>zones</strong> (roughly a data center, the unit of physical isolation and deployment). Data is sliced into <strong>tablets</strong> (multi-version <code>(key, timestamp) → value</code> maps, stored on Colossus). The several replicas of each tablet, sitting in different zones, form a <strong>Paxos group</strong> with an elected leader: every write is replicated through Paxos to a majority of replicas, and losing a minority still keeps service alive. A batch of <strong>contiguous keys sharing a prefix</strong> forms a <strong>directory</strong> — the smallest unit of data placement and cross-group movement.</p>
+<h3>Cross-group transactions: 2PC on top of Paxos</h3>
+<p>A transaction within one Paxos group is easy; one spanning multiple groups is coordinated by <strong>two-phase commit (2PC)</strong>. The Achilles' heel of classic 2PC is that <strong>if the coordinator crashes, participants get stuck and can't release their locks</strong>. Spanner's cleverness: <strong>every participant in the 2PC — and the coordinator itself — is a Paxos group</strong>. Any single-node crash is automatically covered by that group electing a new leader. So the 2PC no longer has a single point of failure and won't block forever. Read-write transactions use <strong>two-phase locking (2PL)</strong> for concurrency control (pessimistic locking).</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="280" y="26">One txn across two shards: 2PC coordinates, each participant is a Paxos group</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="147" y="54">Zone A</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="54">Zone B</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="413" y="54">Zone C</text>
+<line stroke="rgba(124,133,147,0.25)" stroke-dasharray="3 4" x1="213" x2="213" y1="40" y2="300"></line>
+<line stroke="rgba(124,133,147,0.25)" stroke-dasharray="3 4" x1="347" x2="347" y1="40" y2="300"></line>
+<text fill="#f0b429" font-size="11" x="34" y="112">Paxos group 1</text>
+<text fill="#7c8593" font-size="9.5" x="34" y="126">(shard 1)</text>
+<rect fill="rgba(240,180,41,0.16)" height="30" rx="6" stroke="#f0b429" stroke-width="1.6" width="72" x="111" y="92"></rect>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="147" y="105">replica·leader</text>
+<text fill="#f0b429" font-size="9" text-anchor="middle" x="147" y="117">coordinator</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="244" y="92"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="111">replica</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="377" y="92"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="413" y="111">replica</text>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="183" x2="244" y1="107" y2="107"></line>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="316" x2="377" y1="107" y2="107"></line>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="280" y="84">Paxos replication</text>
+<text fill="#f0b429" font-size="11" x="34" y="232">Paxos group 2</text>
+<text fill="#7c8593" font-size="9.5" x="34" y="246">(shard 2)</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="111" y="212"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="147" y="231">replica</text>
+<rect fill="rgba(232,121,75,0.16)" height="30" rx="6" stroke="#e8794b" stroke-width="1.6" width="72" x="244" y="212"></rect>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="280" y="225">replica·leader</text>
+<text fill="#e8794b" font-size="9" text-anchor="middle" x="280" y="237">participant</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="377" y="212"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="413" y="231">replica</text>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="183" x2="244" y1="227" y2="227"></line>
+<line stroke="#7c8593" stroke-dasharray="2 3" x1="316" x2="377" y1="227" y2="227"></line>
+<line stroke="#f0b429" stroke-width="2" x1="147" x2="280" y1="122" y2="212"></line>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="248" y="170">two-phase</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="243" y="184">commit (2PC)</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="300">single-node crash → group's Paxos re-elects; 2PC has no single point, never blocks forever</text>
+</svg>
+<figcaption>Fig 2 · Each shard's replicas span zones and form a Paxos group; a cross-shard transaction uses 2PC, but the 2PC's coordinator and participants are each a Paxos group, so any single-node crash is absorbed by in-group consensus.</figcaption>
+</figure>
+<h3>Lock-free snapshot reads: the dividend of global timestamps</h3>
+<p>Because every write carries a <strong>globally meaningful timestamp</strong> and old versions are kept (multi-version), <strong>read-only transactions and snapshot reads need no locks at all</strong>: give a timestamp <code>t</code> and you read "the version as of t," and any replica that has "caught up past t" can <strong>serve it locally</strong> — reads don't block writes, writes don't block reads, and reads can be spread to whichever replica is nearest the user. This falls out naturally once TrueTime gives global timestamps real meaning.</p>
+<h2>Key results</h2>
+<ul>
+<li><strong>TrueTime measured</strong>: ε is typically a few milliseconds (about 1–7 ms, averaging ~4 ms), and commit wait averages ~2ε; most of ε comes from local quartz drift and sawtooths with the time-sync interval.</li>
+<li><strong>In production</strong>: Spanner runs <strong>F1</strong> — Google's advertising backend — migrated off a sharded MySQL, precisely for <strong>cross-continent strong consistency + SQL</strong>.</li>
+<li><strong>Scale</strong>: the paper's target/deployment scale is on the order of <strong>millions of machines, hundreds of data centers, trillions of rows</strong>.</li>
+<li><strong>Capabilities</strong>: externally-consistent read-write transactions, lock-free read-only transactions, and snapshot reads; the data model is a schematized <strong>semi-relational table</strong>, with a SQL-like query language and hierarchical "interleaved" tables (parent and child rows physically clustered by directory).</li>
+</ul>
+<h2>Why it matters / impact</h2>
+<p>Spanner broke the dogma that "<strong>global distribution vs. strongly consistent transactions is a forced choice</strong>," showing that <strong>one API that states clock uncertainty honestly is enough to do externally-consistent transactions at global scale</strong>. It turned "time" — historically the least reliable thing in distributed systems — into a <strong>first-class citizen</strong> you can use to order transactions. Engineering-wise it became the core of the commercial Google Cloud Spanner; intellectually it ignited the whole <strong>NewSQL / global-database</strong> generation (CockroachDB, YugabyteDB, TiDB), though most of those followers, lacking atomic clocks, approximate TrueTime with looser clock bounds or <strong>hybrid logical clocks (HLC)</strong>.</p>
+<h2>Limitations &amp; criticisms</h2>
+<ul>
+<li><strong>A floor on write latency</strong>: commit wait makes every read-write transaction wait at least ~2ε (order of 10 ms); the larger ε is, the longer the wait, so the whole scheme's value hinges on <strong>keeping ε tiny</strong> — which is why it can't do without good hardware.</li>
+<li><strong>Special hardware required</strong>: every data center needs GPS receivers and atomic clocks, which ordinary teams can't stand up. External re-implementations (e.g. CockroachDB) fall back to NTP + hybrid logical clocks, trading <strong>weaker time guarantees or larger uncertainty</strong> for feasibility.</li>
+<li><strong>2PC's cost remains</strong>: cross-group transactions still run 2PC + Paxos, with real latency and complexity; under high contention, 2PL pessimistic locks also drag throughput.</li>
+<li><strong>The CAP tradeoff</strong>: under a network partition Spanner chooses consistency and sacrifices availability (it is essentially a CP system). Google argues that because its private network is so reliable it is "effectively CA" — a contested framing (Brewer later wrote a note clarifying the boundary).</li>
+<li><strong>SQL was shallow at publication</strong>: the 2012 version's query/SQL capability was limited; the full distributed SQL engine came only with the 2017 follow-up, "Spanner: Becoming a SQL System."</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① One line: Spanner is the first database that is both globally distributed and supports externally-consistent distributed transactions; the key is TrueTime.</p>
+<p>② Pain: under global replication, machine clocks drift and NTP error has no upper bound; without trustworthy time you can't order cross-data-center transactions by timestamp — so "global vs. strong consistency" was deemed impossible together.</p>
+<p>③ Core idea: TrueTime returns not a point but an interval <code>[earliest, latest]</code> guaranteed to contain the true time; ε is the uncertainty, squeezed to a few ms by GPS + atomic clocks.</p>
+<p>④ Ordering mechanism: external consistency = the real-time-earlier committer gets the smaller timestamp; enforced by commit wait — pick <code>s=now().latest</code>, wait until <code>TT.after(s)</code> (~2ε), then release, waiting the uncertainty out.</p>
+<p>⑤ Architecture: data sliced into tablets, replicas across zones form a Paxos group (majority writes); contiguous same-prefix keys form a directory, the placement/movement unit.</p>
+<p>⑥ Cross-group transactions: 2PC on top of Paxos — every participant/coordinator is a Paxos group, so a single-node crash is absorbed by in-group consensus and 2PC never blocks forever.</p>
+<p>⑦ Dividend: global timestamps + multi-version → read-only transactions and snapshot reads are fully lock-free and can read any caught-up, nearby replica.</p>
+<p>⑧ Impact &amp; limits: proved "global + strong consistency" can coexist and spawned NewSQL/global databases; but writes have a ~2ε latency floor, it depends on GPS+atomic clocks, cross-group goes through 2PC, it chooses C over A under partition, and its first SQL was limited.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for the full TrueTime implementation and transaction protocol, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
