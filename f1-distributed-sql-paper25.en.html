@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>F1: A Distributed SQL Database That Scales — CS Papers Deep-Read Paper 25</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 25</p>
+<h1>F1: A Distributed SQL Database That Scales</h1>
+<p class="sub">Shute et al. · Google · VLDB 2013</p>
+<p class="langbar"><a href="f1-distributed-sql-paper25.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2013 a team at Google unveiled <strong>F1</strong> — the database running under <strong>AdWords</strong>, Google's most lucrative product at the time. Its feat was holding two things at once that were long thought mutually exclusive: <strong>scaling out to any size like a big internet system</strong>, while <strong>keeping the full SQL, transactions, and strong consistency of an old-school relational database</strong>. It replaced the hand-sharded, maintenance-nightmare MySQL that AdWords used to run on.</p>
+<h2>The pain of the old world</h2>
+<p>For a couple of decades, anyone building large systems faced a forced choice. On one side, the <strong>classic relational database</strong> (speaks SQL, does transactions, data always adds up) — but once the data outgrows one machine, you must hand-split the tables into many chunks across many machines, after which cross-chunk transactions, cross-chunk queries, and re-splitting are all nightmares. On the other side, <strong>NoSQL</strong> (like Bigtable), born to spread across thousands of machines and scale freely — but at the cost of <strong>losing transactions, losing SQL, and often having data that's only "eventually" consistent</strong>. Google itself had fled from MySQL to NoSQL, and its engineers spent every day missing the good old days.</p>
+<h2>The idea</h2>
+<p>F1's bet is: <strong>you don't have to choose.</strong> First put down a storage layer that is natively scalable and natively strongly consistent — the previous paper's <strong>Spanner</strong> (Google's database that does globally consistent transactions using "honest clocks"). Then, on top of it, lay the relational database's <strong>full SQL, transactions, and indexes back down, untouched</strong>. In other words: hand the hard job of scaling off to Spanner below, and let F1 focus on making the "pleasant database" layer beautiful.</p>
+<h2>How does it pull that off?</h2>
+<p>The catch is in one place: to keep data globally consistent, Spanner has every write cross data centers to take a vote before it's final — which is <strong>slow</strong>: a commit takes tens to over a hundred milliseconds, far slower than a local database. F1 uses three moves to spread that slowness thin:</p>
+<p><strong>One: pack a customer's whole data tree into "the same folder."</strong> An advertiser has many campaigns, each with many ad groups — F1 stores that whole tree <strong>physically next to each other, filed in one slot</strong>. So "fetch this customer's entire record" is one local pickup, and edits happen in place within one slot, no running around the data centers.</p>
+<p><strong>Two: don't lock the data while editing; check at save time.</strong> Like several people editing a shared document: you don't lock it and edit slowly — you read and edit freely, and only <strong>at the moment of "save" do you check whether anyone else touched what you read</strong>. Untouched? Commit. Touched? Redo. So a slow client never holds a lock and jams everyone else.</p>
+<p><strong>Three: since every round-trip is a slow "overseas call," don't ask one question at a time.</strong> F1 has the app <strong>ask many things at once, in batches and in parallel</strong>, cutting the number of trips and making them concurrent to hide each one's slowness. The result: AdWords web pages end up no slower than the old MySQL.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>F1 proved that "scales to any size" and "full SQL + transactions + strong consistency" need not be a forced choice: hand scaling off to Spanner below, focus on rebuilding a pleasant relational database above; then use three moves — file a whole data tree in one slot, don't lock edits but verify at save time, and ask in batches and in parallel — to spread out the slowness of cross-data-center sync. It ran Google's most lucrative business, AdWords.</p>
+</div>
+<p class="switch-hint">Want the architecture diagram, how hierarchical tables are laid out, how optimistic transactions run, and the real latency numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden>
+<h2>In one sentence</h2>
+<p class="lead">F1 is the <strong>distributed relational database</strong> Google built for AdWords: it sits on top of <strong>Spanner</strong>, inheriting Spanner's "horizontally scalable + globally strongly consistent" storage foundation, and re-provides on top of it <strong>full SQL, ACID transactions, and consistent secondary indexes</strong> — squarely overturning the industry assumption that "to scale you must give up SQL and transactions." To swallow the high commit latency of synchronous replication, it uses a <strong>hierarchical schema (physically clustering related data into a tree), Protocol Buffer column types, optimistic transactions, and a batched + parallel client access pattern</strong> to spread the latency thin, and makes <strong>change history</strong> a first-class citizen to keep indexes consistent. It has managed all of AdWords' data in production since early 2012.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Relational database / SQL</strong>: stores data as tables of "rows × columns," queried with the SQL language for reads/writes, joins, and aggregation. The dominant database paradigm for decades.</li>
+<li><strong>Transaction / ACID</strong>: bundles a group of operations as "all or nothing" (e.g., "debit A, credit B" can't half-happen); ACID is the four properties it should satisfy (atomic, consistent, isolated, durable).</li>
+<li><strong>NoSQL</strong>: a class of stores (like Bigtable) built for extreme scale, usually dropping full SQL, cross-row transactions, and strong consistency in exchange for spreading easily across thousands of machines.</li>
+<li><strong>Sharding</strong>: when data outgrows one machine, hand-splitting a table into many chunks across many machines. Cross-chunk queries/transactions and re-splitting are all painful.</li>
+<li><strong>Spanner</strong> (this paper's foundation, see Paper 8): Google's globally distributed database that achieves strong consistency for cross-continent transactions using clocks that honestly report an error interval (TrueTime); data is sliced into <em>directories</em>, each replicated synchronously by a group of replicas via Paxos.</li>
+<li><strong>Paxos / synchronous replication</strong>: keeps copies of a piece of data on several machines (data centers); each write needs a majority of replicas to vote yes before it counts — fault-tolerant but slower.</li>
+<li><strong>Secondary index</strong>: an extra lookup table maintained for "quickly find by some non-key field" (e.g., find a user by email). It must be updated in step with the data.</li>
+<li><strong>OLTP</strong>: a workload of many short, concurrent online read/write transactions (like the reads/writes behind each website click), sensitive to latency and consistency.</li>
+<li><strong>Protocol Buffer (protobuf)</strong>: Google's structured data format that can express nested objects and "repeated fields" (one field holding a list of values); Google's applications pervasively use it to move data.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Jeff Shute and a large team of Google engineers; the paper appeared at <strong>VLDB 2013</strong>. It builds on Google's own <strong>Spanner</strong> (2012, which provides strongly consistent, scalable storage and transactions) — F1 is the <strong>SQL layer</strong> laid on top of Spanner. What it replaced was the <strong>hand-sharded MySQL</strong> under AdWords (a single re-sharding took a large team on the order of two years). It is also a landmark of the <strong>NewSQL</strong> wave: alongside contemporaneous Google Spanner, and the later CockroachDB, TiDB, and others, it answers the same question — can you have scale <em>and</em> SQL and transactions?</p>
+<h2>The problem and the motivation</h2>
+<p>In the 2000s, builders of large systems were forced into a choice. <strong>Traditional relational databases</strong> give you SQL, transactions, and strong consistency, but don't scale: past one machine you hand-shard, and cross-shard transactions, cross-shard JOINs, and <em>re-sharding</em> as the business grows become huge operational burdens. Google's AdWords was stuck exactly here — running on a manually partitioned MySQL where <strong>a single re-sharding mobilized a team for roughly two years</strong>.</p>
+<p>The other road is <strong>NoSQL</strong> (Google's own Bigtable being the exemplar): natively spreads across thousands of machines and scales freely, but at the cost of <strong>giving up cross-row transactions, giving up SQL, and offering only eventual consistency</strong>. Application developers who fled to NoSQL had to stitch transactions together themselves, keep indexes consistent themselves, and write query logic themselves — carrying on their own backs the dirty work the database should be doing.</p>
+<p>F1's motivation is precisely this: <strong>the forced choice is false.</strong> As long as the lower layer can provide "scalable + strongly consistent" storage, you can reinstall the most valuable parts of a relational database (SQL, transactions, indexes) on top. And Google happened to have exactly such a lower layer — Spanner. The authors explicitly list four goals that must hold together: <strong>scalability, availability, consistency, and usability</strong> — with special emphasis on "usability," so that hundreds of engineers could smoothly migrate AdWords onto it.</p>
+<h2>The core idea</h2>
+<h3>The skeleton: hand "scaling" to Spanner, focus on being the SQL layer</h3>
+<p>F1's first design philosophy is <strong>division of labor</strong>. The hardest job — horizontal scaling + strongly consistent cross-data-center replication — goes to <strong>Spanner</strong> below: data is sliced into <em>directories</em>, each replicated synchronously by a group of replicas (typically 5, across data centers) via Paxos. F1 itself is a <strong>largely stateless</strong> SQL engine: a client can connect to any F1 server, the server holds almost no data, so servers can be added or removed freely and scaled on demand. Large queries are handed to an <strong>F1 slave pool</strong> (a pool of distributed query workers) for parallel execution.</p>
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="150" y="16" width="260" height="34" rx="7" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><text x="280" y="38" fill="#e7ebf1" font-size="13" text-anchor="middle">Clients / application (AdWords)</text>
+<line x1="280" y1="50" x2="280" y2="70" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="60" y="72" width="440" height="58" rx="8" fill="rgba(255,255,255,0.02)" stroke="#f0b429" stroke-dasharray="4 3"/>
+<text x="280" y="90" fill="#f0b429" font-size="11.5" text-anchor="middle">F1 layer (largely stateless · add/remove freely)</text>
+<rect x="80" y="98" width="90" height="24" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="125" y="114" fill="#e7ebf1" font-size="11" text-anchor="middle">F1 server</text>
+<rect x="180" y="98" width="90" height="24" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="225" y="114" fill="#e7ebf1" font-size="11" text-anchor="middle">F1 server</text>
+<rect x="300" y="98" width="180" height="24" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="390" y="114" fill="#e7ebf1" font-size="11" text-anchor="middle">F1 slave pool (parallel queries)</text>
+<line x1="280" y1="130" x2="280" y2="150" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="60" y="152" width="440" height="150" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
+<text x="280" y="170" fill="#f0b429" font-size="11.5" text-anchor="middle">Spanner storage (sliced into "directories" · each Paxos-replicated)</text>
+<g>
+<rect x="78" y="182" width="130" height="106" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="143" y="200" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Data center A</text>
+<rect x="215" y="182" width="130" height="106" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="280" y="200" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Data center B</text>
+<rect x="352" y="182" width="130" height="106" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="417" y="200" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Data center C</text>
+</g>
+<rect x="92" y="214" width="102" height="20" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="143" y="228" fill="#e7ebf1" font-size="10" text-anchor="middle">replica</text>
+<rect x="229" y="214" width="102" height="20" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="280" y="228" fill="#e7ebf1" font-size="10" text-anchor="middle">replica</text>
+<rect x="366" y="214" width="102" height="20" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="417" y="228" fill="#e7ebf1" font-size="10" text-anchor="middle">replica</text>
+<line x1="194" y1="224" x2="229" y2="224" stroke="#e8794b" stroke-width="1.4"/>
+<line x1="331" y1="224" x2="366" y2="224" stroke="#e8794b" stroke-width="1.4"/>
+<text x="280" y="252" fill="#7c8593" font-size="10" text-anchor="middle">↑ replicas of one slice · Paxos majority vote → consistent but slower per commit</text>
+<text x="280" y="278" fill="#7c8593" font-size="10" text-anchor="middle">Scale out = add machines, slice more; F1 and app don't notice</text>
+</svg>
+<figcaption>Fig 1 · F1's layering: a stateless SQL engine on top, Spanner's scalable, strongly consistent storage below — the "scaling" problem is handed off to the foundation.</figcaption>
+</figure>
+<h3>Hierarchical schema: cluster related data into a tree, stored physically adjacent</h3>
+<p>This is F1's most crucial design, and it directly decides whether it can survive the latency. In the traditional relational model each table is independent and physically scattered; F1 lets you declare tables in a <strong>parent–child hierarchy</strong>: a child table's primary key is <strong>prefixed by the parent's primary key</strong>, so a parent row and all its descendant rows are <strong>physically clustered and interleaved together</strong>, filed into one Spanner directory — i.e., one Paxos group.</p>
+<p>Take AdWords: <code>Customer → Campaign → AdGroup</code>. A customer's whole data tree lands in <strong>one slot</strong>. The payoff is decisive: <strong>fetching a customer's entire record is one local read</strong> (no scrounging across groups), and <strong>modifying data within that tree is one single-group local transaction</strong> (no need to launch an expensive cross-group distributed commit). Because in real business almost all transactions happen to be scoped to "one customer," this single step turns most writes into cheap local operations.</p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="150" y="24" fill="#7c8593" font-size="11.5" text-anchor="middle">Traditional: tables stored apart</text>
+<rect x="60" y="36" width="180" height="26" rx="5" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="150" y="53" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Customer table …</text>
+<rect x="60" y="70" width="180" height="26" rx="5" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="150" y="87" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Campaign table …</text>
+<rect x="60" y="104" width="180" height="26" rx="5" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="150" y="121" fill="#b9c0ca" font-size="10.5" text-anchor="middle">AdGroup table …</text>
+<text x="150" y="156" fill="#7c8593" font-size="10" text-anchor="middle">Fetch one customer's tree → scrounge across tables/groups</text>
+<line x1="270" y1="30" x2="270" y2="150" stroke="#7c8593" stroke-dasharray="3 3"/>
+<text x="415" y="24" fill="#f0b429" font-size="11.5" text-anchor="middle">F1: whole tree clustered in one slot</text>
+<rect x="300" y="34" width="230" height="200" rx="8" fill="rgba(240,180,41,0.05)" stroke="#f0b429"/>
+<text x="415" y="50" fill="#f0b429" font-size="10" text-anchor="middle">one Spanner directory / Paxos group</text>
+<rect x="316" y="58" width="198" height="22" rx="4" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="326" y="73" fill="#e7ebf1" font-size="10.5" text-anchor="start">Customer 88</text>
+<rect x="336" y="84" width="178" height="20" rx="4" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="346" y="98" fill="#e7ebf1" font-size="10" text-anchor="start">└ Campaign 88.1</text>
+<rect x="356" y="107" width="158" height="18" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="366" y="120" fill="#b9c0ca" font-size="9.5" text-anchor="start">└ AdGroup 88.1.a</text>
+<rect x="356" y="128" width="158" height="18" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="366" y="141" fill="#b9c0ca" font-size="9.5" text-anchor="start">└ AdGroup 88.1.b</text>
+<rect x="336" y="150" width="178" height="20" rx="4" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="346" y="164" fill="#e7ebf1" font-size="10" text-anchor="start">└ Campaign 88.2</text>
+<rect x="356" y="173" width="158" height="18" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="366" y="186" fill="#b9c0ca" font-size="9.5" text-anchor="start">└ AdGroup 88.2.a</text>
+<text x="415" y="212" fill="#7c8593" font-size="9.5" text-anchor="middle">one local read for the whole tree</text>
+<text x="415" y="226" fill="#7c8593" font-size="9.5" text-anchor="middle">edits inside = single-group local txn (cheap)</text>
+</svg>
+<figcaption>Fig 2 · Hierarchical schema: child keys are prefixed by parent keys, so parent/child rows are physically interleaved into a tree in one Paxos group; a customer's reads and writes mostly complete locally in one slot.</figcaption>
+</figure>
+<h3>Protobuf columns: pack "one-to-many" into a row, join less</h3>
+<p>F1 columns store more than numbers and strings — they can directly hold <strong>Protocol Buffer</strong> objects, including <strong>repeated fields</strong> (one field holding a list of values). This means many one-to-many relationships that would otherwise be split into child tables and JOINed at query time can be embedded directly into a protobuf column on the parent row — <strong>fewer tables to build, fewer JOINs</strong>. And since Google's application code already uses protobufs to move data, having the database natively understand protobufs <strong>erases the impedance mismatch between objects and relational tables</strong>, for a smoother developer experience.</p>
+<h3>Living with latency: optimistic transactions + batched parallel reads</h3>
+<p>The cost can't be dodged: Spanner's synchronous replication makes <strong>a commit cross data centers for a vote, at roughly 50–150 ms</strong> (reads about 5–10 ms). F1 defuses this two ways.</p>
+<p>First is the <strong>optimistic transaction</strong>, also the default mode. It runs in two parts: a <strong>read phase</strong> that can run arbitrarily long, <strong>takes no locks</strong>, and merely records the "last-modified timestamp" of every row it reads; then a <strong>very short write phase</strong> that packages the intended writes and, before committing, <strong>re-checks whether those timestamps changed</strong> — unchanged, it commits; changed (someone modified it first), it aborts and retries. The analogy is several people co-editing a shared document: don't lock it, just at save time check "was what I read touched by anyone." A string of benefits follows: a slow or crashed client never holds a lock jamming others; retries are idempotent and easy to implement server-side; it pairs naturally with the stateless F1 servers. (There are also <em>snapshot transactions</em> for consistent read-only snapshots, and <em>pessimistic transactions</em> that use Spanner's locking transactions directly, chosen as needed.)</p>
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="40" y1="150" x2="524" y2="150" stroke="#7c8593"/>
+<text x="524" y="168" fill="#7c8593" font-size="10.5" text-anchor="end">time →</text>
+<rect x="60" y="60" width="280" height="34" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="200" y="82" fill="#e7ebf1" font-size="12" text-anchor="middle">Read phase: no locks, arbitrarily long</text>
+<text x="200" y="112" fill="#7c8593" font-size="10" text-anchor="middle">record each row's "last-modified timestamp"</text>
+<rect x="352" y="60" width="150" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="427" y="76" fill="#e7ebf1" font-size="11" text-anchor="middle">Write phase (short)</text>
+<text x="427" y="90" fill="#e7ebf1" font-size="10" text-anchor="middle">re-check timestamps</text>
+<text x="427" y="112" fill="#7c8593" font-size="9.5" text-anchor="middle">unchanged→commit / changed→abort+retry</text>
+<line x1="60" y1="150" x2="60" y2="56" stroke="#7c8593" stroke-dasharray="2 2"/>
+<line x1="340" y1="150" x2="340" y2="56" stroke="#7c8593" stroke-dasharray="2 2"/>
+<line x1="502" y1="150" x2="502" y2="56" stroke="#7c8593" stroke-dasharray="2 2"/>
+<text x="200" y="176" fill="#7c8593" font-size="9.5" text-anchor="middle">lock-free throughout</text>
+<text x="427" y="176" fill="#7c8593" font-size="9.5" text-anchor="middle">only this part enters a Spanner locking txn</text>
+</svg>
+<figcaption>Fig 3 · Optimistic transaction: the long read phase takes no locks and only records timestamps; at commit, if a row it read was modified it aborts — like a shared doc that "checks at save time whether anyone touched it."</figcaption>
+</figure>
+<p>Second is <strong>reshaping the application's access pattern</strong>. Since every access is like a slow overseas call, don't ask one serial question at a time: F1 encourages the app to issue reads <strong>in batches and in parallel</strong>, offsetting each call's slowness with "fewer trips, concurrent trips." Combined with the hierarchical schema (read back a whole tree at once), after AdWords migrated to F1 the <strong>end-to-end web latency was actually comparable to the old MySQL, and some pages were faster</strong> — individual operations are slower, but parallelism went up.</p>
+<h3>Consistent indexes and change history</h3>
+<p>Indexes come in two physical forms: a <strong>local index</strong> lives in the same directory as the rows it indexes and is updated within the row's own transaction — cheap; a <strong>global index</strong> spans many directories and is sharded independently, so updating it requires launching a <strong>cross-group distributed transaction</strong> — expensive, which is why F1 limits how many global-index entries one transaction may change. Both kinds are <strong>maintained in step with the transaction and kept consistent</strong> — precisely the work NoSQL foists on the application layer and F1 shoulders for you. F1 also makes <strong>change history a first-class citizen</strong>: every transaction writes its modifications as change records in the same commit, and downstream consumers can subscribe to those changes to incrementally maintain indexes, invalidate caches, or sync to other systems — a built-in, consistent "change data capture."</p>
+<h2>Key results</h2>
+<p>The most convincing result is that <strong>it actually runs Google's most lucrative business</strong>: F1 has managed <strong>all</strong> of AdWords' data in production since early 2012, replacing the previously hand-sharded MySQL, at a scale of <strong>hundreds of terabytes</strong> under a sustained, high-concurrency OLTP load. On performance, the paper is honest with numbers: thanks to synchronous replication, <strong>commit latency is roughly 50–150 ms</strong>, clearly higher than a single-machine database; yet via the hierarchical schema, optimistic transactions, and batched parallel reads, <strong>AdWords' user-visible latency is comparable to the old system</strong>. On availability, resting on Spanner's multiple replicas (typically 5, across data centers), the system can <strong>survive an entire data center going offline with no data loss and almost no interruption</strong>. On scalability, adding machines scales it out — an end to "re-sharding measured in years."</p>
+<h2>Why it mattered</h2>
+<p>Together with Spanner, F1 pulled the industry out of the fate that "to scale you must give up SQL and transactions," <strong>proving in practice that "scalable" and "strongly consistent + full SQL + transactions" can coexist</strong> — as long as you're willing to pay a little latency for consistency and engineer it away. It is a banner of the <strong>NewSQL</strong> wave, directly inspiring and validating a later crop of distributed SQL databases (CockroachDB, TiDB, YugabyteDB, etc.) that follow the same recipe: scalable, strongly consistent storage below, SQL recast above. Several concrete engineering moves it demonstrated — <strong>hierarchical clustering for data locality, optimistic transactions against high latency and misbehaving clients, and built-in change history to keep indexes consistent</strong> — became patterns that later systems borrowed again and again. For Google itself, it was a successful live transplant of its most core business's data foundation.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Commit latency is inherently high</strong>: synchronous cross-data-center replication makes a single commit 50–150 ms, an order of magnitude slower than a single-machine database. F1 spreads it thin via schema, optimistic transactions, and application reshaping — but this <strong>requires the application to be rewritten</strong> (batching, parallelism, tolerating latency); you can't lift-and-shift an old app onto it unchanged.</li>
+<li><strong>Higher resource cost</strong>: to reach the same goal, F1 consumes more CPU and other resources than the original MySQL — strong consistency and scalability aren't free.</li>
+<li><strong>Global indexes are expensive</strong>: cross-directory global-index updates need distributed transactions, so write-heavy, wide-spanning workloads are constrained; it only pays off if the schema keeps operations within a single hierarchy tree, which places demands on modeling.</li>
+<li><strong>Optimistic transactions lose under high contention</strong>: when a hot row is modified concurrently over and over, optimistic transactions abort and retry frequently and throughput drops; there you fall back to pessimistic (locking) transactions or finer-grained conflict tracking.</li>
+<li><strong>Heavy dependence on Spanner</strong>: F1's consistency, availability, and scalability rest almost entirely on Spanner — which in turn depends on TrueTime's specialized GPS + atomic-clock timing infrastructure, Google's own family silver that isn't easily reproduced elsewhere.</li>
+</ul>
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: F1 sits on Spanner, re-fitting a "scalable + strongly consistent" storage foundation with full SQL, ACID transactions, and consistent indexes — and ran AdWords.</p>
+<p>② The pain: you used to have to choose — relational DBs have SQL/transactions but don't scale (hand-sharding, re-sharding measured in years), NoSQL scales but loses transactions, SQL, and strong consistency.</p>
+<p>③ Skeleton: hand "scaling" to Spanner; F1 is a largely stateless, freely scalable SQL engine; large queries go to a slave pool to run in parallel.</p>
+<p>④ Hierarchical schema: child keys prefixed by parent keys, so parent/child rows cluster physically into a tree in one Paxos group → one local read for the whole tree, single-group local transactions for edits within it.</p>
+<p>⑤ Protobuf columns: embed one-to-many relationships into a row, building fewer tables and doing fewer JOINs, and erasing the object–relational impedance mismatch.</p>
+<p>⑥ Latency defense: optimistic transactions by default (read without locks, only record timestamps, verify at commit whether anything was modified), plus a batched + parallel client access pattern; change history as a first-class citizen keeps indexes consistent.</p>
+<p>⑦ Results: runs all of AdWords' data in production (hundreds of TB); commit latency 50–150 ms but user-visible latency comparable to the old system; survives a data center going offline with no data loss.</p>
+<p>⑧ Limits: commit latency is inherently high and needs the app rewritten; higher resource cost; global indexes and optimistic transactions under high contention are constrained; heavy dependence on Spanner and TrueTime.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full system details and experiments, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
