@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>F1: A Distributed SQL Database That Scales — IT 论文精读 Paper 25</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 25</p>
-<h1>F1：能扩展的分布式 SQL 数据库</h1>
+<h1 data-tts="ba790b4b7b4b5103">F1：能扩展的分布式 SQL 数据库</h1>
 <p class="sub">Shute 等 · Google · VLDB 2013</p>
 <p class="langbar"><a href="f1-distributed-sql-paper25.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,27 +44,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="8a8c3c6d3506a8f2">这篇论文干了什么？</h2>
 <p>2013 年，Google 一队工程师公开了 <strong>F1</strong>——一个撑着 <strong>AdWords 广告业务</strong>（Google 当时最赚钱的产品）跑的数据库。它厉害在同时拿到了两样过去被认为不能兼得的东西：<strong>像大互联网系统那样能无限扩容</strong>，又<strong>保留了老式关系数据库的完整 SQL、事务和强一致</strong>。它取代了 AdWords 底下那套手工拆分、维护到令人崩溃的 MySQL。</p>
-<h2>旧世界的痛</h2>
+<h2 data-tts="1988557a0e70ffb6">旧世界的痛</h2>
 <p>过去十几年，做大系统的人被逼着做一道二选一。一边是<strong>老牌关系数据库</strong>（会 SQL、能开事务、数据永远对得上），可一旦数据大到一台机器装不下，就得手工把表「切成很多块」摊到很多机器上——切完之后跨块的事务、跨块的查询、再切一次，全都是噩梦。另一边是新兴的 <strong>NoSQL</strong>（像 Bigtable），天生能摊到几千台机器、随便扩，可代价是<strong>丢掉了事务、丢掉了 SQL、数据还常常「暂时对不上」</strong>。Google 自己就是从 MySQL 逃到 NoSQL 的，工程师们逃过去之后天天怀念以前的好日子。</p>
-<h2>那个点子</h2>
+<h2 data-tts="b049548fcfbfc860">那个点子</h2>
 <p>F1 的赌注是：<strong>不用二选一。</strong>底下先垫一个天生就能扩、又天生强一致的存储层——上一篇讲过的 <strong>Spanner</strong>（Google 那个用「诚实的时钟」做全球一致事务的数据库）；然后在它之上，把关系数据库那套<strong>完整 SQL、事务、索引原封不动地盖回来</strong>。换句话说：把扩容这件难事甩给下面的 Spanner 扛，F1 自己专心把「好用的数据库」这层做漂亮。</p>
-<h2>怎么做到的？</h2>
+<h2 data-tts="e69271bd65358fb9">怎么做到的？</h2>
 <p>难点在一处：Spanner 为了让全球的数据永远一致，每次写入都要跨机房投票拍板，<strong>慢</strong>——一次提交要几十到上百毫秒，比本地数据库慢一大截。F1 用三招把这份慢摊平：</p>
 <p><strong>一、把一家客户的整棵数据装进「同一个文件夹」。</strong>一个广告主，底下有很多广告系列，每个系列又有很多广告组——F1 让这一整棵树在磁盘上<strong>物理挨着放、归到同一格</strong>。于是「取出这个客户的全部资料」是一次本地取件，改动也在一格里就地完成，不用满机房乱跑。</p>
 <p><strong>二、改数据不上锁，保存时再核对。</strong>就像多人编辑一份共享文档：你不锁住它慢慢改，而是先随便读、随便改，<strong>到「保存」那一刻才检查一下——这些内容有没有被别人动过？</strong>没动就落盘，动了就重来。这样慢吞吞的客户端不会一直占着锁堵住别人。</p>
 <p><strong>三、既然每次问答都是慢速的「越洋电话」，就别一句一句地问。</strong>F1 把应用改成<strong>一次批量多问、能并行的同时问</strong>，用问的次数变少、变并行，把每次的慢摊薄。结果 AdWords 网页整体反而不比老 MySQL 慢。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="44746c8fe86b200f">一句话记住</h2>
 <div class="tl">
 <p>F1 证明了「能无限扩容」和「有完整 SQL＋事务＋强一致」不必二选一：把扩容甩给底下的 Spanner，自己专心盖回好用的关系数据库；再用「整棵数据归一格、改动不上锁只在保存时核对、批量并行地问」这三招，把跨机房同步带来的慢摊平。它撑起了 Google 最赚钱的 AdWords。</p>
 </div>
 <p class="switch-hint">想看架构图、层级表怎么摆、乐观事务怎么跑，以及真实延迟数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="42c2c5de78855ccc">一句话</h2>
 <p class="lead">F1 是 Google 为 AdWords 打造的<strong>分布式关系数据库</strong>：它建在 <strong>Spanner</strong> 之上，既继承了 Spanner「能水平扩展 + 全球强一致」的存储底座，又在其上重新提供了<strong>完整 SQL、ACID 事务、一致的二级索引</strong>——正面推翻了「要扩展就必须放弃 SQL 与事务」的行业成见。为吞下同步复制带来的高提交延迟，它用<strong>层级式 schema（把相关数据物理聚簇成一棵树）、Protocol Buffer 列类型、乐观事务、以及批量+并行的客户端访问模式</strong>把延迟摊平，并把<strong>变更历史</strong>做成一等公民来维护一致索引。它自 2012 年起在生产环境管理着 AdWords 的全部数据。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="1a2d662a92da42b5">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>关系数据库 / SQL</strong>：把数据存成一张张「行×列」的表，用 SQL 这门查询语言做增删改查、连表（JOIN）与聚合。几十年来的主流数据库范式。</li>
@@ -77,100 +78,100 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Protocol Buffer（protobuf）</strong>：Google 的结构化数据格式，能表达嵌套对象与「可重复字段」（一个字段装一串值）；Google 的应用普遍用它传数据。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="17f51ba56a4af90c">坐标</h2>
 <p>作者是 Jeff Shute 等一大队 Google 工程师，论文发在 <strong>VLDB 2013</strong>。它上承 Google 自家的 <strong>Spanner</strong>（2012，提供强一致、可扩展的存储与事务）——F1 是盖在 Spanner 上的 <strong>SQL 层</strong>；它要替换的是 AdWords 底下那套<strong>手工分片的 MySQL</strong>（一次重新分片耗时以年计、动用大批人力）。它也是「<strong>NewSQL</strong>」浪潮的标志性系统之一：与它同时代的 Google Spanner、以及后来的 CockroachDB、TiDB 等，都在回答同一个问题——能不能既要扩展、又要 SQL 和事务。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="7a6208858555b68b">问题与动机</h2>
 <p>2000 年代，做大规模系统的人被逼进一道二选一。<strong>传统关系数据库</strong>给你 SQL、事务、强一致，但扩不动：数据超过单机就得手工分片，之后跨分片的事务、跨分片的 JOIN、以及业务增长后的<em>再分片</em>，都是巨大的运维负担。Google 的 AdWords 正卡在这里——它跑在一套人工切分的 MySQL 上，<strong>一次重新分片要动员一个团队、耗时约两年</strong>。</p>
 <p>另一条路是 <strong>NoSQL</strong>（Google 自家的 Bigtable 是代表）：天生能摊到几千台、随便扩，但代价是<strong>放弃了跨行事务、放弃了 SQL、只给最终一致</strong>。逃到 NoSQL 的应用开发者，得在应用层自己拼事务、自己维护索引一致、自己写查询逻辑——把数据库本该干的脏活全背到身上。</p>
 <p>F1 的动机就是：<strong>这道二选一是假的。</strong>只要底层能提供「可扩展 + 强一致」的存储，就能在其上把关系数据库最有价值的东西（SQL、事务、索引）重新装回来。而这样的底层，Google 刚好有了——Spanner。作者明确列出四个必须同时满足的目标：<strong>可扩展、可用、一致、好用</strong>——尤其强调「好用」，因为要让几百个工程师顺手把 AdWords 迁上来。</p>
-<h2>核心思想 / 方法</h2>
-<h3>骨架：把「扩展」甩给 Spanner，自己专心做 SQL 层</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="38143ed86c4e04e9">骨架：把「扩展」甩给 Spanner，自己专心做 SQL 层</h3>
 <p>F1 的第一层设计哲学是<strong>分工</strong>。最难的「水平扩展 + 跨机房强一致复制」交给下面的 <strong>Spanner</strong>：数据按<em>目录</em>切成许多片，每片由一组副本（通常 5 个、跨多机房）用 Paxos 同步复制。F1 自己则是一层<strong>基本无状态</strong>的 SQL 引擎：客户端可以连到任意一台 F1 server，server 本身几乎不存数据，因此可以随意增删、按需扩容。大查询则交给一个 <strong>F1 slave pool</strong>（分布式查询 worker 池）并行执行。</p>
 <figure>
-<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<rect x="150" y="16" width="260" height="34" rx="7" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><text x="280" y="38" fill="#e7ebf1" font-size="13" text-anchor="middle">客户端 / 应用（AdWords）</text>
-<line x1="280" y1="50" x2="280" y2="70" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="60" y="72" width="440" height="58" rx="8" fill="rgba(255,255,255,0.02)" stroke="#f0b429" stroke-dasharray="4 3"/>
-<text x="280" y="90" fill="#f0b429" font-size="11.5" text-anchor="middle">F1 层（基本无状态 · 可随意增删扩容）</text>
-<rect x="80" y="98" width="90" height="24" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="125" y="114" fill="#e7ebf1" font-size="11" text-anchor="middle">F1 server</text>
-<rect x="180" y="98" width="90" height="24" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="225" y="114" fill="#e7ebf1" font-size="11" text-anchor="middle">F1 server</text>
-<rect x="300" y="98" width="180" height="24" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="390" y="114" fill="#e7ebf1" font-size="11" text-anchor="middle">F1 slave pool（并行查询）</text>
-<line x1="280" y1="130" x2="280" y2="150" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="60" y="152" width="440" height="150" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
-<text x="280" y="170" fill="#f0b429" font-size="11.5" text-anchor="middle">Spanner 存储层（数据按「目录」切片 · 每片 Paxos 同步复制）</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 330" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.08)" height="34" rx="7" stroke="#f0b429" width="260" x="150" y="16"></rect><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="280" y="38">客户端 / 应用（AdWords）</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="280" x2="280" y1="50" y2="70"></line>
+<rect fill="rgba(255,255,255,0.02)" height="58" rx="8" stroke="#f0b429" stroke-dasharray="4 3" width="440" x="60" y="72"></rect>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="280" y="90">F1 层（基本无状态 · 可随意增删扩容）</text>
+<rect fill="rgba(240,180,41,0.1)" height="24" rx="5" stroke="#f0b429" width="90" x="80" y="98"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="125" y="114">F1 server</text>
+<rect fill="rgba(240,180,41,0.1)" height="24" rx="5" stroke="#f0b429" width="90" x="180" y="98"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="225" y="114">F1 server</text>
+<rect fill="rgba(232,121,75,0.12)" height="24" rx="5" stroke="#e8794b" width="180" x="300" y="98"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="390" y="114">F1 slave pool（并行查询）</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="280" x2="280" y1="130" y2="150"></line>
+<rect fill="rgba(255,255,255,0.02)" height="150" rx="8" stroke="#7c8593" width="440" x="60" y="152"></rect>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="280" y="170">Spanner 存储层（数据按「目录」切片 · 每片 Paxos 同步复制）</text>
 <g>
-<rect x="78" y="182" width="130" height="106" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="143" y="200" fill="#b9c0ca" font-size="10.5" text-anchor="middle">机房 A</text>
-<rect x="215" y="182" width="130" height="106" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="280" y="200" fill="#b9c0ca" font-size="10.5" text-anchor="middle">机房 B</text>
-<rect x="352" y="182" width="130" height="106" rx="6" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="417" y="200" fill="#b9c0ca" font-size="10.5" text-anchor="middle">机房 C</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="6" stroke="#7c8593" width="130" x="78" y="182"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="143" y="200">机房 A</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="6" stroke="#7c8593" width="130" x="215" y="182"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="200">机房 B</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="6" stroke="#7c8593" width="130" x="352" y="182"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="417" y="200">机房 C</text>
 </g>
-<rect x="92" y="214" width="102" height="20" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="143" y="228" fill="#e7ebf1" font-size="10" text-anchor="middle">副本</text>
-<rect x="229" y="214" width="102" height="20" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="280" y="228" fill="#e7ebf1" font-size="10" text-anchor="middle">副本</text>
-<rect x="366" y="214" width="102" height="20" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="417" y="228" fill="#e7ebf1" font-size="10" text-anchor="middle">副本</text>
-<line x1="194" y1="224" x2="229" y2="224" stroke="#e8794b" stroke-width="1.4"/>
-<line x1="331" y1="224" x2="366" y2="224" stroke="#e8794b" stroke-width="1.4"/>
-<text x="280" y="252" fill="#7c8593" font-size="10" text-anchor="middle">↑ 一片数据的多个副本 · Paxos 多数投票 → 强一致但每次提交较慢</text>
-<text x="280" y="278" fill="#7c8593" font-size="10" text-anchor="middle">扩容 = 加机器多切几片，F1 与应用无感</text>
+<rect fill="rgba(240,180,41,0.1)" height="20" rx="4" stroke="#f0b429" width="102" x="92" y="214"></rect><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="143" y="228">副本</text>
+<rect fill="rgba(240,180,41,0.1)" height="20" rx="4" stroke="#f0b429" width="102" x="229" y="214"></rect><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="280" y="228">副本</text>
+<rect fill="rgba(240,180,41,0.1)" height="20" rx="4" stroke="#f0b429" width="102" x="366" y="214"></rect><text fill="#e7ebf1" font-size="10" text-anchor="middle" x="417" y="228">副本</text>
+<line stroke="#e8794b" stroke-width="1.4" x1="194" x2="229" y1="224" y2="224"></line>
+<line stroke="#e8794b" stroke-width="1.4" x1="331" x2="366" y1="224" y2="224"></line>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="252">↑ 一片数据的多个副本 · Paxos 多数投票 → 强一致但每次提交较慢</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="278">扩容 = 加机器多切几片，F1 与应用无感</text>
 </svg>
 <figcaption>图 1 · F1 的分层：无状态 SQL 引擎在上，Spanner 可扩展、强一致的存储在下——「扩展」的难题被甩给底座。</figcaption>
 </figure>
-<h3>层级式 schema：把相关数据聚成一棵树，物理挨着放</h3>
+<h3 data-tts="ea88b3d78b3357db">层级式 schema：把相关数据聚成一棵树，物理挨着放</h3>
 <p>这是 F1 最关键的设计，直接决定它能不能扛住延迟。传统关系模型里各张表互相独立、物理上四散；F1 允许把表声明成<strong>父子层级</strong>：子表的主键<strong>以父表主键为前缀</strong>，于是一个父行和它名下的所有子孙行被<strong>物理聚簇（clustering）在一起、交错存放</strong>，归入同一个 Spanner 目录、也就是同一个 Paxos 组。</p>
 <p>以 AdWords 为例：<code>Customer（广告主）→ Campaign（广告系列）→ AdGroup（广告组）</code>。一个广告主的整棵数据树落在<strong>同一格</strong>里。好处是决定性的：<strong>取一个客户的全部资料是一次本地读取</strong>（不必跨组四处捞），<strong>改动这棵树内部的数据是一次单组本地事务</strong>（不必发起昂贵的跨组分布式提交）。因为真实业务里绝大多数事务恰好都局限在「一个客户」范围内，这一步就把大部分写操作变成了便宜的本地操作。</p>
 <figure>
-<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="150" y="24" fill="#7c8593" font-size="11.5" text-anchor="middle">传统：各表分开存</text>
-<rect x="60" y="36" width="180" height="26" rx="5" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="150" y="53" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Customer 表 …</text>
-<rect x="60" y="70" width="180" height="26" rx="5" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="150" y="87" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Campaign 表 …</text>
-<rect x="60" y="104" width="180" height="26" rx="5" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/><text x="150" y="121" fill="#b9c0ca" font-size="10.5" text-anchor="middle">AdGroup 表 …</text>
-<text x="150" y="156" fill="#7c8593" font-size="10" text-anchor="middle">取一个客户的树 → 跨表跨组四处捞</text>
-<line x1="270" y1="30" x2="270" y2="150" stroke="#7c8593" stroke-dasharray="3 3"/>
-<text x="415" y="24" fill="#f0b429" font-size="11.5" text-anchor="middle">F1：整棵树聚簇在同一格</text>
-<rect x="300" y="34" width="230" height="200" rx="8" fill="rgba(240,180,41,0.05)" stroke="#f0b429"/>
-<text x="415" y="50" fill="#f0b429" font-size="10" text-anchor="middle">同一个 Spanner 目录 / Paxos 组</text>
-<rect x="316" y="58" width="198" height="22" rx="4" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="326" y="73" fill="#e7ebf1" font-size="10.5" text-anchor="start">Customer 88</text>
-<rect x="336" y="84" width="178" height="20" rx="4" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="346" y="98" fill="#e7ebf1" font-size="10" text-anchor="start">└ Campaign 88.1</text>
-<rect x="356" y="107" width="158" height="18" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="366" y="120" fill="#b9c0ca" font-size="9.5" text-anchor="start">└ AdGroup 88.1.a</text>
-<rect x="356" y="128" width="158" height="18" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="366" y="141" fill="#b9c0ca" font-size="9.5" text-anchor="start">└ AdGroup 88.1.b</text>
-<rect x="336" y="150" width="178" height="20" rx="4" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="346" y="164" fill="#e7ebf1" font-size="10" text-anchor="start">└ Campaign 88.2</text>
-<rect x="356" y="173" width="158" height="18" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="366" y="186" fill="#b9c0ca" font-size="9.5" text-anchor="start">└ AdGroup 88.2.a</text>
-<text x="415" y="212" fill="#7c8593" font-size="9.5" text-anchor="middle">一次本地读取整棵树</text>
-<text x="415" y="226" fill="#7c8593" font-size="9.5" text-anchor="middle">树内改动 = 单组本地事务（便宜）</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="150" y="24">传统：各表分开存</text>
+<rect fill="rgba(255,255,255,0.02)" height="26" rx="5" stroke="#7c8593" width="180" x="60" y="36"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="150" y="53">Customer 表 …</text>
+<rect fill="rgba(255,255,255,0.02)" height="26" rx="5" stroke="#7c8593" width="180" x="60" y="70"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="150" y="87">Campaign 表 …</text>
+<rect fill="rgba(255,255,255,0.02)" height="26" rx="5" stroke="#7c8593" width="180" x="60" y="104"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="150" y="121">AdGroup 表 …</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="150" y="156">取一个客户的树 → 跨表跨组四处捞</text>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="270" x2="270" y1="30" y2="150"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="415" y="24">F1：整棵树聚簇在同一格</text>
+<rect fill="rgba(240,180,41,0.05)" height="200" rx="8" stroke="#f0b429" width="230" x="300" y="34"></rect>
+<text fill="#f0b429" font-size="10" text-anchor="middle" x="415" y="50">同一个 Spanner 目录 / Paxos 组</text>
+<rect fill="rgba(240,180,41,0.14)" height="22" rx="4" stroke="#f0b429" width="198" x="316" y="58"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="start" x="326" y="73">Customer 88</text>
+<rect fill="rgba(232,121,75,0.12)" height="20" rx="4" stroke="#e8794b" width="178" x="336" y="84"></rect><text fill="#e7ebf1" font-size="10" text-anchor="start" x="346" y="98">└ Campaign 88.1</text>
+<rect fill="rgba(255,255,255,0.03)" height="18" rx="4" stroke="#7c8593" width="158" x="356" y="107"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="start" x="366" y="120">└ AdGroup 88.1.a</text>
+<rect fill="rgba(255,255,255,0.03)" height="18" rx="4" stroke="#7c8593" width="158" x="356" y="128"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="start" x="366" y="141">└ AdGroup 88.1.b</text>
+<rect fill="rgba(232,121,75,0.12)" height="20" rx="4" stroke="#e8794b" width="178" x="336" y="150"></rect><text fill="#e7ebf1" font-size="10" text-anchor="start" x="346" y="164">└ Campaign 88.2</text>
+<rect fill="rgba(255,255,255,0.03)" height="18" rx="4" stroke="#7c8593" width="158" x="356" y="173"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="start" x="366" y="186">└ AdGroup 88.2.a</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="415" y="212">一次本地读取整棵树</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="415" y="226">树内改动 = 单组本地事务（便宜）</text>
 </svg>
 <figcaption>图 2 · 层级式 schema：子表主键以父键为前缀，父子行物理交错聚簇成一棵树、归同一 Paxos 组；一个客户的读写多半在一格内本地完成。</figcaption>
 </figure>
-<h3>Protobuf 列：把「一对多」塞进一行，少连几次表</h3>
+<h3 data-tts="80b5a3ce00bc190b">Protobuf 列：把「一对多」塞进一行，少连几次表</h3>
 <p>F1 的列不止能存数字和字符串，还能直接存 <strong>Protocol Buffer</strong> 对象——包括<strong>可重复字段</strong>（一个字段里装一串值）。这意味着许多本该拆成子表、查询时要 JOIN 的一对多关系，可以直接内嵌进父行的一个 protobuf 列里，<strong>少建几张表、少连几次表</strong>。而且 Google 的应用代码本来就用 protobuf 传数据，让数据库原生理解 protobuf，<strong>抹掉了对象与关系表之间的阻抗失配</strong>，开发体验更顺。</p>
-<h3>与延迟共处：乐观事务 + 批量并行读</h3>
+<h3 data-tts="2ee7ba38451c07f7">与延迟共处：乐观事务 + 批量并行读</h3>
 <p>代价躲不掉：Spanner 的同步复制让<strong>一次提交要跨机房投票，延迟约 50–150 毫秒</strong>（读则约 5–10 毫秒）。F1 用两手化解。</p>
 <p>其一是<strong>乐观事务（optimistic transaction）</strong>，也是默认模式。它分两段：<strong>读阶段</strong>可以任意长、<strong>不加任何锁</strong>，只默默记下读过的每一行的「最后修改时间戳」；随后一个<strong>很短的写阶段</strong>把要写的改动打包，提交前<strong>重新核对那些时间戳有没有变</strong>——没变就落盘，变了（说明被人抢先改过）就中止重试。类比多人协作编辑共享文档：不锁文档，只在保存那一刻查一下「我读的内容有没有被人动过」。好处一串：慢吞吞或崩掉的客户端不会一直占着锁堵别人；重试幂等、服务端好实现；配合无状态的 F1 server 天然合拍。（另有<em>快照事务</em>做只读一致快照、<em>悲观事务</em>直接用 Spanner 的加锁事务，按需选用。）</p>
 <figure>
-<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<line x1="40" y1="150" x2="524" y2="150" stroke="#7c8593"/>
-<text x="524" y="168" fill="#7c8593" font-size="10.5" text-anchor="end">时间 →</text>
-<rect x="60" y="60" width="280" height="34" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="200" y="82" fill="#e7ebf1" font-size="12" text-anchor="middle">读阶段：不加锁，可任意长</text>
-<text x="200" y="112" fill="#7c8593" font-size="10" text-anchor="middle">记下每行「最后修改时间戳」</text>
-<rect x="352" y="60" width="150" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
-<text x="427" y="76" fill="#e7ebf1" font-size="11" text-anchor="middle">写阶段（短）</text>
-<text x="427" y="90" fill="#e7ebf1" font-size="10" text-anchor="middle">核对时间戳</text>
-<text x="427" y="112" fill="#7c8593" font-size="9.5" text-anchor="middle">没变→提交 / 变了→中止重试</text>
-<line x1="60" y1="150" x2="60" y2="56" stroke="#7c8593" stroke-dasharray="2 2"/>
-<line x1="340" y1="150" x2="340" y2="56" stroke="#7c8593" stroke-dasharray="2 2"/>
-<line x1="502" y1="150" x2="502" y2="56" stroke="#7c8593" stroke-dasharray="2 2"/>
-<text x="200" y="176" fill="#7c8593" font-size="9.5" text-anchor="middle">全程无锁</text>
-<text x="427" y="176" fill="#7c8593" font-size="9.5" text-anchor="middle">仅此段进 Spanner 加锁事务</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<line stroke="#7c8593" x1="40" x2="524" y1="150" y2="150"></line>
+<text fill="#7c8593" font-size="10.5" text-anchor="end" x="524" y="168">时间 →</text>
+<rect fill="rgba(240,180,41,0.08)" height="34" rx="6" stroke="#f0b429" width="280" x="60" y="60"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="200" y="82">读阶段：不加锁，可任意长</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="200" y="112">记下每行「最后修改时间戳」</text>
+<rect fill="rgba(232,121,75,0.14)" height="34" rx="6" stroke="#e8794b" width="150" x="352" y="60"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="427" y="76">写阶段（短）</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="427" y="90">核对时间戳</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="427" y="112">没变→提交 / 变了→中止重试</text>
+<line stroke="#7c8593" stroke-dasharray="2 2" x1="60" x2="60" y1="150" y2="56"></line>
+<line stroke="#7c8593" stroke-dasharray="2 2" x1="340" x2="340" y1="150" y2="56"></line>
+<line stroke="#7c8593" stroke-dasharray="2 2" x1="502" x2="502" y1="150" y2="56"></line>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="200" y="176">全程无锁</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="427" y="176">仅此段进 Spanner 加锁事务</text>
 </svg>
 <figcaption>图 3 · 乐观事务：长长的读阶段全程不加锁、只记时间戳；提交时若发现读过的行被改动就中止——像共享文档「保存时才查有没有被人动过」。</figcaption>
 </figure>
 <p>其二是<strong>改造应用的访问模式</strong>。既然每次访问都像一通慢速越洋电话，就别一句一句地串行问：F1 鼓励应用<strong>批量地、并行地</strong>发起读取，用「次数更少、彼此并行」抵消单次的慢。配合层级式 schema（一次读回整棵树），AdWords 迁到 F1 后，<strong>网页端到端延迟反而与旧 MySQL 相当、部分页面还更快</strong>——单次操作虽慢，但并行度上来了。</p>
-<h3>一致的索引与变更历史</h3>
+<h3 data-tts="cbd9fac8825e5ee9">一致的索引与变更历史</h3>
 <p>索引有两种物理形态：<strong>本地索引</strong>与被索引的行同处一个目录，随行的事务一起更新，便宜；<strong>全局索引</strong>横跨众多目录、独立分片，更新它要发起<strong>跨组的分布式事务</strong>，昂贵，因此 F1 会限制一个事务里能改多少条全局索引。两种索引都<strong>随事务同步维护、保证一致</strong>——这正是 NoSQL 交给应用层自己扛、而 F1 替你扛下的活。此外，F1 把<strong>变更历史（change history）做成一等公民</strong>：每个事务都把自己的改动作为变更记录一并写下，下游可以订阅这些变更用于增量维护索引、失效缓存、同步到其它系统——一个内建、一致的「变更数据捕获」。</p>
-<h2>关键结果</h2>
+<h2 data-tts="314505bb7bbbe353">关键结果</h2>
 <p>最有说服力的结果是<strong>它真的在跑 Google 最赚钱的业务</strong>：F1 自 2012 年初起在生产环境管理 AdWords 的<strong>全部</strong>数据，取代了之前手工分片的 MySQL，规模达<strong>上百 TB 级</strong>、承载持续的高并发 OLTP 负载。性能上，论文诚实地给出数字：得益于同步复制，<strong>提交延迟约 50–150 毫秒</strong>，明显高于单机数据库；但通过层级 schema、乐观事务与批量并行读，<strong>AdWords 的用户可见延迟与旧系统相当</strong>。可用性上，靠 Spanner 的多副本（典型 5 副本跨多机房），系统能<strong>扛住整个机房下线而不丢数据、几乎不中断</strong>。扩展性上，加机器即扩容，彻底告别了「以年计的重新分片」。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="f741a8e38d0ef338">为什么重要 / 影响</h2>
 <p>F1 与 Spanner 一起，把行业从「扩展就得放弃 SQL 与事务」的宿命里拉了出来，<strong>亲手证明了「可扩展」与「强一致 + 完整 SQL + 事务」可以并存</strong>——只要肯为一致性付出一点延迟、并在设计上把它摊平。它是 <strong>NewSQL</strong> 潮流的旗帜之一，直接启发和印证了后来一批分布式 SQL 数据库（CockroachDB、TiDB、YugabyteDB 等）的路线：底层做可扩展强一致存储，上层重铸 SQL。它示范的几样具体工程——<strong>层级聚簇换数据局部性、乐观事务对抗高延迟与不良客户端、内建变更历史维护一致索引</strong>——也成了后来系统反复借鉴的套路。对 Google 自己，它更是把最核心业务的数据底座换血成功的一次实战。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="b6690b046f29ff9f">局限与批评</h2>
 <ul>
 <li><strong>提交延迟天生高</strong>：同步跨机房复制让单次提交要 50–150 毫秒，比单机数据库慢一个数量级。F1 靠 schema、乐观事务和应用改造摊平，但这要求<strong>应用配合改写</strong>（批量、并行、容忍延迟），不是把老应用原样搬上来就能用。</li>
 <li><strong>资源成本更高</strong>：为达到同一目标，F1 消耗的 CPU 等资源比原 MySQL 更多——强一致与可扩展不是免费的。</li>
@@ -178,7 +179,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>乐观事务在高冲突下吃亏</strong>：热点行被反复并发修改时，乐观事务会频繁中止重试，吞吐下降；此时需退回悲观（加锁）事务或更细粒度的冲突跟踪。</li>
 <li><strong>强依赖 Spanner</strong>：F1 的一致性、可用性、扩展性几乎全建立在 Spanner 之上——而 Spanner 又依赖 TrueTime 那套 GPS + 原子钟的专用授时基础设施，这是 Google 的家底，别处未必复制得来。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="cab57e0051b8d71b">要点</h2>
 <div class="tl">
 <p>① 一句话：F1 建在 Spanner 之上，把「可扩展 + 强一致」的存储底座，重新配上完整 SQL、ACID 事务与一致索引，撑起了 AdWords。</p>
 <p>② 痛点：过去只能二选一——关系库有 SQL/事务但扩不动（要手工分片、再分片以年计），NoSQL 能扩但丢了事务、SQL 与强一致。</p>
