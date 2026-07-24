@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 26</p>
-<h1>Dapper：大规模分布式系统追踪</h1>
+<h1 data-tts="aa36c31ddfba78c9">Dapper：大规模分布式系统追踪</h1>
 <p class="sub">Sigelman 等 · Google · 技术报告 2010</p>
 <p class="langbar"><a href="dapper-paper26.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,26 +44,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="d09ceb15eb054c49">这篇论文干了什么？</h2>
 <p>2010 年，Google 公开了内部工具 <strong>Dapper</strong>：你在网页上敲一次搜索、点一次「购买」，背后其实有<strong>成百上千台机器</strong>接力干活。以前一旦这次请求变慢或出错，没人说得清「到底卡在哪台机器、哪个环节」。Dapper 给每一次请求发一张<strong>「全程行程单」</strong>，把它一路经过了哪些服务、每一站花了多久，全都串起来记下来。今天所有讲「可观测性」「分布式追踪」的系统——Zipkin、Jaeger、OpenTelemetry——都是照着 Dapper 的样子做的。</p>
-<h2>旧世界的痛</h2>
+<h2 data-tts="8293d2cb8b02629f">旧世界的痛</h2>
 <p>大公司的一次请求早就不是「一台服务器算完返回」那么简单了。你搜一个词，前端把它<strong>同时分发</strong>给几十个后端：一个查网页、一个查图片、一个查广告、一个查拼写纠正……每个后端又各自去问更下面的一串服务。这样一层层散开，一次请求能牵动上千台机器。<strong>问题来了：整件事慢了 100 毫秒，是谁拖的后腿？</strong>负责前端的工程师看不到后端内部，负责某个后端的人也不知道自己是被谁、在整条链路的哪一环调用的。每个人只掌握一小块拼图，<strong>没有一个人能看到一次请求的全貌</strong>——这在故障排查时是致命的。</p>
-<h2>那张「行程单」</h2>
+<h2 data-tts="a931baf6c99ae6cb">那张「行程单」</h2>
 <p>Dapper 的点子是：给每一次进来的请求发一个<strong>独一无二的编号</strong>，然后让这个编号<strong>跟着请求跑遍全程</strong>——请求传到哪台机器，编号就带到哪台机器。每一站在开始和结束时都记一笔「我是几点几分接到的、几点几分干完的、我是被谁叫来的」。事后把同一个编号的所有记录收集到一起，就能<strong>拼出一棵完整的调用树</strong>：谁调了谁、每段花了多久、慢在哪一枝，一目了然。就像给一个跨越十几个部门流转的申请单，全程贴一张统一的追踪条码。</p>
 <p>关键的巧思有两个。一是<strong>工程师几乎不用改自己的代码</strong>：Google 全公司的服务都用同一套底层通信库，Dapper 只在这套<strong>公共库</strong>里埋了记录的代码，于是所有服务「自动」就被追踪上了。二是<strong>不全记、只抽样</strong>：请求量太大，条条都记会拖慢系统、也存不下，所以 Dapper <strong>每一千多次请求才完整记一次</strong>——对流量巨大的系统，抽这么点样本已经足够看清规律，代价却小到可以忽略。</p>
-<h2>它到底怎么帮上忙？</h2>
+<h2 data-tts="292d7cc9935090a0">它到底怎么帮上忙？</h2>
 <p>有了全程行程单，很多以前靠猜的事变得能<strong>直接看</strong>：一次慢请求，点开它的调用树，就知道是某个下游服务卡了、还是网络等待久了；想知道「我这个服务到底依赖了哪些别人的服务」，把海量行程单一汇总就画得出<strong>依赖地图</strong>；追查一个跨十几个团队的诡异 bug，不用再挨个团队开会对时间线，一张追踪图摆出来，责任落到哪一段清清楚楚。它把「分布式系统像个黑箱」这件事，变成了「能一层层点开看」。</p>
 <p>说句诚实的：抽样是把双刃剑。对海量流量它很管用，但如果你要查的正是<strong>那种一万次才出一回的罕见故障</strong>，那一次很可能没被抽中、没留下记录——后来的追踪系统为此补了「先全记、发现异常再决定留哪条」的办法。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="6ce2227f851e0348">一句话记住</h2>
 <div class="tl">
 <p>给每次请求发一个全程带着走的编号，在公共通信库里自动记下它经过的每一站与耗时，事后拼成一棵调用树——工程师不改代码、靠抽样几乎零开销，就能看清一次请求在成千上万台机器间到底走了哪条路、慢在哪里。这套「trace / span / 上下文传递」的模型，成了今天所有分布式追踪与可观测性系统的蓝本。</p>
 </div>
 <p class="switch-hint">想看调用树的结构图、采集流水线和开销数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="6aa083d4a5677f4f">一句话</h2>
 <p class="lead">Dapper 是 Google 内部的<strong>分布式追踪（distributed tracing）</strong>基础设施：给每次请求分配一个全局 <code>trace id</code> 并沿调用链传递，把每段工作记成一个 <strong>span</strong>（带父子关系与时间戳），事后拼成一棵完整的调用树。靠<strong>三条设计原则——对应用透明、开销极低、可全公司规模部署</strong>（把埋点做进公共 RPC/线程库 + 抽样采集），它第一次让工程师能从「单次请求」的视角看清一个横跨上千台机器的系统，成了 Zipkin、Jaeger、OpenTelemetry 乃至整个「可观测性」运动的蓝本。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="a793f5c8edf7c010">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>分布式系统 / 服务</strong>：一个大功能被拆成许多台机器上的独立程序（服务）协作完成；一次用户请求常要多个服务接力处理。</li>
@@ -76,126 +76,126 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>可观测性（observability）</strong>：从系统对外暴露的数据（日志、指标、追踪）反推它内部正在发生什么、问题出在哪。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="6f0291804e1aca09">坐标</h2>
 <p>作者是 Benjamin Sigelman、Luiz André Barroso（Google 基础设施的核心人物之一）、Mike Burrows（Chubby 的作者，本站 Paper 20）等，2010 年以 Google 技术报告形式发表。它上承学术界的分布式追踪探索——尤其是 <strong>X-Trace</strong>（2007）、Magpie、Pinpoint 等把「请求元数据沿链路传递」的思路；但 Dapper 第一次把它<strong>做进一家超大规模公司的生产环境、持续运行数年</strong>，并诚实交代了工程权衡。下启工业界几乎所有开源追踪系统：Twitter 的 <strong>Zipkin</strong>、Uber 的 <strong>Jaeger</strong>，以及统一标准 OpenTracing / <strong>OpenTelemetry</strong>。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="1b60f27b4668358f">问题与动机</h2>
 <p>在 Google，一次普通的网页搜索背后可能牵动<strong>成百上千台机器上的几十种服务</strong>：前端把查询<em>扇出</em>给网页索引、图片、广告、拼写纠正等一排后端，每个后端又各自向更下层的服务发起 RPC。整个系统是许多小团队各自开发、独立部署的服务拼起来的，<strong>没有任何一个工程师了解全部环节</strong>。</p>
 <p>于是当一次请求变慢或出错，排查就成了噩梦：前端工程师只知道「总共花了 300 毫秒」，却看不进任何一个后端内部；某个后端的负责人能看到自己慢了，却不知道自己处在哪条请求链的哪一环、是被谁调用的。<strong>每个人手里只有一小块拼图，谁都拼不出一次请求的完整因果链。</strong>传统的单机日志、性能计数器，都是「按机器 / 按服务」组织的，唯独缺了最关键的一维：<strong>「按单次请求」把跨越所有机器的工作串起来。</strong></p>
 <p>已有两条思路。一是<strong>黑盒法（black-box）</strong>：不改代码，纯靠统计各服务的消息日志、用算法去<em>推断</em>谁调了谁——好处是零侵入，坏处是推断不准、需要海量数据。二是<strong>标注法（annotation-based）</strong>：在代码里显式打上追踪标记、让请求带着一个 ID 走——因果关系精确，代价是要改代码。Dapper 选了标注法，但用一个巧劲把「要改代码」这个代价几乎抹平（见下）。</p>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<rect x="238" y="18" width="84" height="30" rx="6" fill="rgba(240,180,41,0.14)" stroke="#f0b429"></rect>
-<text x="280" y="37" fill="#e7ebf1" font-size="12" text-anchor="middle">前端</text>
-<g stroke="#7c8593" stroke-width="1.4" fill="none">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<rect fill="rgba(240,180,41,0.14)" height="30" rx="6" stroke="#f0b429" width="84" x="238" y="18"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="37">前端</text>
+<g fill="none" stroke="#7c8593" stroke-width="1.4">
 <path d="M262,48 C210,72 150,80 118,96"></path>
 <path d="M274,48 C250,74 232,80 220,96"></path>
 <path d="M300,48 C330,74 350,80 362,96"></path>
 <path d="M312,48 C400,72 460,80 500,96"></path>
 </g>
 <g font-size="11" text-anchor="middle">
-<rect x="70" y="98" width="94" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="117" y="116" fill="#e7ebf1">网页索引</text>
-<rect x="178" y="98" width="84" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="220" y="116" fill="#e7ebf1">广告</text>
-<rect x="318" y="98" width="88" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="362" y="116" fill="#e7ebf1">拼写纠正</text>
-<rect x="456" y="98" width="88" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="500" y="116" fill="#e7ebf1">图片</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#e8794b" width="94" x="70" y="98"></rect><text fill="#e7ebf1" x="117" y="116">网页索引</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#e8794b" width="84" x="178" y="98"></rect><text fill="#e7ebf1" x="220" y="116">广告</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#e8794b" width="88" x="318" y="98"></rect><text fill="#e7ebf1" x="362" y="116">拼写纠正</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#e8794b" width="88" x="456" y="98"></rect><text fill="#e7ebf1" x="500" y="116">图片</text>
 </g>
-<g stroke="#7c8593" stroke-width="1.2" fill="none" stroke-dasharray="3 3">
+<g fill="none" stroke="#7c8593" stroke-dasharray="3 3" stroke-width="1.2">
 <path d="M100,126 L84,168"></path><path d="M134,126 L150,168"></path>
 <path d="M344,126 L328,168"></path><path d="M380,126 L396,168"></path>
 <path d="M482,126 L466,168"></path><path d="M518,126 L534,168"></path>
 </g>
-<g font-size="10" text-anchor="middle" fill="#9aa3ad">
-<rect x="52" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="82" y="186">分片</text>
-<rect x="120" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="150" y="186">分片</text>
-<rect x="298" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="328" y="186">词典</text>
-<rect x="366" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="396" y="186">词典</text>
-<rect x="436" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="466" y="186">分片</text>
-<rect x="504" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="534" y="186">分片</text>
+<g fill="#9aa3ad" font-size="10" text-anchor="middle">
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="5" stroke="#565c65" width="60" x="52" y="170"></rect><text x="82" y="186">分片</text>
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="5" stroke="#565c65" width="60" x="120" y="170"></rect><text x="150" y="186">分片</text>
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="5" stroke="#565c65" width="60" x="298" y="170"></rect><text x="328" y="186">词典</text>
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="5" stroke="#565c65" width="60" x="366" y="170"></rect><text x="396" y="186">词典</text>
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="5" stroke="#565c65" width="60" x="436" y="170"></rect><text x="466" y="186">分片</text>
+<rect fill="rgba(255,255,255,0.02)" height="24" rx="5" stroke="#565c65" width="60" x="504" y="170"></rect><text x="534" y="186">分片</text>
 </g>
-<text x="280" y="228" fill="#f0b429" font-size="12" text-anchor="middle">一次请求 → 扇出到上千台机器：慢了、错了，谁也看不到全貌</text>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="280" y="228">一次请求 → 扇出到上千台机器：慢了、错了，谁也看不到全貌</text>
 </svg>
 <figcaption>图 1 · 扇出困境：一次搜索请求在前端被分发给几十个后端、每个后端再向下调用更多服务，牵动上千台机器；单机日志按机器组织，唯独缺了「按单次请求串起全程」这一维。</figcaption>
 </figure>
-<h2>核心思想 / 方法</h2>
-<h3>三条不可动摇的设计原则</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="5d3458295de3f2c4">三条不可动摇的设计原则</h3>
 <p>Dapper 把目标压成三条硬约束，后面所有设计都是为满足它们：<strong>①对应用透明</strong>——工程师不该为了被追踪去改自己的业务代码；<strong>②开销极低</strong>——追踪本身不能拖慢线上服务，否则没人敢开；<strong>③可全公司规模部署</strong>——要能覆盖成千上万台机器、常年运行。这三条里最难的是「透明」和「低开销」，它们直接决定了下面两个关键手法。</p>
-<h3>trace 与 span：把一次请求记成一棵树</h3>
+<h3 data-tts="aff898052c391b13">trace 与 span：把一次请求记成一棵树</h3>
 <p>Dapper 的数据模型很简洁。一次请求的<strong>全部工作</strong>叫一个 <em>trace</em>，对应一个全局唯一的 <code>trace id</code>。这棵树上的<strong>每一段工作</strong>（通常是一次 RPC 调用，比如「前端调广告服务」）是一个 <em>span</em>。每个 span 记着自己的 <code>span id</code>、<strong>父 span 的 id</strong>（parent id），以及所属的 <code>trace id</code>——靠「谁的父亲是谁」，散落各处的 span 就能拼回一棵<strong>调用树</strong>。</p>
 <p>每个 span 内部还带若干<strong>标注（annotation）</strong>：一类是自动打的时间戳，标准的四个是 <code>cs</code>（client send，调用方发出请求）、<code>sr</code>（server receive，被调方收到）、<code>ss</code>（server send，被调方返回）、<code>cr</code>（client receive，调用方收到结果）。有了这四个点，Dapper 就能算出<strong>网络在途时间</strong>（sr−cs、cr−ss）和<strong>服务端处理时间</strong>（ss−sr），把一段慢究竟慢在「网络」还是「对方干活」分得清清楚楚。另一类是工程师随手加的<strong>业务标注</strong>（如「查询命中缓存」），把应用语义也带进追踪里。</p>
 <figure>
-<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="20" y="26" fill="#7c8593" font-size="11">trace id = 一次请求 · 每条 = 一个 span · 缩进 = 父子调用</text>
-<line x1="20" y1="36" x2="20" y2="270" stroke="#565c65" stroke-dasharray="2 3"></line>
-<text x="530" y="290" fill="#7c8593" font-size="11" text-anchor="end">时间 →</text>
-<line x1="30" y1="278" x2="540" y2="278" stroke="#7c8593"></line>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11" x="20" y="26">trace id = 一次请求 · 每条 = 一个 span · 缩进 = 父子调用</text>
+<line stroke="#565c65" stroke-dasharray="2 3" x1="20" x2="20" y1="36" y2="270"></line>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="530" y="290">时间 →</text>
+<line stroke="#7c8593" x1="30" x2="540" y1="278" y2="278"></line>
 <!-- root -->
-<rect x="40" y="44" width="470" height="26" rx="5" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<text x="50" y="61" fill="#e7ebf1" font-size="12">前端 span（根，无父）</text>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="5" stroke="#f0b429" width="470" x="40" y="44"></rect>
+<text fill="#e7ebf1" font-size="12" x="50" y="61">前端 span（根，无父）</text>
 <!-- child ads -->
-<rect x="90" y="86" width="150" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect>
-<text x="100" y="102" fill="#e7ebf1" font-size="11">广告服务 span</text>
+<rect fill="rgba(232,121,75,0.14)" height="24" rx="5" stroke="#e8794b" width="150" x="90" y="86"></rect>
+<text fill="#e7ebf1" font-size="11" x="100" y="102">广告服务 span</text>
 <!-- child web -->
-<rect x="260" y="86" width="230" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect>
-<text x="270" y="102" fill="#e7ebf1" font-size="11">网页索引 span</text>
+<rect fill="rgba(232,121,75,0.14)" height="24" rx="5" stroke="#e8794b" width="230" x="260" y="86"></rect>
+<text fill="#e7ebf1" font-size="11" x="270" y="102">网页索引 span</text>
 <!-- grandchild shards -->
-<rect x="300" y="124" width="90" height="22" rx="5" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
-<text x="308" y="139" fill="#b9c0ca" font-size="10.5">分片 span</text>
-<rect x="398" y="124" width="90" height="22" rx="5" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
-<text x="406" y="139" fill="#b9c0ca" font-size="10.5">分片 span</text>
+<rect fill="rgba(255,255,255,0.04)" height="22" rx="5" stroke="#7c8593" width="90" x="300" y="124"></rect>
+<text fill="#b9c0ca" font-size="10.5" x="308" y="139">分片 span</text>
+<rect fill="rgba(255,255,255,0.04)" height="22" rx="5" stroke="#7c8593" width="90" x="398" y="124"></rect>
+<text fill="#b9c0ca" font-size="10.5" x="406" y="139">分片 span</text>
 <!-- annotations detail -->
-<rect x="120" y="176" width="330" height="80" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.3)" stroke-dasharray="4 3"></rect>
-<text x="285" y="196" fill="#f0b429" font-size="11.5" text-anchor="middle">一个 span 内部的四个时间戳</text>
-<line x1="150" y1="228" x2="420" y2="228" stroke="#7c8593" stroke-width="1.4"></line>
-<g font-size="10" fill="#e7ebf1" text-anchor="middle">
-<circle cx="150" cy="228" r="3.5" fill="#f0b429"></circle><text x="150" y="220">cs</text>
-<circle cx="215" cy="228" r="3.5" fill="#e8794b"></circle><text x="215" y="220">sr</text>
-<circle cx="360" cy="228" r="3.5" fill="#e8794b"></circle><text x="360" y="220">ss</text>
-<circle cx="420" cy="228" r="3.5" fill="#f0b429"></circle><text x="420" y="220">cr</text>
+<rect fill="rgba(255,255,255,0.02)" height="80" rx="8" stroke="rgba(240,180,41,0.3)" stroke-dasharray="4 3" width="330" x="120" y="176"></rect>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="285" y="196">一个 span 内部的四个时间戳</text>
+<line stroke="#7c8593" stroke-width="1.4" x1="150" x2="420" y1="228" y2="228"></line>
+<g fill="#e7ebf1" font-size="10" text-anchor="middle">
+<circle cx="150" cy="228" fill="#f0b429" r="3.5"></circle><text x="150" y="220">cs</text>
+<circle cx="215" cy="228" fill="#e8794b" r="3.5"></circle><text x="215" y="220">sr</text>
+<circle cx="360" cy="228" fill="#e8794b" r="3.5"></circle><text x="360" y="220">ss</text>
+<circle cx="420" cy="228" fill="#f0b429" r="3.5"></circle><text x="420" y="220">cr</text>
 </g>
-<text x="182" y="248" fill="#9aa3ad" font-size="9.5" text-anchor="middle">网络在途</text>
-<text x="287" y="248" fill="#9aa3ad" font-size="9.5" text-anchor="middle">服务端处理</text>
-<text x="390" y="248" fill="#9aa3ad" font-size="9.5" text-anchor="middle">网络在途</text>
+<text fill="#9aa3ad" font-size="9.5" text-anchor="middle" x="182" y="248">网络在途</text>
+<text fill="#9aa3ad" font-size="9.5" text-anchor="middle" x="287" y="248">服务端处理</text>
+<text fill="#9aa3ad" font-size="9.5" text-anchor="middle" x="390" y="248">网络在途</text>
 </svg>
 <figcaption>图 2 · trace / span 模型：一次请求是一棵 span 树，靠 trace id + 父子 id 拼回；每个 span 用 cs/sr/ss/cr 四个时间戳，把耗时拆成「网络在途」与「服务端处理」。</figcaption>
 </figure>
-<h3>透明的秘诀：把埋点做进公共库</h3>
+<h3 data-tts="e2ac7ce34bb0165a">透明的秘诀：把埋点做进公共库</h3>
 <p>怎么做到工程师<strong>不改业务代码</strong>就被追踪？关键在于 Google 全公司共用<strong>同一套底层库</strong>——统一的线程管理、异步控制流、以及 RPC 通信框架。Dapper 只在这几个<strong>公共库</strong>里埋了追踪代码：请求进来时创建根 span、发起 RPC 时自动新建子 span 并把 <code>trace id</code> 塞进 RPC 消息头带给下游、被调方收到后接着往下传。<strong>trace id 在一台机器内靠线程本地存储随线程流动，跨机器时搭 RPC 的顺风车传递。</strong>业务工程师什么都不用做，就「免费」被追踪上了——这就是「对应用透明」的全部魔法，也解释了为什么它在 Google 能一键铺满全公司，却难以照搬到库不统一的异构环境。</p>
-<h3>低开销的秘诀：抽样 + 带外采集</h3>
+<h3 data-tts="e4babbd3d1c8df49">低开销的秘诀：抽样 + 带外采集</h3>
 <p>全量追踪有两笔账：一是在请求路径上创建 span、打标注的<strong>运行时开销</strong>，二是把海量追踪数据写盘、传输、存储的<strong>采集开销</strong>。后者才是大头。Dapper 用两招把两笔账都压到可忽略：</p>
 <p><strong>其一，抽样。</strong>不是每次请求都完整追踪，而是按一个很低的概率抽——生产环境常用约 <code>1/1024</code>（一千多次请求才留一次完整记录）。对流量巨大的服务，这么点样本已足够统计出稳定的延迟分布和调用结构，而运行时开销随之几乎归零。（论文里 span 的创建/销毁只是<strong>百纳秒量级</strong>的操作，再乘上千分之一的抽样，摊到每次请求上微乎其微。）</p>
 <p><strong>其二，带外异步采集。</strong>被追踪的数据<strong>不在请求的关键路径上处理</strong>：应用先把 span 写到<strong>本地日志文件</strong>，再由一个独立的 Dapper 守护进程<strong>事后异步</strong>把它们捞走、经收集器汇总，最终一次 trace 存成 <strong>BigTable 里的一行</strong>（每个 span 是一列）。因为收集发生在请求返回<em>之后</em>、且走独立通道，它<strong>完全不拖慢线上请求</strong>；论文报告这套采集只占用极小的 CPU 与网络（远低于 1%）。工程师则通过一套查询接口（DAPI）和 Web 界面去检索、可视化这些 trace。</p>
 <figure>
-<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="da" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
-<rect x="16" y="70" width="104" height="52" rx="7" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect>
-<text x="68" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">被追踪的应用</text>
-<text x="68" y="108" fill="#9aa3ad" font-size="10" text-anchor="middle">公共库埋点</text>
-<rect x="168" y="70" width="96" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
-<text x="216" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">本地日志</text>
-<text x="216" y="108" fill="#9aa3ad" font-size="10" text-anchor="middle">写到磁盘</text>
-<rect x="312" y="70" width="104" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
-<text x="364" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">守护进程</text>
-<text x="364" y="108" fill="#9aa3ad" font-size="10" text-anchor="middle">+ 收集器</text>
-<rect x="462" y="70" width="86" height="52" rx="7" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect>
-<text x="505" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">BigTable</text>
-<text x="505" y="108" fill="#9aa3ad" font-size="10" text-anchor="middle">一 trace 一行</text>
-<g stroke="#7c8593" stroke-width="1.6" marker-end="url(#da)">
-<line x1="120" y1="96" x2="164" y2="96"></line>
-<line x1="264" y1="96" x2="308" y2="96"></line>
-<line x1="416" y1="96" x2="458" y2="96"></line>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="da" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.12)" height="52" rx="7" stroke="#f0b429" width="104" x="16" y="70"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="68" y="90">被追踪的应用</text>
+<text fill="#9aa3ad" font-size="10" text-anchor="middle" x="68" y="108">公共库埋点</text>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="7" stroke="#7c8593" width="96" x="168" y="70"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="216" y="90">本地日志</text>
+<text fill="#9aa3ad" font-size="10" text-anchor="middle" x="216" y="108">写到磁盘</text>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="7" stroke="#7c8593" width="104" x="312" y="70"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="364" y="90">守护进程</text>
+<text fill="#9aa3ad" font-size="10" text-anchor="middle" x="364" y="108">+ 收集器</text>
+<rect fill="rgba(232,121,75,0.14)" height="52" rx="7" stroke="#e8794b" width="86" x="462" y="70"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="505" y="90">BigTable</text>
+<text fill="#9aa3ad" font-size="10" text-anchor="middle" x="505" y="108">一 trace 一行</text>
+<g marker-end="url(#da)" stroke="#7c8593" stroke-width="1.6">
+<line x1="120" x2="164" y1="96" y2="96"></line>
+<line x1="264" x2="308" y1="96" y2="96"></line>
+<line x1="416" x2="458" y1="96" y2="96"></line>
 </g>
-<text x="68" y="150" fill="#f0b429" font-size="10.5" text-anchor="middle">抽样 ~1/1024</text>
-<rect x="300" y="150" width="180" height="30" rx="6" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.3)"></rect>
-<text x="390" y="169" fill="#e7ebf1" font-size="10.5" text-anchor="middle">DAPI 查询 + Web 界面</text>
-<line x1="505" y1="122" x2="440" y2="150" stroke="#7c8593" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#da)"></line>
-<text x="216" y="196" fill="#7c8593" font-size="11" text-anchor="middle">全程带外、异步——不在请求关键路径上，几乎零开销</text>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="68" y="150">抽样 ~1/1024</text>
+<rect fill="rgba(240,180,41,0.06)" height="30" rx="6" stroke="rgba(240,180,41,0.3)" width="180" x="300" y="150"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="390" y="169">DAPI 查询 + Web 界面</text>
+<line marker-end="url(#da)" stroke="#7c8593" stroke-dasharray="3 3" stroke-width="1.2" x1="505" x2="440" y1="122" y2="150"></line>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="216" y="196">全程带外、异步——不在请求关键路径上，几乎零开销</text>
 </svg>
 <figcaption>图 3 · 采集流水线：应用把抽样到的 span 写本地日志，守护进程事后异步捞走、汇总，落到 BigTable（一 trace 一行）；整条链路在请求返回之后运行，不拖慢线上服务。</figcaption>
 </figure>
-<h2>关键结果</h2>
+<h2 data-tts="0887545c77d4da6f">关键结果</h2>
 <p>Dapper 最有说服力的「结果」不是某个准确率数字，而是<strong>它真的在 Google 生产环境跑了起来、还常年好用</strong>。论文报告：追踪已覆盖公司几乎所有系统，采集的追踪数据规模巨大；<strong>运行时开销小到可忽略</strong>——单个 span 的创建与标注是百纳秒级操作，配合抽样后对线上服务的延迟与吞吐几乎无影响；采集守护进程只占极少的 CPU 和不到 1% 的网络。围绕它建起的查询接口 <strong>DAPI</strong> 与追踪可视化，被大量工程师日常用于<strong>性能分析（定位关键路径、找拖慢尾延迟的服务）、推断服务依赖关系、排查跨团队故障</strong>。论文用一系列真实使用案例证明：一个透明、抽样、带外的追踪系统，在超大规模下<strong>既跑得动、又真有用</strong>。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="004c91b6eb7ffa67">为什么重要 / 影响</h2>
 <p>Dapper 定义了<strong>分布式追踪的标准范式</strong>。它提出的 <strong>trace / span / 上下文传递（context propagation）</strong>三件套，几乎被后来每一个追踪系统原样继承：Twitter 开源的 <strong>Zipkin</strong> 直接照 Dapper 建，Uber 的 <strong>Jaeger</strong> 亦然，再到试图统一各家的 OpenTracing、最终收敛成 CNCF 的 <strong>OpenTelemetry</strong> 标准——今天你在任何微服务架构里看到的 trace id、span、cs/sr/ss/cr 式的时间标注，血脉都来自这篇报告。更宏观地说，它和「日志、指标」一起，把「<strong>可观测性</strong>」从一句口号变成了工程实践的三大支柱之一，是现代云原生、微服务运维的<strong>思想地基</strong>。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="b006e4007b5b155a">局限与批评</h2>
 <ul>
 <li><strong>抽样丢掉罕见事件</strong>：<code>1/1024</code> 对高流量服务够用，但要排查「一万次才出一回」的罕见异常或低流量服务，那条关键的 trace 很可能根本没被抽中。Dapper 后来补了「按需强制追踪某请求」的机制；再后来的系统（如基于尾采样 tail-based sampling 的方案）则改成「先全记、发现慢或错再决定留哪条」来针对性弥补。</li>
 <li><strong>依赖同构基础设施</strong>：它的「透明」建立在 Google 全公司共用一套 RPC / 线程 / 控制流库之上。库不统一的异构环境里，就得靠工程师显式埋点或统一标准（这正是 OpenTelemetry 存在的理由），透明性大打折扣。</li>
@@ -203,7 +203,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>看聚合会淹没个体</strong>：把大量 trace 汇总成统计视图便于看全局，但也容易把单个诡异的离群请求平均掉；而排障时要的往往正是那一个离群点。</li>
 <li><strong>追踪 ≠ 自动诊断</strong>：Dapper 忠实地把「发生了什么、各段多久」摆出来，但「为什么慢、根因是什么」仍要人去解读——它是一副更好的眼镜，不是自动的医生。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="9adc15dbd106dbf4">要点</h2>
 <div class="tl">
 <p>① 一句话：给每次请求发一个全局 trace id 沿调用链传递，把每段工作记成带父子关系的 span，拼成一棵调用树，从「单次请求」视角看清跨上千台机器的系统。</p>
 <p>② 痛点：一次请求扇出到成百上千台机器，单机日志按机器组织，没人能拼出一次请求的完整因果链——慢了、错了都不知道卡在哪。</p>
