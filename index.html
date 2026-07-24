@@ -68,7 +68,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <a class="entry" href="dremel-paper23.html"><span class="num">Paper 7</span><span class="title">Dremel — 嵌套数据列式存储（重复/定义层级无损打散又拼回）＋ 借搜索引擎的多级执行树摊到几千台机器，对万亿行做秒级交互式聚合，BigQuery 的底子</span><span class="meta">Melnik 等 · 2010</span></a>
 <a class="entry" href="spanner-paper24.html"><span class="num">Paper 8</span><span class="title">Spanner — 让每台机器的钟诚实报出「时间在这一小段区间里」（TrueTime），提交时多等一拍把误差等过去，一个铺满全球的数据库便有了人人认同的事务全序（外部一致性）</span><span class="meta">Corbett 等 · 2012</span></a>
 <a class="entry" href="f1-distributed-sql-paper25.html"><span class="num">Paper 9</span><span class="title">F1 — 建在 Spanner 之上的分布式 SQL 层：把「可扩展 + 强一致」的存储底座重新配上完整 SQL、事务与一致索引，用层级聚簇＋乐观事务摊平跨机房延迟，撑起了 AdWords</span><span class="meta">Shute 等 · 2013</span></a>
-<div class="entry todo"><span class="num"></span><span class="title">Dapper: Large-Scale Distributed Systems Tracing — 分布式追踪，现代可观测性蓝本</span><span class="meta">Sigelman 等 · 2010</span></div>
+<a class="entry" href="dapper-paper26.html"><span class="num">Paper 10</span><span class="title">Dapper — 给每次请求发一个全程带着走的 trace id，把每段工作记成 span 拼成调用树；靠公共库埋点透明、抽样带外几乎零开销，看清一次请求在上千台机器间走了哪条路，分布式追踪与可观测性的蓝本</span><span class="meta">Sigelman 等 · 2010</span></a>
 <div class="entry todo"><span class="num"></span><span class="title">The Tail at Scale — 大规模系统里尾延迟为何致命、怎么治</span><span class="meta">Dean &amp; Barroso · 2013</span></div>
 <div class="group">分布式共识 · 一致性 · 存储<span class="tag">— 时钟 / 共识 / NoSQL / P2P</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Time, Clocks, and the Ordering of Events — 逻辑时钟与 happens-before，分布式一致性思想原点</span><span class="meta">Lamport · 1978</span></div>

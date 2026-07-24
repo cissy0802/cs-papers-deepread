@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Dapper — Large-Scale Distributed Systems Tracing · CS Papers Deep-Read Paper 26</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 26</p>
+<h1>Dapper: Large-Scale Distributed Systems Tracing</h1>
+<p class="sub">Sigelman et al. · Google · Technical Report 2010</p>
+<p class="langbar"><a href="dapper-paper26.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2010, Google published its internal tool <strong>Dapper</strong>. When you type a search or click "buy," <strong>hundreds or thousands of machines</strong> hand off work behind the scenes. Before Dapper, if that one request got slow or went wrong, nobody could say <strong>which machine, which step</strong> was the culprit. Dapper issues each request a <strong>"travel record" for its whole journey</strong>, stitching together every service it passed through and how long each stop took. Today every system that talks about "observability" or "distributed tracing" — Zipkin, Jaeger, OpenTelemetry — is built in Dapper's image.</p>
+<h2>The old world's pain</h2>
+<p>A single request at a big company hasn't been "one server computes and returns" for a long time. You search a word, and the frontend <strong>fans it out at once</strong> to dozens of backends: one for web pages, one for images, one for ads, one for spelling correction… and each backend asks a whole chain of services beneath it. Spread out layer by layer, one request can touch thousands of machines. <strong>Here's the problem: the whole thing was 100 ms slow — who dragged it down?</strong> The engineer who owns the frontend can't see inside the backends; the person who owns some backend doesn't know who called them or where in the chain they sit. Everyone holds one small piece of the puzzle, and <strong>no single person can see the whole of one request</strong> — which is fatal when you're debugging an outage.</p>
+<h2>That "travel record"</h2>
+<p>Dapper's idea: give every incoming request a <strong>unique ID</strong>, then make that ID <strong>travel with the request the whole way</strong> — wherever the request goes, the ID goes too. Each stop notes down "what time I received it, what time I finished, and who called me." Afterward you gather all the records sharing that same ID and <strong>reassemble a complete call tree</strong>: who called whom, how long each segment took, which branch was slow — all at a glance. Like slapping one unified tracking barcode on a form as it winds through a dozen departments.</p>
+<p>Two clever moves make it work. First, <strong>engineers barely change their own code</strong>: every service at Google uses the same underlying communication libraries, so Dapper put its recording code inside those <strong>shared libraries</strong> — and every service got traced "for free." Second, <strong>don't record everything — sample</strong>: the request volume is enormous, so recording each one would slow the system and cost too much to store. Dapper keeps a full record <strong>only about once every thousand-plus requests</strong> — for high-traffic systems that tiny sample is plenty to see the patterns, at a cost small enough to ignore.</p>
+<h2>So how does it actually help?</h2>
+<p>With a full travel record, things that used to be guesswork become <strong>directly visible</strong>: open the call tree of a slow request and you see whether some downstream service stalled or the network wait was long; want to know "which other services does mine actually depend on?" — aggregate a mass of records and the <strong>dependency map</strong> draws itself; chasing a bizarre bug across a dozen teams no longer means meeting each team to line up timelines — lay out one trace and it's clear which segment is to blame. It turns "the distributed system is a black box" into "something you can click open, layer by layer."</p>
+<p>An honest note: sampling cuts both ways. It's great for massive traffic, but if the very thing you're chasing is a <strong>rare failure that shows up once in ten thousand times</strong>, that one occurrence probably wasn't sampled and left no record — later tracing systems added a "record everything first, then decide what to keep once something looks off" approach to patch this.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Give every request an ID that travels with it, automatically record each stop and its timing inside the shared communication libraries, and reassemble a call tree afterward — so with no code changes from engineers and near-zero overhead via sampling, you can see exactly which path one request took across thousands of machines and where it got slow. This "trace / span / context-propagation" model became the blueprint for every distributed-tracing and observability system today.</p>
+</div>
+<p class="switch-hint">Want the call-tree diagram, the collection pipeline, and the overhead numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Dapper is Google's internal <strong>distributed-tracing</strong> infrastructure: it assigns each request a global <code>trace id</code> that propagates along the call chain, records each unit of work as a <strong>span</strong> (with parent/child links and timestamps), and reassembles a full call tree afterward. Guided by <strong>three design principles — application-level transparency, low overhead, and company-wide scale</strong> (achieved by baking instrumentation into shared RPC/threading libraries plus sampled collection), it let engineers see a system spanning thousands of machines from the vantage of a <strong>single request</strong> for the first time — becoming the blueprint for Zipkin, Jaeger, OpenTelemetry, and the whole "observability" movement.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Distributed system / service</strong>: one big capability split into many independent programs (services) across many machines that cooperate; a single user request often relays through several of them.</li>
+<li><strong>RPC (remote procedure call)</strong>: lets a program on one machine invoke a service on another machine as if calling a local function — the most common way services talk in a distributed system.</li>
+<li><strong>Fan-out</strong>: a request reaching one machine is dispatched <strong>simultaneously</strong> to many downstream machines, spreading like tree branches.</li>
+<li><strong>Thread-local storage</strong>: a private little drawer belonging only to the current line of execution (thread), invisible to other threads — Dapper stashes the current request's trace ID there.</li>
+<li><strong>BigTable</strong>: Google's distributed wide-table store (covered in Paper 19), holding vast data organized by rows and columns; Dapper lands its trace data here.</li>
+<li><strong>Sampling</strong>: instead of recording every event, keep a random fraction at some rate, using a small sample to represent the whole and save cost.</li>
+<li><strong>Tail latency</strong>: the latency of the slow minority of requests in a batch (say the slowest 1%); large systems' experience is often dragged down by it.</li>
+<li><strong>Observability</strong>: inferring what's happening inside a system, and where the problem is, from the data it exposes (logs, metrics, traces).</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors include Benjamin Sigelman, Luiz André Barroso (a central figure in Google's infrastructure), and Mike Burrows (author of Chubby, Paper 20), published as a Google technical report in 2010. It builds on academic distributed-tracing work — especially <strong>X-Trace</strong> (2007), Magpie, and Pinpoint, which pioneered propagating request metadata along a call chain — but Dapper was the first to <strong>run it in a hyperscale company's production for years</strong> and to report the engineering trade-offs honestly. It spawned nearly every open-source tracing system in industry: Twitter's <strong>Zipkin</strong>, Uber's <strong>Jaeger</strong>, and the unifying standards OpenTracing / <strong>OpenTelemetry</strong>.</p>
+<h2>The problem &amp; motivation</h2>
+<p>At Google, an ordinary web search can touch <strong>dozens of service types across hundreds or thousands of machines</strong>: the frontend <em>fans out</em> the query to backends for web indexing, images, ads, spelling correction, and each backend issues RPCs to services further down. The whole system is a mosaic of services built and deployed independently by many small teams, and <strong>no single engineer understands all the pieces</strong>.</p>
+<p>So when a request is slow or wrong, debugging is a nightmare: the frontend engineer only knows "it took 300 ms total" but can't see inside any backend; a backend owner sees their own slowness but doesn't know which request chain they're on or who called them. <strong>Everyone holds one small puzzle piece, and no one can assemble a request's full causal chain.</strong> Traditional per-machine logs and performance counters are organized "by machine / by service" — missing exactly the crucial dimension: <strong>stitching work across all machines back together "by single request."</strong></p>
+<p>Two approaches existed. One is the <strong>black-box</strong> style: change no code, just statistically correlate services' message logs and <em>infer</em> who called whom — zero-intrusion but inaccurate and data-hungry. The other is <strong>annotation-based</strong>: explicitly mark traces in code and have the request carry an ID — precise causality, but you must change code. Dapper chose the annotation-based route, then used a trick to all but erase the "change code" cost (below).</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<rect x="238" y="18" width="84" height="30" rx="6" fill="rgba(240,180,41,0.14)" stroke="#f0b429"></rect>
+<text x="280" y="37" fill="#e7ebf1" font-size="12" text-anchor="middle">Frontend</text>
+<g stroke="#7c8593" stroke-width="1.4" fill="none">
+<path d="M262,48 C210,72 150,80 118,96"></path>
+<path d="M274,48 C250,74 232,80 220,96"></path>
+<path d="M300,48 C330,74 350,80 362,96"></path>
+<path d="M312,48 C400,72 460,80 500,96"></path>
+</g>
+<g font-size="10.5" text-anchor="middle">
+<rect x="70" y="98" width="94" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="117" y="116" fill="#e7ebf1">Web index</text>
+<rect x="178" y="98" width="84" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="220" y="116" fill="#e7ebf1">Ads</text>
+<rect x="318" y="98" width="88" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="362" y="116" fill="#e7ebf1">Spelling</text>
+<rect x="456" y="98" width="88" height="28" rx="6" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect><text x="500" y="116" fill="#e7ebf1">Images</text>
+</g>
+<g stroke="#7c8593" stroke-width="1.2" fill="none" stroke-dasharray="3 3">
+<path d="M100,126 L84,168"></path><path d="M134,126 L150,168"></path>
+<path d="M344,126 L328,168"></path><path d="M380,126 L396,168"></path>
+<path d="M482,126 L466,168"></path><path d="M518,126 L534,168"></path>
+</g>
+<g font-size="9.5" text-anchor="middle" fill="#9aa3ad">
+<rect x="52" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="82" y="186">shard</text>
+<rect x="120" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="150" y="186">shard</text>
+<rect x="298" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="328" y="186">lexicon</text>
+<rect x="366" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="396" y="186">lexicon</text>
+<rect x="436" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="466" y="186">shard</text>
+<rect x="504" y="170" width="60" height="24" rx="5" fill="rgba(255,255,255,0.02)" stroke="#565c65"></rect><text x="534" y="186">shard</text>
+</g>
+<text x="280" y="228" fill="#f0b429" font-size="11.5" text-anchor="middle">One request → fanned out to thousands of machines: slow or wrong, nobody sees the whole</text>
+</svg>
+<figcaption>Fig. 1 · The fan-out bind: one search request is dispatched to dozens of backends, each calling more services, touching thousands of machines; per-machine logs are organized by machine, missing the "stitch the whole journey together by single request" dimension.</figcaption>
+</figure>
+<h2>Core ideas &amp; method</h2>
+<h3>Three non-negotiable design principles</h3>
+<p>Dapper compressed its goals into three hard constraints, and every design choice serves them: <strong>① application-level transparency</strong> — engineers shouldn't touch their business code to get traced; <strong>② low overhead</strong> — tracing itself must not slow production services, or no one will turn it on; <strong>③ company-wide scale</strong> — it must cover thousands of machines and run for years. The hardest two are "transparency" and "low overhead," and they directly dictate the two key techniques below.</p>
+<h3>Trace and span: recording one request as a tree</h3>
+<p>Dapper's data model is clean. All the work for one request is a <em>trace</em>, keyed by a globally unique <code>trace id</code>. Each <strong>unit of work</strong> on that tree (typically one RPC, e.g. "frontend calls the ads service") is a <em>span</em>. Every span records its own <code>span id</code>, the <strong>parent span's id</strong>, and its <code>trace id</code> — and from "whose parent is whom," the scattered spans reassemble into a <strong>call tree</strong>.</p>
+<p>Inside a span are several <strong>annotations</strong>: one kind is automatic timestamps — the four standard ones are <code>cs</code> (client send, caller sends the request), <code>sr</code> (server receive, callee receives it), <code>ss</code> (server send, callee returns), <code>cr</code> (client receive, caller gets the result). With these four points Dapper computes <strong>network transit time</strong> (sr−cs, cr−ss) and <strong>server-side processing time</strong> (ss−sr), cleanly separating whether a slow segment was the "network" or the "other side doing work." The other kind is <strong>application annotations</strong> engineers add by hand (e.g. "query hit cache"), pulling app semantics into the trace.</p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="20" y="26" fill="#7c8593" font-size="11">trace id = one request · each bar = a span · indent = parent→child call</text>
+<line x1="20" y1="36" x2="20" y2="270" stroke="#565c65" stroke-dasharray="2 3"></line>
+<text x="530" y="290" fill="#7c8593" font-size="11" text-anchor="end">time →</text>
+<line x1="30" y1="278" x2="540" y2="278" stroke="#7c8593"></line>
+<rect x="40" y="44" width="470" height="26" rx="5" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<text x="50" y="61" fill="#e7ebf1" font-size="12">Frontend span (root, no parent)</text>
+<rect x="90" y="86" width="150" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect>
+<text x="100" y="102" fill="#e7ebf1" font-size="11">Ads-service span</text>
+<rect x="260" y="86" width="230" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect>
+<text x="270" y="102" fill="#e7ebf1" font-size="11">Web-index span</text>
+<rect x="300" y="124" width="90" height="22" rx="5" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
+<text x="308" y="139" fill="#b9c0ca" font-size="10.5">shard span</text>
+<rect x="398" y="124" width="90" height="22" rx="5" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
+<text x="406" y="139" fill="#b9c0ca" font-size="10.5">shard span</text>
+<rect x="120" y="176" width="330" height="80" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.3)" stroke-dasharray="4 3"></rect>
+<text x="285" y="196" fill="#f0b429" font-size="11.5" text-anchor="middle">the four timestamps inside one span</text>
+<line x1="150" y1="228" x2="420" y2="228" stroke="#7c8593" stroke-width="1.4"></line>
+<g font-size="10" fill="#e7ebf1" text-anchor="middle">
+<circle cx="150" cy="228" r="3.5" fill="#f0b429"></circle><text x="150" y="220">cs</text>
+<circle cx="215" cy="228" r="3.5" fill="#e8794b"></circle><text x="215" y="220">sr</text>
+<circle cx="360" cy="228" r="3.5" fill="#e8794b"></circle><text x="360" y="220">ss</text>
+<circle cx="420" cy="228" r="3.5" fill="#f0b429"></circle><text x="420" y="220">cr</text>
+</g>
+<text x="182" y="248" fill="#9aa3ad" font-size="9.5" text-anchor="middle">network transit</text>
+<text x="287" y="248" fill="#9aa3ad" font-size="9.5" text-anchor="middle">server processing</text>
+<text x="390" y="248" fill="#9aa3ad" font-size="9.5" text-anchor="middle">network transit</text>
+</svg>
+<figcaption>Fig. 2 · The trace / span model: a request is a tree of spans, reassembled via trace id + parent ids; each span's cs/sr/ss/cr timestamps split the cost into "network transit" vs "server processing."</figcaption>
+</figure>
+<h3>The secret to transparency: instrument the shared libraries</h3>
+<p>How do engineers get traced <strong>without touching business code</strong>? Because all of Google shares <strong>the same underlying libraries</strong> — a unified threading model, async control-flow, and RPC framework. Dapper put its tracing code inside just those <strong>shared libraries</strong>: create a root span when a request arrives, auto-create a child span on each outgoing RPC and stuff the <code>trace id</code> into the RPC message header for the callee, who receives it and keeps passing it down. <strong>Within a machine the trace id flows with the thread via thread-local storage; across machines it hitches a ride on the RPC.</strong> Application engineers do nothing and get traced "for free" — that's the whole magic of "application transparency," and also why it blanketed Google in one shot yet is hard to transplant to heterogeneous environments where libraries aren't uniform.</p>
+<h3>The secret to low overhead: sampling + out-of-band collection</h3>
+<p>Full tracing has two bills: the <strong>runtime cost</strong> of creating spans and writing annotations on the request path, and the <strong>collection cost</strong> of writing, shipping, and storing massive trace data. The latter dominates. Dapper crushes both to negligible with two moves:</p>
+<p><strong>One: sampling.</strong> Rather than tracing every request, trace with a low probability — production commonly used about <code>1/1024</code> (a full record kept once every thousand-plus requests). For high-traffic services that tiny sample already yields a stable latency distribution and call structure, while runtime cost drops to near zero. (In the paper, creating/destroying a span is a <strong>hundreds-of-nanoseconds</strong> operation; multiply by a one-in-a-thousand sample and the per-request cost is minuscule.)</p>
+<p><strong>Two: out-of-band, asynchronous collection.</strong> Traced data is <strong>not processed on the request's critical path</strong>: the application first writes spans to <strong>local log files</strong>, then a separate Dapper daemon <strong>asynchronously, after the fact</strong> scoops them up, collectors aggregate them, and one trace lands as <strong>a single row in BigTable</strong> (each span a column). Because collection happens <em>after</em> the request returns and over a separate channel, it <strong>doesn't slow live requests at all</strong>; the paper reports this collection consumes a tiny fraction of CPU and well under 1% of network. Engineers then retrieve and visualize traces through a query API (DAPI) and a web UI.</p>
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="da" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect x="16" y="70" width="104" height="52" rx="7" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect>
+<text x="68" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Traced app</text>
+<text x="68" y="108" fill="#9aa3ad" font-size="9.5" text-anchor="middle">shared-lib probes</text>
+<rect x="168" y="70" width="96" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
+<text x="216" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Local logs</text>
+<text x="216" y="108" fill="#9aa3ad" font-size="9.5" text-anchor="middle">write to disk</text>
+<rect x="312" y="70" width="104" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
+<text x="364" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Daemon</text>
+<text x="364" y="108" fill="#9aa3ad" font-size="9.5" text-anchor="middle">+ collectors</text>
+<rect x="462" y="70" width="86" height="52" rx="7" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect>
+<text x="505" y="90" fill="#e7ebf1" font-size="11.5" text-anchor="middle">BigTable</text>
+<text x="505" y="108" fill="#9aa3ad" font-size="9.5" text-anchor="middle">1 trace = 1 row</text>
+<g stroke="#7c8593" stroke-width="1.6" marker-end="url(#da)">
+<line x1="120" y1="96" x2="164" y2="96"></line>
+<line x1="264" y1="96" x2="308" y2="96"></line>
+<line x1="416" y1="96" x2="458" y2="96"></line>
+</g>
+<text x="68" y="150" fill="#f0b429" font-size="10.5" text-anchor="middle">sample ~1/1024</text>
+<rect x="300" y="150" width="180" height="30" rx="6" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.3)"></rect>
+<text x="390" y="169" fill="#e7ebf1" font-size="10.5" text-anchor="middle">DAPI queries + web UI</text>
+<line x1="505" y1="122" x2="440" y2="150" stroke="#7c8593" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#da)"></line>
+<text x="216" y="196" fill="#7c8593" font-size="11" text-anchor="middle">All out-of-band, asynchronous — off the request's critical path, near-zero overhead</text>
+</svg>
+<figcaption>Fig. 3 · The collection pipeline: apps write sampled spans to local logs; a daemon later scoops and aggregates them into BigTable (one trace, one row); the whole chain runs after the request returns, never slowing live services.</figcaption>
+</figure>
+<h2>Key results</h2>
+<p>Dapper's most convincing "result" isn't an accuracy number but the fact that <strong>it actually ran in Google production and stayed useful for years</strong>. The paper reports: tracing covered nearly every system in the company, at enormous data scale; <strong>runtime overhead was negligible</strong> — a single span's creation and annotation is a hundreds-of-nanoseconds operation, and with sampling it barely dents production latency or throughput; the collection daemon uses minimal CPU and under 1% of network. The query API <strong>DAPI</strong> and trace visualizations built on top were used daily by many engineers for <strong>performance analysis (locating the critical path, finding services that inflate tail latency), inferring service dependencies, and cross-team debugging</strong>. Through a series of real usage stories the paper shows that a transparent, sampled, out-of-band tracing system is <strong>both viable at hyperscale and genuinely useful</strong>.</p>
+<h2>Why it matters / impact</h2>
+<p>Dapper defined the <strong>standard paradigm for distributed tracing</strong>. Its trio of <strong>trace / span / context propagation</strong> was inherited almost verbatim by nearly every tracing system since: Twitter's open-source <strong>Zipkin</strong> was built directly on Dapper, as was Uber's <strong>Jaeger</strong>; then came OpenTracing to unify the vendors, converging into the CNCF's <strong>OpenTelemetry</strong> standard — the trace ids, spans, and cs/sr/ss/cr-style timestamps you see in any microservice architecture today all descend from this report. More broadly, together with "logs and metrics" it turned <strong>observability</strong> from a slogan into one of engineering's three pillars — the <strong>conceptual foundation</strong> of modern cloud-native and microservice operations.</p>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>Sampling drops rare events</strong>: <code>1/1024</code> is fine for high-traffic services, but to chase a "one in ten thousand" anomaly or a low-traffic service, the crucial trace probably wasn't sampled at all. Dapper later added an "on-demand force-trace this request" mechanism; still-later systems (e.g. tail-based sampling) switched to "record everything first, then decide what to keep once something looks slow or wrong."</li>
+<li><strong>Depends on homogeneous infrastructure</strong>: its transparency rests on all of Google sharing one RPC / threading / control-flow library stack. In heterogeneous environments with non-uniform libraries you need explicit instrumentation or a unifying standard (exactly why OpenTelemetry exists), and transparency erodes.</li>
+<li><strong>The causal model favors RPC trees</strong>: Dapper mainly models RPC-style request-response calls. For work outside that pattern — batch aggregation, message-queue buffering, async tasks that pile many requests into one batch — causality blurs, and the span tree may not faithfully reflect real dependencies and blocking.</li>
+<li><strong>Aggregates drown individuals</strong>: rolling many traces into statistical views is handy for the big picture but easily averages away a single bizarre outlier request — which is often exactly what you need when debugging.</li>
+<li><strong>Tracing ≠ automatic diagnosis</strong>: Dapper faithfully lays out "what happened and how long each segment took," but "why it was slow, what the root cause is" still needs a human to interpret — it's a better pair of glasses, not an automatic doctor.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: assign each request a global trace id that propagates along the call chain, record each unit of work as a parent/child-linked span, reassemble a call tree, and see a system spanning thousands of machines from a single request's vantage.</p>
+<p>② Pain: a request fans out to hundreds or thousands of machines; per-machine logs are organized by machine, and no one can assemble a request's full causal chain — slow or wrong, you can't tell where it stalled.</p>
+<p>③ Three principles: application transparency, low overhead, company-wide scale — every design choice serves these.</p>
+<p>④ Data model: trace (one request) = a tree of spans; each span carries trace id / span id / parent id + cs/sr/ss/cr timestamps splitting cost into network transit vs server processing.</p>
+<p>⑤ Transparency secret: instrument the company-wide shared RPC / threading / control-flow libraries; the trace id propagates automatically via thread-local storage + RPC headers, with zero changes to business code.</p>
+<p>⑥ Low-overhead secret: sampling (~1/1024) crushes runtime cost + out-of-band async collection (local logs → daemon → BigTable, one trace per row) stays off the request's critical path.</p>
+<p>⑦ Impact: defined the trace/span/context-propagation paradigm, directly spawning Zipkin, Jaeger, OpenTelemetry — the foundation of observability, one of engineering's three pillars.</p>
+<p>⑧ Limits: sampling misses rare events; transparency needs homogeneous infra; the causal model favors RPC trees, blurring async/batch; aggregates drown outliers; tracing isn't automatic root-cause diagnosis.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for the full implementation details and usage stories, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
