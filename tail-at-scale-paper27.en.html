@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>The Tail at Scale — CS Papers Deep-Read Paper 27</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 27</p>
+<h1>The Tail at Scale</h1>
+<p class="sub">Dean &amp; Barroso · Google · CACM 2013</p>
+<p class="langbar"><a href="tail-at-scale-paper27.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2013, Google's Jeff Dean and Luiz Barroso wrote a short article — a few pages — called "The Tail at Scale," about something nobody running a large website can dodge: <strong>why a system that is "fast on average" still hands users visible stalls</strong>. Their answer isn't "make every machine faster" — you can't — it's to <strong>admit machines will occasionally be slow, then let the software absorb that slowness</strong>.</p>
+<h2>First, something odd</h2>
+<p>Suppose your machines are good citizens: each answers within a second 99% of the time and only dozes off 1% of the time. But one modern web search must <strong>ask a hundred machines at once and wait for all of them</strong> before it can assemble a result. And then — <strong>more than six out of ten requests take over a second</strong>. Every machine scores "99 out of 100," yet together they fail six times in ten.</p>
+<p>The reason is plain: <strong>you're not waiting on the average, you're waiting on the slowest one.</strong> One person can always be punctual; a team of twenty almost never arrives together — one latecomer and everyone waits. Scale doesn't add up the good luck, it <strong>amplifies the bad luck</strong>.</p>
+<p>And that "dozing off" isn't a machine breaking. It's a machine with other things on its plate: someone else's program on the same box is grabbing CPU and memory; a background chore occasionally tidies up accumulated data; memory garbage has to be collected, and collecting means pausing the real work to sweep; a machine that runs hot throttles itself; and requests queue up layer after layer. <strong>Each of these only costs a few milliseconds now and then — but if you're waiting on hundreds of machines at once, one of them is always mid-nap.</strong></p>
+<h2>The idea: treat "slow" as a fault to tolerate</h2>
+<p>Engineering went through an important change of mindset once: we stopped <strong>hoping machines wouldn't break</strong>, assumed they would, and kept spare copies so the system keeps working when one dies — that's <em>fault tolerance</em>. This article says: <strong>do the same thing for slowness.</strong></p>
+<p>The most direct move is a <strong>backup request</strong>: after sending a request to one machine, if it hasn't answered in a while, <strong>ask a second machine that holds the same data</strong>, use whichever answers first, and cancel the other. The beauty is how cheap it is — only that small minority of slow requests ever triggers a second ask, so you send well under a few percent extra traffic, while <strong>the slowest sliver of requests drops from "a second or two" to "tens of milliseconds."</strong> The other move is to dodge in advance: if a machine has been visibly sluggish lately, pull it off the roster and watch it for a while — <strong>drop one slow machine and the whole thing gets faster</strong>.</p>
+<h2>One delightfully counterintuitive trick</h2>
+<p>For unavoidable chores like background cleanup, intuition says "stagger them, don't let them collide." The article says the opposite: <strong>make all the machines do it at the same time.</strong> Once you see it, it's obvious — if they're staggered, at any given moment some machine is busy sweeping, and since you always wait for all of them, <strong>every single request gets dragged</strong>; if they all sweep together, only the requests in that one short window suffer and <strong>the rest of the time is spotless</strong>.</p>
+<p>An honest note: most of these moves <strong>buy stability with slack</strong> — asking twice and keeping spare replicas both require idle capacity. On a cluster already running flat out, the extra requests will drag everyone down instead.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Across hundreds or thousands of machines you wait on the slowest one, so "occasionally slow" gets amplified by scale into "often slow." Since you can't cure it, attack "machines get slow" the way we once attacked "machines break": ask a second machine, take whoever's first, bunch the chores into one moment, pull the slow machines out — teach the system to <strong>tolerate the tail</strong>.</p>
+</div>
+<p class="switch-hint">Want the amplification curve, the hedged/tied request timelines, and the measured numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">In a system where hundreds or thousands of machines cooperate on one request, <strong>occasional per-machine latency variability gets amplified by scale into stalls users can feel</strong> — because response time is set by <em>the slowest component</em>. The sources of that variability (resource contention, background maintenance, garbage collection, queueing, power throttling) can't be eliminated, so we should do for latency what <strong>fault tolerance</strong> once did for reliability: assemble a predictably responsive service out of unpredictable components using a set of <strong>tail-tolerant</strong> techniques. It also shifted the industry habit from "watch the average latency" to "watch the 99th / 99.9th percentile."</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Percentile latency / p99</strong>: line up a batch of requests from fastest to slowest; p99 is the latency at the 99% mark — "the slowest 1% are at least this slow." p50 is the median. <strong>Tail latency</strong> means that far-right sliver of especially slow requests.</li>
+<li><strong>Fan-out</strong>: one request is dispatched <strong>simultaneously</strong> to many downstream machines, spreading like branches; usually all of them must return before a result can be assembled. The bottom-layer machines doing the real work are <strong>leaf servers</strong> (each holding one index shard); the machine combining their results is the root.</li>
+<li><strong>Replica / partition</strong>: the same data kept on several machines is replication — any copy can answer the same read; slicing big data into blocks each owned by a different machine is partitioning.</li>
+<li><strong>Fault tolerance</strong>: assume components will fail, and use redundancy plus automatic failover to keep the system usable when they do.</li>
+<li><strong>Garbage collection (GC)</strong>: languages like Java reclaim unused memory automatically, which can briefly pause the program.</li>
+<li><strong>Head-of-line blocking</strong>: the person at the front of the queue takes forever, so everyone behind waits — even though each of them needs only a second.</li>
+<li><strong>Idempotent / quorum</strong>: an operation is idempotent if doing it repeatedly has the same effect as doing it once (a read is; "add 100 to the balance" isn't); a quorum write commits once a majority of replicas acknowledge, without waiting for the slowest.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Jeffrey Dean and Luiz André Barroso, two central figures in Google's infrastructure (Dean co-authored MapReduce, Bigtable, and Spanner; Barroso championed the "datacenter as a computer" view), published in <em>Communications of the ACM</em> in 2013. It isn't a research paper with a new algorithm but a <strong>distilled-experience perspective piece</strong>, compressing a decade of running hyperscale online services into one framework. It builds on MapReduce's (2004) <strong>backup tasks</strong> — re-launching a straggler task to race the original, the seed of "hedging" — and on Dapper (2010, Paper 26): only once you can see a whole call chain per request can you manage its tail.</p>
+<h2>The problem &amp; motivation</h2>
+<p>Start with the arithmetic that stunned everyone. Suppose a server has a <strong>1% chance</strong> of taking more than a second — a perfectly healthy-sounding number. But if a user request must ask 100 such servers <em>in parallel</em> and wait for <strong>all</strong> of them, then <strong>63% of user requests exceed one second</strong> (the chance that not one machine dozes is only <code>0.99¹⁰⁰ ≈ 37%</code> — "every machine goes smoothly" has to hit 100 times in a row, which is hard). <strong>Component-level rare events get amplified by fan-out width into a system-level norm.</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<line stroke="#7c8593" x1="60" x2="60" y1="34" y2="212"></line>
+<line stroke="#7c8593" x1="60" x2="532" y1="212" y2="212"></line>
+<text fill="#7c8593" font-size="11" x="16" y="30">slow requests</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="532" y="232">machines asked in parallel →</text>
+<text fill="#565c65" font-size="10" text-anchor="end" x="54" y="45">100%</text>
+<text fill="#565c65" font-size="10" text-anchor="end" x="54" y="130">50%</text>
+<line stroke="#2a2f36" x1="60" x2="532" y1="125" y2="125"></line>
+<polyline fill="none" points="60,210 106,194 152,179 244,154 336,133 428,116 520,102" stroke="#f0b429" stroke-width="2.4"></polyline>
+<circle cx="65" cy="208" fill="#e8794b" r="4"></circle>
+<text fill="#e8794b" font-size="11.5" x="76" y="204">1 machine → 1% slow</text>
+<circle cx="520" cy="102" fill="#f0b429" r="4.5"></circle>
+<text fill="#f0b429" font-size="12" font-weight="700" text-anchor="end" x="512" y="92">100 machines → 63% slow</text>
+<text fill="#9aa3ad" font-size="10.5" text-anchor="end" x="512" y="76">(waiting for all of them)</text>
+<text fill="#e7ebf1" font-size="12" x="112" y="248">"1% occasionally slow" per machine → six in ten requests slow at 100-way fan-out</text>
+</svg>
+<figcaption>Fig. 1 · Amplification: each machine is slower than a second only 1% of the time, but when one request waits for all 100, 63% of requests exceed a second — you wait on the slowest one.</figcaption>
+</figure>
+<p>The article also reports measurements from a real Google service: <strong>for one random leaf request the 99th-percentile latency is about 10 ms</strong>; <strong>"wait for all leaves" is about 140 ms at the 99th percentile</strong>; <strong>waiting for only 95% of the leaves</strong> brings it down to roughly 70 ms — same machines, and just changing "how many you wait for" moves user-visible latency several fold.</p>
+<p>The key insight: this slowness is <strong>mostly not failure</strong> but a by-product of normal operation, so no amount of "fixing it" will remove it — <strong>shared-resource contention</strong> (co-located applications competing for CPU cores, caches, memory and network bandwidth), <strong>background daemons</strong> (cheap on average, but a few milliseconds of hiccup when scheduled), <strong>global resource sharing</strong> (switches, shared file systems), <strong>maintenance activities</strong> (log compaction, index updates, data rebalancing), <strong>garbage-collection</strong> pauses, <strong>multi-layer queueing</strong> (NIC, OS, thread pools — each widens the distribution and can block the head of line), and <strong>power and thermal limits</strong> (throttling at the power cap). And hardware trends — more cores, more aggressive power saving and sharing — only widen the variability.</p>
+<h2>Core idea &amp; method</h2>
+<h3>Swapping the mental model: treat slow as a fault</h3>
+<p>The most valuable idea in the piece is an <strong>analogy</strong>: engineering long ago stopped chasing "components that never fail" and instead assumed failure, building reliable systems out of redundancy — <em>fault tolerance</em>. Here: <strong>do that for latency</strong>. Treat "this component is occasionally slow" as a <strong>transient fault</strong> the software routes around at runtime, and you can assemble a predictably responsive service from components whose response times are unpredictable. That stance is called <strong>tail-tolerant</strong>, and it plays out two ways: <strong>shrink the variability</strong>, and <strong>live with it</strong>.</p>
+<h3>Route one: shrink component-level variability</h3>
+<p><strong>① Differentiate service classes and queue high.</strong> Give interactive requests and offline batch work different priorities, keep the queues in the <strong>high layers close to the application</strong> and the low-level device queues short — the shorter the queue, the more say your scheduling policy has. <strong>② Break head-of-line blocking.</strong> Slice an expensive request into <strong>a series of small ones</strong> executed interleaved, so it can't dam up the millisecond-scale requests behind it.</p>
+<p><strong>③ Manage background activity — and synchronize the disruption.</strong> Throttle background tasks and push them toward low-load periods; the counterintuitive part is the second half: <strong>make the cluster's heavyweight background work happen at the same time everywhere, rather than staggered.</strong> Because when you wait for all the leaves, staggering means <strong>some machine is busy at every instant</strong>, so every request gets dragged; synchronizing <strong>compresses the damage into one short window</strong> and leaves the rest of the time clean.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e8794b" font-size="12" font-weight="700" x="20" y="20">staggered cleanup</text>
+<g fill="#7c8593" font-size="10">
+<text x="20" y="42">node A</text><text x="20" y="62">node B</text><text x="20" y="82">node C</text><text x="20" y="102">node D</text>
+</g>
+<g fill="rgba(255,255,255,0.04)" stroke="#3a3f47">
+<rect height="13" width="420" x="70" y="32"></rect><rect height="13" width="420" x="70" y="52"></rect>
+<rect height="13" width="420" x="70" y="72"></rect><rect height="13" width="420" x="70" y="92"></rect>
+</g>
+<g fill="rgba(232,121,75,0.55)" stroke="#e8794b">
+<rect height="13" width="46" x="96" y="32"></rect><rect height="13" width="46" x="214" y="52"></rect>
+<rect height="13" width="46" x="330" y="72"></rect><rect height="13" width="46" x="404" y="92"></rect>
+</g>
+<text fill="#e8794b" font-size="10.5" x="70" y="124">→ someone is always busy: every request pays</text>
+<text fill="#f0b429" font-size="12" font-weight="700" x="20" y="158">synchronized cleanup</text>
+<g fill="#7c8593" font-size="10">
+<text x="20" y="180">node A</text><text x="20" y="200">node B</text><text x="20" y="220">node C</text><text x="20" y="240">node D</text>
+</g>
+<g fill="rgba(255,255,255,0.04)" stroke="#3a3f47">
+<rect height="13" width="420" x="70" y="170"></rect><rect height="13" width="420" x="70" y="190"></rect>
+<rect height="13" width="420" x="70" y="210"></rect><rect height="13" width="420" x="70" y="230"></rect>
+</g>
+<g fill="rgba(240,180,41,0.55)" stroke="#f0b429">
+<rect height="13" width="46" x="214" y="170"></rect><rect height="13" width="46" x="214" y="190"></rect>
+<rect height="13" width="46" x="214" y="210"></rect><rect height="13" width="46" x="214" y="230"></rect>
+</g>
+<text fill="#f0b429" font-size="10.5" x="70" y="256">→ one short bad window, the rest clean</text>
+<text fill="#7c8593" font-size="10" text-anchor="end" x="490" y="150">time →</text>
+</svg>
+<figcaption>Fig. 2 · Synchronized disruption: the same total background work, but staggering makes every request hit some busy machine, while aligning it compresses the damage into one short window.</figcaption>
+</figure>
+<h3>Route two (a): within-request, short-term</h3>
+<p>An interactive request lives only tens of milliseconds — too short to observe and adapt — so the slowness must be routed around <strong>inside this one request</strong>. The core move is <strong>asking redundantly</strong>, but asking cleverly: sending every request to every replica would indeed take the fastest answer, at multiplied cost.</p>
+<p><strong>Hedged requests.</strong> Send to one replica first; <strong>if it hasn't answered past the time it normally would</strong> (the paper's threshold is the 95th percentile of expected latency), send a second copy to another replica, <strong>take whichever answers first and cancel the other</strong>. Why it's cheap: only the tail 5% of requests ever trigger the second ask, so <strong>extra traffic is a few percent</strong> while covering exactly the painful part. Measured: reading 1,000 keys from a BigTable-like table spread over 100 machines, <strong>hedging after a 10 ms delay cut the 99.9th-percentile latency from 1,800 ms to 74 ms, while sending only 2% more requests</strong>.</p>
+<p><strong>Tied requests.</strong> Hedging's flaw is that the waiting window itself is wasted. Tied requests go further: enqueue the request on two replicas <strong>at the same time</strong> and <strong>tell each machine who its twin is</strong>; whichever dequeues it and starts executing <strong>immediately sends the other a cancellation</strong>. So you're not waiting on a timeout but on "who reaches the head of the queue first" — consuming the <strong>queueing difference between machines</strong> directly. One key detail: give the second machine a tiny delay (about twice the average one-way network latency, say 1 ms) so both don't start at once and duplicate the work. The article reports it clearly lowers both median and 99.9th-percentile latency, and <strong>still helps when a large sort job is competing for the same disks</strong>.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ta" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#f0b429" font-size="12" font-weight="700" x="16" y="20">Hedged: ask one, then ask a second if it drags</text>
+<text fill="#7c8593" font-size="10" x="16" y="46">replica 1</text>
+<rect fill="rgba(232,121,75,0.22)" height="16" stroke="#e8794b" width="300" x="76" y="38"></rect>
+<text fill="#e8794b" font-size="10" x="382" y="50">this one is mid-nap (slow)</text>
+<text fill="#7c8593" font-size="10" x="16" y="76">replica 2</text>
+<rect fill="rgba(240,180,41,0.4)" height="16" stroke="#f0b429" width="70" x="156" y="68"></rect>
+<text fill="#f0b429" font-size="10" x="234" y="80">answers first → use it, cancel replica 1</text>
+<line stroke="#565c65" stroke-dasharray="3 3" x1="76" x2="76" y1="30" y2="96"></line>
+<line stroke="#565c65" stroke-dasharray="3 3" x1="156" x2="156" y1="30" y2="96"></line>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="76" y="108">sent</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="180" y="108">past the 95th pct → send a second</text>
+<line stroke="#2a2f36" x1="16" x2="544" y1="126" y2="126"></line>
+<text fill="#f0b429" font-size="12" font-weight="700" x="16" y="152">Tied: both queues at once, first to start cancels the other</text>
+<text fill="#7c8593" font-size="10" x="16" y="182">replica 1</text>
+<rect fill="rgba(255,255,255,0.05)" height="16" stroke="#565c65" stroke-dasharray="3 2" width="150" x="76" y="174"></rect>
+<text fill="#7c8593" font-size="9.5" x="86" y="186">still in the queue…</text>
+<rect fill="rgba(255,255,255,0.03)" height="16" stroke="#3a3f47" width="60" x="226" y="174"></rect>
+<text fill="#7c8593" font-size="9.5" x="294" y="186">cancelled</text>
+<text fill="#7c8593" font-size="10" x="16" y="216">replica 2</text>
+<rect fill="rgba(255,255,255,0.05)" height="16" stroke="#565c65" stroke-dasharray="3 2" width="40" x="76" y="208"></rect>
+<rect fill="rgba(240,180,41,0.4)" height="16" stroke="#f0b429" width="80" x="116" y="208"></rect>
+<text fill="#f0b429" font-size="10" x="206" y="220">shorter queue → starts first, cancels replica 1</text>
+<path d="M124,226 C156,244 196,244 230,196" fill="none" marker-end="url(#ta)" stroke="#7c8593" stroke-width="1.3"></path>
+<text fill="#9aa3ad" font-size="9.5" x="150" y="256">cancellation</text>
+<text fill="#7c8593" font-size="10" text-anchor="end" x="544" y="272">time →</text>
+</svg>
+<figcaption>Fig. 3 · Hedged vs tied requests: hedging sends a second copy once the 95th percentile is exceeded; tying enqueues on both and lets whoever starts first cancel the other, consuming the queueing difference directly.</figcaption>
+</figure>
+<h3>Route two (b): cross-request, longer-term</h3>
+<p>Some imbalances last seconds to minutes (a machine runs hot, load skews), so they can be tuned across requests:</p>
+<ul>
+<li><strong>Micro-partitions</strong>: don't make it "one machine = one partition"; carve out <strong>many more partitions than machines</strong> (the paper's order of magnitude is ten or twenty per machine) so the <strong>granularity of load movement gets fine</strong> — shifting a few small partitions rebalances load, and recovery spreads faster too.</li>
+<li><strong>Selective replication</strong>: detect or predict the "hot" micro-partitions (a suddenly viral query term) and <strong>add replicas only for those</strong>, spreading the hotspot without doubling storage overall.</li>
+<li><strong>Latency-induced probation</strong>: when a machine turns visibly slow, <strong>take it out of the serving set for a while</strong>, keep sending it probe requests to keep the health signal fresh, and reinstate it once it recovers. Counterintuitive but real: <strong>deliberately using one machine less lowers overall latency</strong>.</li>
+</ul>
+<h3>Two specialties of large retrieval systems</h3>
+<p><strong>"Good enough"</strong>: search has no single correct answer, so time can be a <strong>hard constraint</strong> — at the deadline, assemble the answer from whatever has arrived instead of waiting for straggling leaves, and if needed <strong>skip non-essential subsystems</strong> (spelling correction, ads) to buy time, trading a little result quality for predictable latency. <strong>Canary requests</strong>: one weird request hitting a never-exercised code path can crash or pathologically slow <strong>every</strong> leaf, so send it to <strong>one or two</strong> leaves first and only fan out to the rest if that returns normally — one extra hop of latency instead of a whole-fleet wipeout.</p>
+<h3>Why writes are less urgent</h3>
+<p>Most of these techniques require operations to be <strong>read-only or idempotent</strong> — repeating a read is harmless, repeating a transfer is not. Fortunately <strong>updates tend to be less tail-sensitive</strong>: many can be moved off the critical path and done asynchronously, many services tolerate a brief inconsistency window, and the <strong>quorum</strong> algorithms used when strong consistency is required are inherently tail-tolerant, committing as soon as a majority acknowledges.</p>
+<h2>Key results</h2>
+<p>This is a perspective piece, so the "results" aren't benchmark scores but three pieces of production evidence: <strong>①</strong> the amplification arithmetic and measurements (1% → 63%; one leaf at about 10 ms vs about 140 ms waiting for all, at the 99th percentile); <strong>②</strong> hedged requests cutting the 99.9th percentile from 1,800 ms to 74 ms for only 2% extra requests; <strong>③</strong> tied requests lowering median and 99.9th-percentile latency both on an idle cluster and under disk contention. Together they support the thesis: <strong>tail latency is measurable and budgetable, and a small amount of redundancy buys a large improvement.</strong></p>
+<h2>Why it matters</h2>
+<p>It first changed <strong>what we measure</strong>. Service performance used to be written down as "average response time"; this article got the industry to accept that <strong>the average carries almost no information and you must watch p99 / p99.9</strong>, and to write that into service-level objectives (SLOs). Every p99 curve on today's dashboards traces back here.</p>
+<p>Next, a whole toolkit went mainstream: hedged and tied requests became standard parts (gRPC ships hedged retry policies, Cassandra has speculative retry, MapReduce- and HDFS-style speculative execution shares the same root); "latency-induced probation" lives on in service meshes as <strong>outlier detection and ejection</strong> in implementations like Envoy; micro-partitioning is routine for load balancing in modern sharded systems; "good enough" is standard practice in search, recommendation and feed systems. More broadly, together with Dapper (which made it visible) it established <strong>latency engineering</strong> as a craft with a method: measure the distribution rather than the mean, decide whether the variability is source-side or amplified, then pick from "shrink it" versus "tolerate it."</p>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>A collection of experience, not a theory.</strong> It offers no model for "when to hedge, where to set the threshold, how much redundancy is optimal" — that's engineering judgment and tuning; queueing-theoretic analysis had to come later.</li>
+<li><strong>Buying stability with slack presumes slack exists.</strong> At high utilization, the extra requests raise load and lengthen queues in turn — a real <strong>positive-feedback risk</strong>; later work on <em>metastable failures</em> and retry storms is precisely a warning about overrunning this road, which is why modern implementations pair it with retry budgets, rate limits and circuit breakers.</li>
+<li><strong>It depends on idempotence and cheap cancellation.</strong> A non-idempotent write can't simply be duplicated, and if a cancellation is lost or late the duplicated work is wasted capacity.</li>
+<li><strong>Ejection and degradation both cost something.</strong> A too-sensitive probation threshold makes machines flap in and out, and ejecting a machine pushes its load onto others; "good enough" directly sacrifices result quality, which the article never quantifies — and it simply doesn't apply to accounting or regulatory lookups.</li>
+<li><strong>It assumes a homogeneous, controllable environment, and it masks rather than cures.</strong> The argument rests on a single datacenter's low-latency network, a unified software stack, and control over the whole stack; in multi-tenant clouds and heterogeneous microservices, "replicas are choosable, cancellations arrive, latency is measurable" all need re-verifying. And once the symptom is hidden, the sources of variability still consume resources — better isolation is the complementary path.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: under wide fan-out, response time is set by the slowest component, so occasional per-machine variability becomes a permanent stall; build "tail-tolerant" software the way we build fault-tolerant software.</p>
+<p>② Amplification: 1% chance of exceeding a second per machine, waiting on 100 in parallel, means 63% of requests exceed a second; measured, one leaf is about 10 ms at p99 versus about 140 ms waiting for all.</p>
+<p>③ Sources of variability: resource contention, background daemons, global sharing, maintenance activity, garbage collection, multi-layer queueing, power throttling — mostly by-products of normal operation, not removable.</p>
+<p>④ Shrinking it: service classes plus short high-level queues; slicing long requests to break head-of-line blocking; throttling background work and <strong>synchronizing</strong> the disruption (aligned beats staggered, because you always wait for every machine).</p>
+<p>⑤ Within-request: <strong>hedged requests</strong> (send a second copy past the 95th percentile of expected latency, take whoever's first) and <strong>tied requests</strong> (enqueue on two, first to start cancels the other, consuming the queueing difference). Key number: reading 1,000 keys, hedging after 10 ms took p99.9 from 1,800 ms to 74 ms for 2% extra requests.</p>
+<p>⑥ Cross-request and retrieval specialties: <strong>micro-partitions</strong>, <strong>selective replication</strong> of hot partitions, <strong>latency-induced probation</strong> (eject the slow machine — fewer machines, faster service), <strong>good enough</strong>, and <strong>canary requests</strong>; writes are less urgent because they can go async, tolerate brief inconsistency, and commit on a quorum.</p>
+<p>⑦ Limitations: experience rather than theory; it buys stability with slack (retries can backfire under load); it depends on idempotence and deliverable cancellation; and it masks the symptom rather than curing the source.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full measurement tables and further detail, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
