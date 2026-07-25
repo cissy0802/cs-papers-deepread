@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 27</p>
-<h1>The Tail at Scale：大规模系统的尾延迟</h1>
+<h1 data-tts="b5e439d77192d293">The Tail at Scale：大规模系统的尾延迟</h1>
 <p class="sub">Dean &amp; Barroso · Google · CACM 2013</p>
 <p class="langbar"><a href="tail-at-scale-paper27.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,28 +44,28 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="a45056110c733ce6">这篇论文干了什么？</h2>
 <p>2013 年，Google 的 Jeff Dean 和 Luiz Barroso 写了一篇只有几页的短文《The Tail at Scale》，讲一件做大型网站的人都躲不开的事：<strong>为什么系统「平均很快」，用户却总能碰上卡顿</strong>。他们的答案不是「把每台机器都修得更快」——那做不到——而是<strong>承认机器一定会偶尔慢，再让软件把这种慢兜住</strong>。</p>
-<h2>先说个怪事</h2>
+<h2 data-tts="18c0d9fbffc848c2">先说个怪事</h2>
 <p>假设你的机器很争气：每台有 99% 的概率一秒内回话，只有 1% 的时候会打个盹。可现代的一次网页搜索，要<strong>同时问一百台机器、等它们全都回话</strong>才能拼出结果。这时候——<strong>六成以上的请求都会超过一秒</strong>。每台都「99 分优秀」，合起来却「六成不及格」。</p>
 <p>原因很朴素：<strong>你等的不是平均，是最慢那一个。</strong>一个人出门总能准时，二十个人的团队几乎不可能同时到齐——只要一个人迟到，全队就得等。规模不是把好运相加，而是<strong>把坏运放大</strong>。</p>
 <p>而那点「打盹」并不是机器坏了，是它总有别的事在身：同机还跑着别人的程序在抢 CPU 和内存；后台程序偶尔要整理积攒的数据；内存里的垃圾要回收，回收时得停下手里的活打扫；机器太热会自动降速；请求还要一层层排队。<strong>每一项都只偶尔耽误几毫秒，可只要你同时等着上百台，就总有一台正好在打盹。</strong></p>
-<h2>那个点子：把「慢」当故障来容错</h2>
+<h2 data-tts="2a274845ef8dd9c1">那个点子：把「慢」当故障来容错</h2>
 <p>工程史上有过一次重要的心态转变：我们<strong>不再指望机器不坏</strong>，而是假设它一定会坏，靠多存副本、坏了就换一份，让系统照样能用——这叫<em>容错</em>。这篇文章说：<strong>对「慢」也照这个办。</strong></p>
 <p>最直接的一招叫<strong>备份请求</strong>：向一台机器发出请求后，如果它迟迟不回，就<strong>再向另一台存着同样数据的机器问一遍</strong>，谁先答用谁的，再把另一份取消掉。妙处在代价极小——只有那少数几个慢请求才会触发第二问，多发出去的请求还不到百分之几，而<strong>最慢那一小撮请求的耗时能从「一两秒」掉到「几十毫秒」</strong>。另一招是提前避开：某台机器最近明显反应慢，就先把它从名单里摘出来观察——<strong>摘掉一台慢机器，整体反而变快</strong>。</p>
-<h2>一个反直觉的小妙招</h2>
+<h2 data-tts="12129ce3ecaa41b4">一个反直觉的小妙招</h2>
 <p>后台清理这类必须做的脏活，直觉上应该「大家错开时间做，别撞一起」。文章却说：<strong>恰恰要让所有机器同时做。</strong>理由一想就通——错开的话，任何时刻总有某台机器正忙着打扫，而你每次都要等所有机器，于是<strong>每个请求都被拖一下</strong>；全体同时打扫，则只有那一小段时间的请求受影响，<strong>其余时间干干净净</strong>。</p>
 <p>说句诚实的：这些办法多半是<strong>用余量换稳定</strong>——多问一遍、多留副本，都得有机器闲着才使得出来；集群本来就满负荷时，多发的请求反而会把大家一起拖慢。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="5b60edbd9a6e1e18">一句话记住</h2>
 <div class="tl">
 <p>在成百上千台机器上，你等的是最慢那一个，所以「偶尔慢一下」会被规模放大成「经常慢」。既然根治不了，就像当年对付「机器会坏」那样去对付「机器会慢」：多问一台、谁快用谁、把脏活集中到同一时刻、把慢机器先摘掉——让系统<strong>对长尾容错</strong>。</p>
 </div>
 <p class="switch-hint">想看放大效应的曲线、对冲/绑定请求的时序图和实测数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="c72f8542c45cee66">一句话</h2>
 <p class="lead">在成百上千台机器协同服务一次请求的系统里，<strong>单机偶发的延迟抖动会被规模放大成用户可感的常态卡顿</strong>——因为响应时间取决于<em>最慢的那个组件</em>。抖动的根源（资源争抢、后台维护、垃圾回收、排队、功耗降频）无法彻底消除，所以应当像当年用<strong>容错（fault tolerance）</strong>从不可靠零件搭出可靠系统那样，用一套<strong>「尾延迟容错」（tail-tolerant）</strong>技术从不可预测的组件搭出可预测的服务。它也把行业习惯从「看平均延迟」改成了「盯 99 / 99.9 分位」。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="4d84c059b2e2f709">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>百分位延迟 / p99（percentile latency）</strong>：把一批请求的耗时从快到慢排队，第 99% 位置那个的耗时——即「最慢的 1% 至少这么慢」；p50 就是中位数。<strong>尾延迟（tail latency）</strong>就指分布最右端这一小撮特别慢的请求。</li>
@@ -77,9 +77,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>幂等（idempotent）/ 多数派（quorum）</strong>：同一操作重复做效果与做一次相同（读是幂等的，「余额加 100」不是）；一次写入只要多数副本确认就算成功、不必等最慢那个。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="d9f75ac2bcca98a8">坐标</h2>
 <p>作者是 Jeffrey Dean 与 Luiz André Barroso——Google 基础设施的两位核心人物（Dean 是 MapReduce、Bigtable、Spanner 的作者之一；Barroso 推动了「把整个数据中心当成一台计算机」这一视角），2013 年发表于《Communications of the ACM》。它不是有新算法的研究论文，而是一篇<strong>经验提炼式的观点文章</strong>，把 Google 十余年做超大规模在线服务的实践压成一个统一框架。它上承 MapReduce（2004）的<strong>备份任务</strong>——给落后的任务再起一份副本抢跑，正是「对冲」的雏形；也上承 Dapper（2010，本站 Paper 26）：先有按单次请求看穿全链路的<strong>测量</strong>能力，才谈得上治理尾延迟。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="9632a6e808f3fa80">问题与动机</h2>
 <p>先看那个把所有人震住的算术。假设一台服务器有 <strong>1% 的概率</strong>响应超过一秒——听起来是个相当健康的指标。但如果一次用户请求必须<em>并行</em>问 100 台这样的服务器、并等它们<strong>全部</strong>返回，那么<strong>63% 的用户请求会超过一秒</strong>（一台都不打盹的概率只有 <code>0.99¹⁰⁰ ≈ 37%</code>——「每台都顺利」要连中 100 次，很难）。<strong>组件级的小概率抖动，被扇出宽度放大成了系统级的常态。</strong></p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
@@ -102,10 +102,10 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </figure>
 <p>文章还给了一组 Google 真实服务的测量：<strong>随机看一个叶子请求，99 分位耗时约 10 毫秒</strong>；<strong>「等所有叶子都返回」的 99 分位约 140 毫秒</strong>；<strong>只等 95% 的叶子</strong>则降到约 70 毫秒——同一批机器，只因「等多少个」不同，延迟差出好几倍。</p>
 <p>关键洞察是：这些慢<strong>大多不是故障</strong>，而是正常运行的副产品，不可能靠「修好它」消灭——<strong>共享资源争抢</strong>（同机应用争 CPU 核、缓存、内存与网络带宽）、<strong>后台守护进程</strong>（平均只吃一点资源，被调度到时造成几毫秒打嗝）、<strong>全局资源共享</strong>（交换机、共享文件系统）、<strong>维护活动</strong>（日志合并压缩、索引更新、数据重平衡）、<strong>垃圾回收</strong>停顿、<strong>多层排队</strong>（网卡、操作系统、线程池，每层都把分布拉宽还会队头阻塞）、<strong>功耗与散热</strong>（撞功耗上限降频）。而硬件趋势——更多核、更激进的省电与共享——只会让抖动更大。</p>
-<h2>核心思想 / 方法</h2>
-<h3>心智模型的替换：把「慢」当成一种故障</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="6863e2130a8c94bd">心智模型的替换：把「慢」当成一种故障</h3>
 <p>全文最值钱的想法是一个<strong>类比</strong>：工程界早已不再追求「零件不坏」，而是假设零件会坏、用冗余搭出可靠系统——这就是<em>容错</em>。这里说：<strong>对延迟也这么干</strong>，把「组件偶发地慢」当成一种<strong>暂时性故障</strong>让软件运行时绕开，于是能用响应时间不可预测的组件拼出响应时间可预测的服务。这个立场叫 <strong>tail-tolerant</strong>，落法分两路：<strong>压小抖动</strong>与<strong>与抖动共存</strong>。</p>
-<h3>路线一：把组件级抖动压小</h3>
+<h3 data-tts="b73438fcc2800417">路线一：把组件级抖动压小</h3>
 <p><strong>① 区分服务等级 + 高层排队</strong>：交互式请求与离线批处理分优先级，队列维护在<strong>靠近应用的高层</strong>、底层设备队列尽量短——队列越短，调度策略才说得上话。<strong>② 拆掉队头阻塞</strong>：把大请求<strong>切成一串小请求</strong>交替执行，它就不会把后面只需几毫秒的请求全堵在门口。</p>
 <p><strong>③ 管好后台活动，并让扰动同步化。</strong>后台任务要限流、挪到负载低谷；反直觉的是第二句：<strong>让全集群的重量级后台活动同时发生，而不是各自错开。</strong>因为在「等所有叶子返回」的结构里，错开等于<strong>任何时刻都有某台机器在忙</strong>，每个请求都被拖一下；同步化把伤害<strong>压缩进一个短窗口</strong>，其余时间全都干净。</p>
 <figure>
@@ -140,7 +140,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 2 · 同步化扰动：后台维护总量不变，但「各自错开」会让每个请求都撞上某台忙碌的机器；「全体对齐」把伤害压缩进一个短窗口。</figcaption>
 </figure>
-<h3>路线二（甲）：请求内的即时对策</h3>
+<h3 data-tts="a5079decdd474b5f">路线二（甲）：请求内的即时对策</h3>
 <p>交互式请求只有几十毫秒寿命，来不及慢慢观察调整，只能在<strong>这一次请求内部</strong>把慢绕开。核心手法是<strong>冗余问一遍</strong>，但要问得聪明——每个请求都发给所有副本固然能取最快的，代价却成倍。</p>
 <p><strong>对冲（hedged request）。</strong>先只发给一个副本；<strong>若它超过「平常该回的时间」还没回</strong>（论文的门槛是预期延迟的 95 分位），就再向第二个副本发一份，<strong>谁先答用谁的、然后取消另一个</strong>。便宜的原因：只有尾部那 5% 的请求会触发第二问，<strong>额外流量只有百分之几</strong>，却正好覆盖了最疼的部分。实测：在数据分布于 100 台机器的类 Bigtable 表上读 1000 个键，<strong>延迟 10 毫秒后对冲，99.9 分位从 1800 毫秒压到 74 毫秒，多发的请求只有 2%</strong>。</p>
 <p><strong>绑定请求（tied request）。</strong>对冲的缺陷是那段等待窗口本身白等了。绑定更进一步：<strong>同时</strong>把请求塞进两个副本的队列，并<strong>告诉每台机器它的「孪生兄弟」是谁</strong>；哪台先把它从队列取出来开工，就<strong>立刻给另一台发取消消息</strong>。这样等的不是超时，而是「谁先排到队头」——直接吃掉机器间的<strong>排队时间差</strong>。关键细节：给第二台加一点微小延迟（约两倍平均网络单程时延，如 1 毫秒），免得两台同时开工白干一份。文章报告它能明显压低中位与 99.9 分位，<strong>集群同时跑着大规模排序作业争抢磁盘时也依然有效</strong>。</p>
@@ -175,23 +175,23 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 3 · 对冲请求 vs 绑定请求：对冲是「等超过 95 分位再补发一份」；绑定是「同时入两队、谁先开工就叫停另一台」，直接吃掉机器间的排队时间差。</figcaption>
 </figure>
-<h3>路线二（乙）：跨请求的长期对策</h3>
+<h3 data-tts="c3ed4e4ca5f096b8">路线二（乙）：跨请求的长期对策</h3>
 <p>有些不均衡持续几秒到几分钟（机器变热、负载倾斜），可以跨请求慢慢调：</p>
 <ul>
 <li><strong>微分区（micro-partition）</strong>：别让「一台机器 = 一个分区」，而是切出<strong>远多于机器数</strong>的小分区（论文的量级是每台放一二十个），搬动负载的<strong>颗粒就细了</strong>——只挪几个小分区即可匀负载，故障恢复也摊得更快。</li>
 <li><strong>选择性复制（selective replication）</strong>：检测或预测出「热」的微分区（如爆红的查询词），<strong>只给它们多加副本</strong>，热点被分摊又不必整体加倍存储。</li>
 <li><strong>延迟诱导的留观（latency-induced probation）</strong>：某台机器明显变慢就<strong>暂时从服务名单摘掉</strong>，继续发探测请求保持健康信号新鲜，恢复了再放回。反直觉但真实：<strong>主动少用一台机器，整体延迟反而下降</strong>。</li>
 </ul>
-<h3>大型检索系统的两个特产</h3>
+<h3 data-tts="3859255c57d725bd">大型检索系统的两个特产</h3>
 <p><strong>「够用就返回」（good enough）</strong>：搜索不存在唯一正确答案，于是可把<strong>时间当成硬约束</strong>——到点就用已收到的结果合成答案、不等落后的叶子，必要时<strong>主动跳过非核心子系统</strong>（如拼写纠正、广告）抢时间，以少许结果质量换延迟可预测。<strong>金丝雀请求（canary request）</strong>：一个诡异请求踩到从未走过的代码路径，可能让<strong>所有</strong>叶子一起崩溃或陷入病态慢，所以先发给<strong>一两台</strong>叶子试水、正常返回才向全部扇出——多花一跳延迟，换掉一次全军覆没。</p>
-<h3>为什么「写」不那么急</h3>
+<h3 data-tts="c8f67fb9e35aa029">为什么「写」不那么急</h3>
 <p>这些技术多要求操作<strong>只读或幂等</strong>——重复读无害，重复转账则不行。幸运的是<strong>更新对尾延迟通常不那么敏感</strong>：许多更新可挪出关键路径异步做，很多服务能容忍短暂的不一致窗口；而强一致时用的<strong>多数派</strong>算法本就自带尾延迟容错，多数副本确认即提交。</p>
-<h2>关键结果</h2>
+<h2 data-tts="75dcbd9678cabc2a">关键结果</h2>
 <p>这是观点文章，「结果」不是基准分数，而是三组生产系统里的证据：<strong>①</strong> 放大效应的算术与实测（1% → 63%；单叶子 99 分位约 10 毫秒 vs 等全部约 140 毫秒）；<strong>②</strong> 对冲请求把 99.9 分位从 1800 毫秒降到 74 毫秒、额外请求仅 2%；<strong>③</strong> 绑定请求在空闲与磁盘争抢两种条件下都明显压低中位与 99.9 分位。合起来支撑全文论点：<strong>尾延迟可测量、可预算，能用很小的冗余换很大的改善。</strong></p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="821a7b4a554c1023">为什么重要 / 影响</h2>
 <p>它首先改变了<strong>度量什么</strong>。此前服务性能习惯写「平均响应时间」；这篇文章让业界普遍接受：<strong>平均值几乎不含信息量，要盯 p99 / p99.9</strong>，并把它写进服务的 SLO（服务等级目标）。今天监控面板上那条 p99 曲线，思想源头就在这里。</p>
 <p>其次是<strong>一整套落地机制</strong>：对冲/绑定请求成了标准配件（gRPC 内置对冲重试、Cassandra 的推测性重试、MapReduce 与 HDFS 系的推测执行同源）；「延迟留观」在 Envoy 等服务网格里以<strong>离群点摘除（outlier detection）</strong>的形式存在；微分区是现代分片系统匀负载的常规做法；「够用就返回」是搜索、推荐、feed 的通行惯例。更宏观地，它和 Dapper（先能看见）一起把<strong>延迟工程</strong>确立成一门手艺：先测分布而非均值，再判断抖动来自源头还是放大，然后在「减小抖动」与「容忍抖动」里选配。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="89f274ab650531b5">局限与批评</h2>
 <ul>
 <li><strong>是经验合集，不是理论。</strong>没有给出「何时该对冲、门槛设在哪、冗余预算多少最优」的模型，全靠工程判断与调参；排队论视角的分析要靠后续工作补。</li>
 <li><strong>用余量换稳定，前提是有余量。</strong>利用率本来就高时，多发的请求推高负载、反过来加长队列——这是真实的<strong>正反馈风险</strong>；后来关于<em>亚稳态失效</em>与重试风暴的研究正是在警告这条路走过头，现代实现因此要配重试预算、限流与熔断。</li>
@@ -199,7 +199,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>摘除与降级都有代价。</strong>留观阈值太敏感会让机器反复上下线，摘掉机器又意味着把负载推给别人；「够用就返回」直接牺牲结果质量且文章没量化它——账务、法规查询这类场景根本不适用。</li>
 <li><strong>假设同构可控的环境，且掩盖而非根治。</strong>论述建立在单数据中心低延迟网络、统一软件栈、对全栈有控制权之上；多租户云与异构微服务里，「副本可选、取消可达、延迟可测」都要重新验证。症状消失后抖动源头仍在消耗资源——更好的隔离是互补的另一条路。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="9fbdfc720424fd87">要点</h2>
 <div class="tl">
 <p>① 一句话：大规模扇出下响应时间取决于最慢的那个组件，单机偶发抖动被放大成常态卡顿；应当像做容错那样，做「尾延迟容错」的软件。</p>
 <p>② 放大效应：单机 1% 概率超一秒、并行等 100 台全返回，则 63% 的请求超一秒；实测「等一个叶子」99 分位约 10 毫秒，「等全部」约 140 毫秒。</p>
