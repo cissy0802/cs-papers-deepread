@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Denoising Diffusion Probabilistic Models (DDPM) — CS Papers Deep-Read Paper 28</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 28</p>
+<h1>Denoising Diffusion Probabilistic Models (DDPM)</h1>
+<p class="sub">Ho, Jain &amp; Abbeel · UC Berkeley · NeurIPS 2020</p>
+<p class="langbar"><a href="ddpm-paper28.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>Today you can type a sentence and watch an AI paint a picture — Midjourney, Stable Diffusion, DALL·E. The machinery underneath is called a <strong>diffusion model</strong>. In 2020, three people at Berkeley (Ho, Jain, Abbeel) wrote this paper, DDPM, and made an old idea finally work: <strong>let a machine start from a screenful of TV static and slowly rub a photograph out of it</strong> — a photograph of something that never existed. It was the first time this approach beat the reigning champion on picture quality, and nearly every AI image and video product since has been built on it.</p>
+<h2>An analogy</h2>
+<p>Before this, the dominant way to teach a machine to paint was <strong>forger versus inspector</strong>: one network fakes pictures, the other calls out the fakes, and the two fight their way to competence. The pictures came out gorgeous, but training was a tightrope walk — tip the balance slightly and it collapses — and the forger often learned to paint only a handful of things.</p>
+<p>DDPM took a completely different route, one that is almost funny in its plainness: <strong>learn to destroy first, then play the tape backwards.</strong></p>
+<h2>The idea: split one hard job into a thousand easy ones</h2>
+<p>Take a sharp photo and sprinkle a thin layer of sand over it. Then another layer, and another. After a thousand layers the photo is gone — nothing but static. Nobody needs to <em>learn</em> how to do that; ruining a picture is free.</p>
+<p>Here's the point: <strong>play that tape backwards and you have a photograph growing out of static.</strong> "Paint a picture from nothing" is impossibly hard, but "brush off the one thin layer of sand that was just sprinkled on" is easy. The hard job has been cut into a thousand nearly thoughtless small ones — and the small one is all the machine ever has to learn.</p>
+<h2>All it ever learns is: spot the sand</h2>
+<p>Training is almost cheating in its simplicity. Take a real photo, pick a grubbiness level at random, and sprinkle that much sand on in one go — and <strong>because we sprinkled it ourselves, we are holding the answer key</strong>. Hand the network the dirty picture along with "this is grubbiness level 400" and ask it exactly one question: <em>what does the sand on here look like?</em> It points; we compare against the answer key; we nudge it. No opponent, no game — one fill-in-the-blank question with a known answer. That is why it trains so calmly.</p>
+<p>Generation runs the same machinery backwards. Grab a fistful of static, ask "which of this is sand," subtract a little, ask again, subtract again — a thousand rounds later, a photograph nobody ever took has surfaced. Why does something <em>new</em> come out instead of one of the training photos? Because <strong>the starting point is a random fistful of static</strong>, and each step only pushes the picture a little way toward "looking more like a real photograph." Different start, different ending — like staring at clouds: the clouds are random, but you always end up seeing something specific in them.</p>
+<h2>What it bought us</h2>
+<p>No more tightrope: training is stable, and the pictures come out both varied and clean. On the same dataset it overtook the best adversarial model of its day. More importantly the recipe kept growing — bolt on "brush according to this text description" and you get the type-and-get-a-picture products of today; video generation runs on the same idea.</p>
+<p>The honest cost is a single line, but a heavy one: <strong>producing one picture means running the network back and forth a thousand times, hundreds of times slower than the one-shot rival it beat.</strong> Much of the follow-up research since has been about squeezing those thousand steps down to a few dozen.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Turn "paint a picture from nothing" inside out: take a thousand small steps to sprinkle a photo into static (no learning needed), then train a network to do one job — spot the noise added at each step. To generate, start from random static and repeatedly subtract the noise the network points at, and a picture grows. Stable to train, diverse in output; the price is a thousand passes per image.</p>
+</div>
+<p class="switch-hint">Want the noising/denoising chain diagram, the objective, and the numbers? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">DDPM casts image generation as a <strong>fixed noising chain</strong> plus a <strong>learned denoising chain</strong>: a thousand small steps blur a real image into pure Gaussian noise, and a neural network is trained to walk that chain back. The paper's decisive move is reparameterizing the training objective into <strong>"predict the noise that was added at this step,"</strong> which collapses an intimidating variational bound into a plain mean-squared-error regression. It was the first time a diffusion model matched and beat GANs on sample quality (unconditional CIFAR-10: Inception Score 9.46, FID 3.17), and it is the methodological foundation of every text-to-image and text-to-video system in use today.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Generative model</strong>: a model that produces new samples rather than judging existing ones — the goal is for its output to look like a fresh draw from the distribution the training data came from.</li>
+<li><strong>Gaussian noise</strong>: random "static" drawn from a normal distribution, fully described by two numbers (mean and variance) and therefore extremely convenient mathematically. Diffusion models use nothing but this one kind of noise.</li>
+<li><strong>Markov chain</strong>: a sequence of states where each step depends only on the previous one, never on earlier history. Both the noising and the denoising chain have this shape.</li>
+<li><strong>Maximum likelihood / variational bound (ELBO)</strong>: the classic way to train a generative model is to make it assign high probability to the real data. When that probability can't be computed directly, you optimize a computable lower bound on it instead — the variational bound.</li>
+<li><strong>GAN (generative adversarial network)</strong>: a generator fakes images while a discriminator calls out fakes, trained against each other. Fast to sample and sharp, but unstable to train and prone to "mode collapse" — producing only a few kinds of output.</li>
+<li><strong>VAE (variational autoencoder)</strong>: a generative model that squeezes an image into a latent vector and decodes it back. Stable to train, but tends to produce blurry images.</li>
+<li><strong>U-Net</strong>: a convolutional network that downsamples stage by stage, upsamples back, and wires matching resolutions together with skip connections. Input and output are the same size; it is the standard backbone for per-pixel prediction.</li>
+<li><strong>Score / Langevin sampling</strong>: the "score" is the direction in which probability density increases fastest. Repeatedly stepping along it while injecting a bit of randomness draws samples from that distribution — this procedure is Langevin dynamics.</li>
+<li><strong>FID / Inception Score</strong>: two automatic measures of generated-image quality. FID compares generated and real images as distributions in a pretrained network's feature space — <strong>lower is better</strong>. Inception Score rewards sharpness and variety — higher is better.</li>
+<li><strong>bits/dim</strong>: treating the model as a compressor, how many bits it costs on average to store one pixel component. Lower means a better likelihood fit.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>By Jonathan Ho, Ajay Jain and Pieter Abbeel (UC Berkeley), NeurIPS 2020. It inherits from two lines of work: Sohl-Dickstein et al. (2015), who framed generation as diffusion borrowed from non-equilibrium thermodynamics — the idea was there, the samples were bad — and Song &amp; Ermon (2019), whose <em>score-based</em> models sampled via Langevin dynamics. DDPM welded the two together and got them working. What it launched needs no introduction: DDIM's few-step sampling, classifier-free guidance, Latent Diffusion / Stable Diffusion, DALL·E 2, Imagen, and today's video generators.</p>
+<h2>The problem and the motivation</h2>
+<p>Around 2020 generative modeling had three main roads, each with a hard defect. <strong>GANs</strong> produced the best-looking images, but training is a two-network game that collapses on a bad hyperparameter, tends toward mode collapse and poor coverage of the data, and offers no comparable likelihood number. <strong>VAEs and autoregressive models</strong> trained stably with a clean likelihood story, but were respectively blurry and painfully slow to sample. <strong>Diffusion</strong> had existed since 2015 with an elegant theory — the objective is an honest likelihood bound — but its samples were bad enough that almost nobody took it seriously.</p>
+<p>So the real question was not "is there a third road," but: <strong>why does this theoretically clean road produce such poor images, and can we reach GAN-grade quality without adversarial training?</strong> DDPM's answer: the fault lies in <strong>how the model is parameterized and how the loss is written</strong>, not in the framework.</p>
+<h2>Core ideas and method</h2>
+<h3>1. Forward: a noising chain with nothing to learn</h3>
+<p>Take a real image <code>x₀</code> and define a fixed <code>T</code>-step process (the paper uses <code>T = 1000</code>). Each step mixes in a little Gaussian noise and shrinks the remaining image slightly; the strength comes from a schedule <code>β₁…β_T</code> fixed in advance (linear from <code>1e-4</code> to <code>0.02</code>). After 1000 steps the image is pure Gaussian noise <code>x_T</code>, carrying nothing of the original. <strong>This chain has no learnable parameters</strong> — it is simply the destruction we chose.</p>
+<p>One property matters enormously: because every step is Gaussian with a fixed strength, <strong>any intermediate noisy image can be computed in one shot, with no iteration</strong>:</p>
+<p><code>x_t = √ᾱ_t · x₀ + √(1−ᾱ_t) · ε</code>, where <code>ε</code> is standard Gaussian noise and <code>ᾱ_t</code> is a coefficient derived from the schedule that decreases with t. In words: <strong>the image at step t is the original faded down plus a proportional dose of noise mixed in</strong>; the larger t, the fainter the original and the heavier the noise. This is what lets training pick a random t and instantly produce both the noisy image and its answer key.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker>
+<marker id="ag" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.55)" height="62" rx="5" stroke="#f0b429" width="62" x="26" y="86"></rect>
+<rect fill="rgba(240,180,41,0.38)" height="62" rx="5" stroke="#f0b429" width="62" x="150" y="86"></rect>
+<rect fill="rgba(240,180,41,0.20)" height="62" rx="5" stroke="#b08a3a" width="62" x="274" y="86"></rect>
+<rect fill="rgba(240,180,41,0.09)" height="62" rx="5" stroke="#7c8593" width="62" x="398" y="86"></rect>
+<circle cx="290" cy="104" fill="#d9dee5" r="1.6"></circle><circle cx="312" cy="122" fill="#d9dee5" r="1.6"></circle><circle cx="300" cy="138" fill="#d9dee5" r="1.6"></circle><circle cx="326" cy="98" fill="#d9dee5" r="1.6"></circle>
+<circle cx="410" cy="98" fill="#d9dee5" r="1.7"></circle><circle cx="428" cy="112" fill="#d9dee5" r="1.7"></circle><circle cx="446" cy="100" fill="#d9dee5" r="1.7"></circle><circle cx="416" cy="130" fill="#d9dee5" r="1.7"></circle><circle cx="440" cy="138" fill="#d9dee5" r="1.7"></circle><circle cx="452" cy="122" fill="#d9dee5" r="1.7"></circle><circle cx="404" cy="118" fill="#d9dee5" r="1.7"></circle><circle cx="432" cy="92" fill="#d9dee5" r="1.7"></circle>
+<text fill="#7c8593" font-size="13" text-anchor="middle" x="120" y="122">···</text>
+<text fill="#7c8593" font-size="13" text-anchor="middle" x="244" y="122">···</text>
+<text fill="#7c8593" font-size="13" text-anchor="middle" x="368" y="122">···</text>
+<text fill="#7c8593" font-size="13" text-anchor="middle" x="492" y="122">···</text>
+<rect fill="rgba(255,255,255,0.06)" height="62" rx="5" stroke="#7c8593" width="62" x="500" y="86"></rect>
+<circle cx="512" cy="98" fill="#b9c0ca" r="1.8"></circle><circle cx="530" cy="106" fill="#b9c0ca" r="1.8"></circle><circle cx="548" cy="96" fill="#b9c0ca" r="1.8"></circle><circle cx="518" cy="120" fill="#b9c0ca" r="1.8"></circle><circle cx="540" cy="128" fill="#b9c0ca" r="1.8"></circle><circle cx="506" cy="136" fill="#b9c0ca" r="1.8"></circle><circle cx="528" cy="142" fill="#b9c0ca" r="1.8"></circle><circle cx="550" cy="118" fill="#b9c0ca" r="1.8"></circle>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="57" y="166">x₀ real image</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="181" y="166">x₁</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="305" y="166">x_t</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="429" y="166">x_(T−1)</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="531" y="166">x_T pure noise</text>
+<path d="M92,74 C110,54 128,54 146,74" fill="none" marker-end="url(#ar)" stroke="#e8794b" stroke-width="1.6"></path>
+<path d="M340,74 C358,54 376,54 394,74" fill="none" marker-end="url(#ar)" stroke="#e8794b" stroke-width="1.6"></path>
+<text fill="#e8794b" font-size="12" text-anchor="middle" x="280" y="46">forward q: add a little Gaussian noise (fixed, nothing to learn)</text>
+<path d="M146,180 C128,202 110,202 92,180" fill="none" marker-end="url(#ag)" stroke="#f0b429" stroke-width="1.6"></path>
+<path d="M394,180 C376,202 358,202 340,180" fill="none" marker-end="url(#ag)" stroke="#f0b429" stroke-width="1.6"></path>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="280" y="216">reverse p: remove a little noise (this is what is learned)</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="238">a closed form jumps from x₀ to any x_t in one shot — no need to walk t steps</text>
+</svg>
+<figcaption>Fig. 1 · Two chains: rightward is fixed noising (anyone can do it), leftward is learned denoising — generation is the tape played backwards.</figcaption>
+</figure>
+<h3>2. Reverse: generation as a string of small Gaussian steps</h3>
+<p>Generation walks the chain backwards: start from pure noise <code>x_T</code> and repeatedly ask what the slightly cleaner previous image looked like. The good news is mathematical: <strong>when each forward step adds only a little noise, the reverse step is itself approximately Gaussian</strong>. So the network never has to emit a complicated distribution over whole images — only the <strong>mean</strong> of a small Gaussian. (The variance is simply fixed to a constant, <code>β_t</code> or a close variant; the paper found both give comparable sample quality.)</p>
+<p><strong>This is the entire payoff of chopping the problem up</strong>: modeling "the distribution of all real images" in one shot is hopeless, while "given a slightly dirty image, guess a slightly cleaner one" is local, gentle, nearly linear. A thousand of those small tasks in series is equivalent to the one impossible task.</p>
+<h3>3. The decisive move: predict the noise, not the mean</h3>
+<p>In the variational bound, each term pushes the network's predicted mean toward some true posterior mean. The paper performs one algebraic rearrangement: since <code>x_t</code> is built out of <code>x₀</code> and the noise <code>ε</code>, that true mean can be rewritten as a combination of <code>x_t</code> and <code>ε</code>. So let the network <strong>predict the noise ε directly</strong> and recover the mean by formula. The loss collapses to a single line:</p>
+<p><code>L_simple = ‖ ε − ε_θ(√ᾱ_t·x₀ + √(1−ᾱ_t)·ε , t) ‖²</code></p>
+<p>In words: <strong>draw a training image at random, a step count t at random, and a blob of noise at random; sprinkle it on; show the network the dirty image and t; ask it to point out the noise. The closer it points, the smaller the loss.</strong> No adversary, no sampling loop inside training, no partition function — an ordinary mean-squared-error regression, as stable as training a classifier.</p>
+<p>Why does this rewrite matter so much? Two reasons. First, <strong>it makes the target a scale-stable quantity</strong>: whatever t is, the answer is always a unit Gaussian blob, so the network never has to chase wildly varying magnitudes. Second, the paper shows this form is exactly equivalent to <em>denoising score matching</em>: predicting the noise is, up to a constant, estimating "which direction makes this image more like a real image" — the score — and the sampling loop becomes annealed Langevin dynamics. <strong>One equation joins the variational-bound view and the score-matching view.</strong></p>
+<p>There is also an accidental gift. <code>L_simple</code> amounts to <strong>throwing away the t-dependent weights</strong> in the variational bound, and the effect is to <strong>down-weight the small-t terms</strong> — the nearly clean images that differ only in fine detail — letting the network spend its capacity on the large-t steps where the noise is heavy and the job is genuinely hard. The paper measures both: training the strict bound gives better likelihood numbers; training <code>L_simple</code> gives <strong>much better pictures</strong>.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.14)" height="34" rx="6" stroke="#f0b429" width="112" x="20" y="34"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="76" y="56">real image x₀</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="112" x="20" y="94"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="76" y="116">random step t</text>
+<rect fill="rgba(232,121,75,0.14)" height="34" rx="6" stroke="#e8794b" width="112" x="20" y="154"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="76" y="176">random noise ε</text>
+<path d="M132,51 L186,88" fill="none" marker-end="url(#a2)" stroke="#7c8593"></path>
+<path d="M132,111 L186,111" fill="none" marker-end="url(#a2)" stroke="#7c8593"></path>
+<path d="M132,171 L186,134" fill="none" marker-end="url(#a2)" stroke="#7c8593"></path>
+<rect fill="rgba(255,255,255,0.04)" height="46" rx="6" stroke="#b08a3a" width="118" x="192" y="88"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="251" y="106">one-shot noising</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="251" y="123">gives dirty image x_t</text>
+<path d="M310,111 L364,111" fill="none" marker-end="url(#a2)" stroke="#7c8593"></path>
+<rect fill="rgba(240,180,41,0.12)" height="46" rx="6" stroke="#f0b429" width="112" x="370" y="88"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="426" y="106">U-Net ε_θ(x_t, t)</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="426" y="123">guess: what noise?</text>
+<path d="M426,134 L426,178" fill="none" marker-end="url(#a2)" stroke="#7c8593"></path>
+<path d="M76,188 C76,212 300,222 410,196" fill="none" marker-end="url(#a2)" stroke="#e8794b" stroke-dasharray="4 3"></path>
+<rect fill="rgba(232,121,75,0.1)" height="34" rx="6" stroke="#e8794b" width="150" x="351" y="182"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="426" y="204">squared error ‖ε − ε̂‖²</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="230" y="240">we sprinkled the noise → the answer key is free → training is plain regression</text>
+</svg>
+<figcaption>Fig. 2 · One training step: draw an image, a step count and a noise blob; noise it in one shot; have the network point out the noise; take the squared error. No adversary, no inner sampling loop.</figcaption>
+</figure>
+<h3>4. Network and sampling</h3>
+<p>Predicting noise is an image-in, image-out task, so the backbone is a <strong>U-Net</strong>: downsample to capture global structure, upsample to restore detail, with skip connections between matching resolutions so detail isn't lost. The paper adds <em>group normalization</em>, inserts <strong>self-attention</strong> at the 16×16 resolution to capture long-range relationships, and injects the step index <code>t</code> as a sinusoidal embedding into every residual block — <strong>all 1000 steps share one network</strong>, with t telling it how heavy the noise it is facing should be. Parameter count is therefore independent of chain length.</p>
+<p>Sampling loops <code>t = T … 1</code>: feed the current <code>x_t</code> and t to the network, subtract the appropriate share of the predicted noise, rescale, and — except on the very last step — <strong>mix a little fresh random noise back in</strong>. That injected randomness is not optional: it is what lets the same starting point end at different images, and it is precisely the perturbation term of Langevin sampling. Run all <code>T</code> steps and an image comes out.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 246" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a3g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="135" y="32">in: noisy image x_t</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="425" y="32">out: predicted noise ε̂</text>
+<rect fill="rgba(240,180,41,0.14)" height="30" rx="5" stroke="#f0b429" width="150" x="60" y="42"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="135" y="62">32×32 downsample</text>
+<rect fill="rgba(240,180,41,0.14)" height="30" rx="5" stroke="#f0b429" width="125" x="85" y="92"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="147" y="112">16×16 + attention</text>
+<rect fill="rgba(255,255,255,0.05)" height="30" rx="5" stroke="#b08a3a" width="150" x="205" y="142"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="280" y="162">8×8 · global structure</text>
+<rect fill="rgba(232,121,75,0.14)" height="30" rx="5" stroke="#e8794b" width="125" x="350" y="92"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="412" y="112">16×16 + attention</text>
+<rect fill="rgba(232,121,75,0.14)" height="30" rx="5" stroke="#e8794b" width="150" x="350" y="42"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="425" y="62">32×32 upsample</text>
+<path d="M135,72 L142,88" fill="none" marker-end="url(#a3)" stroke="#7c8593"></path>
+<path d="M150,122 L232,140" fill="none" marker-end="url(#a3)" stroke="#7c8593"></path>
+<path d="M330,142 L400,124" fill="none" marker-end="url(#a3)" stroke="#7c8593"></path>
+<path d="M414,92 L422,76" fill="none" marker-end="url(#a3)" stroke="#7c8593"></path>
+<path d="M212,57 L344,57" fill="none" marker-end="url(#a3g)" stroke="#f0b429" stroke-dasharray="4 3"></path>
+<path d="M212,107 L344,107" fill="none" marker-end="url(#a3g)" stroke="#f0b429" stroke-dasharray="4 3"></path>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="278" y="84">skips carry same-resolution detail across</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="230" x="165" y="200"></rect>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="280" y="217">sinusoidal embedding of t → every block</text>
+<path d="M280,200 L280,176" fill="none" marker-end="url(#a3)" stroke="#7c8593" stroke-dasharray="4 3"></path>
+</svg>
+<figcaption>Fig. 3 · The denoising network: U-Net encoder-decoder with skips, self-attention at 16×16, and the step index t injected as an embedding. One parameter set serves all 1000 steps.</figcaption>
+</figure>
+<h2>Key results</h2>
+<p>The main battleground is <strong>unconditional generation on CIFAR-10</strong> (50,000 training images at 32×32). DDPM reaches <strong>Inception Score 9.46 and FID 3.17</strong>, <strong>better than every published model at the time, GANs included</strong> — the first time a diffusion model won on image quality outright, and the source of the paper's influence. On <strong>LSUN</strong> bedrooms and churches at 256×256, sample quality lands in the same league as ProgressiveGAN.</p>
+<p>The paper is also honest about an unflattering number: as a likelihood model, its lossless codelength is about <strong>3.75 bits/dim</strong> on the test set, <strong>no better than contemporary likelihood-focused models</strong>. The authors' explanation is the interesting part: broken down, <strong>the overwhelming majority of those bits go to imperceptible fine detail</strong>, while the coarse structure that decides whether an image "looks real" costs very little. That is a concrete demonstration that good likelihood ≠ good pictures, and it explains why the weight-discarding <code>L_simple</code> produces better samples. Two ablations also matter: <strong>predicting ε clearly beats predicting the mean directly</strong>, and fixing the reverse variance to a constant is sufficient — learning it was unnecessary. The paper further demonstrates progressive lossy compression and decoding, and shows that interpolating in the noised latent space yields semantically smooth transitions between images.</p>
+<h2>Why it matters</h2>
+<p>It took diffusion from "elegant but useless" to "state of the art" in one step, and the recipe transfers unusually well: <strong>the objective is plain regression, training is stable, scaling up helps, and mode collapse is structurally absent</strong> — the model is fitting the whole data distribution in a likelihood-style objective rather than out-maneuvering a discriminator. Within a year came Nichol &amp; Dhariwal's improvements (learned variances, cosine schedule), DDIM's deterministic few-step sampling, and <em>Diffusion Models Beat GANs</em> with classifier guidance. Then <strong>classifier-free guidance</strong> made text conditioning simple, and <strong>Latent Diffusion</strong> (Stable Diffusion) moved the whole process into a compressed latent space, bringing the cost down to consumer GPUs. DALL·E 2, Imagen, Midjourney and today's video generators all trace their method back here. <strong>A decade of GAN dominance in generative modeling ended at this paper.</strong></p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Sampling is very slow</strong>: one image costs a thousand sequential network passes, two to three orders of magnitude more than a GAN's single forward pass. This was the original's biggest practical obstacle, and DDIM, distillation and few-step samplers all exist to attack it.</li>
+<li><strong>The likelihood is not competitive</strong>: 3.75 bits/dim loses to contemporary likelihood-focused models, and the paper itself shows the best-looking model is not the best-likelihood model — evidence that the training objective has quietly departed from the maximum-likelihood framework it is derived from.</li>
+<li><strong>The theory is stitched together after the fact</strong>: the equivalence between the variational bound and denoising score matching is elegant, but discarding the weights in <code>L_simple</code> is <em>empirically</em> good rather than derived. Why that weighting works better had no principled answer at the time.</li>
+<li><strong>Unconditional only, and small images</strong>: there is no text conditioning and no guidance mechanism here, and the headline results are at 32×32. Turning this into today's text-to-image systems took a chain of follow-up work — conditioning, guidance, latent spaces, cascaded super-resolution.</li>
+<li><strong>Fixed Gaussians and a fixed schedule are not optimal</strong>: the linear β schedule suffices at small resolutions, but later work found cosine schedules better. "How should the noise be added" turned out to be a design space of its own.</li>
+<li><strong>The capability carries risk</strong>: high-fidelity image synthesis was quickly turned to forgery and landed in the middle of copyright disputes — an unavoidable social cost of this line of work.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① One sentence: a fixed thousand-step chain blurs images into Gaussian noise; a network is trained to play it backwards; the key is rewriting the objective as "predict the noise added at this step."</p>
+<p>② The pain: GANs look great but train unstably and collapse modes; VAEs and autoregressive models are stable but blurry or slow; diffusion existed since 2015 with terrible samples.</p>
+<p>③ The forward chain has no parameters and a closed form, <code>x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε</code> — training draws a random t, builds the noisy image instantly, and gets the answer key free.</p>
+<p>④ Each reverse step is approximately Gaussian, so the network need only emit a mean with the variance fixed — one impossible task becomes 1000 gentle ones.</p>
+<p>⑤ The decisive move: predict the noise, collapsing the loss to <code>‖ε − ε_θ(x_t,t)‖²</code>, a plain regression — and equivalently denoising score matching, making sampling an annealed Langevin walk.</p>
+<p>⑥ Dropping the bound's t-weights down-weights the near-clean steps, focusing capacity on heavy-noise steps: slightly worse likelihood, clearly better images.</p>
+<p>⑦ Implementation: U-Net with self-attention at 16×16 and a sinusoidal embedding of t; one parameter set for all 1000 steps; sampling mixes fresh noise back in at each step.</p>
+<p>⑧ Results: unconditional CIFAR-10 IS 9.46 / FID 3.17, the first diffusion win over GANs on quality; LSUN 256×256 on par with ProgressiveGAN; likelihood ~3.75 bits/dim, not a lead.</p>
+<p>⑨ Impact: DDIM, classifier-free guidance, Latent/Stable Diffusion, DALL·E 2, Imagen and video generation all descend from this method.</p>
+<p>⑩ Limits: a thousand passes per sample; likelihood not competitive; the weighting simplification is empirical; the original is unconditional and small-scale; misuse is a real cost.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full derivation and training hyperparameters, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
