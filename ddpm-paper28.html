@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Denoising Diffusion Probabilistic Models（DDPM）— IT 论文精读 Paper 28</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 28</p>
-<h1>Denoising Diffusion Probabilistic Models（DDPM）</h1>
+<h1 data-tts="f01d97c0670a2b93">Denoising Diffusion Probabilistic Models（DDPM）</h1>
 <p class="sub">Ho, Jain &amp; Abbeel · UC Berkeley · NeurIPS 2020</p>
 <p class="langbar"><a href="ddpm-paper28.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,30 +44,30 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="e34d4684ab98324e">这篇论文干了什么？</h2>
 <p>今天你打一句话就能让 AI 画出一张画（Midjourney、Stable Diffusion、DALL·E 这一类），背后那套方法叫<strong>扩散模型（diffusion model）</strong>。2020 年，伯克利的三个人（Ho、Jain、Abbeel）写了这篇 DDPM，把一个原本效果平平的老想法调通了：<strong>让机器从一团电视雪花点里，一点点「擦」出一张从没存在过的照片</strong>。它的画质第一次超过当时最强的对手，此后几乎所有 AI 出图、出视频的产品都建在它上面。</p>
-<h2>打个比方</h2>
+<h2 data-tts="4ff753ae8a5b058b">打个比方</h2>
 <p>在它之前，教机器画画的主流办法是「<strong>造假者 vs 验钞员</strong>」：一个网络造假图，另一个挑刺，互相掐架、越练越强。出图挺漂亮，但训练像走钢丝——两边稍不平衡就崩，还常常「只会画那么几种」。</p>
 <p>DDPM 换了个思路，朴素得有点好笑：<strong>先学会破坏，再倒着放录像。</strong></p>
-<h2>点子：把一件难事拆成一千件容易事</h2>
+<h2 data-tts="f19db1239523c61b">点子：把一件难事拆成一千件容易事</h2>
 <p>拿一张清晰照片，往上撒一层细沙；再撒一层、再一层……撒够一千层，照片彻底变成一团雪花点。这个「毁掉」的过程无需学习。</p>
 <p>关键在于：<strong>把这段录像倒着放，就是「从雪花点里长出一张照片」。</strong>「凭空画一张画」很难，但「把刚刚撒上去的那一薄层沙子擦掉」很容易——难事被拆成了一千个几乎不动脑的小步。机器要学的，就只是这一个小步。</p>
-<h2>它其实只学一件事：认出沙子</h2>
+<h2 data-tts="d3a908601a7085de">它其实只学一件事：认出沙子</h2>
 <p>训练简单到近乎作弊：拿一张真照片，随机挑个脏的程度，一次性把沙子撒上去——<strong>沙子是我们自己撒的，标准答案就在手里</strong>。把这张脏图连同「脏到第几层」递给网络，只问一句：<em>这上面多出来的沙子长什么样？</em>它指出来，跟答案一对，差多少改多少。没有对手、没有博弈，就一道有标准答案的填空题——训练因此特别稳。</p>
 <p>出图时反过来用：随手抓一团雪花点，问「哪些是沙子」，减掉一点，再问、再减……上千遍之后，一张谁都没拍过的照片就浮出来了。为什么是新图而不是复原原图？因为<strong>起点是随手抓的一团噪点</strong>，网络每步只把画面往「更像真实照片」推一点——像看云：云是随机的，但你总能从里面看出个形状。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="2668fb1a15a44efc">带来了什么</h2>
 <p>训练不再走钢丝，画面又多样又干净，画质一举超过当年最强的对抗式模型。更要紧的是这条路能一直往上长——接上「按文字描述来擦」，就成了今天打字出图的那些产品，视频生成也是同一套。</p>
 <p>诚实的代价只有一条，但很硬：<strong>出一张图要让网络来回跑上千遍，比对手那种「一次成型」慢了几百倍。</strong></p>
-<h2>一句话记住</h2>
+<h2 data-tts="2bb1e2df11b04f99">一句话记住</h2>
 <div class="tl">
 <p>把「凭空画一张图」倒过来做：先用一千小步把照片撒成雪花点（不用学），再训练网络专门认出「每步多出来的那点噪声」；出图时从随机雪花点开始，反复减掉网络指认的噪声，图就长出来了。训练稳、样子多，代价是出图要跑上千遍。</p>
 </div>
 <p class="switch-hint">想看加噪 / 去噪链的结构图、目标函数和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="258bf5e95b585897">一句话</h2>
 <p class="lead">DDPM 把图像生成写成一条<strong>固定的加噪链</strong>与一条<strong>学出来的去噪链</strong>：前向用上千小步把真实图片糊成纯高斯噪声，反向训练一个网络逐步擦回去。关键一手是把训练目标<strong>重参数化成「预测每一步加进去的那团噪声」</strong>，于是复杂的变分下界塌缩成朴素的均方误差回归。它第一次让扩散模型的样本质量超过 GAN（CIFAR-10 无条件生成 IS 9.46、FID 3.17），成为今天所有文生图 / 文生视频系统的方法底座。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="f8b1a954c7e21836">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>生成模型（generative model）</strong>：不做分类判断、而是「造出新样本」的模型——目标是它吐出的图像是从训练数据那个分布里新抽出来的一样。</li>
@@ -80,13 +81,13 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>bits/dim</strong>：把模型当压缩器，平均每个像素分量要花多少比特存，越低说明似然拟合越好。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="9e8d398151e43f74">坐标</h2>
 <p>作者 Jonathan Ho、Ajay Jain、Pieter Abbeel（UC Berkeley），NeurIPS 2020。它上承两条线：Sohl-Dickstein 等 2015 年「用非平衡热力学做扩散式生成」（想法已在，样本很糟）与 Song &amp; Ermon 2019 年的<em>基于分数的生成模型</em>（score-based，用 Langevin 采样出图），DDPM 把两者接到一起并调通；下启 DDIM、classifier-free guidance、Stable Diffusion、DALL·E 2、Imagen 与视频生成模型。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="bf433b2fb4420ec6">问题与动机</h2>
 <p>2020 年前后，生成模型三条主路各有硬伤。<strong>GAN</strong> 出图最漂亮，但训练是两个网络的博弈，超参一歪就崩，还容易模式塌缩、覆盖不住数据的多样性。<strong>VAE 与自回归模型</strong>训练稳、似然口径清楚，却要么成图偏糊、要么逐像素生成慢得离谱。<strong>扩散模型</strong>自 2015 年就有，理论优雅，可出图质量远不能看，几乎没人当真。</p>
 <p>所以真问题不是「有没有第三条路」，而是：<strong>这条理论上很干净的路为什么出图这么差？不靠对抗训练能不能拿到 GAN 级画质？</strong>DDPM 的回答是——问题出在<strong>怎么参数化、怎么写损失</strong>，不在框架本身。</p>
-<h2>核心思想 / 方法</h2>
-<h3>一、前向：一条不需要学习的加噪链</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="2f3badc15c5972c7">一、前向：一条不需要学习的加噪链</h3>
 <p>取一张真实图片 <code>x₀</code>，定义一个 <code>T</code> 步（论文取 <code>T = 1000</code>）的固定过程：每步往图上掺一点高斯噪声、并把原图按比例缩小一丁点，强度由预先定好的表 <code>β₁…β_T</code> 控制（论文用 <code>1e-4</code> 线性升到 <code>0.02</code>）。走满 1000 步，图片变成与原图无关的纯高斯噪声 <code>x_T</code>。<strong>这条链没有任何待学的参数</strong>——它只是我们规定的破坏方式。</p>
 <p>一个至关重要的性质：每步都是高斯的、强度又固定，于是<strong>任意时刻的脏图可以一步算出来，不必真的迭代</strong>：</p>
 <p><code>x_t = √ᾱ_t · x₀ + √(1−ᾱ_t) · ε</code>，其中 <code>ε</code> 是标准高斯噪声、<code>ᾱ_t</code> 是由那张表算出、随 t 单调下降的系数。白话：<strong>第 t 步的脏图 = 淡化后的原图 + 按比例掺入的一团噪声</strong>，t 越大原图越淡。于是训练时随机抽个 t 就能直接造出脏图和它的噪声答案。</p>
@@ -121,10 +122,10 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 1 · 两条链：向右是固定的加噪（谁都会做），向左是要学的去噪（生成即倒放录像）。</figcaption>
 </figure>
-<h3>二、反向：把「生成」写成一串小高斯步</h3>
+<h3 data-tts="fd2a01a3c1724a5e">二、反向：把「生成」写成一串小高斯步</h3>
 <p>生成就是把链倒过来走：从纯噪声 <code>x_T</code> 出发，一步步问「上一时刻更干净的那张图长什么样」。数学上有个好消息：<strong>每步加的噪声足够小时，反向那步也近似是高斯分布</strong>——网络于是不必吐出一整张图的复杂分布，只需给出这个小高斯的<strong>均值</strong>（方差论文直接固定成常数，取 <code>β_t</code> 或其变体，实测样本质量相近）。</p>
 <p><strong>这就是把难题拆小的全部收益</strong>：一步到位建模「所有真实图片的分布」难如登天，而「已知一张略脏的图、猜它稍干净的样子」局部、温和、几乎线性。1000 个小任务串起来，等价于那一次极难的大任务。</p>
-<h3>三、真正的一手：不预测均值，预测噪声</h3>
+<h3 data-tts="a66615f1279b4ce5">三、真正的一手：不预测均值，预测噪声</h3>
 <p>按变分下界推导，损失里每项都在让网络预测的均值逼近某个「真实后验均值」。论文做了一步代数重排：既然 <code>x_t</code> 由 <code>x₀</code> 与噪声 <code>ε</code> 合成，那个真实均值就能改写成 <code>x_t</code> 与 <code>ε</code> 的组合。于是干脆<strong>让网络直接猜那团噪声 ε</strong>，均值由公式换算。损失塌缩成一行：</p>
 <p><code>L_simple = ‖ ε − ε_θ(√ᾱ_t·x₀ + √(1−ᾱ_t)·ε , t) ‖²</code></p>
 <p>白话：<strong>随机抽一张训练图、一个步数 t、一团噪声撒上去，让网络看着脏图和 t 把噪声指认出来，指得越准损失越小。</strong>没有对抗、没有采样链——一个标准的均方误差回归，稳得像训练分类器。</p>
@@ -154,7 +155,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 2 · 一次训练步：抽图、抽步数、抽噪声，一步造出脏图，让网络指认噪声，与标准答案算均方误差。没有对抗、没有采样循环。</figcaption>
 </figure>
-<h3>四、网络与采样</h3>
+<h3 data-tts="d2664af6d81eaab3">四、网络与采样</h3>
 <p>预测噪声是「输入一张图、输出同样大小一张图」的任务，骨干因此选 <strong>U-Net</strong>：逐级下采样抓全局结构、逐级上采样恢复细节，同分辨率之间用跳线直连以免细节丢失；论文另加 <em>group normalization</em>、在 16×16 分辨率处插入<strong>自注意力</strong>层补全局关联，并把步数 <code>t</code> 编成正弦嵌入注入每个残差块——<strong>1000 步共用同一个网络</strong>，靠 t 告诉它现在该擦多重的噪声，参数量与步数无关。</p>
 <p>采样时循环 <code>t = T … 1</code>：把 <code>x_t</code> 和 t 喂进网络得到预测噪声，减去相应的一份、再除以缩放系数得到略干净的图，然后<strong>额外掺回一点随机噪声</strong>（最后一步除外）——这点随机性是必要的，它正对应 Langevin 采样里的扰动项。</p>
 <figure>
@@ -181,19 +182,19 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 3 · 去噪网络：U-Net 编码-解码 + 跳线，16×16 处加自注意力；步数 t 以嵌入形式注入，1000 步共用同一套参数。</figcaption>
 </figure>
-<h2>关键结果</h2>
+<h2 data-tts="dce1612453fde08a">关键结果</h2>
 <p>主战场是 <strong>CIFAR-10</strong>（5 万张 32×32 小图）的<strong>无条件</strong>生成：DDPM 拿到 <strong>Inception Score 9.46、FID 3.17</strong>，<strong>优于当时所有已发表模型（含各类 GAN）</strong>——扩散模型第一次在画质上正面赢下 GAN，这也是本文影响力的来源。在 <strong>LSUN</strong> 卧室、教堂类 256×256 图像上，样本质量与 ProgressiveGAN 同档。</p>
 <p>论文也诚实报了一处不好看的数字：无损码长约 <strong>3.75 bits/dim</strong>（测试集），<strong>并不比同期专攻似然的模型更好</strong>。作者的解释很有意思：拆开看，<strong>绝大部分比特花在人眼几乎察觉不到的细枝末节上</strong>，决定「像不像」的粗结构只占很小一部分——这正说明「似然好 ≠ 图好看」，也解释了为何丢权重的 <code>L_simple</code> 出图更强。另有两个关键消融：<strong>预测噪声 ε 明显优于直接预测均值</strong>；反向方差固定成常数即可，学它并无必要。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="80ef6684cd23cd3a">为什么重要 / 影响</h2>
 <p>它一举把扩散模型从「理论漂亮但没用」变成「当前最强」，配方还极其可迁移：<strong>目标简单到只是回归、训练稳定、扩容就变好、天然不塌缩</strong>（它做的是覆盖整个数据分布的似然式训练，而非与判别器博弈）。此后一年内，Nichol &amp; Dhariwal 的改进版（学方差、余弦噪声表）、DDIM 的少步采样、《Diffusion Models Beat GANs》的分类器引导接连出现；再往后 <strong>classifier-free guidance</strong> 让文字条件生成变得简单，<strong>Latent Diffusion</strong>（Stable Diffusion）把扩散搬进压缩后的隐空间，消费级显卡也跑得动。今天的 DALL·E 2、Imagen、Midjourney 与文生视频系统都可追到这一篇。<strong>GAN 主导生成式建模的十年，从这里换代。</strong></p>
-<h2>局限与批评</h2>
+<h2 data-tts="bb0723fa7fe6ac64">局限与批评</h2>
 <ul>
 <li><strong>采样极慢</strong>：生成一张图要顺序跑网络上千次，比 GAN 的一次前向慢两到三个数量级——原版最大的实用障碍，后续 DDIM、蒸馏、少步采样器都在攻这一点。</li>
 <li><strong>似然并不占优、理论也是事后拼接</strong>：3.75 bits/dim 不敌同期专攻似然的模型，且「最好看的模型」与「似然最好的模型」并非同一个；<code>L_simple</code> 丢权重这步是<em>经验上有效</em>、而非从原理推出，等于已偏离它自称的最大似然框架。</li>
 <li><strong>只做了无条件生成、图像也小</strong>：没有文本条件与引导机制，主结果在 32×32；变成今天的文生图靠的是后续一连串工作（条件注入、引导、隐空间、超分级联）。噪声表也未必最优——线性 β 表小图够用，后续发现余弦表更好，「噪声该怎么加」本身成了一个设计空间。</li>
 <li><strong>能力带来的风险</strong>：高保真图像生成很快被用于伪造，并卷入版权争议，是这条路线绕不开的社会成本。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="7af99abbf6bd3ee6">要点</h2>
 <div class="tl">
 <p>① 一句话：固定的千步加噪链把图糊成高斯噪声，再训练网络逐步倒放；关键是把目标重写成「预测每步加进去的噪声」。</p>
 <p>② 痛点：GAN 画质好但训练不稳、易塌缩；VAE / 自回归稳但糊或慢；扩散自 2015 年就有，只是出图太差。</p>
