@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Batch Normalization — CS Papers Deep-Read Paper 29</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 29</p>
+<h1>Batch Normalization</h1>
+<p class="sub">Sergey Ioffe &amp; Christian Szegedy · Google · ICML 2015</p>
+<p class="langbar"><a href="batch-normalization-paper29.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2015 two Google researchers proposed <strong>Batch Normalization</strong> (<strong>BN</strong> for short) — a small component, a few lines of code, dropped into the middle of a neural network. With it, the same network reached the same accuracy in <strong>more than ten times fewer training steps</strong>; along the way they pushed the ImageNet image-recognition error rate down to 4.9%, below the roughly 5.1% estimated for humans. For the decade that followed, from ResNet onward, nearly every convolutional network has a BN sitting behind each middle layer.</p>
+<h2>The pain of the old world</h2>
+<p>A neural network is a relay team: the first layer spots edges, the second assembles parts, the third recognizes objects. The trouble is that during training <strong>everyone is changing how they work at the same time</strong>. When someone earlier in the chain shifts their conventions, the scale of what the next person receives changes wholesale: numbers that were "a fraction" yesterday are "tens" today. A layer barely adapts before the layers below it move again. To keep the chaos from running away, people back then could only <strong>take very small steps</strong> (dial the learning rate down) and pick initial values with great care. Training a deep network was slow and superstitious, like walking a tightrope.</p>
+<h2>The idea: reset the scale before each layer starts work</h2>
+<p>BN's idea is almost brutally plain: <strong>before a layer does anything, take the pile of numbers it just received and put them all back on a standard scale</strong>. However much the layers below thrash about, what reaches the next layer is always the same order of magnitude, the same range.</p>
+<p>How? During training, data arrives in small batches (say 32 images at a time). BN uses that batch of peers as the reference: compute the batch's <strong>average</strong> and its <strong>spread</strong>, subtract the average from every number and divide by the spread — the whole batch is moved to sit "centered at zero, roughly equally wide." It is what a class does when raw scores are converted into standard scores using the class average and spread: however the exam's difficulty swings, the distribution of standard scores stays put.</p>
+<p>But if every layer is locked to one fixed scale, doesn't that cost the network expressive power? The authors left a back door: <strong>each spot gets two extra learnable knobs, one for "how wide" and one for "shifted where."</strong> If the network decides the original scale was better, it just turns the knobs back — in the worst case it can undo the normalization entirely. <strong>Force everything to standard first, then let the network decide whether to move back</strong> — that is the key move of the whole paper.</p>
+<h2>Why this alone made things so much faster</h2>
+<p>Three things get fixed at once. First, <strong>the steps can finally be big</strong>: with the scale steady you no longer need tiny cautious steps to avoid a blow-up, so the learning rate can go up more than tenfold. Second, <strong>the learning signal stops being flattened</strong>: a squashing function popular at the time crushes numbers into the range between 0 and 1, and once a number is large it lands in the flat stretch at either end, where changing the input barely changes the output and the correction signal dies — pulling numbers back toward the middle dodges exactly that trap. Third, <strong>it discourages memorizing the answers for free</strong>: a number's standard score depends on which peers happen to share its batch, and batches are thrown together at random, so the same image comes out slightly jittered from one round to the next; that little bit of noise makes it harder for the network to memorize the training set.</p>
+<p>One honest caveat: BN's scale is measured off "the peers in the same batch" — make the batch too small and the scale gets unreliable, and the benefit visibly shrinks.</p>
+<h2>Remember this one thing</h2>
+<div class="tl">
+<p>Before each layer acts, use the current small batch to compute an average and a spread, convert the incoming numbers into standard scores, and add two learnable knobs so the network can turn it back. Once the scale holds still, the learning rate can go up more than tenfold and the signal stops being flattened — and training deep networks went from tightrope walking to routine.</p>
+</div>
+<p class="switch-hint">Want the formula, how convolutional layers do it, which statistics inference uses, and the later rebuttal of "why it works"? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Batch Normalization turns "<strong>standardize each activation using the current mini-batch's mean and variance, then rescale and shift it with two learned parameters γ and β</strong>" into a differentiable layer inserted before every nonlinearity. Keeping each layer's input distribution steady lets you use a <strong>learning rate more than ten times larger</strong>, removes much of the dependence on careful initialization, and regularizes as a side effect — the same Inception network with BN needed about <strong>14× fewer steps</strong> to hit the baseline accuracy, and an ensemble reached <strong>4.9% top-5 error</strong> on ImageNet.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Activation</strong>: the numbers a middle layer computes; layer k's activations are layer k+1's inputs.</li>
+<li><strong>Mini-batch SGD</strong>: training feeds a small batch of samples at a time (say 32) and updates the parameters once from that batch's average gradient. The <strong>learning rate</strong> is how big each update step is.</li>
+<li><strong>Gradient / backpropagation</strong>: working backwards from the final error to compute, layer by layer, "which way and how far should each parameter move"; that signal is the gradient.</li>
+<li><strong>Activation function and saturation</strong>: the nonlinear squashing function between layers. A sigmoid maps any number into 0–1, and once the input is large in magnitude it lands in the flat region at either end, where the derivative is nearly zero and no gradient flows back — that is saturation. ReLU (zero for negatives, unchanged for positives) does not have this problem and was the mainstream alternative.</li>
+<li><strong>Feature map / channel</strong>: a convolutional network slides one small window (a kernel) across the whole image; the full response map produced by one kernel is a feature map, also called a channel.</li>
+<li><strong>Dropout</strong>: randomly zeroing a fraction of neurons during training — the classic regularizer against memorizing the training set.</li>
+<li><strong>ImageNet / top-5 error</strong>: a benchmark of millions of images across 1000 classes; the model offers five guesses and only counts as wrong if all five miss.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Sergey Ioffe and Christian Szegedy at Google (Szegedy also being a principal author of Inception / GoogLeNet, the architecture used in this paper's experiments), published at <strong>ICML 2015</strong>. It follows the line of work on making deep networks trainable at all — Glorot / He initialization and ReLU attack the same problem — and it was built upon even more thoroughly: ResNet, later the same year, embeds BN inside every residual block, and normalization layers became a standard part, branching into Layer Normalization (the kind Transformers use), Group Normalization, and more.</p>
+<h2>The problem and the motivation</h2>
+<p>In 2015, whether a deep network would train at all was still a practical obstacle. The authors' diagnosis: <strong>the input distribution of every layer keeps changing during training</strong> — its inputs are the outputs of all the layers below, and their parameters update at every step. They named this <em>internal covariate shift</em>: the familiar nuisance of "the distribution moved" happening <strong>inside</strong> the network, with every layer chasing a target that keeps drifting.</p>
+<p>Two consequences. First, to keep the drift under control the learning rate has to be tiny and the initialization has to be chosen carefully, making training slow and brittle. Second, the drift can push activations into the <strong>saturated region of the sigmoid</strong>: once the distribution moves out into the flat stretch at either end of the curve, the derivative approaches zero, no gradient flows back, and that layer stops learning entirely. The accepted remedy at the time was to route around the problem (switch to ReLU, initialize carefully, keep the learning rate small) rather than to eliminate the drift head-on.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<line stroke="#7c8593" x1="60" x2="530" y1="170" y2="170"></line>
+<line stroke="#7c8593" x1="295" x2="295" y1="30" y2="178"></line>
+<path d="M62,166 C170,166 240,160 295,100 C350,40 420,34 528,34" fill="none" stroke="#7c8593" stroke-width="2"></path>
+<text fill="#7c8593" font-size="11.5" x="470" y="52">sigmoid</text>
+<rect fill="rgba(232,121,75,0.10)" height="140" width="120" x="408" y="30"></rect>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="468" y="163">saturated · slope≈0</text>
+<path d="M150,170 C168,170 172,124 190,124 C208,124 212,170 230,170" fill="rgba(240,180,41,0.18)" stroke="#f0b429" stroke-width="1.8"></path>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="190" y="112">distribution early on</text>
+<path d="M400,170 C418,170 422,124 440,124 C458,124 462,170 480,170" fill="rgba(232,121,75,0.18)" stroke="#e8794b" stroke-width="1.8"></path>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="440" y="112">some steps later</text>
+<path d="M250,196 L380,196" fill="none" stroke="#e7ebf1" stroke-dasharray="4 4" stroke-width="1.4"></path>
+<path d="M380,196 L372,192 L372,200 Z" fill="#e7ebf1"></path>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="315" y="216">layers below update → this layer's input distribution drifts</text>
+</svg>
+<figcaption>Fig 1 · Internal covariate shift: parameters below change at every step, so this layer's input distribution keeps drifting; once it drifts into the flat ends of the sigmoid, the gradient vanishes and the layer stops learning.</figcaption>
+</figure>
+<h2>The core idea and method</h2>
+<h3>Step 1: why you cannot normalize "afterwards"</h3>
+<p>The naive approach is to subtract the mean from a layer's activations after each update. The authors give a counterexample showing this fails: let a layer's output be <code>x = u + b</code>. If "subtract this batch's mean" is a post-processing step <strong>outside</strong> training (no gradient flows through it), gradient descent will keep increasing <code>b</code> as usual while the normalization cancels b's effect entirely — <strong>the output never changes, the loss never drops, and b grows without bound</strong>.</p>
+<p>Hence the paper's first foundation: <strong>normalization must live inside the model as a layer you can backpropagate through</strong>, so the gradient knows that the mean and variance themselves depend on the parameters. Otherwise the optimizer keeps pushing in a direction the normalization erases.</p>
+<h3>Step 2: mini-batch statistics instead of full whitening</h3>
+<p>The ideal treatment is to <em>whiten</em> each layer's input — transform it to zero mean, unit variance, and uncorrelated dimensions. But full whitening requires the covariance matrix and its square root, plus a pass over the whole training set after every update: impossibly expensive. The authors make two pragmatic approximations: <strong>standardize each dimension on its own</strong> (no decorrelation across dimensions — not strictly whitening, but far cheaper and good enough), and <strong>use the current mini-batch's mean and variance</strong> as the estimate (training already runs batch by batch, so the statistics are free).</p>
+<p>That yields the BN transform. For one dimension of activation <code>x</code> within a batch: compute the batch mean <code>μ_B</code> and variance <code>σ²_B</code>, standardize to <code>x̂ = (x − μ_B)/√(σ²_B + ε)</code> (<code>ε</code> is a small constant guarding against division by zero), then apply a learned scale and shift <code>y = γ·x̂ + β</code>. The first half pulls the dimension to "centered at zero, width one"; the second half is the crucial back door.</p>
+<h3>Step 3: γ and β — why the back door is mandatory</h3>
+<p>Forcing every layer's input to zero mean and unit variance has a cost: pinning a sigmoid's input near the middle confines it to its nearly linear stretch, stripping away nonlinearity. <strong>γ (scale) and β (shift) are trained along with the network, letting it decide what mean and what width this dimension should end up with.</strong> In the extreme, setting <code>γ = √σ²_B</code> and <code>β = μ_B</code> recovers the identity exactly — <strong>normalization is proposed, not imposed, so the worst case costs nothing</strong>. The move is the same one ResNet makes: hand the optimizer a fallback solution for free.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="b1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="24" y="30">m activations in one mini-batch</text>
+<rect fill="rgba(240,180,41,0.12)" height="22" rx="4" stroke="#f0b429" width="26" x="24" y="40"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="22" rx="4" stroke="#f0b429" width="26" x="56" y="40"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="22" rx="4" stroke="#f0b429" width="26" x="88" y="40"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="22" rx="4" stroke="#f0b429" width="26" x="120" y="40"></rect>
+<text fill="#7c8593" font-size="13" x="154" y="57">…</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="95" x2="95" y1="70" y2="92"></line>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="190" x="24" y="94"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="119" y="115">batch mean μ and variance σ²</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="95" x2="95" y1="128" y2="150"></line>
+<rect fill="rgba(240,180,41,0.10)" height="34" rx="6" stroke="#f0b429" width="190" x="24" y="152"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="119" y="173">standardize: −μ, ÷√(σ²+ε)</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="95" x2="95" y1="186" y2="208"></line>
+<rect fill="rgba(232,121,75,0.12)" height="34" rx="6" stroke="#e8794b" width="190" x="24" y="210"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="119" y="231">learned scale and shift: γ·x̂ + β</text>
+<text fill="#e8794b" font-size="11" x="24" y="266">γ and β train with the network</text>
+<text fill="#e8794b" font-size="11" x="24" y="282">and can undo the whole transform</text>
+<line stroke="rgba(240,180,41,0.2)" x1="256" x2="256" y1="24" y2="286"></line>
+<text fill="#7c8593" font-size="11.5" x="296" y="30">where it goes in the network</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="150" x="296" y="52"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="371" y="72">previous output u</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="371" x2="371" y1="82" y2="104"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="150" x="296" y="106"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="371" y="126">linear map W·u</text>
+<text fill="#7c8593" font-size="10.5" x="456" y="126">bias b droppable</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="371" x2="371" y1="136" y2="158"></line>
+<rect fill="rgba(240,180,41,0.14)" height="30" rx="6" stroke="#f0b429" width="150" x="296" y="160"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="371" y="180">BN</text>
+<text fill="#f0b429" font-size="10.5" x="456" y="180">β replaces b</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="371" x2="371" y1="190" y2="212"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="150" x="296" y="214"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="371" y="234">nonlinearity (ReLU / sigmoid)</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="371" x2="371" y1="244" y2="264"></line>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="371" y="280">next layer</text>
+</svg>
+<figcaption>Fig 2 · Left: the three steps of the BN transform — batch statistics, standardization, learned scale and shift. Right: it sits after the linear map and before the nonlinearity; since β already shifts, the original bias b is redundant and can be dropped.</figcaption>
+</figure>
+<h3>Step 4: how convolutional layers normalize</h3>
+<p>Convolutional layers carry an extra constraint: one kernel slides across the whole image, so <strong>different locations must be treated identically</strong>. BN therefore does not give each location its own parameters — it <strong>normalizes per feature map (channel)</strong>: all values of one channel across "the whole batch × every spatial location" are pooled into a single mean and variance, sharing one pair of γ and β. The parameter count then depends only on the number of channels (a few hundred), while the effective sample size for the statistics grows from m to <code>m×H×W</code> (batch size times feature-map height and width), making the estimate sharper.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="b2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="24" y="24">a batch of conv activations: batch × channel × height × width</text>
+<g stroke="#7c8593">
+<rect fill="rgba(255,255,255,0.02)" height="70" width="52" x="30" y="46"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="70" width="52" x="30" y="120"></rect>
+<rect fill="rgba(255,255,255,0.02)" height="70" width="52" x="106" y="46"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="70" width="52" x="106" y="120"></rect>
+<rect fill="rgba(255,255,255,0.02)" height="70" width="52" x="182" y="46"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="70" width="52" x="182" y="120"></rect>
+<rect fill="rgba(255,255,255,0.02)" height="70" width="52" x="258" y="46"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="70" width="52" x="258" y="120"></rect>
+</g>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="56" y="40">sample 1</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="132" y="40">sample 2</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="208" y="40">sample 3</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="284" y="40">sample 4</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="24" y="86">channel A</text>
+<text fill="#f0b429" font-size="11" text-anchor="end" x="24" y="160">channel B</text>
+<path d="M322,155 L360,155" fill="none" marker-end="url(#b2)" stroke="#f0b429" stroke-width="1.5"></path>
+<text fill="#f0b429" font-size="12" x="366" y="140">the highlighted slab</text>
+<text fill="#f0b429" font-size="12" x="366" y="158">(all samples, all pixel</text>
+<text fill="#f0b429" font-size="12" x="366" y="176">positions) → one μ, σ²</text>
+<text fill="#7c8593" font-size="11.5" x="366" y="60">one γ, β per channel,</text>
+<text fill="#7c8593" font-size="11.5" x="366" y="78">independent of position —</text>
+<text fill="#7c8593" font-size="11.5" x="366" y="96">conv equivariance preserved</text>
+</svg>
+<figcaption>Fig 3 · BN in convolutional layers normalizes per channel, not per position: one channel's values across the whole batch and every pixel location are pooled into a single set of statistics sharing one γ and β.</figcaption>
+</figure>
+<h3>Step 5: which statistics inference uses</h3>
+<p>At training time the output depends on "who else is in the batch" — unacceptable at inference: an image's score should not change because of the company it keeps. The fix is to <strong>accumulate moving averages of the mean and variance over the whole dataset during training (population statistics) and use those fixed numbers at inference</strong>. BN then degenerates into a fixed linear transform (multiply by a constant, add a constant), which <strong>can be folded straight into the preceding layer's weights, making its inference cost zero</strong>.</p>
+<h3>Step 6: why it permits a far larger learning rate</h3>
+<p>The hardest of the paper's arguments is <em>scale invariance</em>: multiply a layer's weights by a, and BN's output is unchanged, because the mean and variance scale by a too and cancel in the standardization — that is, <code>BN(Wu) = BN((aW)u)</code>. Better still, the gradient with respect to the weights shrinks by <code>1/a</code>: <strong>the larger the weights, the smaller the updates they receive</strong>. That is an automatic negative feedback, so parameters do not blow up under a large learning rate.</p>
+<p>There is also a by-product: <strong>regularization</strong>. A sample's post-BN representation depends on who else shares its batch, and batches are drawn at random, so the same image gets a slightly jittered representation from epoch to epoch. That noise acts much like Dropout — so the authors simply <strong>removed Dropout</strong>.</p>
+<h2>Key results</h2>
+<p>First a toy experiment on MNIST: a network of three hidden layers of 100 sigmoid units each converges faster and more accurately with BN, and the authors plot the percentiles of one activation over training — without BN the distribution keeps drifting, with BN it settles quickly. That is direct evidence for the internal-covariate-shift diagnosis. The main experiments use Inception on ImageNet:</p>
+<ul>
+<li><strong>Inception baseline</strong>: 72.2% top-1 accuracy after 31M training steps.</li>
+<li><strong>BN-Baseline</strong> (BN added, nothing else changed): the same accuracy in about 13.3M steps, roughly a <strong>2.3× speedup</strong>.</li>
+<li><strong>BN-x5</strong> (learning rate ×5): <strong>2.1M steps</strong> to 72.2% — about <strong>14× fewer steps</strong> than the baseline — finishing at 73.0%.</li>
+<li><strong>BN-x30</strong> (learning rate ×30): slower at first, reaching the mark around 6M steps, but topping out at <strong>74.8%</strong> — the big learning rate bought a better solution, not just a faster one.</li>
+<li><strong>BN-x5-Sigmoid</strong> (sigmoid in place of ReLU): 69.8%. For contrast, <strong>the sigmoid version without BN essentially never trains</strong>, stalling near chance accuracy. This is the sharpest evidence that BN is dealing with saturation.</li>
+</ul>
+<p>Finally, an ensemble of six BN-Inception models reached <strong>4.9% top-5 validation error</strong> on ImageNet (4.82% on the test set), beating the GoogLeNet ensemble's 6.67% and coming in under the roughly 5.1% estimate of human accuracy. To suit BN they also dropped Dropout, cut L2 regularization to a fifth, accelerated the learning-rate decay 6×, removed local response normalization (LRN), and shuffled the training data more thoroughly.</p>
+<h2>Why it matters</h2>
+<p>BN turned "training a very deep network" from a craft into something that just runs: initialization no longer needs to be hand-picked, the learning rate can be raised confidently, and training time drops by multiples. <strong>ResNet</strong>, later the same year, embeds BN in every residual block — "residual connection + batch normalization" was the standard configuration of vision backbones for the decade that followed.</p>
+<p>More lasting still, it established the <strong>normalization layer</strong> as a basic building block. Everything after it — <strong>Layer Normalization</strong> (Ba et al. 2016, normalizing over one sample's features and thus independent of the batch, which is exactly why Transformers and large language models use it), <strong>Group Normalization</strong> (Wu &amp; He 2018, normalizing per group of channels and holding up at small batch sizes), RMSNorm — is a variant of the same idea. Open any modern model today and you will almost certainly find some normalization inside every block.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The "internal covariate shift" explanation was later challenged</strong>: Santurkar et al. (NeurIPS 2018) ran an elegant rebuttal — <strong>deliberately injecting</strong> time-varying noise after BN to manufacture distribution shift again, and the network still trained just as fast and well. Their alternative account is that BN's real effect is to <strong>smooth the optimization landscape</strong> (improving the Lipschitz properties of the loss and its gradients), making gradients more predictable and large steps safer. <strong>The method's effectiveness is solid; the mechanism its authors proposed was not borne out.</strong></li>
+<li><strong>It depends on batch size, and couples samples together</strong>: the statistics come from one batch, so a small batch is a noisy estimate — BN clearly degrades on detection and segmentation, where only a few images fit per device (Group Normalization and Batch Renormalization exist for exactly this) — and the fact that a sample's output depends on who else is in its batch has caused real trouble in contrastive learning, reinforcement learning, and multi-device training (where cross-device statistics may or may not be synchronized).</li>
+<li><strong>Training and inference behave differently</strong>: batch statistics during training, moving averages at inference. The gap is a common source of bugs in fine-tuning and transfer learning — change the data distribution but forget to update the statistics, and accuracy collapses inexplicably.</li>
+<li><strong>A poor fit for sequence models</strong>: sentence lengths vary and statistics differ across time steps, so BN is hard to use well in RNNs — which is precisely why Layer Normalization appeared and ultimately took over in Transformers.</li>
+<li><strong>Not irreplaceable</strong>: later work such as NFNets (Brock et al. 2021) matched the same accuracy without normalization by using adaptive gradient clipping, showing BN is an extremely convenient shortcut rather than the only road.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one sentence: make "standardize activations with mini-batch statistics + a learned γ, β scale and shift" a backpropagatable layer, placed before every nonlinearity.</p>
+<p>② The pain: parameters below keep changing, so a layer's input distribution keeps drifting (the authors call it internal covariate shift), forcing tiny learning rates and fussy initialization, and pushing sigmoids into saturation.</p>
+<p>③ Key design one: normalization must be <strong>inside the model with gradients flowing through it</strong> — otherwise the optimizer pushes forever in a direction the normalization erases (the bias blows up).</p>
+<p>④ Key design two: <code>x̂ = (x − μ_B)/√(σ²_B + ε)</code> must be followed by <code>y = γx̂ + β</code> — two learned parameters let the network recover the identity, so <strong>normalization is proposed, not imposed</strong>.</p>
+<p>⑤ Engineering details: convolutional layers normalize per channel (across all samples and pixel positions); inference switches to moving-average population statistics, at which point BN is a linear transform that folds into the weights at zero cost.</p>
+<p>⑥ Why big learning rates become safe: <code>BN(Wu) = BN((aW)u)</code> — scaling weights by a leaves the output unchanged while shrinking the gradient by 1/a, an automatic negative feedback; plus a Dropout-like noise regularizer (which is why the authors deleted Dropout).</p>
+<p>⑦ Results: with BN, Inception needs 2.3× fewer steps to hit the baseline, 14× fewer with a 5× learning rate; BN-x30 tops out at 74.8%; the ensemble reaches 4.9% top-5 error, under the ~5.1% human estimate; the sigmoid version does not train at all without BN.</p>
+<p>⑧ Impact and reversal: it established the normalization layer and spawned LayerNorm / GroupNorm and kin; but the internal-covariate-shift explanation was overturned by Santurkar et al., with "it smooths the loss landscape" now the mainstream account. Limits: batch-size dependence, train/inference mismatch, coupling between samples, poor fit for sequence models.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full algorithm derivation and experimental setup, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
