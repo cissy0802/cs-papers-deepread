@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 29</p>
-<h1>Batch Normalization（批归一化）</h1>
+<h1 data-tts="0789980b23b56875">Batch Normalization（批归一化）</h1>
 <p class="sub">Sergey Ioffe &amp; Christian Szegedy · Google · ICML 2015</p>
 <p class="langbar"><a href="batch-normalization-paper29.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,27 +44,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="340c6894fab1dc0a">这篇论文干了什么？</h2>
 <p>2015 年，Google 的两位研究员提出了 <strong>Batch Normalization</strong>（简称 <strong>BN</strong>，中文叫「批归一化」）——一个塞进神经网络中间、代码只有几行的小零件。加上它之后，同一个网络训到同样的准确率，<strong>训练步数少了十几倍</strong>；他们顺手把 ImageNet 图像识别的错误率压到 4.9%，第一次低过「人类大约 5.1%」的估计。此后十年，从 ResNet 到几乎每个卷积网络，中间层后面都跟着一个 BN。</p>
-<h2>旧世界的痛</h2>
+<h2 data-tts="17d7e177a3d40a2e">旧世界的痛</h2>
 <p>神经网络是一队人接力干活：第一层看出线条，第二层拼出零件，第三层认出物体。麻烦在于训练时<strong>所有人同时在改自己的做法</strong>——前面的人一改口径，后面的人收到的东西整个刻度就变了：昨天还是「零点几」的数，今天变成「几十」。后面的层刚适应好，前面又变了。为了不让这场混乱失控，当年的人只能<strong>把步子迈得很小</strong>（把学习率调低），还得小心翼翼地挑初始值。训练深网络因此又慢又玄学，像走钢丝。</p>
-<h2>点子：开工之前，先把刻度调回标准</h2>
+<h2 data-tts="8511914e47a588d1">点子：开工之前，先把刻度调回标准</h2>
 <p>BN 的想法朴素得近乎粗暴：<strong>每一层动手之前，先把它收到的那堆数字统一「调回标准刻度」</strong>。不管前面的人怎么折腾，交到下一层手上的永远是同一个量级、同一个范围。</p>
 <p>具体怎么调？训练时数据是<strong>一小批一小批</strong>喂进去的（比如一批 32 张图）。BN 就拿这批同伴当参照：算出这批数字的<strong>平均值</strong>和<strong>波动幅度</strong>，把每个数减掉平均、除以幅度——整批数字于是被搬到「中心在零、胖瘦差不多」的位置。像一个班按平均分和分差把成绩换算成标准分：题目难易怎么变，标准分的分布总是稳的。</p>
 <p>可硬把每层锁死在同一刻度上，会不会削掉网络的表达能力？作者留了个后门：<strong>每处额外配两个可学的旋钮，一个管「放多大」、一个管「往哪儿挪」</strong>。网络要是觉得原来的刻度更好，把旋钮拧回去就行，最坏情况能把这次归一化整个撤销。<strong>先强行拉回标准，再让网络自己决定要不要挪回去</strong>——这是全篇最关键的一手。</p>
-<h2>为什么这一下就快了这么多</h2>
+<h2 data-tts="e92f73bfa58d58e8">为什么这一下就快了这么多</h2>
 <p>三件事同时被解决。一是<strong>步子终于能迈大</strong>：刻度稳了就不必靠小步慢走防翻车，学习率能往上调十几倍。二是<strong>学习信号不再被压扁</strong>：当年常用的一类激活函数会把数字压进 0 到 1 之间，数值一大就落进两头的平坦地带，输入再怎么变、输出也几乎不动，纠错信号就此中断——把数字拉回中间地带，正好躲开这个坑。三是<strong>顺手防了背题</strong>：标准分取决于同批同伴是谁，而每批是随机凑的，同一张图这轮和下轮算出来会有点抖动；这点噪声反而让网络不容易死记训练集。</p>
 <p>诚实的一句：BN 的刻度是从「同批同伴」身上算来的——批凑得太小，刻度就不准，效果明显打折。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="a975728015578bf0">一句话记住</h2>
 <div class="tl">
 <p>在每层动手之前，拿同一小批数据算出平均值和波动幅度，把收到的数字统一「换算成标准分」，再配两个可学的旋钮让网络能自行调回去。刻度稳了，学习率就能调大十几倍、信号不再被压扁，训练深网络从走钢丝变成了常规操作。</p>
 </div>
 <p class="switch-hint">想看 BN 的公式、卷积层怎么做、推理时用什么统计量、以及后来对它「为什么有效」的翻案？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="22909caab7f7f6d2">一句话</h2>
 <p class="lead">Batch Normalization 把「<strong>按当前小批量（mini-batch）的均值与方差把每个激活值标准化，再用两个可学参数 γ、β 缩放平移</strong>」做成一个可反向传播的网络层，插在每个非线性之前。它让各层输入的分布在训练中保持稳定，从而允许<strong>大十几倍的学习率</strong>、削弱对初始化的依赖、并附带正则化效果——同一个 Inception 网络加上它后，达到基线精度所需的训练步数少了约 14 倍，集成模型把 ImageNet top-5 错误率做到 <strong>4.9%</strong>。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="6688114616fb4e3a">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>激活值（activation）</strong>：网络中间层算出来的那些数字；第 k 层的激活值就是第 k+1 层的输入。</li>
@@ -76,9 +76,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>ImageNet / top-5 错误率</strong>：上百万张图、1000 类的图像识别基准；模型给 5 个猜测，全不对才算错。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="1d3f3bba9401c43d">坐标</h2>
 <p>作者是 Google 的 Sergey Ioffe 与 Christian Szegedy（后者也是本文实验主体 Inception / GoogLeNet 的主要作者），论文发在 <strong>ICML 2015</strong>。它接续的是「让深网络训得动」这条线——Glorot / He 初始化、ReLU 都在解同一个问题；而它自己被接续得更彻底：同年稍晚的 ResNet 每个残差块里都嵌着 BN，此后归一化层成了深度网络的标准零件，并分化出 Layer Normalization（Transformer 用的那种）、Group Normalization 等一整族后代。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="ea15df74fc789c0e">问题与动机</h2>
 <p>2015 年，深网络能不能训起来仍是个现实障碍。作者的诊断是：<strong>训练时每一层的输入分布都在不停变化</strong>——它的输入是前面所有层的输出，而那些层的参数每一步都在更新。他们给这现象起名叫<em>内部协变量偏移（internal covariate shift）</em>：「分布不一致」这件麻烦事发生在网络<strong>内部</strong>，每一层都在追着一个不断漂移的目标学。</p>
 <p>后果有二。其一，为了不让漂移失控，学习率必须很小、初始化必须挑得仔细，训练又慢又脆。其二，漂移会把激活值推进 <strong>sigmoid 的饱和区</strong>：分布整体挪到曲线两端的平坦地带后，导数趋零、梯度传不回去，这一层就彻底不学了。当时的通行解法是绕开（改用 ReLU、精心初始化、小学习率），而不是正面消除漂移。</p>
 <figure>
@@ -99,14 +99,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 1 · 内部协变量偏移：前面各层的参数每步都在变，导致本层输入分布不断漂移；一旦漂进 sigmoid 两端的平坦区，梯度趋零、这一层就学不动了。</figcaption>
 </figure>
-<h2>核心思想 / 方法</h2>
-<h3>第一步：为什么不能「事后归一化」</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="406fd86a2d3a9077">第一步：为什么不能「事后归一化」</h3>
 <p>最朴素的做法是每步更新完、再把某层激活值减去均值。作者用一个反例说明这行不通：设某层输出为 <code>x = u + b</code>，若把「减这批的均值」当成<strong>训练之外</strong>的后处理（梯度不穿过它），梯度下降算出的更新会照常增大 <code>b</code>，而归一化又把 b 的效果整个抵消——<strong>输出不变、损失不降，b 却无限膨胀下去</strong>。</p>
 <p>于是有了本文第一块基石：<strong>归一化必须写进模型、成为可反向传播的一层</strong>，让梯度知道「均值方差本身也依赖参数」；否则优化器会一直朝着被归一化抹掉的方向使劲。</p>
-<h3>第二步：用小批量的统计量代替全量白化</h3>
+<h3 data-tts="09486917c0caba10">第二步：用小批量的统计量代替全量白化</h3>
 <p>理想做法是对每层输入做<em>白化（whitening）</em>——变换成均值为零、方差为一、各维不相关的标准形态。但完整白化要算协方差矩阵及其平方根、还要每步遍历整个训练集，代价高得不可能。作者做了两个务实近似：<strong>每一维单独标准化</strong>（不做维度间去相关，不严格等价于白化，但便宜太多、够用），并<strong>用当前小批量的均值方差</strong>估计总体统计量（训练本就按批走，顺手就有）。</p>
 <p>于是得到 BN 变换。对批内某一维激活值 <code>x</code>：先算这批的均值 <code>μ_B</code> 与方差 <code>σ²_B</code>，标准化成 <code>x̂ = (x − μ_B)/√(σ²_B + ε)</code>（<code>ε</code> 是防除零的小常数），再做一次可学的缩放平移 <code>y = γ·x̂ + β</code>。前半句把这一维拉成「中心零、幅度一」；后半句是关键的后门。</p>
-<h3>第三步：γ 与 β——为什么必须留这个后门</h3>
+<h3 data-tts="d0619a53f8f52b54">第三步：γ 与 β——为什么必须留这个后门</h3>
 <p>强行把每层输入固定成零均值单位方差是有代价的：把 sigmoid 的输入锁在中间，等于把它限制在近乎线性的那一段，非线性表达能力被削掉了。<strong>γ（缩放）与 β（平移）是随网络一起训练的参数，让网络自己决定这一维最终该是什么均值、什么幅度。</strong>极端情况下只要令 <code>γ = √σ²_B</code>、<code>β = μ_B</code>，BN 就精确还原成恒等变换——<strong>归一化被「提议」而不被「强加」，最坏情况不亏</strong>。这与 ResNet 的思路同源：把一个保底解免费送给优化器。</p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
@@ -148,7 +148,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 2 · 左：BN 变换的三步——按批算统计量、标准化、可学缩放平移。右：它被插在线性变换之后、非线性之前；因为 β 已经在做平移，原来的偏置 b 变得多余，可以直接去掉。</figcaption>
 </figure>
-<h3>第四步：卷积层怎么归一化</h3>
+<h3 data-tts="1079c61ab00df8b9">第四步：卷积层怎么归一化</h3>
 <p>卷积层有个额外约束：同一个卷积核滑过整张图，<strong>图上不同位置本就该被同等对待</strong>。所以 BN 不给每个位置各配一套参数，而是<strong>按特征图（通道）归一化</strong>——一个通道在「整批样本 × 所有空间位置」上的全部数值合起来算一份均值方差，共享一对 γ、β。参数量因此只跟通道数有关（几百个），统计量的有效样本数则从 m 涨到 <code>m×H×W</code>（批大小乘特征图高宽），估得更准。</p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
@@ -180,12 +180,12 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 3 · 卷积层的 BN 按「通道」而非按「位置」归一化：一个通道在整批样本与所有像素位置上的数值合并成一份统计量，共享一对 γ、β。</figcaption>
 </figure>
-<h3>第五步：推理时用什么统计量</h3>
+<h3 data-tts="25f79be5a34be157">第五步：推理时用什么统计量</h3>
 <p>训练时的输出依赖「同批的其他样本是谁」——这在推理时不可接受：给同一张图打分，结果不该因为它和谁凑成一批而变。解法是<strong>训练过程中用滑动平均攒下整个数据集的均值与方差（总体统计量），推理时改用这份固定的统计量</strong>。此时 BN 退化成一个固定的线性变换（乘一个常数、加一个常数），<strong>可以直接折叠进前一层的权重里，推理成本降为零</strong>。</p>
-<h3>第六步：为什么它能允许大得多的学习率</h3>
+<h3 data-tts="1c7627ec270f7aa2">第六步：为什么它能允许大得多的学习率</h3>
 <p>论文给的解释里最硬的一条是<em>尺度不变性</em>：把某层权重整体放大 a 倍，BN 的输出完全不变——均值和方差同步放大了 a 倍，在标准化里被约掉，即 <code>BN(Wu) = BN((aW)u)</code>。更妙的是对权重的梯度会同步缩小到 <code>1/a</code>：<strong>权重越大、收到的更新越小</strong>。这形成一个自动负反馈，参数不会在大学习率下失控膨胀。</p>
 <p>还有一条副产品：<strong>正则化</strong>。一个样本经 BN 后的表示取决于同批还有谁，而每批是随机凑的，同一张图在不同轮次会得到略有抖动的表示；这份噪声起到类似 Dropout 的作用，作者索性<strong>把 Dropout 删了</strong>。</p>
-<h2>关键结果</h2>
+<h2 data-tts="530d2c80b3b22dd8">关键结果</h2>
 <p>先是 MNIST 上的玩具实验：三层各 100 个 sigmoid 单元的网络，加 BN 的版本收敛更快、精度更高；作者画出某个激活值在训练中的分位数曲线，无 BN 时分布持续漂移，有 BN 时迅速稳住——这是对「内部协变量偏移」这一诊断的直接证据。主实验则在 ImageNet 上用 Inception 做：</p>
 <ul>
 <li><strong>基线 Inception</strong>：训练 3100 万步达到 72.2% 的 top-1 准确率。</li>
@@ -195,10 +195,10 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>BN-x5-Sigmoid</strong>（把 ReLU 换成 sigmoid）：达到 69.8%。作为对照，<strong>不加 BN 的 sigmoid 版本几乎完全训不动</strong>（准确率停在随机水平附近）。这一条最能说明 BN 在对付饱和。</li>
 </ul>
 <p>最后，6 个 BN-Inception 模型集成拿到 ImageNet <strong>top-5 验证错误率 4.9%</strong>（测试集 4.82%），优于 GoogLeNet 集成的 6.67%，也低于当时对人类水平约 5.1% 的估计。为配合 BN，他们还去掉了 Dropout、把 L2 正则减到 1/5、学习率衰减加快 6 倍、移除局部响应归一化（LRN）、并更充分地打乱训练数据。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="b44fdca9ee83c8fa">为什么重要 / 影响</h2>
 <p>BN 把「训练很深的网络」从一门手艺变成默认能跑通的常规操作：初始化不必千挑万选，学习率可以放心调大，训练时间按倍数缩短。同年稍晚的 <strong>ResNet</strong> 每个残差块里都嵌着 BN——「残差连接 + 批归一化」这对组合，是此后十年视觉骨干网络的标准配置。</p>
 <p>更深远的是它确立了「<strong>归一化层</strong>」作为一类基本构件的地位。此后的 <strong>Layer Normalization</strong>（Ba 等 2016，按单个样本的所有特征归一化、不依赖批，正因如此成了 Transformer 与大语言模型的选择）、<strong>Group Normalization</strong>（Wu &amp; He 2018，按通道分组，小批量下不掉点）、RMSNorm，全是沿同一思路的变体。今天打开任何现代模型，几乎必定能在每个块里找到某种归一化。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="9660059cbb859aab">局限与批评</h2>
 <ul>
 <li><strong>「内部协变量偏移」这个解释后来被质疑</strong>：Santurkar 等（NeurIPS 2018）做了个漂亮的反驳实验——在 BN 之后<strong>人为注入</strong>随时间变化的噪声、把分布偏移重新造出来，网络依然训得又快又好。他们给的替代解释是：BN 真正的作用是<strong>让损失曲面更平滑</strong>（改善损失与梯度的 Lipschitz 性质），于是梯度更可预测、大步长更安全。<strong>方法有效是牢固的，作者给的机理解释则未被后续研究支持。</strong></li>
 <li><strong>依赖批大小、且把样本耦合在了一起</strong>：统计量从一个批里估，批小则噪声大——检测、分割这类每卡只放几张图的任务上 BN 明显掉点（Group Normalization、Batch Renormalization 正为此而生）；而「一个样本的输出取决于同批还有谁」这件事，也在对比学习、强化学习和多卡训练（各卡统计量是否同步）中制造过真实的麻烦。</li>
@@ -206,7 +206,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>与序列模型不合</strong>：句子长度可变、各时间步统计量也不同，BN 在 RNN 上很难用好——这正是 Layer Normalization 出现并最终统治 Transformer 的原因。</li>
 <li><strong>并非不可替代</strong>：后来的 NFNet（Brock 等 2021）用自适应梯度裁剪替代归一化也能达到同等精度，说明 BN 是一条极好用的捷径，而非唯一出路。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="4fcdc5bd2f575765">要点</h2>
 <div class="tl">
 <p>① 一句话：把「按小批量统计量标准化激活值 + 可学的 γ、β 缩放平移」做成可反传的一层，插在每个非线性之前。</p>
 <p>② 痛点：前面各层参数一直在变，本层输入分布不断漂移（作者称内部协变量偏移），逼得学习率必须很小、初始化必须讲究，还容易把 sigmoid 推进饱和区。</p>
