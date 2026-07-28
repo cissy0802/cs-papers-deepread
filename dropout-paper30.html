@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 30</p>
-<h1>Dropout（随机失活）</h1>
+<h1 data-tts="962fbe0fe3ea4cf5">Dropout（随机失活）</h1>
 <p class="sub">Srivastava, Hinton, Krizhevsky, Sutskever &amp; Salakhutdinov · University of Toronto · JMLR 2014</p>
 <p class="langbar"><a href="dropout-paper30.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,31 +44,31 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="634dc5d8bfc72c55">这篇论文干了什么？</h2>
 <p>2014 年，多伦多大学 Hinton 的团队把一个像恶作剧的做法写成了正式论文：<strong>训练神经网络时，每一步都随机让一部分神经元「请假」</strong>——临时当它们不存在。这个只有几行代码的招数叫 <strong>Dropout（随机失活）</strong>，它治的是深度学习最常见的病：<strong>模型把训练题背下来了，一换新题就露馅</strong>。2012 年点燃这轮 AI 热潮的 AlexNet，用的就是它。</p>
-<h2>旧世界的痛</h2>
+<h2 data-tts="84b828e627e8bc76">旧世界的痛</h2>
 <p>神经网络的参数动辄百万上千万，训练数据却总是有限。参数一多，它就能把训练集里<strong>只属于这批数据的巧合</strong>也记住——「猫图右下角都有块草地」，换成没见过的图便原形毕露。这叫<strong>过拟合</strong>。</p>
 <p>最灵的解药是「<strong>三个臭皮匠</strong>」：训练好几个模型、预测时投票，各自的偶然错误互相抵消。问题是太贵——训练几十个大网络要几十倍算力，上线后每张图还得跑几十遍。</p>
-<h2>那个点子</h2>
+<h2 data-tts="61cdd3a26bc5409d">那个点子</h2>
 <p>Dropout 的做法朴素到有点粗暴：<strong>训练的每一步，随机挑出大约一半的神经元，连同它们的所有连线一起临时抹掉</strong>，让剩下那个「缺胳膊少腿」的网络照常学这一步；下一步重新抽签，请假的换成另一批。</p>
-<h2>为什么这管用</h2>
+<h2 data-tts="0ad0911c5e79f6f1">为什么这管用</h2>
 <p><strong>第一，它拆散了小圈子。</strong>一个神经元若总能指望隔壁那位替它兜底，它学的本事就只在「隔壁在场」时管用；一群神经元抱团互补，换到新数据上很脆。随机请假之后没人知道身边还剩谁，<strong>每个神经元只好学一身自己也站得住的本事</strong>。论文的比方很妙：与其组一个五十人的大阴谋（一环出错全盘皆输），不如组十个五人小分队。</p>
 <p><strong>第二，它把「三个臭皮匠」变便宜了。</strong>每次抽签得到的都是一个不同的残缺网络，几十万步下来等于练过了海量个网络——而它们<strong>共用同一套权重</strong>，只花了训练一个网络的钱。</p>
-<h2>那考试的时候呢？</h2>
+<h2 data-tts="1ec9fffdee919842">那考试的时候呢？</h2>
 <p>上线时不能再抽签——同一张图问两遍答案不一样可不行。办法朴素得让人发笑：<strong>让所有神经元都到场，但把每个人的发言音量按当初的出勤率调小</strong>。训练时平均只有一半人在场，现在人齐了，每人说轻一点，总音量才对得上。神奇的是，这一次普通计算的效果，就非常接近让那海量个残缺网络挨个投票。</p>
 <p>代价说一句：每一步都在跟随机噪声较劲，训练到同样水平大约要多花<strong>两三倍</strong>的时间。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="1a5feb8baa1e54c7">带来了什么</h2>
 <p>Dropout 让「把网络造大」不再等于「更容易背题」，成了 2012–2016 年深度学习的标配零件，今天 Transformer 里也还留着它的位置。它还开创了一整条思路：<strong>往训练里故意加噪声，逼模型学出更结实的东西</strong>。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="074037add71ceb8e">一句话记住</h2>
 <div class="tl">
 <p>训练时随机让一半神经元请假，逼每个神经元学出不依赖特定同伴的本事，同时等于用一套权重训练了海量个残缺网络；测试时让所有人到场、音量按出勤率调小，一次前向就近似拿到它们的集体投票。</p>
 </div>
 <p class="switch-hint">想看掩码怎么算、为什么乘以 p、以及各数据集上的实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="986d2e7125184153">一句话</h2>
 <p class="lead">Dropout 在训练时随机「丢弃」神经元（输出置零），使每一步都在训练一个不同的<strong>瘦网络（thinned network）</strong>；这既<strong>打断了神经元之间的共适应（co-adaptation）</strong>，又等价于用一套共享权重同时训练指数多个网络。测试时不再随机，把权重乘以留存概率 <code>p</code> 做一次普通前向，就近似了全体瘦网络的集成平均。它是深度学习时代第一个通用而便宜的<strong>正则化</strong>手段。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="651e6cef0e552e6d">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>神经网络 / 隐藏单元</strong>：由许多「单元（神经元）」分层连接而成的模型；中间层的单元叫隐藏单元，每个把上一层传来的数加权求和、再过一个非线性函数输出。</li>
@@ -82,237 +82,237 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>伯努利分布（Bernoulli）</strong>：只有 0 或 1 两种结果的随机变量，即一次抛硬币；dropout 的掩码就是每个单元各掷一次。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="68b8952e8b936ea9">坐标</h2>
 <p>作者是 Nitish Srivastava、Geoffrey Hinton、Alex Krizhevsky、Ilya Sutskever、Ruslan Salakhutdinov，来自多伦多大学，2014 年发在 JMLR；前身是同组 2012 年的 arXiv 短文《Improving neural networks by preventing co-adaptation of feature detectors》。同一批人同年做出的 <strong>AlexNet</strong> 在全连接层用了 dropout，把它推成事实标准。它上承「用集成对抗过拟合」的经典思路，下启 DropConnect、随机深度（stochastic depth）、Monte Carlo dropout 等一整条「以噪声做正则」的支线。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="1ab2f51986568486">问题与动机</h2>
 <p>深度网络的表达力来自海量参数，而标注数据永远不够多。参数一多，网络就能把训练集里<em>只属于这批样本的采样噪声</em>也拟合掉，泛化随之崩塌。权重衰减、提前停止、数据增强都有效，但有限。</p>
 <p>理论上最漂亮的解法是<strong>贝叶斯模型平均</strong>——按后验概率给所有可能的参数设定加权平均，可它在神经网络上完全算不动。退而求其次是<strong>集成</strong>：训练一堆结构或初始化不同的网络再投票，几乎稳赚，但训练、调参、推理成本全都乘以模型个数，在 2012 年的算力下基本不可行。</p>
 <p>论文还点出一个更微妙的病根：<strong>共适应（co-adaptation）</strong>。反向传播只求整体损失下降，不阻止某个隐藏单元把错误交给别人修补；于是一群单元演化成彼此纠缠的整体——某个特征只有在另外几个特定特征也出现时才有意义，在训练集上很有效、一换数据就失灵。<strong>真正想要的，是每个单元自己就是个有用的特征探测器。</strong></p>
-<h2>核心思想 / 方法</h2>
-<h3>点子：每一步都随机删掉半个网络</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="6e37c41936351d1e">点子：每一步都随机删掉半个网络</h3>
 <p>训练时，对每个训练样本（实现上是每个小批量）都<strong>重新掷一次骰子</strong>：每个单元以概率 <code>p</code> 保留、以 <code>1−p</code> 丢弃。丢弃意味着输出置零、进出它的所有连线在这一步统统失效；剩下的残缺结构就是一个<strong>瘦网络</strong>，正常前向反向一次、更新它自己那部分权重。</p>
 <p>写成式子只有一行：给某层输出 <code>y</code> 逐元素乘一个 0/1 掩码 <code>r</code>，<code>ỹ = r ⊙ y</code>，<code>r</code> 的每一位独立服从伯努利分布（取 1 的概率为 <code>p</code>）；然后照常 <code>z = w·ỹ + b</code> 送进下一层。白话说：<strong>这一步这个单元当不存在，话不传出去、错也不回传给它。</strong></p>
 <p>经验取值：隐藏层 <code>p = 0.5</code>（留一半）在很宽的任务范围内接近最优；输入层保守得多，通常留 <code>p ≈ 0.8</code>——输入本身就是信息源，丢太多等于直接删数据。</p>
 <figure>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 178" font-family="-apple-system,sans-serif">
-<text x="130" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle">标准网络</text>
-<text x="414" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle">加了 dropout 的「瘦网络」</text>
-<line x1="46.0" y1="74.0" x2="102.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="74.0" x2="102.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="74.0" x2="102.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="74.0" x2="102.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="100.0" x2="102.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="100.0" x2="102.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="100.0" x2="102.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="100.0" x2="102.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="126.0" x2="102.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="126.0" x2="102.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="126.0" x2="102.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="46.0" y1="126.0" x2="102.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="61.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="61.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="61.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="61.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="87.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="87.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="87.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="87.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="113.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="113.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="113.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="113.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="139.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="139.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="139.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="102.0" y1="139.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="61.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="61.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="87.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="87.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="113.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="113.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="139.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="158.0" y1="139.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<circle cx="46.0" cy="74.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="46.0" cy="100.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="46.0" cy="126.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="102.0" cy="61.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="102.0" cy="87.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="102.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="102.0" cy="139.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="158.0" cy="61.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="158.0" cy="87.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="158.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="158.0" cy="139.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="214.0" cy="87.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="214.0" cy="113.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<line x1="330.0" y1="74.0" x2="386.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="330.0" y1="74.0" x2="386.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="330.0" y1="100.0" x2="386.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="330.0" y1="100.0" x2="386.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="330.0" y1="126.0" x2="386.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="330.0" y1="126.0" x2="386.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="386.0" y1="87.0" x2="442.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="386.0" y1="87.0" x2="442.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="386.0" y1="87.0" x2="442.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="386.0" y1="113.0" x2="442.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="386.0" y1="113.0" x2="442.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="386.0" y1="113.0" x2="442.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="442.0" y1="61.0" x2="498.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="442.0" y1="61.0" x2="498.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="442.0" y1="113.0" x2="498.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="442.0" y1="113.0" x2="498.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="442.0" y1="139.0" x2="498.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="442.0" y1="139.0" x2="498.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<circle cx="330.0" cy="74.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="330.0" cy="100.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="330.0" cy="126.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="386.0" cy="61.0" r="7.5" fill="none" stroke="#3d434c" stroke-width="1.2"/>
-<path d="M381.4,56.4 L390.6,65.7 M390.6,56.4 L381.4,65.7" stroke="#3d434c" stroke-width="1.3"/>
-<circle cx="386.0" cy="87.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="386.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="386.0" cy="139.0" r="7.5" fill="none" stroke="#3d434c" stroke-width="1.2"/>
-<path d="M381.4,134.3 L390.6,143.7 M390.6,134.3 L381.4,143.7" stroke="#3d434c" stroke-width="1.3"/>
-<circle cx="442.0" cy="61.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="442.0" cy="87.0" r="7.5" fill="none" stroke="#3d434c" stroke-width="1.2"/>
-<path d="M437.4,82.3 L446.6,91.7 M446.6,82.3 L437.4,91.7" stroke="#3d434c" stroke-width="1.3"/>
-<circle cx="442.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="442.0" cy="139.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="498.0" cy="87.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="498.0" cy="113.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<line x1="286" y1="34" x2="286" y2="150" stroke="rgba(240,180,41,0.18)" stroke-dasharray="4 4"/>
-<text x="414" y="166" fill="#f0b429" font-size="11" text-anchor="middle">每次训练随机划掉一批单元</text>
-<text x="130" y="166" fill="#7c8593" font-size="11" text-anchor="middle">× = 本次被丢弃</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 178" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="130" y="24">标准网络</text>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="414" y="24">加了 dropout 的「瘦网络」</text>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="74.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="74.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="74.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="74.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="100.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="100.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="100.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="100.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="126.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="126.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="126.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="46.0" x2="102.0" y1="126.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="61.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="61.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="61.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="61.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="87.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="87.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="87.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="87.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="113.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="113.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="113.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="113.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="139.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="139.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="139.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="102.0" x2="158.0" y1="139.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="61.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="61.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="87.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="87.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="113.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="113.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="139.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="158.0" x2="214.0" y1="139.0" y2="113.0"></line>
+<circle cx="46.0" cy="74.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="46.0" cy="100.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="46.0" cy="126.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="102.0" cy="61.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="102.0" cy="87.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="102.0" cy="113.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="102.0" cy="139.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="158.0" cy="61.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="158.0" cy="87.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="158.0" cy="113.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="158.0" cy="139.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="214.0" cy="87.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="214.0" cy="113.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="330.0" x2="386.0" y1="74.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="330.0" x2="386.0" y1="74.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="330.0" x2="386.0" y1="100.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="330.0" x2="386.0" y1="100.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="330.0" x2="386.0" y1="126.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="330.0" x2="386.0" y1="126.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="386.0" x2="442.0" y1="87.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="386.0" x2="442.0" y1="87.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="386.0" x2="442.0" y1="87.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="386.0" x2="442.0" y1="113.0" y2="61.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="386.0" x2="442.0" y1="113.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="386.0" x2="442.0" y1="113.0" y2="139.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="442.0" x2="498.0" y1="61.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="442.0" x2="498.0" y1="61.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="442.0" x2="498.0" y1="113.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="442.0" x2="498.0" y1="113.0" y2="113.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="442.0" x2="498.0" y1="139.0" y2="87.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="442.0" x2="498.0" y1="139.0" y2="113.0"></line>
+<circle cx="330.0" cy="74.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="330.0" cy="100.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="330.0" cy="126.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="386.0" cy="61.0" fill="none" r="7.5" stroke="#3d434c" stroke-width="1.2"></circle>
+<path d="M381.4,56.4 L390.6,65.7 M390.6,56.4 L381.4,65.7" stroke="#3d434c" stroke-width="1.3"></path>
+<circle cx="386.0" cy="87.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="386.0" cy="113.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="386.0" cy="139.0" fill="none" r="7.5" stroke="#3d434c" stroke-width="1.2"></circle>
+<path d="M381.4,134.3 L390.6,143.7 M390.6,134.3 L381.4,143.7" stroke="#3d434c" stroke-width="1.3"></path>
+<circle cx="442.0" cy="61.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="442.0" cy="87.0" fill="none" r="7.5" stroke="#3d434c" stroke-width="1.2"></circle>
+<path d="M437.4,82.3 L446.6,91.7 M446.6,82.3 L437.4,91.7" stroke="#3d434c" stroke-width="1.3"></path>
+<circle cx="442.0" cy="113.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="442.0" cy="139.0" fill="rgba(240,180,41,0.20)" r="7.5" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="498.0" cy="87.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="498.0" cy="113.0" fill="rgba(232,121,75,0.22)" r="7.5" stroke="#e8794b" stroke-width="1.2"></circle>
+<line stroke="rgba(240,180,41,0.18)" stroke-dasharray="4 4" x1="286" x2="286" y1="34" y2="150"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="414" y="166">每次训练随机划掉一批单元</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="130" y="166">× = 本次被丢弃</text>
 </svg>
 <figcaption>图 1 · 左：完整网络。右：一次抽签后的瘦网络——被丢弃的单元（×）连同它的所有连线在这一步整体消失。每一步的瘦网络都不同。</figcaption>
 </figure>
-<h3>直觉一：不许结成小圈子</h3>
+<h3 data-tts="edf44cd1abcba3bc">直觉一：不许结成小圈子</h3>
 <p>随机丢弃直接掐死了共适应：<strong>一个单元无法再指望某个特定伙伴一定在场</strong>，只能学出「在众多随机搭档组合下都有用」的特征——也就是自己就站得住的特征。论文给了两个漂亮的比方：其一，与其组织一个五十人的大阴谋（任一环节出错则全盘皆输），不如组十个五人小分队；其二是有性生殖——基因必须能与随机抽到的另一半基因组配合，这逼出的是<strong>可混搭的能力</strong>而非精细耦合的复合体。作者的隐藏层可视化也印证了这点：不加 dropout 时单元学出杂乱模式，加了之后学出清晰的边缘与笔画。</p>
-<h3>直觉二：一次训练 = 指数多个网络的集成</h3>
+<h3 data-tts="f26260a86f48c542">直觉二：一次训练 = 指数多个网络的集成</h3>
 <p>换个角度：<code>n</code> 个单元有 <code>2ⁿ</code> 种「留 / 丢」组合，也就是 <code>2ⁿ</code> 个可能的瘦网络。训练等于在这个巨大的网络家族里<strong>随机采样、逐个训练</strong>——关键是它们<strong>共享同一套权重</strong>：某条边的参数被所有包含它的瘦网络共同使用、共同更新。于是我们用<strong>一个网络的训练成本</strong>，得到了一族同时被训练出来的模型。</p>
 <p>这就是「集成太贵」难题的绕行方案：既然分别训练几十个网络太奢侈，就让指数多个网络挤在一套权重里长大。它们当然高度相关、每个也只被采样到极少次，所以这只是<em>近似</em>的集成——但实践上极其有效。</p>
 <figure>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 250" font-family="-apple-system,sans-serif">
-<defs><marker id="dm1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<text x="20" y="20" fill="#e7ebf1" font-size="12" >同一套权重，每步采样一个瘦网络……</text>
-<g><line x1="38.0" y1="44.0" x2="72.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="38.0" y1="44.0" x2="72.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="38.0" y1="64.0" x2="72.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="38.0" y1="64.0" x2="72.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="38.0" y1="84.0" x2="72.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="38.0" y1="84.0" x2="72.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="72.0" y1="64.0" x2="106.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="72.0" y1="64.0" x2="106.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="72.0" y1="84.0" x2="106.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="72.0" y1="84.0" x2="106.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<circle cx="38.0" cy="44.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="38.0" cy="64.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="38.0" cy="84.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="72.0" cy="44.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
-<path d="M68.8,40.8 L75.2,47.2 M75.2,40.8 L68.8,47.2" stroke="#3d434c" stroke-width="1.3"/>
-<circle cx="72.0" cy="64.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="72.0" cy="84.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="106.0" cy="54.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="106.0" cy="74.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
-<g><line x1="156.0" y1="44.0" x2="190.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="156.0" y1="44.0" x2="190.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="156.0" y1="64.0" x2="190.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="156.0" y1="64.0" x2="190.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="156.0" y1="84.0" x2="190.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="156.0" y1="84.0" x2="190.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="190.0" y1="44.0" x2="224.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="190.0" y1="44.0" x2="224.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="190.0" y1="64.0" x2="224.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="190.0" y1="64.0" x2="224.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<circle cx="156.0" cy="44.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="156.0" cy="64.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="156.0" cy="84.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="190.0" cy="44.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="190.0" cy="64.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="190.0" cy="84.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
-<path d="M186.8,80.8 L193.2,87.2 M193.2,80.8 L186.8,87.2" stroke="#3d434c" stroke-width="1.3"/>
-<circle cx="224.0" cy="54.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="224.0" cy="74.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
-<g><line x1="274.0" y1="44.0" x2="308.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="274.0" y1="44.0" x2="308.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="274.0" y1="84.0" x2="308.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="274.0" y1="84.0" x2="308.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="308.0" y1="44.0" x2="342.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="308.0" y1="44.0" x2="342.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="308.0" y1="84.0" x2="342.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="308.0" y1="84.0" x2="342.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<circle cx="274.0" cy="44.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="274.0" cy="64.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
-<path d="M270.8,60.8 L277.2,67.2 M277.2,60.8 L270.8,67.2" stroke="#3d434c" stroke-width="1.3"/>
-<circle cx="274.0" cy="84.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="308.0" cy="44.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="308.0" cy="64.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
-<path d="M304.8,60.8 L311.2,67.2 M311.2,60.8 L304.8,67.2" stroke="#3d434c" stroke-width="1.3"/>
-<circle cx="308.0" cy="84.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="342.0" cy="54.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="342.0" cy="74.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
-<text x="404" y="70" fill="#7c8593" font-size="16">…</text>
-<text x="424" y="70" fill="#7c8593" font-size="11">（共 2ⁿ 种可能）</text>
-<path d="M280,104 L280,140" stroke="#f0b429" stroke-width="1.6" marker-end="url(#dm1)"/>
-<g><line x1="210.0" y1="162.0" x2="244.0" y2="162.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="162.0" x2="244.0" y2="182.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="162.0" x2="244.0" y2="202.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="182.0" x2="244.0" y2="162.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="182.0" x2="244.0" y2="182.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="182.0" x2="244.0" y2="202.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="202.0" x2="244.0" y2="162.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="202.0" x2="244.0" y2="182.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="210.0" y1="202.0" x2="244.0" y2="202.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="244.0" y1="162.0" x2="278.0" y2="172.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="244.0" y1="162.0" x2="278.0" y2="192.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="244.0" y1="182.0" x2="278.0" y2="172.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="244.0" y1="182.0" x2="278.0" y2="192.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="244.0" y1="202.0" x2="278.0" y2="172.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<line x1="244.0" y1="202.0" x2="278.0" y2="192.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
-<circle cx="210.0" cy="162.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="210.0" cy="182.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="210.0" cy="202.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="244.0" cy="162.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="244.0" cy="182.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="244.0" cy="202.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
-<circle cx="278.0" cy="172.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
-<circle cx="278.0" cy="192.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
-<text x="300" y="158" fill="#f0b429" font-size="11.5">测试：完整网络，权重乘以留存概率</text>
-<text x="300" y="176" fill="#e8794b" font-size="11.5">≈ 全体瘦网络的平均预测</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="dm1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#e7ebf1" font-size="12" x="20" y="20">同一套权重，每步采样一个瘦网络……</text>
+<g><line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="38.0" x2="72.0" y1="44.0" y2="64.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="38.0" x2="72.0" y1="44.0" y2="84.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="38.0" x2="72.0" y1="64.0" y2="64.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="38.0" x2="72.0" y1="64.0" y2="84.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="38.0" x2="72.0" y1="84.0" y2="64.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="38.0" x2="72.0" y1="84.0" y2="84.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="72.0" x2="106.0" y1="64.0" y2="54.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="72.0" x2="106.0" y1="64.0" y2="74.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="72.0" x2="106.0" y1="84.0" y2="54.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="72.0" x2="106.0" y1="84.0" y2="74.0"></line>
+<circle cx="38.0" cy="44.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="38.0" cy="64.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="38.0" cy="84.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="72.0" cy="44.0" fill="none" r="5.2" stroke="#3d434c" stroke-width="1.2"></circle>
+<path d="M68.8,40.8 L75.2,47.2 M75.2,40.8 L68.8,47.2" stroke="#3d434c" stroke-width="1.3"></path>
+<circle cx="72.0" cy="64.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="72.0" cy="84.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="106.0" cy="54.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="106.0" cy="74.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle></g>
+<g><line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="156.0" x2="190.0" y1="44.0" y2="44.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="156.0" x2="190.0" y1="44.0" y2="64.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="156.0" x2="190.0" y1="64.0" y2="44.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="156.0" x2="190.0" y1="64.0" y2="64.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="156.0" x2="190.0" y1="84.0" y2="44.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="156.0" x2="190.0" y1="84.0" y2="64.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="190.0" x2="224.0" y1="44.0" y2="54.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="190.0" x2="224.0" y1="44.0" y2="74.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="190.0" x2="224.0" y1="64.0" y2="54.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="190.0" x2="224.0" y1="64.0" y2="74.0"></line>
+<circle cx="156.0" cy="44.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="156.0" cy="64.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="156.0" cy="84.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="190.0" cy="44.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="190.0" cy="64.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="190.0" cy="84.0" fill="none" r="5.2" stroke="#3d434c" stroke-width="1.2"></circle>
+<path d="M186.8,80.8 L193.2,87.2 M193.2,80.8 L186.8,87.2" stroke="#3d434c" stroke-width="1.3"></path>
+<circle cx="224.0" cy="54.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="224.0" cy="74.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle></g>
+<g><line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="274.0" x2="308.0" y1="44.0" y2="44.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="274.0" x2="308.0" y1="44.0" y2="84.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="274.0" x2="308.0" y1="84.0" y2="44.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="274.0" x2="308.0" y1="84.0" y2="84.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="308.0" x2="342.0" y1="44.0" y2="54.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="308.0" x2="342.0" y1="44.0" y2="74.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="308.0" x2="342.0" y1="84.0" y2="54.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="308.0" x2="342.0" y1="84.0" y2="74.0"></line>
+<circle cx="274.0" cy="44.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="274.0" cy="64.0" fill="none" r="5.2" stroke="#3d434c" stroke-width="1.2"></circle>
+<path d="M270.8,60.8 L277.2,67.2 M277.2,60.8 L270.8,67.2" stroke="#3d434c" stroke-width="1.3"></path>
+<circle cx="274.0" cy="84.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="308.0" cy="44.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="308.0" cy="64.0" fill="none" r="5.2" stroke="#3d434c" stroke-width="1.2"></circle>
+<path d="M304.8,60.8 L311.2,67.2 M311.2,60.8 L304.8,67.2" stroke="#3d434c" stroke-width="1.3"></path>
+<circle cx="308.0" cy="84.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="342.0" cy="54.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="342.0" cy="74.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle></g>
+<text fill="#7c8593" font-size="16" x="404" y="70">…</text>
+<text fill="#7c8593" font-size="11" x="424" y="70">（共 2ⁿ 种可能）</text>
+<path d="M280,104 L280,140" marker-end="url(#dm1)" stroke="#f0b429" stroke-width="1.6"></path>
+<g><line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="162.0" y2="162.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="162.0" y2="182.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="162.0" y2="202.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="182.0" y2="162.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="182.0" y2="182.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="182.0" y2="202.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="202.0" y2="162.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="202.0" y2="182.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="210.0" x2="244.0" y1="202.0" y2="202.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="244.0" x2="278.0" y1="162.0" y2="172.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="244.0" x2="278.0" y1="162.0" y2="192.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="244.0" x2="278.0" y1="182.0" y2="172.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="244.0" x2="278.0" y1="182.0" y2="192.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="244.0" x2="278.0" y1="202.0" y2="172.0"></line>
+<line stroke="rgba(240,180,41,0.28)" stroke-width="0.8" x1="244.0" x2="278.0" y1="202.0" y2="192.0"></line>
+<circle cx="210.0" cy="162.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="210.0" cy="182.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="210.0" cy="202.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="244.0" cy="162.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="244.0" cy="182.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="244.0" cy="202.0" fill="rgba(240,180,41,0.20)" r="5.2" stroke="#f0b429" stroke-width="1.2"></circle>
+<circle cx="278.0" cy="172.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle>
+<circle cx="278.0" cy="192.0" fill="rgba(232,121,75,0.22)" r="5.2" stroke="#e8794b" stroke-width="1.2"></circle></g>
+<text fill="#f0b429" font-size="11.5" x="300" y="158">测试：完整网络，权重乘以留存概率</text>
+<text fill="#e8794b" font-size="11.5" x="300" y="176">≈ 全体瘦网络的平均预测</text>
 </svg>
 <figcaption>图 2 · 训练时每步采样一个瘦网络，全部共享同一套权重；测试时用完整网络、权重按留存概率缩放，一次前向就近似了整族网络的平均预测。</figcaption>
 </figure>
-<h3>测试时：把权重乘以 p</h3>
+<h3 data-tts="85e861e9b7a58f84">测试时：把权重乘以 p</h3>
 <p>集成的正确用法是让所有成员投票再平均，但这里成员有 <code>2ⁿ</code> 个。论文的<strong>权重缩放（weight scaling）</strong>规则简单得出奇：测试时保留所有单元，但把每个单元的<strong>出边权重乘以 <code>p</code></strong>，然后做一次普通前向。</p>
 <p>为什么是乘 <code>p</code>？训练时某个单元平均只有 <code>p</code> 的时间在场，下一层收到的<strong>期望输入</strong>是「权重 × 输出 × p」；测试时它总在场，若不缩放，下一层收到的信号会整体大约 <code>1/p</code> 倍，把网络推到从未训练过的数值区间。乘上 <code>p</code>，就把测试时的输入期望拉回训练水平。</p>
 <p>它有多准？对只有一层 softmax 的情形，这个规则<strong>精确</strong>等于全体瘦网络预测的（归一化）几何平均；对多层非线性网络只是近似，但论文用蒙特卡洛实验验证过：真去采样 <code>k</code> 个瘦网络分别预测再平均，误差随 <code>k</code> 增大而下降，而<strong>权重缩放这一次前向，效果就相当于采样几十个网络去平均</strong>——这是 dropout 能落地的关键。</p>
 <figure>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 200" font-family="-apple-system,sans-serif">
-<defs><marker id="dp2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<text x="18" y="42" fill="#f0b429" font-size="11.5" font-weight="700">训练时（每一步）</text>
-<rect x="18" y="52" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="66" y="74" fill="#b9c0ca" font-size="11" text-anchor="middle">上一层输出 y</text>
-<line x1="114" y1="69" x2="136" y2="69" stroke="#7c8593" marker-end="url(#dp2)"/>
-<rect x="140" y="52" width="130" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="205" y="74" fill="#e7ebf1" font-size="11" text-anchor="middle">掩码 r ~ Bernoulli(p)</text>
-<line x1="270" y1="69" x2="292" y2="69" stroke="#7c8593" marker-end="url(#dp2)"/>
-<rect x="296" y="52" width="86" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="339" y="74" fill="#e7ebf1" font-size="11" text-anchor="middle">ỹ = r ⊙ y</text>
-<line x1="382" y1="69" x2="404" y2="69" stroke="#7c8593" marker-end="url(#dp2)"/>
-<rect x="408" y="52" width="134" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="475" y="74" fill="#b9c0ca" font-size="11" text-anchor="middle">× w → 下一层</text>
-<text x="18" y="128" fill="#e8794b" font-size="11.5" font-weight="700">测试时（推理）</text>
-<rect x="18" y="138" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="66" y="160" fill="#b9c0ca" font-size="11" text-anchor="middle">上一层输出 y</text>
-<line x1="114" y1="155" x2="136" y2="155" stroke="#7c8593" marker-end="url(#dp2)"/>
-<rect x="140" y="138" width="130" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="205" y="160" fill="#b9c0ca" font-size="11" text-anchor="middle">不丢弃 · 全部保留</text>
-<line x1="270" y1="155" x2="292" y2="155" stroke="#7c8593" marker-end="url(#dp2)"/>
-<rect x="296" y="138" width="86" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="339" y="160" fill="#b9c0ca" font-size="11" text-anchor="middle">y 原样通过</text>
-<line x1="382" y1="155" x2="404" y2="155" stroke="#7c8593" marker-end="url(#dp2)"/>
-<rect x="408" y="138" width="134" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="475" y="160" fill="#e7ebf1" font-size="11" text-anchor="middle">× (p·w) → 下一层</text>
-<text x="18" y="192" fill="#7c8593" font-size="10.5">权重缩放：让测试时下一层收到的输入期望，与训练时对得上。</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 200" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="dp2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#f0b429" font-size="11.5" font-weight="700" x="18" y="42">训练时（每一步）</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="96" x="18" y="52"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="66" y="74">上一层输出 y</text>
+<line marker-end="url(#dp2)" stroke="#7c8593" x1="114" x2="136" y1="69" y2="69"></line>
+<rect fill="rgba(240,180,41,0.12)" height="34" rx="6" stroke="#f0b429" width="130" x="140" y="52"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="205" y="74">掩码 r ~ Bernoulli(p)</text>
+<line marker-end="url(#dp2)" stroke="#7c8593" x1="270" x2="292" y1="69" y2="69"></line>
+<rect fill="rgba(240,180,41,0.12)" height="34" rx="6" stroke="#f0b429" width="86" x="296" y="52"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="339" y="74">ỹ = r ⊙ y</text>
+<line marker-end="url(#dp2)" stroke="#7c8593" x1="382" x2="404" y1="69" y2="69"></line>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="134" x="408" y="52"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="475" y="74">× w → 下一层</text>
+<text fill="#e8794b" font-size="11.5" font-weight="700" x="18" y="128">测试时（推理）</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="96" x="18" y="138"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="66" y="160">上一层输出 y</text>
+<line marker-end="url(#dp2)" stroke="#7c8593" x1="114" x2="136" y1="155" y2="155"></line>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="130" x="140" y="138"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="205" y="160">不丢弃 · 全部保留</text>
+<line marker-end="url(#dp2)" stroke="#7c8593" x1="270" x2="292" y1="155" y2="155"></line>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="86" x="296" y="138"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="339" y="160">y 原样通过</text>
+<line marker-end="url(#dp2)" stroke="#7c8593" x1="382" x2="404" y1="155" y2="155"></line>
+<rect fill="rgba(232,121,75,0.14)" height="34" rx="6" stroke="#e8794b" width="134" x="408" y="138"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="475" y="160">× (p·w) → 下一层</text>
+<text fill="#7c8593" font-size="10.5" x="18" y="192">权重缩放：让测试时下一层收到的输入期望，与训练时对得上。</text>
 </svg>
 <figcaption>图 3 · 训练与测试的唯一差别：训练时乘一个随机 0/1 掩码；测试时不丢弃、改把出边权重乘以留存概率 p。</figcaption>
 </figure>
-<h3>配套细节</h3>
+<h3 data-tts="fbd3c73b2e28bc7d">配套细节</h3>
 <p>Dropout 不是单独起效的。论文给的配方是：<strong>max-norm 约束</strong>（把每个单元入向权重向量的长度硬性限制在上限 <code>c</code> 内，超了等比缩回）配上<strong>较大的学习率 + 高动量</strong>——dropout 的噪声让梯度很吵，需要大步长与动量把噪声平掉；而大步长容易让权重发散，max-norm 恰好给了硬性天花板。</p>
 <p>论文还给了一个变体：<strong>高斯 dropout</strong>——不乘 0/1 掩码，而乘一个均值为 1 的高斯随机数，效果相当甚至更好，说明关键不在「丢弃」这个动作本身，而在<strong>往激活值上注入均值不变的乘性噪声</strong>。作者还从线性回归的特例指出，dropout 在那里可归约为一种<strong>按特征自适应缩放的 L2 正则</strong>，为「它到底算哪种正则化」提供了可解析的锚点。</p>
-<h2>关键结果</h2>
+<h2 data-tts="288097db491bcd3d">关键结果</h2>
 <p>论文的说服力来自<strong>跨领域的一致提升</strong>：同一个招数在视觉、语音、文本、生物数据上都稳定有效。</p>
 <ul>
 <li><strong>MNIST</strong>（手写数字，不用卷积的置换不变设定）：标准前馈网络约 <strong>1.60%</strong> 错误率；加 dropout 降到约 <strong>1.25%</strong>，配合更大的网络与 max-norm 可到约 <strong>1.05%</strong>；再叠加深度玻尔兹曼机预训练后微调可到 <strong>0.79%</strong>。</li>
@@ -322,10 +322,10 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>ImageNet</strong>：同组的 AlexNet 在全连接层用 dropout，是它 2012 年断崖式夺冠配方里的关键一项。</li>
 </ul>
 <p>另外两组对照很有信息量。<strong>数据量</strong>：数据极少时（如只用几百张 MNIST）dropout 帮不上忙甚至有害——本来就欠拟合，再加噪声更糟；适中时收益最大，极大时收益又缩小。<strong>保留概率</strong>：隐藏层的 <code>p</code> 在 0.4–0.8 之间都不错，太小欠拟合、太接近 1 则噪声不足。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="4485577be5982682">为什么重要 / 影响</h2>
 <p>Dropout 改变了「网络该做多大」的算法。在它之前，加宽加深意味着更容易过拟合，容量被泛化能力卡着脖子；在它之后，<strong>先把网络造大、再用 dropout 压住过拟合</strong>成了标准操作，直接助推了 2012–2016 那一波「越做越大」。</p>
 <p>更深远的是它确立的<strong>思想模板：训练时注入随机噪声，就能得到近似模型平均的正则化效果</strong>。DropConnect（丢连接而非丢单元）、随机深度（随机跳过整个残差块）、DropPath 都是它的直系后代。Gal 与 Ghahramani 更进一步，把 dropout 解释为对深度高斯过程的近似贝叶斯推断，于是<strong>测试时也开着 dropout 多跑几遍</strong>（Monte Carlo dropout）就能廉价估计模型的不确定性，至今仍是最常用的不确定性估计手段之一。今天的 Transformer 里，注意力权重、前馈层与残差输出上依然挂着 dropout。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="d8167c23aacfeb7d">局限与批评</h2>
 <ul>
 <li><strong>训练变慢</strong>：梯度带噪声，达到同样水平通常要 2–3 倍训练时间，还多出 <code>p</code> 这个要调的超参数。</li>
 <li><strong>被批归一化取代、且与它不和</strong>：Batch Normalization（2015）自带正则化效果，其论文明确建议去掉或减弱 dropout，此后主流视觉骨干很少在卷积层用它；Li 等（2019）进一步指出两者叠用会产生<em>方差偏移</em>——dropout 改变了 BN 训练时统计到的方差，测试时对不上反而掉点，这正是「dropout 接在 BN 前面常常变差」的由来。</li>
@@ -333,7 +333,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>适用区间有限</strong>：数据太少（欠拟合）或极多时收益都会消失。今天的大语言模型预训练常把 dropout 直接设为 0——数据近乎单遍过，根本不到过拟合那一步。</li>
 <li><strong>解释未有定论</strong>：「防共适应」与「指数集成」都是有说服力的直觉，却都不是严格证明；权重缩放的等价性只在单层 softmax 下精确，深层网络里为何仍好用，学界给的是互补解释而非定论。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="5755db79be3a0925">要点</h2>
 <div class="tl">
 <p>① 一句话：训练时随机把单元连同其连线丢弃、每步得到一个不同的瘦网络；测试时不丢弃、把权重乘以留存概率 p 做一次前向。</p>
 <p>② 痛点：大网络参数多、数据有限必然过拟合；解药「集成」训练与推理都贵得离谱，贝叶斯模型平均则完全算不动。</p>
