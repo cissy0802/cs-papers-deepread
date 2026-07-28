@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Dropout — CS Papers Deep-Read Paper 30</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 30</p>
+<h1>Dropout</h1>
+<p class="sub">Srivastava, Hinton, Krizhevsky, Sutskever &amp; Salakhutdinov · University of Toronto · JMLR 2014</p>
+<p class="langbar"><a href="dropout-paper30.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2014, Geoffrey Hinton's group in Toronto wrote up a trick that sounds like sabotage: <strong>while training a neural network, randomly send some of its neurons home at every single step</strong> — pretend, for that step, that they do not exist. The trick is called <strong>dropout</strong>, it takes a few lines of code, and it treats deep learning's most common disease: <strong>the model memorizes the practice questions and falls apart on the real exam</strong>. AlexNet, the network that won ImageNet in 2012 and set off this entire wave of AI, used it.</p>
+<h2>The pain of the old world</h2>
+<p>A neural network has millions of tunable knobs, and training data is always finite. With that many knobs, it can memorize the accidents that happen to be in <em>this particular</em> batch of data — "the cat photos all had grass in the bottom-right corner" — and then flounders on a photo it has never seen. This is <strong>overfitting</strong>, and back then it was the single biggest obstacle in the field.</p>
+<p>The reliable cure was <strong>a committee</strong>: train several models and let them vote, so their individual flukes cancel out. The problem is the price — dozens of times the compute to train, and every incoming photo run through every model once deployed.</p>
+<h2>The idea</h2>
+<p>Dropout's move is almost crude in its simplicity: <strong>at each training step, pick roughly half the neurons at random and erase them, along with every wire going in and out</strong>. Let the crippled network that remains learn from that step as usual. Next step, draw again — a different half goes home.</p>
+<h2>Why does that help?</h2>
+<p><strong>First, it breaks up the cliques.</strong> If a neuron can always count on the one next door to cover for it, whatever it learns only works <em>while that neighbour is present</em>; groups of neurons lean on each other, patch each other's mistakes, and skills like that are brittle on new data. Once anyone might be absent, <strong>every neuron has to learn something that stands on its own</strong>. The paper's own analogy is lovely: rather than one conspiracy of fifty people, where a single slip sinks everything, run ten conspiracies of five.</p>
+<p><strong>Second, it makes the committee cheap.</strong> Every draw gives a different crippled network, so a few hundred thousand steps train an enormous family of them — and because they all <strong>share the same set of knobs</strong>, you paid for exactly one. That expensive voting effect comes free.</p>
+<h2>And at exam time?</h2>
+<p>At prediction time you cannot keep drawing lots — the same photo would get different answers twice in a row. The fix is almost comically plain: <strong>let everyone show up, but turn each voice down in proportion to how often they used to attend</strong>. Only half the room was present on average during training; now that everyone is there, each speaks more softly so the total matches. Remarkably, that single ordinary forward pass lands very close to polling the whole enormous family of crippled networks.</p>
+<p>One honest cost: because every step is fighting random noise, reaching the same quality takes roughly <strong>two to three times</strong> as long to train.</p>
+<h2>What it brought</h2>
+<p>After dropout, building a bigger network no longer meant memorizing more. It became a standard part in 2012–2016 — nearly every vision, speech and text model of that era used it, and Transformers still keep a slot for it today. It also opened a whole line of thinking: <strong>deliberately inject noise during training and the model is forced to learn something sturdier</strong>.</p>
+<h2>One line to remember</h2>
+<div class="tl">
+<p>Send half the neurons home at random on every training step, so no neuron can lean on a particular partner; the same trick trains an enormous family of crippled networks inside one shared set of weights, and at test time you bring everyone back and turn the volume down by the attendance rate — one forward pass, approximately the whole committee's vote.</p>
+</div>
+<p class="switch-hint">Want the mask, why the weights get scaled by p, and the numbers on each dataset? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Dropout randomly deletes units during training (setting their output to zero), so every step trains a different <strong>thinned network</strong>. This both <strong>breaks the co-adaptation</strong> between units and amounts to training exponentially many networks that share one set of weights. At test time nothing is random: the weights are multiplied by the retention probability <code>p</code> and a single ordinary forward pass approximates the ensemble average over all those thinned networks. It was the first general, cheap, near-universally applicable <strong>regularizer</strong> of the deep learning era.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Neural network / hidden unit</strong>: a model of "units" (neurons) wired up in layers; the units between input and output are hidden units, each taking a weighted sum of what the previous layer sent and passing it through a nonlinearity.</li>
+<li><strong>Overfitting</strong>: the model has memorized accidental detail in the training data — low training error, high error on data it has not seen. It can recite, but it cannot solve.</li>
+<li><strong>Regularization / weight decay</strong>: any constraint or noise added to hold overfitting down — a loss penalty keeping weights small (weight decay / L2), early stopping, data augmentation.</li>
+<li><strong>Ensemble / model averaging</strong>: train several models and average or vote at prediction time; their independent errors cancel, at a training and inference cost multiplied by the number of models.</li>
+<li><strong>SGD / mini-batch</strong>: training takes a small batch of examples, computes a gradient, updates the parameters, and repeats. Dropout's coin flips happen per mini-batch.</li>
+<li><strong>softmax</strong>: the function that turns a layer's outputs into probabilities over classes; the usual last layer of a classifier.</li>
+<li><strong>Convolutional network (CNN)</strong>: a network suited to images, sliding small windows over the picture to build up features layer by layer. AlexNet is a CNN.</li>
+<li><strong>MNIST / CIFAR-10 / SVHN / ImageNet</strong>: standard image benchmarks — handwritten digits, small colour objects, street-number digits, and a million natural photos across a thousand classes. The paper measures against all of them.</li>
+<li><strong>Bernoulli distribution</strong>: a random variable with only two outcomes, 0 or 1 — one coin flip. Dropout's mask is one coin flip per unit.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The authors are Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever and Ruslan Salakhutdinov of the University of Toronto, published in JMLR in 2014; its predecessor is the same group's 2012 arXiv note, <em>Improving neural networks by preventing co-adaptation of feature detectors</em>. <strong>AlexNet</strong>, built by some of the same people that year, used dropout in its fully connected layers and made it the de facto standard. It picks up the classical idea of fighting overfitting with ensembles, and it launches a whole branch of "noise as regularization": DropConnect, stochastic depth, and Monte Carlo dropout (reading dropout as approximate Bayesian inference).</p>
+<h2>The problem and the motivation</h2>
+<p>A deep network's expressive power comes from a huge number of parameters, and labelled data is never enough. With that many parameters, a network can fit the <em>sampling noise specific to this training set</em>, and generalization collapses. The tools of the day — weight decay, early stopping, data augmentation — helped, but only so far.</p>
+<p>The theoretically beautiful answer is <strong>Bayesian model averaging</strong>: average over every possible parameter setting, weighted by its posterior probability. On a neural network it is completely intractable. The engineer's fallback is an <strong>ensemble</strong>: train a batch of networks with different architectures or initializations and vote. Ensembling almost always pays, but it multiplies training cost, tuning cost and inference cost by the number of models — which, at 2012 compute levels, put it out of reach for large networks.</p>
+<p>The paper also names a subtler root cause: <strong>co-adaptation</strong>. Backpropagation only cares that the overall loss goes down; nothing stops a hidden unit from leaving its mistakes for other units to patch up. Groups of units then evolve into an entangled whole, where a feature is only meaningful when several other specific features also fire. Such committee-built features work on the training set and break on anything else. <strong>What you actually want is for each unit to be a useful feature detector on its own.</strong></p>
+<h2>The core idea and method</h2>
+<h3>The idea: delete half the network at every step</h3>
+<p>During training, for each training case (in practice, each mini-batch) the dice are <strong>rolled afresh</strong>: every unit is kept with probability <code>p</code> and dropped with probability <code>1−p</code>. Dropped means its output is set to zero and every wire into and out of it is dead for that step. What remains is a <strong>thinned network</strong>, which does a normal forward and backward pass and updates its own share of the weights. Next step, roll again.</p>
+<p>As a formula it is one line: multiply a layer's outputs <code>y</code> element-wise by a 0/1 mask <code>r</code>, giving <code>ỹ = r ⊙ y</code>, where each entry of <code>r</code> is an independent Bernoulli draw that is 1 with probability <code>p</code>; then carry on as usual with <code>z = w·ỹ + b</code> into the next layer. In plain words: <strong>for this step the unit does not exist — its message is not passed on, and no error is sent back to it.</strong></p>
+<p>Empirical values: <code>p = 0.5</code> for hidden layers (keep half) is close to optimal across a wide range of tasks; input layers need to be far more conservative, typically keeping <code>p ≈ 0.8</code> — the input <em>is</em> the information, and dropping much of it just deletes data.</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 178" font-family="-apple-system,sans-serif">
+<text x="130" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle">Standard network</text>
+<text x="414" y="24" fill="#e7ebf1" font-size="12.5" text-anchor="middle">A “thinned” net under dropout</text>
+<line x1="46.0" y1="74.0" x2="102.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="74.0" x2="102.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="74.0" x2="102.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="74.0" x2="102.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="100.0" x2="102.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="100.0" x2="102.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="100.0" x2="102.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="100.0" x2="102.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="126.0" x2="102.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="126.0" x2="102.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="126.0" x2="102.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="46.0" y1="126.0" x2="102.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="61.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="61.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="61.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="61.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="87.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="87.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="87.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="87.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="113.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="113.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="113.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="113.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="139.0" x2="158.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="139.0" x2="158.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="139.0" x2="158.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="102.0" y1="139.0" x2="158.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="61.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="61.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="87.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="87.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="113.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="113.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="139.0" x2="214.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="158.0" y1="139.0" x2="214.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<circle cx="46.0" cy="74.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="46.0" cy="100.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="46.0" cy="126.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="102.0" cy="61.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="102.0" cy="87.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="102.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="102.0" cy="139.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="158.0" cy="61.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="158.0" cy="87.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="158.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="158.0" cy="139.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="214.0" cy="87.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="214.0" cy="113.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<line x1="330.0" y1="74.0" x2="386.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="330.0" y1="74.0" x2="386.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="330.0" y1="100.0" x2="386.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="330.0" y1="100.0" x2="386.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="330.0" y1="126.0" x2="386.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="330.0" y1="126.0" x2="386.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="386.0" y1="87.0" x2="442.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="386.0" y1="87.0" x2="442.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="386.0" y1="87.0" x2="442.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="386.0" y1="113.0" x2="442.0" y2="61.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="386.0" y1="113.0" x2="442.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="386.0" y1="113.0" x2="442.0" y2="139.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="442.0" y1="61.0" x2="498.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="442.0" y1="61.0" x2="498.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="442.0" y1="113.0" x2="498.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="442.0" y1="113.0" x2="498.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="442.0" y1="139.0" x2="498.0" y2="87.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="442.0" y1="139.0" x2="498.0" y2="113.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<circle cx="330.0" cy="74.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="330.0" cy="100.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="330.0" cy="126.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="386.0" cy="61.0" r="7.5" fill="none" stroke="#3d434c" stroke-width="1.2"/>
+<path d="M381.4,56.4 L390.6,65.7 M390.6,56.4 L381.4,65.7" stroke="#3d434c" stroke-width="1.3"/>
+<circle cx="386.0" cy="87.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="386.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="386.0" cy="139.0" r="7.5" fill="none" stroke="#3d434c" stroke-width="1.2"/>
+<path d="M381.4,134.3 L390.6,143.7 M390.6,134.3 L381.4,143.7" stroke="#3d434c" stroke-width="1.3"/>
+<circle cx="442.0" cy="61.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="442.0" cy="87.0" r="7.5" fill="none" stroke="#3d434c" stroke-width="1.2"/>
+<path d="M437.4,82.3 L446.6,91.7 M446.6,82.3 L437.4,91.7" stroke="#3d434c" stroke-width="1.3"/>
+<circle cx="442.0" cy="113.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="442.0" cy="139.0" r="7.5" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="498.0" cy="87.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="498.0" cy="113.0" r="7.5" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<line x1="286" y1="34" x2="286" y2="150" stroke="rgba(240,180,41,0.18)" stroke-dasharray="4 4"/>
+<text x="414" y="166" fill="#f0b429" font-size="11" text-anchor="middle">each step drops a random subset</text>
+<text x="130" y="166" fill="#7c8593" font-size="11" text-anchor="middle">× = dropped this step</text>
+</svg>
+<figcaption>Fig 1 · Left: the full network. Right: one thinned network after a draw — dropped units (×) vanish along with all their connections for that step. Every step gets a different one.</figcaption>
+</figure>
+<h3>Intuition one: no cliques allowed</h3>
+<p>Random deletion kills co-adaptation outright: <strong>a unit can no longer count on any particular partner being present</strong>, because that partner may be gone at any moment. It is forced to learn features that are useful across many random combinations of teammates — that is, features that stand on their own. The paper offers two fine analogies. One: rather than a single fifty-person conspiracy, where one failure sinks the plot, organize ten teams of five — redundant and robust. The other is sexual reproduction — a gene must work with whatever other half of the genome it is paired with, which selects for <strong>capabilities that mix</strong> rather than finely coupled complexes. The authors' visualizations of hidden units make the same point: without dropout the units learn unstructured, scattered patterns; with it, they learn clean edges, strokes and spots.</p>
+<h3>Intuition two: one training run, an exponential ensemble</h3>
+<p>Seen from another angle, <code>n</code> units allow <code>2ⁿ</code> keep/drop combinations, hence <code>2ⁿ</code> possible thinned networks. Training amounts to <strong>sampling from that vast family and training the samples one at a time</strong> — and crucially, they all <strong>share one set of weights</strong>: the parameter on any given edge is used and updated by every thinned network that contains it. So for <strong>the cost of training one network</strong> you get a whole family trained at once.</p>
+<p>That is the way around the "ensembles are too expensive" problem. If training dozens of networks separately is unaffordable, let exponentially many of them grow up inside one set of weights instead. They are of course highly correlated, and each is sampled only a handful of times, so this is only an <em>approximate</em> ensemble — but in practice a strikingly effective one.</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 250" font-family="-apple-system,sans-serif">
+<defs><marker id="dm1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="20" y="20" fill="#e7ebf1" font-size="12" >One weight set, a new thinned net each step…</text>
+<g><line x1="38.0" y1="44.0" x2="72.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="38.0" y1="44.0" x2="72.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="38.0" y1="64.0" x2="72.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="38.0" y1="64.0" x2="72.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="38.0" y1="84.0" x2="72.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="38.0" y1="84.0" x2="72.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="72.0" y1="64.0" x2="106.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="72.0" y1="64.0" x2="106.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="72.0" y1="84.0" x2="106.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="72.0" y1="84.0" x2="106.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<circle cx="38.0" cy="44.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="38.0" cy="64.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="38.0" cy="84.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="72.0" cy="44.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
+<path d="M68.8,40.8 L75.2,47.2 M75.2,40.8 L68.8,47.2" stroke="#3d434c" stroke-width="1.3"/>
+<circle cx="72.0" cy="64.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="72.0" cy="84.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="106.0" cy="54.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="106.0" cy="74.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
+<g><line x1="156.0" y1="44.0" x2="190.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="156.0" y1="44.0" x2="190.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="156.0" y1="64.0" x2="190.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="156.0" y1="64.0" x2="190.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="156.0" y1="84.0" x2="190.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="156.0" y1="84.0" x2="190.0" y2="64.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="190.0" y1="44.0" x2="224.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="190.0" y1="44.0" x2="224.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="190.0" y1="64.0" x2="224.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="190.0" y1="64.0" x2="224.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<circle cx="156.0" cy="44.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="156.0" cy="64.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="156.0" cy="84.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="190.0" cy="44.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="190.0" cy="64.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="190.0" cy="84.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
+<path d="M186.8,80.8 L193.2,87.2 M193.2,80.8 L186.8,87.2" stroke="#3d434c" stroke-width="1.3"/>
+<circle cx="224.0" cy="54.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="224.0" cy="74.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
+<g><line x1="274.0" y1="44.0" x2="308.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="274.0" y1="44.0" x2="308.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="274.0" y1="84.0" x2="308.0" y2="44.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="274.0" y1="84.0" x2="308.0" y2="84.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="308.0" y1="44.0" x2="342.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="308.0" y1="44.0" x2="342.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="308.0" y1="84.0" x2="342.0" y2="54.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="308.0" y1="84.0" x2="342.0" y2="74.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<circle cx="274.0" cy="44.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="274.0" cy="64.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
+<path d="M270.8,60.8 L277.2,67.2 M277.2,60.8 L270.8,67.2" stroke="#3d434c" stroke-width="1.3"/>
+<circle cx="274.0" cy="84.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="308.0" cy="44.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="308.0" cy="64.0" r="5.2" fill="none" stroke="#3d434c" stroke-width="1.2"/>
+<path d="M304.8,60.8 L311.2,67.2 M311.2,60.8 L304.8,67.2" stroke="#3d434c" stroke-width="1.3"/>
+<circle cx="308.0" cy="84.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="342.0" cy="54.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="342.0" cy="74.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
+<text x="404" y="70" fill="#7c8593" font-size="16">…</text>
+<text x="424" y="70" fill="#7c8593" font-size="11">(2ⁿ possible nets)</text>
+<path d="M280,104 L280,140" stroke="#f0b429" stroke-width="1.6" marker-end="url(#dm1)"/>
+<g><line x1="210.0" y1="162.0" x2="244.0" y2="162.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="162.0" x2="244.0" y2="182.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="162.0" x2="244.0" y2="202.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="182.0" x2="244.0" y2="162.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="182.0" x2="244.0" y2="182.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="182.0" x2="244.0" y2="202.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="202.0" x2="244.0" y2="162.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="202.0" x2="244.0" y2="182.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="210.0" y1="202.0" x2="244.0" y2="202.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="244.0" y1="162.0" x2="278.0" y2="172.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="244.0" y1="162.0" x2="278.0" y2="192.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="244.0" y1="182.0" x2="278.0" y2="172.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="244.0" y1="182.0" x2="278.0" y2="192.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="244.0" y1="202.0" x2="278.0" y2="172.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<line x1="244.0" y1="202.0" x2="278.0" y2="192.0" stroke="rgba(240,180,41,0.28)" stroke-width="0.8"/>
+<circle cx="210.0" cy="162.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="210.0" cy="182.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="210.0" cy="202.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="244.0" cy="162.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="244.0" cy="182.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="244.0" cy="202.0" r="5.2" fill="rgba(240,180,41,0.20)" stroke="#f0b429" stroke-width="1.2"/>
+<circle cx="278.0" cy="172.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/>
+<circle cx="278.0" cy="192.0" r="5.2" fill="rgba(232,121,75,0.22)" stroke="#e8794b" stroke-width="1.2"/></g>
+<text x="300" y="158" fill="#f0b429" font-size="11.5">Test: full net, weights scaled by keep prob</text>
+<text x="300" y="176" fill="#e8794b" font-size="11.5">≈ the average of all thinned nets</text>
+</svg>
+<figcaption>Fig 2 · Training samples a new thinned network each step, all sharing one weight set; at test time the full network runs once with weights scaled by the retention probability, approximating the family's average prediction.</figcaption>
+</figure>
+<h3>At test time: scale the weights by p</h3>
+<p>The proper way to use an ensemble is to poll every member and average, but here there are <code>2ⁿ</code> members, which is obviously impossible. The paper's <strong>weight scaling</strong> rule is startlingly simple: at test time keep every unit, but multiply each unit's <strong>outgoing weights by <code>p</code></strong>, then run one ordinary forward pass.</p>
+<p>Why <code>p</code>? Because during training a unit was present only a fraction <code>p</code> of the time, so the <strong>expected input</strong> reaching the next layer was "weight × output × p". At test time the unit is always there, so without scaling the next layer would receive signals roughly <code>1/p</code> times too large, pushing the network into a numeric regime it was never trained in. Multiplying by <code>p</code> restores the training-time expectation.</p>
+<p>How good is the approximation? For a single softmax layer the rule is <strong>exactly</strong> the (normalized) geometric mean of all the thinned networks' predictions. For a deep nonlinear network it is only an approximation, but the paper checks it with a Monte Carlo experiment: actually sample <code>k</code> thinned networks, predict with each and average, and the error falls as <code>k</code> grows — with <strong>the single weight-scaled forward pass performing about as well as averaging a few dozen sampled networks</strong>. One pass buying dozens of passes' worth of quality is what makes dropout practical.</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 200" font-family="-apple-system,sans-serif">
+<defs><marker id="dp2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="18" y="42" fill="#f0b429" font-size="11.5" font-weight="700">Training (each step)</text>
+<rect x="18" y="52" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="66" y="74" fill="#b9c0ca" font-size="11" text-anchor="middle">layer output y</text>
+<line x1="114" y1="69" x2="136" y2="69" stroke="#7c8593" marker-end="url(#dp2)"/>
+<rect x="140" y="52" width="130" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="205" y="74" fill="#e7ebf1" font-size="11" text-anchor="middle">mask r ~ Bernoulli(p)</text>
+<line x1="270" y1="69" x2="292" y2="69" stroke="#7c8593" marker-end="url(#dp2)"/>
+<rect x="296" y="52" width="86" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="339" y="74" fill="#e7ebf1" font-size="11" text-anchor="middle">ỹ = r ⊙ y</text>
+<line x1="382" y1="69" x2="404" y2="69" stroke="#7c8593" marker-end="url(#dp2)"/>
+<rect x="408" y="52" width="134" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="475" y="74" fill="#b9c0ca" font-size="11" text-anchor="middle">× w → next layer</text>
+<text x="18" y="128" fill="#e8794b" font-size="11.5" font-weight="700">Inference (test time)</text>
+<rect x="18" y="138" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="66" y="160" fill="#b9c0ca" font-size="11" text-anchor="middle">layer output y</text>
+<line x1="114" y1="155" x2="136" y2="155" stroke="#7c8593" marker-end="url(#dp2)"/>
+<rect x="140" y="138" width="130" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="205" y="160" fill="#b9c0ca" font-size="11" text-anchor="middle">no mask · keep all</text>
+<line x1="270" y1="155" x2="292" y2="155" stroke="#7c8593" marker-end="url(#dp2)"/>
+<rect x="296" y="138" width="86" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="339" y="160" fill="#b9c0ca" font-size="11" text-anchor="middle">y unchanged</text>
+<line x1="382" y1="155" x2="404" y2="155" stroke="#7c8593" marker-end="url(#dp2)"/>
+<rect x="408" y="138" width="134" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/><text x="475" y="160" fill="#e7ebf1" font-size="11" text-anchor="middle">× (p·w) → next layer</text>
+<text x="18" y="192" fill="#7c8593" font-size="10.5">Weight scaling keeps the next layer's expected input equal to what it saw in training.</text>
+</svg>
+<figcaption>Fig 3 · The only difference between training and test: training multiplies by a random 0/1 mask; test drops nothing and scales the outgoing weights by the retention probability p instead.</figcaption>
+</figure>
+<h3>The supporting details</h3>
+<p>Dropout does not work in isolation; the paper prescribes a recipe. A <strong>max-norm constraint</strong> — hard-capping the length of each unit's incoming weight vector at some <code>c</code> and rescaling it back if it exceeds that — combined with a <strong>large learning rate and high momentum</strong>. The reasoning: dropout's noise makes gradients loud, so you want big steps and momentum to average the noise away; but big steps let weights blow up, and max-norm supplies exactly the ceiling that prevents it. The authors report that the combination works best.</p>
+<p>There is also a variant: <strong>Gaussian dropout</strong>, which multiplies activations by a Gaussian random number with mean 1 instead of a 0/1 mask. It works as well or better than the Bernoulli version, which says the essential ingredient is not the deletion as such but <strong>injecting mean-preserving multiplicative noise into the activations</strong>. Starting from the special case of linear regression, the authors also show that dropout there reduces to a form of <strong>L2 regularization scaled adaptively per feature</strong> — an analytic anchor for the question of what kind of regularizer it really is.</p>
+<h2>Key results</h2>
+<p>The paper's force comes from <strong>consistent gains across domains</strong>: the same trick helps on vision, speech, text and biological data alike.</p>
+<ul>
+<li><strong>MNIST</strong> (handwritten digits, permutation-invariant setting, no convolutions): a standard feed-forward net is around <strong>1.60%</strong> error; dropout brings it to about <strong>1.25%</strong>, and with larger nets plus max-norm to about <strong>1.05%</strong>; stacking deep Boltzmann machine pretraining and dropout finetuning reaches <strong>0.79%</strong>.</li>
+<li><strong>CIFAR-10 / CIFAR-100</strong> (small colour object images): convolutional nets go from <strong>14.98% → 12.61%</strong> and <strong>43.48% → 37.20%</strong>; the important detail is that applying dropout to convolutional layers as well as fully connected ones beats using it only on the latter.</li>
+<li><strong>SVHN</strong> (street view house numbers): from about <strong>3.95%</strong> down to about <strong>2.55%</strong>, the state of the art at the time.</li>
+<li><strong>TIMIT</strong> (speech phone recognition): phone error rate from about <strong>23.4%</strong> to about <strong>21.8%</strong>; text (Reuters news categorization) and a gene splicing prediction dataset also improve consistently, though by smaller margins.</li>
+<li><strong>ImageNet</strong>: the same group's AlexNet used dropout in its fully connected layers — a key ingredient in its landslide 2012 win.</li>
+</ul>
+<p>Two control studies are especially informative. First, <strong>the effect of dataset size</strong>: with very little data (a few hundred MNIST examples) dropout does not help and can hurt — the model is underfitting already, and more noise only makes it worse; the gain is largest at moderate data sizes and shrinks again when data is abundant. Second, <strong>the effect of the retention probability</strong>: for hidden layers any <code>p</code> between 0.4 and 0.8 works well; too small and the network underfits, too close to 1 and there is not enough noise to matter, which degenerates into an ordinary network.</p>
+<h2>Why it matters</h2>
+<p>Dropout changed the arithmetic of "how big should the network be." Before it, going wider and deeper meant overfitting more easily, so capacity was throttled by generalization. After it, <strong>build the network large and hold overfitting down with dropout</strong> became routine, which directly enabled the 2012–2016 wave of ever-larger models. It also became a single line of API in every framework, used by essentially every vision, speech and text model of the period.</p>
+<p>More lasting is the <strong>template it established: inject random noise during training and you get an approximate model average for free</strong>. A large body of later work descends from it — DropConnect (drop connections rather than units), stochastic depth (skip whole residual blocks at random), DropPath, and on the data side Cutout and Mixup. Gal and Ghahramani went further, interpreting dropout as approximate Bayesian inference in a deep Gaussian process, so that <strong>leaving dropout switched on at test time and running several passes</strong> (Monte Carlo dropout) gives a cheap estimate of model uncertainty — still one of the most widely used uncertainty estimators in practice. Today's Transformers still hang dropout on the attention weights, the feed-forward layers and the residual outputs.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Slower training</strong>: noisy gradients typically mean 2–3× the training time to reach the same quality, plus one more hyperparameter, <code>p</code>, to tune.</li>
+<li><strong>Superseded by batch normalization, and at odds with it</strong>: Batch Normalization (2015) regularizes as a side effect, and its paper explicitly recommends removing or reducing dropout; mainstream vision backbones since then rarely use dropout in convolutional layers. Li et al. (2019) went further and identified a <em>variance shift</em> when the two are stacked — dropout changes the variance BN measured during training, so the test-time statistics no longer match and accuracy drops, which is where the folklore about dropout in front of BN comes from.</li>
+<li><strong>Not directly applicable to recurrent connections</strong>: applying dropout naively between an RNN's timesteps keeps severing its memory; variants are needed — dropping only on non-recurrent connections, or variational dropout, which reuses one mask across all timesteps.</li>
+<li><strong>A narrow sweet spot</strong>: the benefit disappears when data is too scarce (already underfitting) and again when data is abundant. Large language model pretraining today often sets dropout to zero outright — the data is seen roughly once, so overfitting never becomes the binding constraint.</li>
+<li><strong>The explanation is not settled</strong>: "prevents co-adaptation" and "exponential ensemble" are both persuasive intuitions, neither is a proof; the weight-scaling equivalence is exact only in the single-softmax special case, and why it still works so well in deep networks has complementary explanations rather than a definitive one.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: during training, delete units together with their connections at random so each step trains a different thinned network; at test time drop nothing and run one forward pass with weights scaled by the retention probability p.</p>
+<p>② The pain: large networks plus finite data means inevitable overfitting; the reliable cure — ensembling — is prohibitively expensive in both training and inference, and Bayesian model averaging is intractable.</p>
+<p>③ The root cause: co-adaptation — units cluster and patch each other's mistakes, so a feature is only meaningful when specific partners are present, and it breaks on new data.</p>
+<p>④ The mechanism: multiply the layer's outputs by a Bernoulli 0/1 mask, <code>ỹ = r ⊙ y</code>; typically keep p=0.5 in hidden layers and p≈0.8 at the input.</p>
+<p>⑤ The two intuitions: nobody can count on a particular partner being present, so every unit must learn a feature that stands on its own (ten teams of five &gt; one conspiracy of fifty); and n units correspond to 2ⁿ thinned networks sharing one weight set, so one network's training cost buys an approximate ensemble.</p>
+<p>⑥ Why scale by p at test time: it restores the next layer's expected input to training levels; for a single softmax layer it is exactly the geometric mean, and in deep networks one scaled pass performs about as well as averaging a few dozen sampled thinned networks.</p>
+<p>⑦ Results: MNIST about 1.60% → 1.25% (best about 1.05%); CIFAR-10 14.98% → 12.61%; SVHN about 3.95% → 2.55%; TIMIT about 23.4% → 21.8% — consistent across vision, speech and text. The recipe also includes max-norm, a large learning rate and high momentum.</p>
+<p>⑧ Impact and limits: it established "inject noise ≈ cheap ensemble" as a template, spawning DropConnect, stochastic depth and MC dropout, and Transformers still use it; but training is 2–3× slower, BN largely replaced it in convnets (and stacking the two causes a variance shift), it is not directly usable on recurrent connections, and it does nothing when data is very scarce or very abundant.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Finish this page and you have the core of the paper; for full experimental setups and per-dataset detail, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
