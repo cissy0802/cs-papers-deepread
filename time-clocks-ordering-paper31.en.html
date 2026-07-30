@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Time, Clocks, and the Ordering of Events — CS Papers Deep-Read Paper 31</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 31</p>
+<h1>Time, Clocks, and the Ordering of Events</h1>
+<p class="sub">Leslie Lamport · Massachusetts Computer Associates · CACM 1978</p>
+<p class="langbar"><a href="time-clocks-ordering-paper31.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1978, Leslie Lamport pinned down an idea that is now everywhere: <strong>in a system of independent computers, how do you say "this thing happened before that thing"?</strong> Today, when you send a payment or a message, several machines are usually working together behind the scenes; they must agree on "what happened first," or the books won't balance. Lamport gave the first clean answer, and this paper became the intellectual origin of the whole field of distributed systems.</p>
+<h2>First, an everyday puzzle</h2>
+<p>You and a friend are in two cities, each looking at your own wristwatch — but the two watches don't quite agree, and they drift further apart over time. Now decide whether "the letter you mailed this morning" happened before or after "something that happened on your friend's end." <strong>Just comparing the two watches is hopeless.</strong> Networked computers are exactly like this: each has its own quartz clock, all of them drift, and network messages arrive after unpredictable delays. <strong>With no single clock everyone trusts, "before and after" becomes a genuine problem.</strong></p>
+<h2>The idea</h2>
+<p>Lamport's twist: <strong>don't compare clocks — look at who can influence whom.</strong> The key handle is messages: <strong>a message must always be sent before it can be received.</strong> So the moment A sends B a message, you can be sure "A's event came before B received it." Within one machine, whatever ran first is first. Chain these together and you get a web of "who is before whom" (this is the <strong>happens-before</strong> relation).</p>
+<p>The elegant part: <strong>some events can't influence each other at all</strong> (no message ever passed between them), so we simply call them "simultaneous / concurrent" and refuse to force an order — which is actually more honest.</p>
+<h2>How does a machine compute the order automatically?</h2>
+<p>Give each machine a <strong>"ticket counter"</strong> (not a clock — just a number that keeps growing). The rules fit in three lines: <strong>every local event bumps the counter by 1; when you send a message, stamp your current number on the envelope; when you receive one, jump your number above the number on the envelope.</strong></p>
+<p>It's like a post office postmark: mailing a letter stamps a number; the receiver sees "ah, this was mailed as #7" and pushes their own counter to #8 and onward. That way <strong>whenever one event can influence another, its number is guaranteed to be smaller</strong> — the ticket counter sorts "before and after" for you. Smaller number goes first; if two collide, break the tie by machine ID as a referee. So <strong>machines scattered across the world can produce one single ordering that everyone agrees on.</strong></p>
+<h2>What does this buy us?</h2>
+<p>With that shared ordering, you can make several backup machines <strong>process the same batch of commands in the same order</strong> — same input, same sequence, so each computes the same result and they stay forever consistent. This recipe for "keeping multiple replicas in lockstep" is the common ancestor of today's bank databases, cloud storage, and famous algorithms like Paxos and Raft. <strong>A 1978 counter trick holds up half the distributed-systems world.</strong></p>
+<p>One honest caveat: the ticket counter only guarantees "if there's influence, the number is smaller"; <strong>the reverse doesn't hold</strong> — two events with different numbers need not have any real ordering; they may just happen to collide while being completely unrelated. Untangling that layer needs the heavier "vector clocks" that came later.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>With no clock everyone trusts, stop comparing clocks — define order by "a message is always sent before it's received," give each machine an ever-increasing ticket number so causally related events get smaller numbers, add a tie-breaking referee, and machines a world apart can produce one agreed-upon ordering — staying independent yet always consistent. This is the intellectual origin of distributed consistency.</p>
+</div>
+<p class="switch-hint">Want the space-time diagram, the logical-clock update rules, and that no-coordinator mutual-exclusion algorithm? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Lamport argued that a distributed system has no — and should not rely on a — single physical clock; the order of events should be defined by a <strong>causal</strong> relation, "can one event influence another." He gave the <strong>happens-before partial order</strong>, a <strong>logical clock</strong> implementable with nothing but counters (now called <strong>Lamport timestamps</strong>), and a way to extend that partial order into a <strong>total order</strong> — letting scattered, independent machines process the same commands in the same order and stay consistent. This <strong>state-machine replication</strong> idea is the root of Paxos, Raft, and every strongly consistent distributed system since.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Distributed system</strong>: many independent computers cooperating by passing messages over a network, with <strong>no shared memory and no shared clock</strong>.</li>
+<li><strong>Process</strong>: one program instance running sequentially on a machine. A distributed system is made of many processes that can only talk via messages.</li>
+<li><strong>Message passing</strong>: the only way processes communicate — send and receive, with network delay, possible reordering or loss, and no shared variable to read.</li>
+<li><strong>Event</strong>: an action inside a process's execution, e.g. "send a message," "receive a message," "take a local step."</li>
+<li><strong>Physical clock / clock drift</strong>: a real quartz clock that runs a bit fast or slow, so two machines' clocks slowly diverge — that gap is drift.</li>
+<li><strong>Partial vs total order</strong>: a partial order leaves some pairs incomparable; a total order gives every pair a unique before/after.</li>
+<li><strong>Causality</strong>: one event <strong>could</strong> influence another (information can travel between them); if information can't reach, there's no causal link.</li>
+<li><strong>Mutual exclusion</strong>: at most one process may use a shared resource at a time; others must wait in line.</li>
+<li><strong>State machine</strong>: a deterministic machine — "current state + one command → exactly one next state"; feed it the same command sequence and it always yields the same result.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>Written by Leslie Lamport at Massachusetts Computer Associates, published in <em>Communications of the ACM</em>, July 1978. It carried Einstein's special-relativity insight — that the ordering of events is not absolute — into computing; it launched a whole line of work: <strong>vector clocks, the Chandy–Lamport distributed snapshot, Paxos, state-machine replication</strong>. It is one of the foundational works behind Lamport's 2013 Turing Award and among the most-cited papers in computer science.</p>
+<h2>The problem and the motivation</h2>
+<p>On a single machine, "what happened first" is settled by the CPU's clock — obvious. But wire many machines together over a network and trouble starts: <strong>each machine has its own quartz clock, all of which drift</strong> (running a touch fast or slow), and message delays swing unpredictably. How do you decide whether "the debit on machine A" or "the balance check on machine B" happened first? By comparing two watches? The watches don't agree, and synchronizing physical time tightly enough is both expensive and unreliable.</p>
+<p>And at a deeper level: <strong>many events have no objective order at all</strong> — they happen independently, in different places, at nearly the same instant, and asking "which first" is meaningless. Yet unless replicas can agree on "in what order to process requests," the data will diverge. What Lamport solved is precisely this first-principles question: <strong>how to talk about order in a world with no shared time.</strong></p>
+<h2>Core ideas / method</h2>
+<h3>One · happens-before: define order by causality</h3>
+<p>Lamport reframed the question: don't ask "whose watch is earlier," ask "<strong>who can influence whom</strong>." He defined a "happens-before" relation <code>→</code> using just three rules and no physical time at all: <strong>①</strong> within one process, an earlier event → a later one; <strong>②</strong> the "send" of a message → its "receive" (information must be sent before it can be received); <strong>③</strong> transitivity: <code>a→b</code> and <code>b→c</code> imply <code>a→c</code>. If <code>a→b</code>, then a <strong>could</strong> have influenced b.</p>
+<p>The crux: <strong>this is a partial order, not a total one</strong>. Some pairs of events can't reach each other (no message passes), and those are <em>concurrent</em> — with no before or after. This echoes relativity: for "concurrent" events, different observers can legitimately disagree on the order, and forcing one is simply wrong.</p>
+<figure>
+<svg viewbox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="mA" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<line stroke="#4a5058" x1="42" x2="42" y1="60" y2="262"></line>
+<path d="M42,262 L38,252 M42,262 L46,252" fill="none" stroke="#4a5058"></path>
+<text fill="#7c8593" font-size="11" x="20" y="150" transform="rotate(-90 30 150)">time →</text>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="140" x2="140" y1="70" y2="262"></line>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="300" x2="300" y1="70" y2="262"></line>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="460" x2="460" y1="70" y2="262"></line>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="140" y="56">Process P1</text>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="300" y="56">Process P2</text>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="460" y="56">Process P3</text>
+<line marker-end="url(#mA)" stroke="#e8794b" stroke-width="1.8" x1="140" x2="296" y1="92" y2="140"></line>
+<line marker-end="url(#mA)" stroke="#e8794b" stroke-width="1.8" x1="300" x2="456" y1="205" y2="240"></line>
+<circle cx="140" cy="92" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12" x="150" y="88">a</text>
+<circle cx="140" cy="180" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12" x="150" y="176">a′</text>
+<circle cx="300" cy="140" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12" x="310" y="136">b</text>
+<circle cx="300" cy="205" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12" x="310" y="201">c</text>
+<circle cx="460" cy="110" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12" x="424" y="106">d</text>
+<circle cx="460" cy="240" fill="#f0b429" r="5"></circle><text fill="#e7ebf1" font-size="12" x="470" y="236">e</text>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="220" y="122">message: a → b (sent before received)</text>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="300" y="286">a→b→c→e is one causal chain; a′ and d cannot reach each other = concurrent</text>
+</svg>
+<figcaption>Fig 1 · Space-time diagram: vertical lines are each process's time axis (later = lower), diagonal arrows are messages. Process order + messages give happens-before; two events with no connecting path (a′ and d) are concurrent.</figcaption>
+</figure>
+<h3>Two · logical clocks: a ticket counter per process</h3>
+<p>How does a machine compute this order on its own? Give process Pi a counter <code>Ci</code> that stamps a number <code>Ci(a)</code> on every event a. The goal is the <strong>Clock Condition</strong>: whenever <code>a→b</code>, we must have <code>C(a) &lt; C(b)</code>. Two implementation rules guarantee it:</p>
+<ul>
+<li><strong>IR1: every local event bumps the counter by 1.</strong> — ensures a later event in the same process gets a bigger number.</li>
+<li><strong>IR2: when sending, attach the current counter as a "timestamp"; when receiving, jump your counter above both your current value and the incoming timestamp.</strong> The formula is <code>Cj := max(Cj, Tm) + 1</code> (Tm is the sender's timestamp carried by the message) — ensuring a "receive" always outnumbers its "send."</li>
+</ul>
+<p>Plainly: it's a post-office postmark. Mailing stamps a number; the receiver sees #7 on the envelope and pushes their counter to #8 before continuing. <strong>Remember it is not a clock — it's a ticket counter</strong>: it only guarantees "causally related events increase in number" and measures no real time.</p>
+<figure>
+<svg viewbox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="mB" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<line marker-end="url(#mB)" stroke="#7c8593" x1="60" x2="512" y1="70" y2="70"></line>
+<line marker-end="url(#mB)" stroke="#7c8593" x1="60" x2="512" y1="200" y2="200"></line>
+<text fill="#f0b429" font-size="13" font-weight="700" x="20" y="74">P</text>
+<text fill="#f0b429" font-size="13" font-weight="700" x="20" y="204">Q</text>
+<circle cx="120" cy="70" fill="#f0b429" r="4"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="120" y="58">1</text>
+<circle cx="190" cy="70" fill="#f0b429" r="4"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="190" y="58">2</text>
+<circle cx="260" cy="70" fill="#f0b429" r="4"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="260" y="58">3</text>
+<circle cx="150" cy="200" fill="#f0b429" r="4"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="150" y="222">1</text>
+<circle cx="360" cy="200" fill="#e8794b" r="5"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="360" y="222">4</text>
+<circle cx="430" cy="200" fill="#f0b429" r="4"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="430" y="222">5</text>
+<line marker-end="url(#mB)" stroke="#e8794b" stroke-width="1.8" x1="260" x2="356" y1="76" y2="194"></line>
+<text fill="#e8794b" font-size="11.5" x="298" y="140">carries T=3</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="200" y="100">IR1: +1 per local step</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="405" y="180">IR2: jump to max(1,3)+1 = 4</text>
+</svg>
+<figcaption>Fig 2 · Logical clock: P ticks 1→2→3 locally, sends at 3 carrying timestamp 3; Q was at 1 and jumps to max(1,3)+1=4 on receipt, then continues. So "send(3) → receive(4)" increases in number.</figcaption>
+</figure>
+<h3>Three · extend to a total order: add a tie-breaking referee</h3>
+<p>A logical clock still gives only a partial order — two concurrent events can share a number. To make every machine produce <strong>one identical, unique ordering</strong>, add a tie-break rule: when numbers are equal, order by process ID (say <code>P1 &lt; P2 &lt; P3</code>). Now any two events have a unique before/after, giving a <strong>total order consistent with causality</strong> (written <code>⇒</code>). Plainly: <strong>look at the ticket number first; if they collide, look at the ID.</strong></p>
+<h3>Four · the killer app: no-coordinator mutual exclusion = state-machine replication</h3>
+<p>With a total order, Lamport gave a mutual-exclusion algorithm with <strong>no central coordinator</strong> (deciding who may use a shared resource): to request it, broadcast a timestamped "request" to everyone and record it in your own queue; on receiving a request, enqueue it and reply with a timestamped acknowledgment; when done, broadcast a "release" and everyone removes it. The rule: <strong>you get the resource if and only if your request sits at the front of the queue (ordered by the total order ⇒) and you have received a later-timestamped message from every other process.</strong></p>
+<p>Because everyone maintains the <strong>same queue in the same total order</strong>, all processes necessarily agree on "whose turn it is" — no center needed. Abstract this and you get the far-reaching <strong>replicated state machine</strong>: write the service as a deterministic state machine, and have every replica execute the <strong>same commands in the same total order</strong>; same input, same order, therefore the same state. That is the universal recipe for fault-tolerant replication.</p>
+<figure>
+<svg viewbox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="mC" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="280" y="26">Total-order command stream (identical for all)</text>
+<rect fill="rgba(240,180,41,0.12)" height="30" rx="5" stroke="#f0b429" width="60" x="150" y="36"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="180" y="56">c1</text>
+<rect fill="rgba(240,180,41,0.12)" height="30" rx="5" stroke="#f0b429" width="60" x="250" y="36"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="56">c2</text>
+<rect fill="rgba(240,180,41,0.12)" height="30" rx="5" stroke="#f0b429" width="60" x="350" y="36"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="380" y="56">c3 →</text>
+<line marker-end="url(#mC)" stroke="#7c8593" x1="120" x2="120" y1="80" y2="120"></line>
+<line marker-end="url(#mC)" stroke="#7c8593" x1="280" x2="280" y1="80" y2="120"></line>
+<line marker-end="url(#mC)" stroke="#7c8593" x1="440" x2="440" y1="80" y2="120"></line>
+<rect fill="rgba(232,121,75,0.1)" height="54" rx="8" stroke="#e8794b" width="120" x="60" y="122"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="120" y="145">State-machine replica 1</text><text fill="#7c8593" font-size="11" text-anchor="middle" x="120" y="163">state S</text>
+<rect fill="rgba(232,121,75,0.1)" height="54" rx="8" stroke="#e8794b" width="120" x="220" y="122"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="145">State-machine replica 2</text><text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="163">state S</text>
+<rect fill="rgba(232,121,75,0.1)" height="54" rx="8" stroke="#e8794b" width="120" x="380" y="122"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="440" y="145">State-machine replica 3</text><text fill="#7c8593" font-size="11" text-anchor="middle" x="440" y="163">state S</text>
+<text fill="#f0b429" font-size="12.5" text-anchor="middle" x="280" y="212">same commands + same order → same state → always consistent</text>
+</svg>
+<figcaption>Fig 3 · Replicated state machine: order the commands into one agreed stream and feed it to every replica; a deterministic state machine on the same input yields the same state, so replicas stay consistent by construction — the universal recipe for fault-tolerant replication.</figcaption>
+</figure>
+<p>Honest note: this mutual-exclusion algorithm has premises — messages between two processes <strong>are never lost and arrive in the order sent</strong> (FIFO reliable channels), and it <strong>does not tolerate crashes</strong>. Those very premises are the gaps that later fault-tolerant consensus (Paxos and kin) had to fill.</p>
+<h3>Five · the return of physical clocks</h3>
+<p>Logical clocks only see <strong>messages inside the system</strong>. If two events become causally linked through a channel <em>outside</em> it (a person phones someone in another city to act), the system can't see that link, and the total order it computes may contradict reality — this is <strong>anomalous behavior</strong>. To plug the hole, either feed the external order into the system, or switch to <strong>physical clocks synchronized well enough</strong>. The paper closes with a theorem on how tightly physical clocks must be synchronized (as a function of the minimum message delay) to rule out anomalies — the derivation is omitted here; the intuition is that <strong>a clock's error must not be so large that a message appears to "arrive before it was sent."</strong></p>
+<h2>Key results</h2>
+<p>This is a <strong>theory paper with no benchmarks</strong>. Its "results" are constructs that became bedrock: the happens-before partial order, Lamport logical clocks, the recipe for extending a partial order into a total one, and a <strong>provably correct distributed mutual-exclusion algorithm</strong> (about <code>3(N−1)</code> messages per request, no central node), which in turn establishes that state-machine replication works; the physical-clock section adds a provable synchronization bound. Its value isn't in a number but in <strong>being the first to make "time and order in a distributed system" precise and give an implementable mechanism.</strong></p>
+<h2>Why it matters / impact</h2>
+<p>It set the <strong>notion of time</strong> for distributed systems. Happens-before and logical clocks became textbook standard (the industry simply says "Lamport timestamps"); state-machine replication became the universal fault-tolerance paradigm, leading straight to <strong>Paxos</strong> (also Lamport's), <strong>Raft</strong>, ZooKeeper, and every strongly consistent database — Google Spanner's TrueTime is precisely the industrial answer to this paper's closing question of "how tightly can physical clocks actually be synchronized." It also spawned <strong>vector clocks, the Chandy–Lamport distributed snapshot, and causal consistency</strong>. Cited tens of thousands of times, it is a core contribution behind Lamport's 2013 Turing Award.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Logical clocks are one-directional</strong>: <code>a→b</code> implies <code>C(a)&lt;C(b)</code>, but <strong>not the converse</strong> — a smaller number alone can't tell you two events are causally related, nor whether they are concurrent or ordered. Capturing causality exactly needs the later <strong>vector clock (Fidge / Mattern, 1988)</strong>: <code>a→b</code> if and only if <code>V(a)&lt;V(b)</code>.</li>
+<li><strong>The mutual-exclusion algorithm is not fault-tolerant</strong>: it needs a message from <em>every</em> process, so a single crash deadlocks it; it also assumes FIFO reliable channels, and its message count grows linearly with the number of processes. Real systems need genuine fault-tolerant consensus (Paxos / Raft) instead.</li>
+<li><strong>The total order is arbitrary among concurrent events</strong>: consistent but not "meaningful" — it only guarantees everyone orders them the same way, not that the order reflects any real semantics.</li>
+<li><strong>The physical-clock section is more theoretical</strong>: real engineering clock sync (NTP, GPS, atomic clocks, TrueTime) came decades later.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: a distributed system has no shared clock, so define happens-before by "a message is sent before it's received," then extend it into a total order with logical clocks.</p>
+<p>② The pain: many machines with drifting quartz clocks and variable delays make "who came first" undecidable, so replicas can't agree on a processing order.</p>
+<p>③ happens-before (→): process order + "send→receive" + transitivity; events that can't reach each other are concurrent, left unordered (a partial order, echoing relativity).</p>
+<p>④ Logical clocks: one counter per process, +1 per local event (IR1), <code>max(self, incoming)+1</code> on receive (IR2), so causally related events strictly increase — a ticket counter, not a clock.</p>
+<p>⑤ Total order: break ties by process ID, yielding one unique ordering ⇒ everyone agrees on.</p>
+<p>⑥ Killer app: no-coordinator distributed mutual exclusion; abstracted, it's the replicated state machine — same order + same commands → same state, the universal recipe for fault-tolerant replication.</p>
+<p>⑦ Impact: Lamport timestamps became textbook standard; state-machine replication leads to Paxos, Raft, Spanner; it spawned vector clocks, distributed snapshots, causal consistency.</p>
+<p>⑧ Limits: clocks are one-directional (small number ≠ causality; need vector clocks); the mutex algorithm needs FIFO and is not fault-tolerant; the order is arbitrary among concurrent events; the physical-clock part is theoretical.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the core of the paper; for the full proofs and the physical-clock synchronization theorem, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

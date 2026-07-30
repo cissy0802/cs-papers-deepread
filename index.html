@@ -71,7 +71,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <a class="entry" href="dapper-paper26.html"><span class="num">Paper 10</span><span class="title">Dapper — 给每次请求发一个全程带着走的 trace id，把每段工作记成 span 拼成调用树；靠公共库埋点透明、抽样带外几乎零开销，看清一次请求在上千台机器间走了哪条路，分布式追踪与可观测性的蓝本</span><span class="meta">Sigelman 等 · 2010</span></a>
 <a class="entry" href="tail-at-scale-paper27.html"><span class="num">Paper 11</span><span class="title">The Tail at Scale — 你等的是最慢那一台，于是偶发的慢被规模放大成常态；像做容错那样给延迟长尾兜底</span><span class="meta">Dean &amp; Barroso · 2013</span></a>
 <div class="group">分布式共识 · 一致性 · 存储<span class="tag">— 时钟 / 共识 / NoSQL / P2P</span></div>
-<div class="entry todo"><span class="num"></span><span class="title">Time, Clocks, and the Ordering of Events — 逻辑时钟与 happens-before，分布式一致性思想原点</span><span class="meta">Lamport · 1978</span></div>
+<a class="entry" href="time-clocks-ordering-paper31.html"><span class="num">Paper 1</span><span class="title">Time, Clocks, and the Ordering of Events — 没有大家都信的表，就用「消息一定先发后收」定义先后，再给每台机器一个只增的号码牌，天各一方的机器便能排出人人认同的同一份顺序</span><span class="meta">Lamport · 1978</span></a>
 <div class="entry todo"><span class="num"></span><span class="title">The Byzantine Generals Problem — 有节点会说谎时如何达成一致</span><span class="meta">Lamport, Shostak &amp; Pease · 1982</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Paxos Made Simple — 分布式共识的奠基算法（的简化讲法）</span><span class="meta">Lamport · 2001</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">In Search of an Understandable Consensus Algorithm (Raft) — 为「可理解」而设计的共识算法，工业界事实标准</span><span class="meta">Ongaro &amp; Ousterhout · 2014</span></div>
