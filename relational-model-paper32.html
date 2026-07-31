@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>A Relational Model of Data（关系模型）— IT 论文精读 Paper 32</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 32</p>
-<h1>A Relational Model of Data（关系模型）</h1>
+<h1 data-tts="a5bdca17482430ad">A Relational Model of Data（关系模型）</h1>
 <p class="sub">E. F. Codd · IBM San Jose Research · CACM 1970</p>
 <p class="langbar"><a href="relational-model-paper32.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,29 +44,29 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="221fb9a5d0c3018f">这篇论文干了什么？</h2>
 <p>1970 年，IBM 的一位数学家 <strong>Edgar F. Codd</strong> 提出了<strong>关系模型（relational model）</strong>——一句话：把数据统统装进<strong>规规矩矩的表格</strong>里，一行是一条记录、一列是一个字段。今天你用的几乎每个数据库（MySQL、PostgreSQL、Oracle，还有你银行账户、淘宝订单背后那套东西）都长在这个想法上。它看着平平无奇，却是数据库世界的「牛顿定律」。</p>
-<h2>先说旧世界的痛</h2>
+<h2 data-tts="5ce23b0d4175d5d8">先说旧世界的痛</h2>
 <p>在这篇之前，数据不是摆成表，而是像<strong>用绳子把珠子串起来</strong>：一条「顾客」记录里，藏着一个<strong>指向</strong>它第一张订单的<strong>物理地址（指针）</strong>，那张订单又指向下一张……要查「张三的所有订单」，程序得像走迷宫一样，<strong>顺着一根根指针一跳一跳地摸过去</strong>。</p>
 <p>真正要命的是：<strong>这条摸索路线被写死在了程序里。</strong>哪天管理员为了让查询更快，重新排了一下数据、或换了套索引，存储的样子一变——<strong>所有依赖老路线的程序全部报废，得推倒重写。</strong>数据和程序焊死在了一起。</p>
-<h2>那个点子</h2>
+<h2 data-tts="83c1a668a3c3b94d">那个点子</h2>
 <p>Codd 说：<strong>别再用指针把数据焊在一起，改用「表格 + 共享的值」。</strong>把数据摊平成一张张干净的表；两张表之间<strong>不靠指针连，而靠「共用一个值」来对上号</strong>——顾客表里每人有个「顾客号」，订单表里每张单也记下它属于哪个「顾客号」，<strong>号码一样，就是同一个人的单</strong>。谁跟谁的关系，全写在数据本身的值里，跟它存在硬盘哪个角落、怎么排，一点关系都没有。</p>
-<h2>它凭什么更好用？</h2>
+<h2 data-tts="ceb7b4cfede7e627">它凭什么更好用？</h2>
 <p>因为关联靠<strong>「对值」</strong>而不是<strong>「跟指针」</strong>，查东西就变成了<strong>「说清你要什么」</strong>，而不是<strong>「一步步教它怎么走」</strong>。你只需说「订单表里，顾客号等于张三那个号的所有行」，系统自己去把它们凑齐——你<strong>根本不用知道数据存在哪、按什么顺序排、有没有索引</strong>。</p>
 <p>于是那个「改存储就得重写程序」的老毛病，从根上没了：<strong>你从一开始就没依赖过存储长什么样。</strong>管理员想怎么调优、加索引、搬数据，都不碰你的程序。数据这才第一次和程序「离了婚」，各过各的。</p>
-<h2>它带来了什么</h2>
+<h2 data-tts="dbc87319d9a0374e">它带来了什么</h2>
 <p>整个数据库工业。SQL 这门「说清你要什么」的查询语言、Oracle、DB2、PostgreSQL、MySQL……全都是这套表格模型的直系后代。半个世纪过去，它依然是世界上绝大多数数据的存放方式。Codd 也因此拿了 1981 年的图灵奖。</p>
 <p>一句诚实话：这套办法<strong>刚出来时比老指针法慢得多</strong>，业界为它值不值吵了整整十年——直到「查询优化器」和硬件都跟上了，它才真正既优雅又跑得动。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="524b6ecc0952c437">一句话记住</h2>
 <div class="tl">
 <p>把数据摊成规整的表，表与表之间不靠物理指针、而靠<strong>共享的值</strong>来关联；查询从此变成「说清你要什么」而非「教它怎么一步步走」，数据终于和存储细节脱钩——这就是今天所有关系型数据库和 SQL 的地基。</p>
 </div>
 <p class="switch-hint">想看「值关联」「规范化」「关系运算」的结构图和更硬的细节？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="de2a928125637f27">一句话</h2>
 <p class="lead">Codd 提出把数据统一表示成数学上的<strong>关系（relation）</strong>——也就是一张张行列规整、每格只装单个值的<strong>表</strong>；表与表之间不靠物理指针链接，而靠<strong>共享的值</strong>（主键 / 外键）关联。由此把<strong>数据的逻辑结构和物理存储彻底分开</strong>（数据独立性），让应用程序面向「数据是什么」而非「数据怎么存、怎么找」，一举摆脱了当时网状 / 层次数据库「存储一改、程序全废」的困境。这是关系型数据库与 SQL 的理论源头。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="40ae62b783397529">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>数据库 / DBMS（database management system）</strong>：集中存放并管理大量共享数据的软件系统，负责存取、查询、并发与一致性。</li>
@@ -78,9 +79,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>声明式 vs 过程式（declarative vs procedural）</strong>：声明式=只说「要什么结果」；过程式=一步步说「怎么算 / 怎么找」。关系模型把查询推向声明式。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="e73a2c31fda7810b">坐标</h2>
 <p>作者 <strong>Edgar F. "Ted" Codd</strong>，英国数学家、IBM 圣何塞研究实验室研究员，论文《A Relational Model of Data for Large Shared Data Banks》发表于 1970 年 6 月的《Communications of the ACM》。它正面挑战了当时由 <strong>Charles Bachman</strong> 的网状模型（CODASYL，Bachman 刚因此拿了 1973 图灵奖）与 IBM 自家 IMS 层次模型主导的格局；下启 IBM 的 <strong>System R</strong> 与伯克利的 <strong>Ingres</strong> 两大原型，进而催生 <strong>SQL</strong>、Oracle、DB2、PostgreSQL 等一整代产品。Codd 本人凭此获 <strong>1981 年图灵奖</strong>。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="8118beb7a8c61b8a">问题与动机</h2>
 <p>1970 年前后，数据库把数据的<strong>逻辑含义</strong>和它在磁盘上的<strong>物理摆法</strong>紧紧绑在一起。网状模型里，「顾客」和「订单」之间的联系是一条条<strong>实打实的指针</strong>：顾客记录里存着通向它订单的地址，程序查数据靠「<strong>导航（navigation）</strong>」——顺着指针一跳一跳地爬。</p>
 <p>Codd 把这种绑定拆成三种<strong>依赖</strong>，逐一点名：</p>
 <ul>
@@ -90,40 +91,40 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>后果就是：<strong>为了性能去调整存储（换顺序、改索引、重排指针），几乎必然要改一大批应用程序。</strong>数据与程序死锁在一起，系统又脆又难演进。Codd 想要的，是让程序只依赖<strong>数据的逻辑内容</strong>，把物理层怎么折腾都挡在门外——这就是<strong>数据独立性（data independence）</strong>。</p>
 <figure>
-<svg viewbox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
 <defs><marker id="ap" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
 <text fill="#7c8593" font-size="12" x="24" y="26">旧世界：靠物理指针「导航」</text>
-<rect x="30" y="46" width="120" height="46" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"></rect>
+<rect fill="rgba(240,180,41,0.08)" height="46" rx="6" stroke="#7c8593" width="120" x="30" y="46"></rect>
 <text fill="#e7ebf1" font-size="12" text-anchor="middle" x="90" y="66">顾客 · 张三</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="90" y="83">next → 0x8A</text>
-<rect x="220" y="46" width="120" height="46" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"></rect>
+<rect fill="rgba(240,180,41,0.08)" height="46" rx="6" stroke="#7c8593" width="120" x="220" y="46"></rect>
 <text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="66">订单 #1</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="83">next → 0xC4</text>
-<rect x="410" y="46" width="120" height="46" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"></rect>
+<rect fill="rgba(240,180,41,0.08)" height="46" rx="6" stroke="#7c8593" width="120" x="410" y="46"></rect>
 <text fill="#e7ebf1" font-size="12" text-anchor="middle" x="470" y="66">订单 #2</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="470" y="83">next → nil</text>
-<line x1="150" x2="220" y1="69" y2="69" stroke="#e8794b" stroke-width="1.8" marker-end="url(#ap)"></line>
-<line x1="340" x2="410" y1="69" y2="69" stroke="#e8794b" stroke-width="1.8" marker-end="url(#ap)"></line>
+<line marker-end="url(#ap)" stroke="#e8794b" stroke-width="1.8" x1="150" x2="220" y1="69" y2="69"></line>
+<line marker-end="url(#ap)" stroke="#e8794b" stroke-width="1.8" x1="340" x2="410" y1="69" y2="69"></line>
 <text fill="#e8794b" font-size="11" text-anchor="middle" x="280" y="120">程序顺着指针一跳一跳地爬</text>
-<rect x="120" y="150" width="320" height="70" rx="8" fill="rgba(232,121,75,0.08)" stroke="#e8794b" stroke-dasharray="4 3"></rect>
+<rect fill="rgba(232,121,75,0.08)" height="70" rx="8" stroke="#e8794b" stroke-dasharray="4 3" width="320" x="120" y="150"></rect>
 <text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="178">管理员一改存储（重排 / 换索引）</text>
 <text fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="201">→ 这条路线作废，程序全得重写</text>
 </svg>
 <figcaption>图 1 · 旧世界的痛：记录靠物理指针串成链，程序顺着指针「导航」；存储结构一变，写死的存取路径全部作废。</figcaption>
 </figure>
-<h2>核心思想 / 方法</h2>
+<h2 data-tts="59318431d0763a94">核心思想 / 方法</h2>
 <p>Codd 的答案由几个环环相扣的想法组成，核心只有一句：<strong>把数据看成数学上的「关系」，用值代替指针，把逻辑和物理彻底分开。</strong></p>
-<h3>① 关系就是表：数据的统一形状</h3>
+<h3 data-tts="4647b2423e8e592d">① 关系就是表：数据的统一形状</h3>
 <p>数学里，一个<strong>关系</strong>是一堆<strong>元组</strong>的集合——每个元组从若干个<strong>域</strong>里各取一个值凑成。翻成人话：<strong>关系就是一张表</strong>，一行是一个元组，一列取自一个域。Codd 主张：无论现实里数据长得多复杂，<strong>都统一表示成这种「行列规整、每格只装一个单值」的表</strong>。</p>
 <p>因为它本质是个<strong>集合</strong>，几条数学性质随之而来，且都很好用：<strong>没有重复行</strong>（集合无重元素）、<strong>行之间没有先后顺序</strong>（集合无序——所以你永远不该依赖物理排序）。这套统一形状，是后面一切的地基。</p>
-<h3>② 关系之间靠「值」关联，不靠指针</h3>
+<h3 data-tts="824d48dd21064081">② 关系之间靠「值」关联，不靠指针</h3>
 <p>这是全篇最锋利的一刀。<strong>两张表之间的联系，不再用物理指针，而用共享的值来表达。</strong>每张表有一个<strong>主键</strong>唯一认出每一行（如「顾客表」的顾客号）；另一张表若要引用它，就在自己某列里存下同样的值，这列叫<strong>外键</strong>（如「订单表」里记着该单属于哪个顾客号）。<strong>要找关系，就找值相等的行——而不是跟着地址跳。</strong></p>
 <figure>
-<svg viewbox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
 <text fill="#f0b429" font-size="12" x="24" y="24">顾客表（主键：顾客号）</text>
-<rect x="24" y="34" width="220" height="88" rx="6" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
-<line x1="104" x2="104" y1="34" y2="122" stroke="#7c8593"></line>
-<line x1="24" x2="244" y1="62" y2="62" stroke="#7c8593"></line>
+<rect fill="rgba(240,180,41,0.06)" height="88" rx="6" stroke="#7c8593" width="220" x="24" y="34"></rect>
+<line stroke="#7c8593" x1="104" x2="104" y1="34" y2="122"></line>
+<line stroke="#7c8593" x1="24" x2="244" y1="62" y2="62"></line>
 <text fill="#f5c451" font-size="11.5" text-anchor="middle" x="64" y="52">顾客号</text>
 <text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="174" y="52">姓名</text>
 <text fill="#e7ebf1" font-size="12" text-anchor="middle" x="64" y="82">C-07</text>
@@ -131,43 +132,43 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <text fill="#e7ebf1" font-size="12" text-anchor="middle" x="64" y="108">C-11</text>
 <text fill="#b9c0ca" font-size="12" text-anchor="middle" x="174" y="108">李四</text>
 <text fill="#f0b429" font-size="12" x="316" y="24">订单表（外键：顾客号）</text>
-<rect x="316" y="34" width="220" height="88" rx="6" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
-<line x1="396" x2="396" y1="34" y2="122" stroke="#7c8593"></line>
-<line x1="316" x2="536" y1="62" y2="62" stroke="#7c8593"></line>
+<rect fill="rgba(240,180,41,0.06)" height="88" rx="6" stroke="#7c8593" width="220" x="316" y="34"></rect>
+<line stroke="#7c8593" x1="396" x2="396" y1="34" y2="122"></line>
+<line stroke="#7c8593" x1="316" x2="536" y1="62" y2="62"></line>
 <text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="356" y="52">单号</text>
 <text fill="#f5c451" font-size="11.5" text-anchor="middle" x="466" y="52">顾客号</text>
 <text fill="#b9c0ca" font-size="12" text-anchor="middle" x="356" y="82">#1</text>
 <text fill="#e7ebf1" font-size="12" text-anchor="middle" x="466" y="82">C-07</text>
 <text fill="#b9c0ca" font-size="12" text-anchor="middle" x="356" y="108">#2</text>
 <text fill="#e7ebf1" font-size="12" text-anchor="middle" x="466" y="108">C-07</text>
-<path d="M64,90 C64,150 466,150 466,96" fill="none" stroke="#e8794b" stroke-width="1.6" stroke-dasharray="5 3"></path>
-<path d="M64,116 C64,175 466,175 466,120" fill="none" stroke="#e8794b" stroke-width="1.6" stroke-dasharray="5 3"></path>
+<path d="M64,90 C64,150 466,150 466,96" fill="none" stroke="#e8794b" stroke-dasharray="5 3" stroke-width="1.6"></path>
+<path d="M64,116 C64,175 466,175 466,120" fill="none" stroke="#e8794b" stroke-dasharray="5 3" stroke-width="1.6"></path>
 <text fill="#e8794b" font-size="11.5" text-anchor="middle" x="300" y="200">「值相等 = 同一个人的单」——按值关联，没有一根指针</text>
 <text fill="#7c8593" font-size="11" text-anchor="middle" x="300" y="222">外键（订单.顾客号）指向主键（顾客.顾客号），全写在数据里</text>
 </svg>
 <figcaption>图 2 · 用值代替指针：订单表的外键「顾客号」与顾客表的主键取同一个值 C-07，即表示同属张三；关系写在数据本身，与物理存储无关。</figcaption>
 </figure>
 <p>这一刀砍掉了存取路径依赖：<strong>联系是数据的一部分，而不是存储布局的一部分。</strong>无论两张表怎么存、怎么排、建不建索引，「值相等即相关」这件事永远成立。程序不再需要知道任何物理路线。</p>
-<h3>③ 规范化：把嵌套压成平表</h3>
+<h3 data-tts="66b76fe0b6d603e1">③ 规范化：把嵌套压成平表</h3>
 <p>现实数据常是<strong>嵌套</strong>的：一位顾客「里面」挂着好几张订单（所谓<em>重复组 repeating group</em>）。这种非规整结构没法直接当关系。Codd 给出<strong>规范化（normalization）</strong>：把带重复组的结构<strong>拆成若干张每格只装单个值的平表</strong>——顾客归顾客表、订单归订单表，两者靠外键（顾客号）重新挂上钩。</p>
 <figure>
-<svg viewbox="0 0 560 220" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 220" xmlns="http://www.w3.org/2000/svg">
 <text fill="#7c8593" font-size="11.5" x="20" y="22">嵌套：顾客里塞着一组订单</text>
-<rect x="20" y="34" width="180" height="120" rx="6" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<rect fill="rgba(240,180,41,0.06)" height="120" rx="6" stroke="#7c8593" width="180" x="20" y="34"></rect>
 <text fill="#e7ebf1" font-size="12" x="34" y="56">顾客 张三</text>
-<rect x="40" y="68" width="146" height="24" rx="4" fill="rgba(232,121,75,0.1)" stroke="#e8794b"></rect>
+<rect fill="rgba(232,121,75,0.1)" height="24" rx="4" stroke="#e8794b" width="146" x="40" y="68"></rect>
 <text fill="#b9c0ca" font-size="11" x="52" y="84">订单 #1 · ￥120</text>
-<rect x="40" y="98" width="146" height="24" rx="4" fill="rgba(232,121,75,0.1)" stroke="#e8794b"></rect>
+<rect fill="rgba(232,121,75,0.1)" height="24" rx="4" stroke="#e8794b" width="146" x="40" y="98"></rect>
 <text fill="#b9c0ca" font-size="11" x="52" y="114">订单 #2 · ￥ 80</text>
 <text fill="#e8794b" font-size="10.5" x="40" y="142">↑ 重复组：格子里装着一张表</text>
-<line x1="210" x2="270" y1="94" y2="94" stroke="#f0b429" stroke-width="2" marker-end="url(#nz)"></line>
+<line marker-end="url(#nz)" stroke="#f0b429" stroke-width="2" x1="210" x2="270" y1="94" y2="94"></line>
 <defs><marker id="nz" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
 <text fill="#f0b429" font-size="11" text-anchor="middle" x="240" y="86">压平</text>
 <text fill="#7c8593" font-size="11.5" x="288" y="22">规范化后：两张平表 + 外键</text>
-<rect x="288" y="34" width="110" height="52" rx="5" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<rect fill="rgba(240,180,41,0.06)" height="52" rx="5" stroke="#7c8593" width="110" x="288" y="34"></rect>
 <text fill="#f5c451" font-size="10.5" x="298" y="52">顾客表</text>
 <text fill="#b9c0ca" font-size="10.5" x="298" y="70">C-07 · 张三</text>
-<rect x="412" y="34" width="132" height="120" rx="5" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<rect fill="rgba(240,180,41,0.06)" height="120" rx="5" stroke="#7c8593" width="132" x="412" y="34"></rect>
 <text fill="#f5c451" font-size="10.5" x="422" y="52">订单表</text>
 <text fill="#b9c0ca" font-size="10.5" x="422" y="72">#1 · C-07 · 120</text>
 <text fill="#b9c0ca" font-size="10.5" x="422" y="90">#2 · C-07 · 80</text>
@@ -177,7 +178,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <figcaption>图 3 · 规范化：把「顾客里嵌着一组订单」的重复组拆成两张每格只装单值的平表，再用外键（顾客号 C-07）重新关联——这就是后来「第一范式」的雏形。</figcaption>
 </figure>
 <p>好处是双份的：结构统一（一切皆平表，操作有普适规则），且<strong>减少了受更新困扰的冗余</strong>——顾客地址只存一处，改一次即可，不会因为散在多张订单里而改漏、改出自相矛盾。这套「拆表消冗余」的思路，正是日后<strong>第一范式（1NF）</strong>乃至整个规范化理论（2NF、3NF、BCNF）的起点。</p>
-<h3>④ 关系运算与「数据子语言」：把查询变成声明式</h3>
+<h3 data-tts="a593f78af638dc1e">④ 关系运算与「数据子语言」：把查询变成声明式</h3>
 <p>数据既然都是关系（集合），就能用<strong>对集合的运算</strong>来查询与组合，运算结果<strong>还是一个关系</strong>（可以再喂给下一步）。Codd 勾勒了若干运算，日后长成完整的<strong>关系代数（relational algebra）</strong>，常用的几个直觉如下：</p>
 <ul>
 <li><strong>选择 / 限制（selection）</strong>：挑出满足条件的行（如「金额 &gt; 100 的订单」）。</li>
@@ -185,20 +186,20 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>连接（join）</strong>：把两张表按<strong>某列值相等</strong>拼成一张更宽的表（如把订单和它的顾客信息接起来）——这正是「按值关联」在运算层的兑现。</li>
 </ul>
 <p>关键不在算子本身，而在它带来的<strong>范式转变</strong>：你<strong>说清「要哪些行、哪些列、和谁拼」，而不必写「先走哪个索引、顺着哪条指针爬」</strong>。查询从<strong>过程式</strong>变成<strong>声明式</strong>——「怎么高效地找」交给系统去决定。Codd 因此设想一种可嵌进普通编程语言的<strong>通用数据子语言（data sublanguage）</strong>，这正是几年后 <strong>SQL</strong> 的思想蓝本。</p>
-<h2>关键结果</h2>
+<h2 data-tts="0eb097691bae0aa6">关键结果</h2>
 <p>要诚实说：这是一篇<strong>理论论文，没有实验、没有基准数字</strong>。它的「结果」是概念性的证明——Codd 论证了：现实中一大类数据都能无损地表示成规范化的关系；网状模型里那些靠指针表达的联系，都能改用「值 + 关系运算」等价地表达；而这么做能一举<strong>斩断排序、索引、存取路径三种依赖</strong>，实现数据独立性。</p>
 <p>它真正的「验证」来自随后十余年的工程落地：IBM 的 <strong>System R</strong>（诞生了 SEQUEL / SQL 与代价式查询优化器）与伯克利的 <strong>Ingres</strong>（QUEL 语言）两大原型，证明了关系模型<strong>不只是漂亮，还能造出跑得动、跑得快的真系统</strong>。此后关系型数据库统治了商业数据处理数十年，Codd 也凭这套理论获 1981 年图灵奖。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="695eb5b1bad64397">为什么重要 / 影响</h2>
 <p>它奠定了<strong>整个关系型数据库工业</strong>，也确立了一条影响深远的工程原则：<strong>把逻辑模型和物理实现分开，让接口面向「数据是什么」。</strong>SQL 成为史上最成功的声明式语言之一；「你说要什么、系统决定怎么算」催生了<strong>查询优化器</strong>这一整门学问；表、主键、外键、连接、规范化，成了每个工程师的通用词汇。</p>
 <p>更深一层，它示范了<strong>用一个干净的数学抽象（关系代数）驯服一团工程乱麻</strong>的威力——这种「先找对抽象」的思路，影响远超数据库本身。半个世纪后，世界上绝大多数结构化数据，仍然躺在一张张 Codd 式的表里。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="5cd275e4c9821904">局限与批评</h2>
 <ul>
 <li><strong>一开始「慢且不实用」</strong>：1974 年那场著名的 <em>Codd–Bachman 大辩论</em>里，网状模型阵营质疑关系模型性能太差、脱离工程实际。这个批评当时并不冤——关系系统要靠成熟的<strong>查询优化器</strong>和更强的硬件才跑得动，业界为此等了近十年。</li>
 <li><strong>「平表」不是万能</strong>：强制每格单值（1NF）在处理天然嵌套 / 层级 / 图数据（文档、社交关系）时并不自然，日后 <strong>NoSQL</strong> 运动正是对「万物皆平表」的一次反弹（尽管强一致场景后来又被 NewSQL 拉回关系阵营）。</li>
 <li><strong>SQL ≠ Codd 的纯关系模型</strong>：现实的 SQL 在几处背离了原始理论——它<strong>允许重复行</strong>（不是严格的集合）、<strong>NULL 与三值逻辑</strong>带来诸多语义争议。Codd 本人后来专门写了「十二条规则」并撰文批评 SQL 对模型的偏离。</li>
 <li><strong>1970 原文只是起点</strong>：论文本身简短而数学化，规范化理论（2NF/3NF/BCNF）、关系完备性、以及可用的查询语言，都是 Codd 与他人在其后多年逐步补全的——单看这一篇，离一个能用的系统还很远。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="7feafb2ab672fc8f">要点</h2>
 <div class="tl">
 <p>① 一句话：把数据统一表示成关系（行列规整、每格单值的表），表间靠<strong>共享的值</strong>而非指针关联，实现逻辑与物理分离。</p>
 <p>② 痛点：网状 / 层次模型把数据与存储焊死，程序背着<strong>排序、索引、存取路径</strong>三种依赖，一改存储就得重写。</p>
