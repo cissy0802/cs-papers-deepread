@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>A Relational Model of Data — CS Papers Deep-Read Paper 32</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 32</p>
+<h1>A Relational Model of Data</h1>
+<p class="sub">E. F. Codd · IBM San Jose Research · CACM 1970</p>
+<p class="langbar"><a href="relational-model-paper32.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1970, an IBM mathematician named <strong>Edgar F. Codd</strong> proposed the <strong>relational model</strong>. In one line: put all your data into <strong>plain, tidy tables</strong>—a row is a record, a column is a field. Nearly every database you touch today (MySQL, PostgreSQL, Oracle, and whatever sits behind your bank account and your online orders) is built on this idea. It looks utterly ordinary, yet it is the "Newton's laws" of the database world.</p>
+<h2>First, the pain of the old world</h2>
+<p>Before this paper, data wasn't laid out as tables—it was more like <strong>beads strung on threads</strong>: a "customer" record held a <strong>pointer</strong> (a physical address) to its first order, that order pointed to the next, and so on. To find "all of Alice's orders," a program had to <strong>crawl along those pointers, one hop at a time</strong>, like walking a maze.</p>
+<p>The killer was this: <strong>that crawling route was hard-coded into the programs.</strong> The day an administrator reorganized the data or swapped indexes to speed things up, the storage layout changed—and <strong>every program that relied on the old route broke and had to be rewritten.</strong> Data and programs were welded together.</p>
+<h2>The idea</h2>
+<p>Codd said: <strong>stop welding data together with pointers; use "tables + shared values" instead.</strong> Flatten data into clean tables; two tables are linked <strong>not by pointers but by sharing a value</strong>—every customer has a "customer id," every order records which "customer id" it belongs to, and <strong>matching ids mean the same person's order</strong>. What relates to what lives entirely in the data's own values, with nothing to do with where it sits on disk or how it's ordered.</p>
+<h2>Why is it easier to use?</h2>
+<p>Because linking happens by <strong>matching values</strong> rather than <strong>following pointers</strong>, asking a question becomes <strong>"state what you want"</strong> instead of <strong>"teach it, step by step, how to get there."</strong> You just say "all rows in the orders table whose customer id equals Alice's," and the system gathers them for you—you <strong>need not know where the data lives, in what order, or whether there's an index</strong>.</p>
+<p>And so the old curse—"change the storage, rewrite the programs"—is gone at the root: <strong>you never depended on what the storage looked like in the first place.</strong> Administrators can tune, add indexes, and move data around without touching your programs. Only now do data and programs finally get to live separate lives.</p>
+<h2>What it led to</h2>
+<p>The entire database industry. SQL—the "state what you want" query language—plus Oracle, DB2, PostgreSQL, MySQL… all are direct descendants of this table model. Half a century on, it is still how the vast majority of the world's data is stored. Codd won the 1981 Turing Award for it.</p>
+<p>One honest note: this approach was <strong>much slower than the old pointer method when it first appeared</strong>, and the industry argued for a decade over whether it was worth it—until query optimizers and hardware caught up and it became both elegant and fast.</p>
+<h2>Remember this</h2>
+<div class="tl">
+<p>Lay data out as tidy tables; link tables not by physical pointers but by <strong>shared values</strong>. Querying becomes "state what you want" rather than "teach it how to walk there," and data finally decouples from storage details—this is the foundation of every relational database and of SQL.</p>
+</div>
+<p class="switch-hint">Want the diagrams for "linking by value," normalization, and relational operations, plus the harder details? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Codd proposed representing all data uniformly as mathematical <strong>relations</strong>—tidy, row-and-column <strong>tables</strong> where every cell holds a single value—and linking tables not with physical pointers but with <strong>shared values</strong> (primary keys / foreign keys). This cleanly separates the data's <strong>logical structure from its physical storage</strong> (data independence), letting programs face "what the data is" rather than "how it's stored and found," and escaping the era's network/hierarchical trap where changing storage broke every program. It is the theoretical source of relational databases and SQL.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Database / DBMS (database management system)</strong>: software that stores and manages large shared bodies of data—handling access, queries, concurrency, and consistency.</li>
+<li><strong>Record / field</strong>: a record is one item of data (say, "a customer"); a field is one of its attributes (name, phone). A table row is a record, a column is a field.</li>
+<li><strong>Pointer</strong>: an address stored inside one record that points to the <strong>physical location</strong> of another. Hopping from record to record by following pointers is called navigation.</li>
+<li><strong>Network / hierarchical model</strong>: the two dominant approaches before the relational model. The network model (CODASYL, exemplified by Bachman's IDS) links records into a graph with pointers; the hierarchical model (e.g. IBM's IMS) organizes data as a tree. Both make programs navigate preset paths.</li>
+<li><strong>Tuple / relation / domain</strong>: a tuple is a table row; a relation is a table (mathematically, a set of like-shaped tuples); a domain is the pool of values a column may take (e.g. "all valid part numbers").</li>
+<li><strong>Primary key / foreign key</strong>: a primary key is the field(s) that <strong>uniquely identify</strong> a row; a foreign key is a column whose value <strong>points to another table's primary key</strong>—the "by-value" link between tables.</li>
+<li><strong>Index</strong>: an extra "directory" structure built to speed up lookups; a physical implementation detail that users should not be tied to.</li>
+<li><strong>Declarative vs procedural</strong>: declarative = state "what result you want"; procedural = spell out "how to compute / find it" step by step. The relational model pushes queries toward the declarative.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The author, <strong>Edgar F. "Ted" Codd</strong>, was a British mathematician and researcher at IBM's San Jose Research Laboratory. His paper, "A Relational Model of Data for Large Shared Data Banks," appeared in the June 1970 <em>Communications of the ACM</em>. It directly challenged a landscape dominated by <strong>Charles Bachman</strong>'s network model (CODASYL; Bachman had just won the 1973 Turing Award for it) and IBM's own IMS hierarchical model. Downstream it drove two landmark prototypes—IBM's <strong>System R</strong> and Berkeley's <strong>Ingres</strong>—and through them <strong>SQL</strong>, Oracle, DB2, and PostgreSQL. Codd himself received the <strong>1981 Turing Award</strong> for the model.</p>
+<h2>The problem &amp; motivation</h2>
+<p>Around 1970, databases welded a datum's <strong>logical meaning</strong> to its <strong>physical layout</strong> on disk. In the network model, the link between "customer" and "order" was a literal <strong>pointer</strong>: the customer record held the address of its orders, and programs retrieved data by <strong>navigation</strong>—crawling from pointer to pointer, hop by hop.</p>
+<p>Codd broke this coupling into three <strong>dependences</strong> and named each:</p>
+<ul>
+<li><strong>Ordering dependence</strong>: programs assumed records sat in some physical order; reorder them and the programs break.</li>
+<li><strong>Indexing dependence</strong>: programs hard-coded "use this index"; drop or add an index and they fail.</li>
+<li><strong>Access-path dependence</strong>: programs hard-coded "follow this chain of pointers"; change the storage structure and the route is void.</li>
+</ul>
+<p>The consequence: <strong>tuning storage for performance (reordering, re-indexing, rewiring pointers) almost always forced a rewrite of a swath of application programs.</strong> Data and programs were deadlocked—the system was brittle and hard to evolve. What Codd wanted was for programs to depend only on the <strong>logical content</strong> of data, walling off whatever the physical layer did. That is <strong>data independence</strong>.</p>
+<figure>
+<svg viewbox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#7c8593" font-size="12" x="24" y="26">Old world: navigate by physical pointers</text>
+<rect x="30" y="46" width="120" height="46" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="90" y="66">Customer · Alice</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="90" y="83">next → 0x8A</text>
+<rect x="220" y="46" width="120" height="46" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="66">Order #1</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="83">next → 0xC4</text>
+<rect x="410" y="46" width="120" height="46" rx="6" fill="rgba(240,180,41,0.08)" stroke="#7c8593"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="470" y="66">Order #2</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="470" y="83">next → nil</text>
+<line x1="150" x2="220" y1="69" y2="69" stroke="#e8794b" stroke-width="1.8" marker-end="url(#ap)"></line>
+<line x1="340" x2="410" y1="69" y2="69" stroke="#e8794b" stroke-width="1.8" marker-end="url(#ap)"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="280" y="120">the program crawls pointer by pointer</text>
+<rect x="120" y="150" width="320" height="70" rx="8" fill="rgba(232,121,75,0.08)" stroke="#e8794b" stroke-dasharray="4 3"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="178">admin changes storage (reorder / re-index)</text>
+<text fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="201">→ this route is void, rewrite the programs</text>
+</svg>
+<figcaption>Fig 1 · The old-world pain: records are strung into a chain of physical pointers, and programs "navigate" by following them; change the storage structure and the hard-coded access paths all go void.</figcaption>
+</figure>
+<h2>Core idea &amp; method</h2>
+<p>Codd's answer is a few interlocking ideas, with one sentence at the core: <strong>view data as mathematical "relations," replace pointers with values, and fully separate the logical from the physical.</strong></p>
+<h3>1. A relation is just a table: one uniform shape for data</h3>
+<p>In mathematics a <strong>relation</strong> is a set of <strong>tuples</strong>—each tuple picks one value from each of several <strong>domains</strong>. In plain terms: <strong>a relation is a table</strong>, a row is a tuple, a column is drawn from a domain. Codd argued that however messy data looks in the real world, <strong>it should all be represented in this "tidy rows and columns, one single value per cell" form</strong>.</p>
+<p>Because it is fundamentally a <strong>set</strong>, several handy mathematical properties follow: <strong>no duplicate rows</strong> (a set has no repeats), and <strong>no order among rows</strong> (a set is unordered—so you should never depend on physical ordering). This one uniform shape is the bedrock for everything else.</p>
+<h3>2. Relations link by value, not by pointer</h3>
+<p>This is the paper's sharpest cut. <strong>The link between two tables is no longer a physical pointer but a shared value.</strong> Each table has a <strong>primary key</strong> that uniquely identifies each row (say the "customer id" in the customer table); another table that wants to reference it simply stores the same value in one of its columns—that column is a <strong>foreign key</strong> (say the customer id recorded on each order). <strong>To find a relationship, find rows with equal values—rather than chase an address.</strong></p>
+<figure>
+<svg viewbox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<text fill="#f0b429" font-size="12" x="24" y="24">Customer (primary key: cust id)</text>
+<rect x="24" y="34" width="220" height="88" rx="6" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<line x1="104" x2="104" y1="34" y2="122" stroke="#7c8593"></line>
+<line x1="24" x2="244" y1="62" y2="62" stroke="#7c8593"></line>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="64" y="52">cust id</text>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="174" y="52">name</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="64" y="82">C-07</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="174" y="82">Alice</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="64" y="108">C-11</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="174" y="108">Bob</text>
+<text fill="#f0b429" font-size="12" x="316" y="24">Order (foreign key: cust id)</text>
+<rect x="316" y="34" width="220" height="88" rx="6" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<line x1="396" x2="396" y1="34" y2="122" stroke="#7c8593"></line>
+<line x1="316" x2="536" y1="62" y2="62" stroke="#7c8593"></line>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="356" y="52">order</text>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="466" y="52">cust id</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="356" y="82">#1</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="466" y="82">C-07</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="356" y="108">#2</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="466" y="108">C-07</text>
+<path d="M64,90 C64,150 466,150 466,96" fill="none" stroke="#e8794b" stroke-width="1.6" stroke-dasharray="5 3"></path>
+<path d="M64,116 C64,175 466,175 466,120" fill="none" stroke="#e8794b" stroke-width="1.6" stroke-dasharray="5 3"></path>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="300" y="200">"equal values = same person's order" — linked by value, no pointer</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="300" y="222">foreign key (order.cust id) points to primary key (customer.cust id)</text>
+</svg>
+<figcaption>Fig 2 · Values instead of pointers: the order table's foreign key "cust id" takes the same value C-07 as the customer table's primary key, meaning both belong to Alice; the relationship lives in the data itself, independent of physical storage.</figcaption>
+</figure>
+<p>This cut severs access-path dependence: <strong>the relationship is part of the data, not part of the storage layout.</strong> No matter how the two tables are stored, ordered, or indexed, "equal values are related" always holds. Programs never need to know any physical route.</p>
+<h3>3. Normalization: flatten nesting into flat tables</h3>
+<p>Real data is often <strong>nested</strong>: one customer "contains" several orders (a so-called <em>repeating group</em>). Such irregular structure can't be a relation directly. Codd's fix is <strong>normalization</strong>: decompose a structure with repeating groups <strong>into several flat tables where every cell holds a single value</strong>—customers in the customer table, orders in the order table, re-linked by the foreign key (customer id).</p>
+<figure>
+<svg viewbox="0 0 560 220" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="nz" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="20" y="22">Nested: a customer holds a group of orders</text>
+<rect x="20" y="34" width="180" height="120" rx="6" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<text fill="#e7ebf1" font-size="12" x="34" y="56">Customer Alice</text>
+<rect x="40" y="68" width="146" height="24" rx="4" fill="rgba(232,121,75,0.1)" stroke="#e8794b"></rect>
+<text fill="#b9c0ca" font-size="11" x="52" y="84">Order #1 · $120</text>
+<rect x="40" y="98" width="146" height="24" rx="4" fill="rgba(232,121,75,0.1)" stroke="#e8794b"></rect>
+<text fill="#b9c0ca" font-size="11" x="52" y="114">Order #2 · $ 80</text>
+<text fill="#e8794b" font-size="10.5" x="40" y="142">↑ repeating group: a table in a cell</text>
+<line x1="210" x2="270" y1="94" y2="94" stroke="#f0b429" stroke-width="2" marker-end="url(#nz)"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="240" y="86">flatten</text>
+<text fill="#7c8593" font-size="11.5" x="288" y="22">Normalized: two flat tables + foreign key</text>
+<rect x="288" y="34" width="110" height="52" rx="5" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<text fill="#f5c451" font-size="10.5" x="298" y="52">Customer</text>
+<text fill="#b9c0ca" font-size="10.5" x="298" y="70">C-07 · Alice</text>
+<rect x="412" y="34" width="132" height="120" rx="5" fill="rgba(240,180,41,0.06)" stroke="#7c8593"></rect>
+<text fill="#f5c451" font-size="10.5" x="422" y="52">Order</text>
+<text fill="#b9c0ca" font-size="10.5" x="422" y="72">#1 · C-07 · 120</text>
+<text fill="#b9c0ca" font-size="10.5" x="422" y="90">#2 · C-07 · 80</text>
+<text fill="#e8794b" font-size="10" x="422" y="118">single value/cell</text>
+<text fill="#e8794b" font-size="10" x="422" y="134">linked via C-07</text>
+</svg>
+<figcaption>Fig 3 · Normalization: split "a customer with a nested group of orders" into two flat tables with a single value per cell, re-linked by the foreign key (customer id C-07)—the seed of what later became "first normal form."</figcaption>
+</figure>
+<p>The payoff is twofold: a uniform structure (everything is a flat table, so operations have universal rules) and <strong>less update-prone redundancy</strong>—a customer's address is stored once and changed once, instead of being scattered across many orders where it could be missed and left inconsistent. This "split tables to kill redundancy" instinct is the origin of <strong>first normal form (1NF)</strong> and of the whole normalization theory (2NF, 3NF, BCNF).</p>
+<h3>4. Relational operations &amp; a "data sublanguage": making queries declarative</h3>
+<p>Since all data are relations (sets), you can query and combine them with <strong>set operations</strong>, and the result of an operation <strong>is itself a relation</strong> (feedable into the next step). Codd sketched several operations that later grew into a full <strong>relational algebra</strong>; the everyday intuitions are:</p>
+<ul>
+<li><strong>Selection / restriction</strong>: keep the rows that satisfy a condition (e.g. "orders over $100").</li>
+<li><strong>Projection</strong>: keep only the columns you want, drop the rest (e.g. "just customer id and name").</li>
+<li><strong>Join</strong>: stitch two tables into a wider one <strong>where a column's values are equal</strong> (e.g. attach each order to its customer's details)—this is "linking by value" cashed out at the operation level.</li>
+</ul>
+<p>The point isn't the operators but the <strong>paradigm shift</strong> they enable: you <strong>state "which rows, which columns, joined to whom," instead of writing "first use this index, then follow that pointer chain."</strong> Queries go from <strong>procedural</strong> to <strong>declarative</strong>—"how to find it efficiently" is left to the system. Codd thus envisioned a universal <strong>data sublanguage</strong> that could be embedded in an ordinary programming language, which is precisely the blueprint for <strong>SQL</strong> a few years later.</p>
+<h2>Key results</h2>
+<p>To be honest: this is a <strong>theoretical paper, with no experiments and no benchmark numbers</strong>. Its "results" are conceptual arguments—Codd showed that a broad class of real data can be represented losslessly as normalized relations; that the pointer-expressed relationships of the network model can be expressed equivalently with "values + relational operations"; and that doing so <strong>severs all three dependences—ordering, indexing, and access path—at once</strong>, achieving data independence.</p>
+<p>Its real "validation" came from the decade-plus of engineering that followed: IBM's <strong>System R</strong> (which birthed SEQUEL / SQL and cost-based query optimization) and Berkeley's <strong>Ingres</strong> (the QUEL language) proved that the relational model was <strong>not merely elegant but could yield real systems that ran, and ran fast</strong>. Relational databases then dominated commercial data processing for decades, and Codd received the 1981 Turing Award for the theory.</p>
+<h2>Why it matters / impact</h2>
+<p>It founded <strong>the entire relational database industry</strong> and established a far-reaching engineering principle: <strong>separate the logical model from the physical implementation, and make the interface face "what the data is."</strong> SQL became one of the most successful declarative languages ever; "you say what you want, the system decides how to compute it" gave rise to the whole discipline of <strong>query optimization</strong>; and tables, primary keys, foreign keys, joins, and normalization became every engineer's shared vocabulary.</p>
+<p>Deeper still, it demonstrated the power of <strong>taming an engineering mess with one clean mathematical abstraction (relational algebra)</strong>—a "find the right abstraction first" instinct whose influence reaches well beyond databases. Half a century later, the vast majority of the world's structured data still lives in Codd-style tables.</p>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>"Slow and impractical" at first</strong>: in the famous 1974 <em>Codd–Bachman debate</em>, the network-model camp charged that the relational model was too slow and detached from engineering reality. The critique wasn't baseless at the time—relational systems needed mature <strong>query optimizers</strong> and stronger hardware to run well, and the industry waited nearly a decade for that.</li>
+<li><strong>"Flat tables" aren't universal</strong>: forcing a single value per cell (1NF) is unnatural for inherently nested / hierarchical / graph data (documents, social relationships); the later <strong>NoSQL</strong> movement was in part a backlash against "everything is a flat table" (though strongly consistent workloads were later pulled back toward relational by NewSQL).</li>
+<li><strong>SQL ≠ Codd's pure relational model</strong>: real-world SQL departs from the original theory in places—it <strong>permits duplicate rows</strong> (not a strict set) and its <strong>NULLs and three-valued logic</strong> raise many semantic disputes. Codd himself later wrote his "twelve rules" and published critiques of SQL's deviations from the model.</li>
+<li><strong>The 1970 paper is only a starting point</strong>: the paper itself is terse and mathematical; normalization theory (2NF/3NF/BCNF), relational completeness, and a usable query language were all filled in by Codd and others over the following years—on its own, this one paper is still far from a working system.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1. One line: represent all data uniformly as relations (tidy tables, one value per cell), link tables by <strong>shared values</strong> rather than pointers, and separate the logical from the physical.</p>
+<p>2. Pain: network/hierarchical models weld data to storage; programs carry <strong>ordering, indexing, and access-path</strong> dependences, so changing storage forces rewrites.</p>
+<p>3. Mechanism I—relation as table: it's a set, so no duplicate rows and no fixed row order; never depend on physical ordering.</p>
+<p>4. Mechanism II—values over pointers: a primary key uniquely identifies a row, a foreign key stores the same value to reference another table; <strong>equal values are related</strong>, and the link lives in the data, not the layout.</p>
+<p>5. Mechanism III—normalization: decompose nested structures with repeating groups into flat tables, unifying shape and reducing error-prone redundancy (the 1NF seed).</p>
+<p>6. Mechanism IV—relational operations (selection / projection / join) turn queries from "teach it how to walk" into "state what you want": declarative, and the germ of SQL and query optimization.</p>
+<p>7. Results: a theory paper with no experiments; its correctness was validated by System R / Ingres, SQL, and decades of industrial dominance; Codd won the 1981 Turing Award.</p>
+<p>8. Limits: early performance was doubted (the Codd–Bachman debate); flat tables suit nested/graph data poorly (the NoSQL backlash); SQL's duplicate rows and NULLs deviate from the pure model.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full formal definitions and relational-operation details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
