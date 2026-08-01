@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>The UNIX Time-Sharing System — IT Paper Deep-Read Paper 33</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 33</p>
+<h1>The UNIX Time-Sharing System</h1>
+<p class="sub">Ken Thompson &amp; Dennis Ritchie · Bell Labs · CACM 1974</p>
+<p class="langbar"><a href="unix-time-sharing-paper33.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>Almost everything you use today—your Mac, your iPhone, an Android phone, the Linux servers running the cloud—traces back to one small system: <strong>UNIX</strong>. Born at Bell Labs in 1969, it was first described to the world in this 1974 paper. It invented no dazzling new hardware. Instead it used <strong>a few extremely simple ideas that snap together</strong> to build an operating system small enough to fit on the cheap machines of the day, yet good enough to dominate the next half-century.</p>
+<h2>The pain of the old world</h2>
+<p>Before it, big operating systems (the flagship was Multics) tried to do everything—and ended up huge, complex, expensive, and hard to use. Worse: <strong>every kind of thing had its own special way of being used</strong>—one set of commands to read a disk, another for tape, yet another to talk to a printer. And programs couldn't easily be joined together to get work done.</p>
+<h2>A few humble ideas</h2>
+<p>UNIX's answer was "less is more," resting on just two or three moves.</p>
+<p><strong>Move one: everything is a file.</strong> Disk data, the keyboard, a printer, the screen—to the system they all look the same: like "a file." So <strong>one set of actions—open, read, write—operates on everything</strong>. It's like putting the same wall socket on every appliance in the house: no separate hookup to memorize for each device.</p>
+<p><strong>Move two: small tools plus a hose.</strong> UNIX encourages each program to <strong>do one thing and do it well</strong>, then gives you a "hose" (a <em>pipe</em>) that pours one program's output <strong>straight into</strong> the next program's input. To do something complex you don't write a big program—you snap small tools together like Lego, like joining hoses: "list who's logged in ┃ count the lines" counts online users in one line.</p>
+<p><strong>Move three: a tree of folders.</strong> Files live in folders nested inside folders, forming a tree. The nested folders you click through on your computer today came from here.</p>
+<h2>What it gave us</h2>
+<p>Together these moves make a system that is <strong>small, general, and able to grow new powers on its own</strong>: want a new feature? Write another small tool and snap it into a pipeline—no need to touch the system itself. That "freely combine small, orthogonal parts" style was so successful that nearly every operating system today inherits it, and the <strong>C language</strong> UNIX invented for itself became the lingua franca of programming. One honest cost: its permission model is very plain (just a few read/write flags), too coarse for today's endlessly networked world—security has had to be layered on top by later hands.</p>
+<h2>Remember this one line</h2>
+<div class="tl">
+<p>UNIX took a few minimal ideas—everything is a file, small tools freely joined by pipes, a tree of folders—and built an OS small enough for cheap hardware yet general enough to combine endlessly. Today's Linux, macOS, Android, and iOS are all its descendants in spirit.</p>
+</div>
+<p class="switch-hint">Want the file-system diagram, the fork/pipe mechanics, and what exactly was new? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">UNIX introduced a <strong>minimal, orthogonal, freely composable</strong> operating-system design: files as <strong>unstructured byte streams</strong>, devices exposed as files (<strong>everything is a file</strong>), every program wired to a uniform "standard input/output" and joined by <strong>pipes</strong>, process creation split into <code>fork</code>/<code>exec</code>, and the whole system written in a high-level language, <strong>C</strong>. It showed that a small, carefully chosen set of fertile ideas is enough to build a small yet powerful OS—and nearly every operating system today (Linux, macOS, Android, iOS, the POSIX world) is its descendant in spirit.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Operating system</strong>: the low-level software that manages the hardware and gives programs uniform services (store files, run processes, read devices).</li>
+<li><strong>Time-sharing</strong>: one machine rapidly taking turns serving many users/programs, so each feels like it owns the whole machine.</li>
+<li><strong>Kernel</strong>: the innermost, memory-resident layer of the OS that directly manages hardware, memory, and process scheduling.</li>
+<li><strong>Process</strong>: a running instance of a program, with its own memory and execution state.</li>
+<li><strong>System call</strong>: the entry point a program uses to ask the kernel to do something (read a file, open a device)—the boundary between app and kernel.</li>
+<li><strong>Shell / command interpreter</strong>: the program that reads your typed commands and runs them (today's bash, zsh).</li>
+<li><strong>C language</strong>: the high-level language Dennis Ritchie designed to write UNIX, later the lingua franca of systems programming.</li>
+<li><strong>Multics</strong>: the large, complex, arguably over-designed time-sharing project that preceded UNIX; UNIX was in part a reaction against it.</li>
+<li><strong>PDP-7 / PDP-11</strong>: DEC minicomputers of the era; UNIX first ran on these two machines.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are <strong>Ken Thompson</strong> and <strong>Dennis Ritchie</strong> at Bell Labs. UNIX began in 1969—Thompson started writing it on an idle PDP-7; this paper, "The UNIX Time-Sharing System," appeared in CACM in 1974 and was its <strong>first public description</strong>, covering what was then the third edition. It grew out of a reaction to the sprawling <em>Multics</em> project (the name "UNICS" was a pun on Multics), and it seeded the entire lineage that followed—BSD, System V, Linux, macOS. Both authors received the <strong>1983 Turing Award</strong> for it.</p>
+<h2>The problem &amp; the motivation</h2>
+<p>The big time-sharing systems of the late 1960s (Multics being the archetype) chased comprehensive functionality, at the cost of being <strong>huge, complex, expensive, and hard to use</strong>. The deeper pain was at the <em>interface</em> level: every class of device and every kind of file tended to have its own way of being accessed—one for disk, one for tape, one for the terminal—and programs stood isolated, so one program's output was hard to feed into another. Building something complex usually meant writing yet another big special-purpose program.</p>
+<p>Thompson wanted the opposite: a <strong>small, comfortable, interactive system that researchers would actually use every day</strong>. The core question was—<strong>can a very small set of orthogonal primitives be composed into a system that is general, pleasant, and self-extending?</strong> The pain of the old world, in one line: <strong>big and all-encompassing, riddled with special-purpose interfaces, with parts that don't compose</strong>. Every UNIX design decision is an answer to that sentence.</p>
+<h2>Core ideas / method</h2>
+<h3>① A file is an unstructured byte stream + a hierarchical file system</h3>
+<p>UNIX defines a file with radical plainness: <strong>it is just a sequence of bytes</strong>. The system <strong>imposes no record, block, or internal structure</strong>—whether those bytes are text, an image, or a database is for the program using them to decide. This "specify nothing" step looks lazy but is the root of maximal generality: any data fits into the same container.</p>
+<p>Files are organized in a <strong>tree of directories</strong> with a single root <code>/</code>, reached by path names (like <code>/usr/dan/x</code>) that walk from the root down to the file. The key design: <strong>a directory is itself just a kind of file</strong>, whose contents are a table mapping "name → number"; that number points to an <em>i-node (index node)</em>, and the i-node is what actually records the file's owner, permissions, size, and data-block locations. <strong>Name and file body are thereby separated</strong>—a directory holds only names and i-node numbers; the file's substance lives elsewhere.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="90" y="30">Directory (a file)</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="90" y="46">name → i-number</text>
+<rect fill="rgba(240,180,41,0.08)" height="90" rx="6" stroke="#f0b429" width="150" x="15" y="56"></rect>
+<text fill="#d9dee5" font-size="11.5" x="28" y="80">x        → 41</text>
+<text fill="#d9dee5" font-size="11.5" x="28" y="104">notes    → 57</text>
+<text fill="#d9dee5" font-size="11.5" x="28" y="128">backup   → 41</text>
+<text fill="#e8794b" font-size="10" x="28" y="143">(two names, one file = a link)</text>
+<line marker-end="url(#u1)" stroke="#f0b429" x1="166" x2="228" y1="84" y2="120"></line>
+<line marker-end="url(#u1)" stroke="#f0b429" x1="166" x2="228" y1="132" y2="126"></line>
+<defs><marker id="u1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="u1b" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="300" y="30">i-node 41</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="300" y="46">metadata + block map</text>
+<rect fill="rgba(232,121,75,0.1)" height="90" rx="6" stroke="#e8794b" width="140" x="230" y="90"></rect>
+<text fill="#d9dee5" font-size="11" x="242" y="112">owner / perms</text>
+<text fill="#d9dee5" font-size="11" x="242" y="132">size</text>
+<text fill="#d9dee5" font-size="11" x="242" y="152">→ blocks 12, 27, 88</text>
+<line marker-end="url(#u1b)" stroke="#7c8593" x1="370" x2="440" y1="120" y2="110"></line>
+<line marker-end="url(#u1b)" stroke="#7c8593" x1="370" x2="440" y1="140" y2="150"></line>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="490" y="30">Disk blocks</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="4" stroke="#7c8593" width="70" x="450" y="96"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="485" y="113">blk 12</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="4" stroke="#7c8593" width="70" x="450" y="128"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="485" y="145">blk 27</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="4" stroke="#7c8593" width="70" x="450" y="160"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="485" y="177">blk 88</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="250">Name (in the directory) is separate from the file body (the i-node),</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="268">so one file can have several names; renaming and sharing are cheap.</text>
+</svg>
+<figcaption>Fig 1 · A directory stores only "name → i-number"; the i-node holds metadata and block locations. Separating name from body is the root of hard links, cheap renames, and sharing.</figcaption>
+</figure>
+<p><strong>Why design it this way:</strong> a byte stream is maximally general (it presumes no use); the path tree extends without limit; and separating name from body lets one file carry several names (a <em>hard link</em>) and makes renaming and sharing nearly free.</p>
+<h3>② Everything is a file: devices are files too</h3>
+<p>This is UNIX's most elegant and far-sighted move: make each hardware device a <strong>special file</strong> in the file system, usually under <code>/dev</code>. So—writing to a terminal, sending data to a printer, storing a file on disk—all use the <strong>exact same</strong> <code>open</code> / <code>read</code> / <code>write</code> system calls. A program <strong>need not know</strong> whether the other end is a disk, a terminal, or a tape.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<rect fill="rgba(240,180,41,0.1)" height="46" rx="8" stroke="#f0b429" width="200" x="180" y="20"></rect>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="280" y="40">Program</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="57">only knows open / read / write</text>
+<defs><marker id="u2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<line marker-end="url(#u2)" stroke="#7c8593" x1="230" x2="130" y1="66" y2="130"></line>
+<line marker-end="url(#u2)" stroke="#7c8593" x1="280" x2="280" y1="66" y2="130"></line>
+<line marker-end="url(#u2)" stroke="#7c8593" x1="330" x2="435" y1="66" y2="130"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="280" y="108">one set of system calls</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="120" x="55" y="132"></rect>
+<text fill="#d9dee5" font-size="12" text-anchor="middle" x="115" y="150">ordinary file</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="115" y="165">/usr/dan/x</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="120" x="220" y="132"></rect>
+<text fill="#d9dee5" font-size="12" text-anchor="middle" x="280" y="150">terminal / keyboard</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="165">/dev/tty</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="120" x="385" y="132"></rect>
+<text fill="#d9dee5" font-size="12" text-anchor="middle" x="445" y="150">printer / disk</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="445" y="165">/dev/…</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="212">To the system they all look like "a file"—the program is device-independent,</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="230">so its input and output can be redirected to any of them.</text>
+</svg>
+<figcaption>Fig 2 · Everything is a file: ordinary files, terminals, and devices share one open/read/write interface. Programs need not know what's on the other end, so I/O can be freely redirected.</figcaption>
+</figure>
+<p><strong>Why it matters:</strong> one interface covers all I/O in the world. A program is device-independent by birth, and its input and output can be wired by the outside to a file, a terminal, or another program—precisely the foundation for redirection and pipes below.</p>
+<h3>③ File descriptors + minimal I/O + redirection</h3>
+<p>Open a file and what you get back is a <strong>small integer—a file descriptor</strong>. Thereafter <code>read</code> / <code>write</code> / <code>seek</code> all act on that integer, with <strong>no distinction between sequential and random access</strong> and buffering hidden by the system. By convention: <strong>0 is standard input, 1 is standard output</strong> (2, standard error, was added later). A program just reads from 0 and writes to 1, and <strong>whether 0/1 connect to a keyboard, a file, or another program is something the program neither controls nor can detect</strong>—which is exactly how the shell redirects I/O with <code>&lt;</code> and <code>&gt;</code>.</p>
+<h3>④ The shell is an ordinary program + pipes + the composition philosophy</h3>
+<p>The command interpreter, the <strong>shell, is not part of the kernel</strong>; it is an ordinary user program you can swap out at will. Because it is just a program, UNIX can upgrade the convention "each program does one thing and speaks through standard I/O" into real <strong>composition</strong>: a <strong>pipe <code>|</code></strong> connects one program's standard output <strong>directly into</strong> the next program's standard input, chaining them like joined hoses. The classic <code>who | wc -l</code>—<code>who</code> lists logged-in users, <code>wc -l</code> counts lines—snaps two single-purpose tools together to count online users, with neither changing a line of code for the other.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 170" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="u3" markerheight="10" markerwidth="10" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="44" rx="8" stroke="#f0b429" width="120" x="20" y="52"></rect>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="80" y="72">who</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="80" y="88">list logged-in users</text>
+<line marker-end="url(#u3)" stroke="#f0b429" stroke-width="2" x1="142" x2="205" y1="74" y2="74"></line>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="173" y="66">pipe</text>
+<rect fill="rgba(240,180,41,0.1)" height="44" rx="8" stroke="#f0b429" width="120" x="208" y="52"></rect>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="268" y="72">grep dan</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="268" y="88">keep lines with dan</text>
+<line marker-end="url(#u3)" stroke="#f0b429" stroke-width="2" x1="330" x2="393" y1="74" y2="74"></line>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="361" y="66">pipe</text>
+<rect fill="rgba(240,180,41,0.1)" height="44" rx="8" stroke="#f0b429" width="120" x="396" y="52"></rect>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="456" y="72">wc -l</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="456" y="88">count the lines</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="128">Each program only reads "standard input" and writes "standard output"; a pipe</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="146">pours one's output into the next's input—so small tools chain like hoses.</text>
+</svg>
+<figcaption>Fig 3 · A pipeline: three single-purpose tools joined by | compute "how many times did dan log in" without changing a line of code. This is the mechanical basis of the UNIX composition philosophy.</figcaption>
+</figure>
+<h3>⑤ The process model: fork and exec, split in two</h3>
+<p>How is a new process born? UNIX's answer is startlingly simple, and split into two steps. <code>fork()</code> <strong>copies the current process whole</strong>, yielding a child almost identical to the parent; the child then calls <code>exec</code> to <strong>replace</strong> its memory image with the program to run; the parent calls <code>wait</code> to await its end. A shell running one command is essentially <strong>fork + exec + wait</strong>; append an <code>&amp;</code> and the parent doesn't wait—the job goes to the background. <strong>Why split "make a process" from "load a program"?</strong> Because in the small gap after fork and before exec, the child can calmly redirect its standard I/O and hook up pipes, then transform into the target program—redirection and pipes are implemented entirely through that gap.</p>
+<h3>⑥ Written in C, and therefore portable</h3>
+<p>At the time, operating systems were almost always written in assembly, welded to one machine. UNIX did the opposite: <strong>the whole system (most of the kernel included) is written in the high-level language C</strong>. The payoff is code that is short, readable, and easy to change—and above all, <strong>moving to a different machine requires changing only a small amount of low-level code</strong>. The authors themselves regarded this as the <strong>single most important</strong> reason for UNIX's success: for the first time an operating system could travel with the hardware, rather than be nailed to one machine.</p>
+<h2>Key results</h2>
+<p>This is not a paper that wins on benchmarks—its "result" is the <strong>running system itself</strong>. The third edition it describes ran on an ordinary PDP-11, with a <strong>resident kernel of only tens of kilobytes</strong>, yet it supported <strong>several simultaneous users time-sharing</strong> a machine with just a couple hundred kilobytes of memory, and it was put to real work at Bell Labs (notably document preparation). It made a counterintuitive point forcefully: <strong>you need neither a huge, complex system nor expensive hardware</strong>—a small set of carefully chosen, mutually orthogonal ideas can build an OS that is small, powerful, and endlessly self-extending. The harder "result" was written over the following decades—it spread with astonishing speed through universities and industry to become the shared substrate of the whole field.</p>
+<h2>Why it matters / impact</h2>
+<p>Few systems papers have run deeper. <strong>Nearly every operating system today is a descendant of, or deeply shaped by, UNIX</strong>: Linux (the base of cloud computing and Android), BSD and macOS / iOS, and <strong>POSIX</strong>, which standardized this interface. More important, it left a whole <strong>vocabulary and way of thinking</strong>—file descriptors, pipes, <code>fork</code>, permission bits, <code>/dev</code>, shell scripts, tree directories, everything-is-a-file—that every programmer uses daily, most without knowing where it came from. Its "small tools, each doing one thing well, composed by pipes" philosophy became a classic paradigm of software engineering; and the <strong>C language</strong> it invented along the way went on to conquer the world. That reach is the direct reason Thompson and Ritchie won the Turing Award.</p>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>This version has no networking</strong>: the paper describes a single-machine system; TCP/IP and the socket interface came later (notably from BSD)—and "everything is a file" strains in the network age (sockets never fully fit the file model).</li>
+<li><strong>A plain security model</strong>: just a few read/write/execute bits distinguishing owner from others, plus a set-user-ID bit; the granularity is coarse, and setuid spawned a whole family of classic privilege-escalation bugs. Fine-grained access control (ACLs) was bolted on later.</li>
+<li><strong>The "unstructured byte stream" pushes all structure onto applications</strong>: enormously general, but the cost is that every program must parse data itself, with no shared structured-data layer—the opposite trade-off from record- or database-oriented systems.</li>
+<li><strong><code>fork()</code> as the process-creation primitive drew later criticism</strong>: in a world of many threads, large memory, and many cores, "copy whole, then replace" is both inefficient and at odds with thread semantics—a paper (<em>A fork() in the road</em>, 2019) bluntly called it a poor abstraction.</li>
+<li><strong>"Worse is better"</strong>: Richard Gabriel's famous thesis—UNIX won by favoring implementation simplicity over interface perfection, which also left rough edges and inconsistencies; both a critique and a precise account of how it succeeded.</li>
+<li><strong>Not friendly to newcomers</strong>: terse, cryptic commands and stingy error messages, with little early documentation—"pleasant to use" was true for the experienced.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: UNIX used a small set of minimal, orthogonal, freely composable primitives to build a small yet general time-sharing OS.</p>
+<p>② The pain: earlier big systems (e.g. Multics) were all-encompassing, riddled with special-purpose interfaces, non-composable, and demanded expensive hardware.</p>
+<p>③ A file = unstructured byte stream + tree of directories; a directory holds only "name → i-number," and the i-node holds the body—separating name from body gives links, cheap renames, and sharing.</p>
+<p>④ Everything is a file: devices too are special files under <code>/dev</code>, sharing one open/read/write with ordinary files, so programs are device-independent by birth.</p>
+<p>⑤ File descriptors + standard I/O (0/1/2) = the basis of redirection <code>&lt;</code> <code>&gt;</code> and pipes <code>|</code>; the shell is merely a swappable ordinary program.</p>
+<p>⑥ Small tools chained by pipes (<code>who | wc -l</code>)—complexity by composition, not by writing a big program: the UNIX philosophy.</p>
+<p>⑦ A process = <code>fork</code> (copy whole) + <code>exec</code> (replace image), split in two precisely so redirection and pipes can be set up in the gap.</p>
+<p>⑧ The whole system written in C → portable; the authors saw this as the top reason for its success; C went on to conquer the world.</p>
+<p>⑨ Impact: Linux / macOS / Android / iOS / POSIX all descend from it; file descriptors, pipes, fork, and the shell are common vocabulary; 1983 Turing Award.</p>
+<p>⑩ Limits: no networking in this version; coarse permissions with setuid holes; byte streams push structure onto apps; fork criticized in modern settings; the two-sided "Worse is better."</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Reading this page ≈ grasping the paper's core; for the full list of system calls and implementation details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
