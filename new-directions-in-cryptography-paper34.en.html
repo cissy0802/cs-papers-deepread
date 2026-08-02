@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>New Directions in Cryptography (Public-Key Cryptography) — IT Paper Deep-Read 34</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 34</p>
+<h1>New Directions in Cryptography (Public-Key Cryptography)</h1>
+<p class="sub">Whitfield Diffie &amp; Martin Hellman · Stanford · IEEE IT · 1976</p>
+<p class="langbar"><a href="new-directions-in-cryptography-paper34.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1976, two Stanford researchers, Diffie and Hellman, wrote a paper whose opening line declared: "<strong>We stand today on the brink of a revolution in cryptography.</strong>" They proposed <strong>public-key cryptography</strong>, an entirely new way to encrypt. Today, that little padlock in your browser's address bar when you shop online, every secure login, every encrypted message — they are all guarded by the road this paper opened.</p>
+<h2>First, an ancient problem</h2>
+<p>For thousands of years, ciphers carried one stubborn knot: <strong>encryption and decryption used the same key.</strong> To send you a secret message, I first had to get that key secretly into your hands — but how do I deliver the key itself safely? Send a trusted courier? What if we've never met and live half a world apart? Worse, a website that must talk privately with a million strangers would need <strong>a separately arranged key with each of them</strong> — completely unworkable. <strong>How to deliver the key</strong> was the Achilles' heel of all cryptography.</p>
+<h2>The counter-intuitive idea</h2>
+<p>Their idea sounds like a magic trick: <strong>split the key into two — one public, one private.</strong> The public one (the <strong>public key</strong>) is like an <strong>open padlock</strong>: you can hang it on your door, print it on your business card, and anyone can grab it to <strong>lock</strong> a box and send it to you — but once locked, only the <strong>private key</strong> in your hand can open it. So — <strong>the whole world can lock; only you can unlock.</strong> The key no longer needs secret delivery, because the public half was never meant to be a secret.</p>
+<h2>How two strangers agree on a secret in public</h2>
+<p>The most elegant trick in the paper lets <strong>two people who have never met agree on a secret that only the two of them know — over a channel everyone is eavesdropping on</strong>. Picture mixing paint:</p>
+<p>First everyone agrees on a <strong>shared base color</strong> (yellow), in plain sight. Then you and I each <strong>keep a secret color</strong> private. We each <strong>mix</strong> the base with our own secret color and <strong>swap the mixtures out in the open</strong> — because once paint is mixed, nobody can un-mix it to recover your secret color. Having received the other's mixture, we each <strong>stir in our own secret color again</strong>. The magic: the final color in your bucket and mine is <strong>exactly the same</strong> (both equal "base + your color + my color"). An eavesdropper, seeing only the two intermediate mixtures, <strong>can never mix their way to the final color</strong> — because "mixing is easy, un-mixing is hard." That shared color is our secret.</p>
+<h2>What it made possible</h2>
+<p>For the first time, cryptography <strong>no longer needed a face-to-face key handoff</strong>. Two total strangers, separated by the open internet, can conjure a key that only they know, then whisper safely. Every HTTPS connection and every secure login on Earth today is, at heart, replaying this move. It also gave birth to <strong>digital signatures</strong> — "stamp" with your private key, and anyone can verify with your public key that a message really came from you and wasn't altered.</p>
+<h2>Remember it in one line</h2>
+<div class="tl">
+<p>Split the key into "one public + one private," then use a one-way operation where "mixing is easy, un-mixing is hard," so two strangers can agree on a shared secret in full view of everyone — and encryption no longer needs a secret key handoff first. This is the bedrock of all internet encryption today.</p>
+</div>
+<p style="margin-top:14px;color:#7c8593">One honest caveat: this guarantees "the two of us share a secret," but not that <strong>the party on the other end is who you think it is</strong> — if someone in the middle impersonates both sides, it won't stop them. That hole is patched later by the "certificate" system.</p>
+<p class="switch-hint">Want the full key-exchange diagram, the formulas, and the trap it left behind? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Diffie and Hellman proposed <strong>public-key cryptography</strong>: split encryption and decryption into a matched <strong>public / private key</strong> pair — publish the public key, keep the private one — fundamentally sidestepping the millennia-old knot of "you must first deliver the key securely." They also gave the first usable concrete protocol, <strong>Diffie–Hellman key exchange</strong>, letting two parties conjure a shared key over a fully public channel; and they first framed the concepts of the <strong>digital signature</strong> and the <strong>one-way trapdoor function</strong>. This paper launched modern cryptography and is the intellectual source of all secure communication today (HTTPS, SSH, digital certificates).</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Cryptography</strong>: the study of "how to turn a message into gibberish only an intended party can read, and how to verify a message's authenticity."</li>
+<li><strong>Encryption / decryption</strong>: encryption = use a key to turn plaintext into ciphertext (gibberish); decryption = use a key to turn ciphertext back into plaintext.</li>
+<li><strong>Key</strong>: the secret parameter controlling encryption/decryption — like the tooth pattern on a lock and its key; only knowing the key lets you unlock.</li>
+<li><strong>Symmetric cipher</strong>: the traditional scheme where encryption and decryption use the <strong>same</strong> key (like the later AES) — fast, but both sides must first share that key.</li>
+<li><strong>Modular arithmetic (mod)</strong>: "keep only the remainder after division," like a clock wrapping around — <code>15 mod 12 = 3</code>. The wrapping scrambles and hides the original number, which cryptography exploits.</li>
+<li><strong>One-way function</strong>: an operation that is <strong>easy forward, extremely hard to reverse</strong>, e.g. "multiplying two large primes is easy; factoring the product back is extremely hard."</li>
+<li><strong>Discrete logarithm problem</strong>: given base <code>g</code>, modulus <code>p</code>, and the result <code>g^x mod p</code>, recover the exponent <code>x</code> — widely believed to be extremely hard, and the backbone of DH's security.</li>
+<li><strong>Key distribution problem</strong>: how two communicating parties safely get a shared key into each other's hands in an insecure world — the core problem this paper attacks.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Whitfield Diffie and Martin Hellman of Stanford; the paper appeared in 1976 in the <em>IEEE Transactions on Information Theory</em>. It stands at the crossroads of information theory (Shannon) and computational complexity, making "hard to compute" the foundation of security; it also absorbed Ralph Merkle's near-simultaneous independent idea (Merkle's puzzles). The paper offered only the <strong>framework of a public-key system and one key-exchange protocol</strong>, leaving "build an actual public-key encryption system" to others — <strong>RSA (1978)</strong> two years later was the direct sequel. The two won the 2015 Turing Award. (Declassified records later revealed that Britain's GCHQ — Ellis, Cocks, Williamson — had secretly reached similar ideas a few years earlier, but never published.)</p>
+<h2>The problem &amp; motivation</h2>
+<p>Before 1976, every cipher was <strong>symmetric</strong>: sender and receiver had to share the <strong>same</strong> key. This carried two knots.</p>
+<p>The first is <strong>key distribution</strong>. To send you a secret message, I must first get the key safely to you — but delivering the key is itself a secure-communication problem, a chicken-and-egg trap. The traditional fix was a <strong>trusted courier</strong> (diplomatic pouches, locked safes) carrying keys offline — expensive, slow, and useless for two strangers who need to be private on short notice. The second is <strong>combinatorial explosion</strong>. For <code>n</code> people to talk privately pairwise, you need about <code>n²/2</code> distinct keys; as the crowd grows, just tracking "who shares which key with whom" becomes unmanageable. The authors put it sharply: as long as keys must be <strong>shared offline in advance</strong>, cryptography can never enter the electronic age of "strangers communicating securely at any moment."</p>
+<figure>
+<svg viewbox="0 0 560 210" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="150" y="26">Old world: symmetric key</text>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="425" y="26">n people → ~n²/2 keys</text>
+<circle cx="90" cy="95" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="90" y="100">You</text>
+<circle cx="215" cy="95" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="215" y="100">Peer</text>
+<line x1="114" x2="191" y1="95" y2="95" stroke="#e8794b" stroke-width="2" stroke-dasharray="5 4"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="152" y="86">same key</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="152" y="150">must be delivered</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="152" y="166">offline by a trusted courier</text>
+<g stroke="#7c8593" stroke-width="1.1" opacity="0.7">
+<circle cx="425" cy="70" r="9" fill="none"></circle><circle cx="370" cy="115" r="9" fill="none"></circle><circle cx="480" cy="115" r="9" fill="none"></circle><circle cx="390" cy="165" r="9" fill="none"></circle><circle cx="460" cy="165" r="9" fill="none"></circle>
+<line x1="425" x2="370" y1="70" y2="115"></line><line x1="425" x2="480" y1="70" y2="115"></line><line x1="425" x2="390" y1="70" y2="165"></line><line x1="425" x2="460" y1="70" y2="165"></line>
+<line x1="370" x2="480" y1="115" y2="115"></line><line x1="370" x2="390" y1="115" y2="165"></line><line x1="370" x2="460" y1="115" y2="165"></line><line x1="480" x2="390" y1="115" y2="165"></line><line x1="480" x2="460" y1="115" y2="165"></line><line x1="390" x2="460" y1="165" y2="165"></line>
+</g>
+</svg>
+<figcaption>Fig 1 · The two knots of symmetric crypto: the key must be delivered offline in advance; and n people talking pairwise need ~n²/2 keys, unmanageable as the crowd grows.</figcaption>
+</figure>
+<h2>Core ideas &amp; method</h2>
+<h3>Idea 1: split the key into a pair (public / private)</h3>
+<p>The authors' first breakthrough was to imagine a scheme where <strong>encryption and decryption use different keys</strong>. Each person generates a pair: a <strong>public key <code>PK</code></strong> (published, anyone may take it) and a <strong>private key <code>SK</code></strong> (kept secret). A message encrypted with your public key can be decrypted <strong>only by your private key</strong>; and the private key <strong>cannot be derived</strong> from the public one.</p>
+<p>The intuition is an <strong>"open padlock"</strong>: you hand out open locks everywhere (the public key), anyone can snap one shut on a box and mail it to you, but once clicked, only the single key in your hand (the private key) can open it. <strong>Everyone can encrypt; only you can decrypt.</strong> The key-distribution knot dissolves — the public key was meant to be public, so eavesdroppers seeing it changes nothing. Underneath this sits a special operation: a <em>trapdoor one-way function</em> — the forward direction (encrypt) is cheap, but the reverse (decrypt) is intractable unless you hold the secret "trapdoor" (the private key). <strong>This paper gave only the concept, not a concrete function</strong> — a gap RSA filled two years later.</p>
+<h3>Idea 2: digital signatures — use the pair backwards</h3>
+<p>What if, in reverse, you process a message with the <strong>private</strong> key and let everyone verify with the <strong>public</strong> key? That becomes a <strong>digital signature</strong>: only you, holding the private key, can "stamp" it, yet anyone can use your public key to verify it truly came from you and wasn't altered. This first made an <strong>undeniable electronic signature</strong> possible in principle — today's software signing, certificates, and blockchain transactions all rest on it.</p>
+<h3>Idea 3 (the deployable one): Diffie–Hellman key exchange</h3>
+<p>A concrete public-key cipher was still missing a function, but the authors gave a protocol that <strong>worked immediately</strong>, solving "how two strangers agree on a shared key over a public channel." Its security rests on the <strong>discrete logarithm problem</strong>: computing <code>g^x mod p</code> is fast, but recovering <code>x</code> from the result is extremely hard.</p>
+<p>The flow is just three steps (<code>g</code> and <code>p</code> are public large numbers):</p>
+<ul>
+<li>Alice privately picks a secret <code>a</code> and publishes <code>A = g^a mod p</code>;</li>
+<li>Bob privately picks a secret <code>b</code> and publishes <code>B = g^b mod p</code>;</li>
+<li>Alice computes <code>B^a = g^(ba) mod p</code>, Bob computes <code>A^b = g^(ab) mod p</code> — <strong>both land on the same number</strong> <code>g^(ab) mod p</code>, the shared key.</li>
+</ul>
+<p>An eavesdropper sees only <code>g, p, A, B</code>; to compute <code>g^(ab)</code> they would first have to recover <code>a</code> or <code>b</code> from <code>A</code> or <code>B</code> — i.e. solve the discrete logarithm, which they cannot. This is exactly the math version of the plain read's paint-mixing analogy: <strong>base color <code>g</code>, secret colors are the exponents <code>a</code>/<code>b</code>, and the mixture is modular exponentiation — mixing (raise-and-mod) is easy, un-mixing (discrete log) is hard.</strong></p>
+<figure>
+<svg viewbox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="105" y="24">Alice</text>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="455" y="24">Bob</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="24">public: g, p</text>
+<line x1="105" x2="105" y1="34" y2="280" stroke="#3a4048" stroke-width="1.4"></line>
+<line x1="455" x2="455" y1="34" y2="280" stroke="#3a4048" stroke-width="1.4"></line>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="105" y="60">pick secret a</text>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="455" y="60">pick secret b</text>
+<line x1="105" x2="450" y1="95" y2="120" stroke="#f0b429" stroke-width="1.8" marker-end="url(#dh)"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="270" y="98">A = g^a mod p  →</text>
+<line x1="455" x2="110" y1="150" y2="175" stroke="#e8794b" stroke-width="1.8" marker-end="url(#dh2)"></line>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="290" y="153">←  B = g^b mod p</text>
+<rect x="34" y="200" width="142" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="105" y="221">B^a = g^(ab)</text>
+<rect x="384" y="200" width="142" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="455" y="221">A^b = g^(ab)</text>
+<rect x="188" y="252" width="184" height="34" rx="6" fill="rgba(232,121,75,0.16)" stroke="#e8794b"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="280" y="273">shared key = g^(ab) mod p</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="128">eavesdropper sees only A, B; recovering a/b = discrete log (hard)</text>
+<defs>
+<marker id="dh" markerwidth="8" markerheight="8" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="dh2" markerwidth="8" markerheight="8" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker>
+</defs>
+</svg>
+<figcaption>Fig 2 · Diffie–Hellman key exchange: each side keeps a secret exponent and publishes only its modular power; a single exponentiation converges both to the same g^(ab), while the eavesdropper is stuck on the discrete logarithm.</figcaption>
+</figure>
+<p>The key point: <strong>security rests on "computationally infeasible" rather than "informationally impossible"</strong> — the crucial turn away from Shannon's framework (perfect secrecy needs a key as long as the message). Keys can be short and half-public, as long as the <strong>computational cost</strong> of reversing them is so vast no one can afford it. Modern cryptography has measured security by this "computational" yardstick ever since.</p>
+<h2>Key results</h2>
+<p>This is a <strong>foundational theory</strong> paper with no large-scale experimental numbers; its "results" are several concepts and protocols that did not exist before and became standard after: <strong>(1)</strong> the public/private-key scheme, turning key distribution from "must be shared offline" into "publish the public key freely"; <strong>(2)</strong> the immediately-implementable Diffie–Hellman key exchange, making key agreement over a public channel real for the first time; <strong>(3)</strong> the concepts of the digital signature and the one-way trapdoor function, charting the route to "build a real public-key encryption system." The authors candidly admitted they <strong>could not yet produce</strong> a trapdoor function meeting the requirements — a cliffhanger RSA resolved two years later. In just a few pages, they redrew the map of the entire field.</p>
+<h2>Why it matters / impact</h2>
+<p>It is <strong>the beginning of modern cryptography</strong>, moving the ancient craft from "a secret art of governments and armies" to an open science. Your ability to shop, log in, and message securely today all rides on the road it opened: <strong>every HTTPS handshake</strong>, SSH connection, VPN, and encrypted messenger performs a Diffie–Hellman (or its elliptic-curve variant, ECDH) key exchange underneath; <strong>the entire digital-certificate and public-key infrastructure (PKI)</strong> is built on public/private keys and digital signatures; even Bitcoin's addresses and transaction signatures are direct descendants of these ideas. RSA, ElGamal, elliptic-curve cryptography, even zero-knowledge proofs all grew from this paper. Without this page, there would be no trustworthy internet commerce.</p>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>Security is unproven</strong>: the whole edifice bets on "discrete log / large-number factoring is hard," but that only means <strong>no one has found a fast solution</strong> — there is no mathematical proof it must be hard (tied at root to the open P vs NP question). The day an efficient algorithm appears, the foundation shifts.</li>
+<li><strong>Basic version can't stop a man in the middle</strong>: raw Diffie–Hellman only guarantees "the two parties share a key," it <strong>does not verify identity</strong>. An attacker can impersonate both ends, run a separate exchange with each of you, and decrypt-and-relay the whole conversation (man-in-the-middle). Plugging this hole requires layering on <strong>digital certificates / authentication</strong> — precisely why PKI later exists.</li>
+<li><strong>Only a framework, no usable encryption function</strong>: this paper gave the <em>concept</em> of public-key encryption and trapdoor functions but could not produce a concrete instance; a truly usable public-key encryption system had to wait for RSA (1978).</li>
+<li><strong>Quantum threat</strong>: Shor's algorithm can efficiently solve discrete log and factoring on a quantum computer — <strong>once large-scale quantum machines arrive, DH and RSA both fall</strong>, and the field is now shifting to "post-quantum cryptography."</li>
+<li><strong>Slow, a supporting role only</strong>: public-key operations are far slower than symmetric encryption, so real systems typically <strong>use it only to agree on a symmetric key</strong>, then encrypt the actual data with a fast symmetric cipher (hybrid encryption).</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① One line: split encryption/decryption into a "public + private" key pair, sidestepping the millennia-old knot of "you must first deliver the key securely" — publish the public key, keep the private one.</p>
+<p>② Pain: in symmetric crypto the key must be shared offline in advance — hard to deliver safely and exploding as n²/2 with the crowd — barring the age of "strangers being private any time."</p>
+<p>③ Mechanism one: the public key is an "open padlock" — anyone can lock, only you can unlock; use it backwards (private key stamps, public key verifies) and you get a digital signature.</p>
+<p>④ Mechanism two (deployable): Diffie–Hellman key exchange — each keeps a secret exponent, publishes only <code>g^a</code>/<code>g^b</code>, and one exponentiation converges both to <code>g^(ab)</code>; the eavesdropper is stuck on discrete log.</p>
+<p>⑤ Paradigm shift: security moves from Shannon's "informationally impossible" to "<strong>computationally infeasible</strong>" — keys can be short and half-public, as long as reversing them is unaffordably expensive.</p>
+<p>⑥ Results: introduced the public-key scheme, digital signatures, and one-way trapdoor functions, plus one usable protocol; the concrete trapdoor function (RSA) followed two years later.</p>
+<p>⑦ Impact: the start of modern cryptography — the shared bedrock of HTTPS / SSH / certificates / Bitcoin; the authors won the 2015 Turing Award.</p>
+<p>⑧ Limits: security is unproven, the basic version can't stop a man-in-the-middle (needs PKI), public-key is slow and used only as a supporting role, and quantum computing is a long-term threat.</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Finish this page ≈ grasp the paper's core; for the full protocol details and security discussion, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>New Directions in Cryptography（公钥密码学）— IT 论文精读 Paper 34</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 34</p>
+<h1>New Directions in Cryptography（公钥密码学）</h1>
+<p class="sub">Whitfield Diffie &amp; Martin Hellman · Stanford · IEEE IT · 1976</p>
+<p class="langbar"><a href="new-directions-in-cryptography-paper34.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1976 年，斯坦福的两位研究者 Diffie 和 Hellman 写了一篇开头就说「<strong>我们正站在一场密码学革命的门槛上</strong>」的论文。他们提出了<strong>公钥密码学</strong>：一种全新的加密思路。今天你网购付款时浏览器地址栏那把小锁、登录网站、收发加密消息——背后守着这一切的，就是这篇论文开辟的那条路。</p>
+<h2>先说个老难题</h2>
+<p>几千年来，密码有个甩不掉的死结：<strong>加密和解密用的是同一把钥匙。</strong>我给你发密信，得先想办法把这把钥匙偷偷交到你手上——可钥匙本身怎么安全送过去？派个信得过的信使？那如果我们俩素未谋面、隔着半个地球呢？更糟的是，一个网站要跟一百万个陌生用户各自保密通信，就得<strong>事先跟每个人单独约好一把钥匙</strong>——这根本转不动。<strong>钥匙怎么送</strong>，成了整套密码术的阿喀琉斯之踵。</p>
+<h2>那个反直觉的点子</h2>
+<p>他们的想法乍听像变魔术：<strong>把钥匙拆成两把，一把公开、一把私藏。</strong>公开的那把（<strong>公钥</strong>）像一把「敞开的挂锁」，你可以挂到门口、印在名片上，谁都能拿去<strong>锁上</strong>一个箱子寄给你；但锁上之后，只有你手里那把<strong>私钥</strong>能开。于是——<strong>能锁的人满世界都是，能开的只有你一个。</strong>钥匙不用再偷偷送了，因为公开的那把本来就不怕被人看见。</p>
+<h2>两个陌生人怎么当众约好暗号</h2>
+<p>论文里最漂亮的一招，是让<strong>两个从没见过面的人，在所有人都在偷听的公开频道上，凭空约定出一个只有他俩知道的暗号</strong>。用调颜料来打比方：</p>
+<p>先当众定一桶<strong>公共底色</strong>（黄色），谁都看得见。然后你我各自<strong>私藏一种颜色</strong>不告诉对方。各自把底色和自己的私藏色<strong>混一混</strong>，把混出来的颜色<strong>当众交换</strong>——反正颜料一旦混了，就没人能倒推出你私藏的是哪种色。拿到对方的混色后，我们再各自<strong>加进自己那份私藏色</strong>。神奇的是：你我手里最后调出的，是<strong>一模一样的颜色</strong>（都等于「底色＋你的色＋我的色」）。而全程偷听的人，只看到两桶中间混色，<strong>怎么也调不出这个最终色</strong>——因为「混颜料容易、拆颜料难」。这个共同的颜色，就是我俩的暗号。</p>
+<h2>它带来了什么</h2>
+<p>密码术第一次<strong>不再需要「事先见面交钥匙」</strong>。两个素不相识的人，隔着公开的互联网，也能凭空商定出只有他俩知道的密钥，然后放心地说悄悄话。今天全球每一次 HTTPS 加密连接、每一次安全登录，本质上都在重演这一手。它还顺带催生了<strong>数字签名</strong>——用私钥「盖章」、任何人用公钥验章，证明「这确实是我发的、没被改过」。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>把钥匙拆成「公开一把 + 私藏一把」，再靠「混容易、拆难」的单向运算，让两个陌生人在众目睽睽下也能约出只有他俩知道的暗号——从此加密不必先偷偷送钥匙。这就是今天整个互联网加密的地基。</p>
+</div>
+<p style="margin-top:14px;color:#7c8593">诚实一句：这招保证的是「我俩共享了一个暗号」，但没保证<strong>对面就是你以为的那个人</strong>——万一中间有人两头冒充，它也拦不住。这个漏洞要靠后来的「证书」体系来补。</p>
+<p class="switch-hint">想看密钥交换的完整流程图、公式和它埋下的隐患？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Diffie 和 Hellman 提出了<strong>公钥密码学（public-key cryptography）</strong>：把加密与解密拆成一对<strong>公钥 / 私钥</strong>，公钥可公开、私钥自己留，从根本上绕开了「必须先安全地把密钥送给对方」这个千年死结。他们还给出第一个可用的具体协议——<strong>Diffie–Hellman 密钥交换</strong>，让两方在完全公开的信道上凭空协商出一个共享密钥；并首次提出了<strong>数字签名（digital signature）</strong>与<strong>单向陷门函数</strong>的概念框架。这篇论文开启了现代密码学，是今天所有安全通信（HTTPS、SSH、数字证书）的思想源头。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>密码学（cryptography）</strong>：研究「如何把消息变成只有指定对象才能读懂的乱码、以及如何验证消息真伪」的学问。</li>
+<li><strong>加密 / 解密（encryption / decryption）</strong>：加密＝用密钥把明文变成密文（乱码）；解密＝用密钥把密文还原成明文。</li>
+<li><strong>密钥（key）</strong>：控制加解密的那串秘密参数，相当于「锁和钥匙上的齿形」；知道密钥才能解。</li>
+<li><strong>对称密码（symmetric cipher）</strong>：加密和解密用<strong>同一把</strong>密钥的传统体制（如后来的 AES）；快，但双方必须先共享这把密钥。</li>
+<li><strong>模运算 / 取模（mod）</strong>：「除法只留余数」的算术，像时钟绕圈——<code>15 mod 12 = 3</code>。绕圈会把结果搅乱、藏住原数，密码学常用它。</li>
+<li><strong>单向函数（one-way function）</strong>：<strong>正着算容易、倒着推极难</strong>的运算，如「把两个大素数相乘容易、把乘积拆回两个素数极难」。</li>
+<li><strong>离散对数问题</strong>：已知底数 <code>g</code>、模数 <code>p</code> 和结果 <code>g^x mod p</code>，反求指数 <code>x</code>——被广泛认为极难，是 DH 安全性的靠山。</li>
+<li><strong>密钥分发问题（key distribution）</strong>：通信双方如何在不安全的世界里，安全地把共享密钥送到彼此手中——本文要解决的核心难题。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 Whitfield Diffie 与 Martin Hellman，斯坦福大学，论文 1976 年发表于 <em>IEEE Transactions on Information Theory</em>。它站在信息论（Shannon）与计算复杂度理论的交叉口，把「难算」当成安全的地基；也吸收了 Ralph Merkle 几乎同期的独立构想（Merkle 谜题）。此文只提出了公钥体制的<strong>框架与一个密钥交换协议</strong>，却把「造一个真正的公钥加密系统」这道题留给了后人——两年后的 <strong>RSA（1978）</strong> 正是接棒之作。二人因此获 2015 年图灵奖。（后来解密的档案显示，英国 GCHQ 的 Ellis、Cocks、Williamson 在更早几年就秘密想到过类似思路，但从未公开。）</p>
+<h2>问题与动机</h2>
+<p>在 1976 年之前，所有密码都是<strong>对称</strong>的：发信人和收信人必须共享<strong>同一把</strong>密钥。这带来两个死结。</p>
+<p>第一是<strong>密钥分发</strong>。你要给对方发密信，得先把密钥安全地交到他手上——可传密钥本身就是一次安全通信，成了「先有鸡还是先有蛋」。传统办法是靠<strong>可信信使</strong>（外交邮袋、保险箱）线下运送，昂贵、缓慢，还根本不适合两个素不相识的人临时保密。第二是<strong>规模爆炸</strong>。<code>n</code> 个人要两两保密通信，就需要约 <code>n²/2</code> 把不同的密钥；人一多，光是「谁和谁共享哪把钥匙」就管理不过来。作者一针见血：只要密钥还必须<strong>事先线下共享</strong>，密码术就永远进不了「陌生人随时能安全通信」的电子时代。</p>
+<figure>
+<svg viewbox="0 0 560 210" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="150" y="26">旧世界：对称密钥</text>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="415" y="26">n 个人 → 约 n²/2 把钥匙</text>
+<circle cx="90" cy="95" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="90" y="100">你</text>
+<circle cx="215" cy="95" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="215" y="100">对方</text>
+<line x1="114" x2="191" y1="95" y2="95" stroke="#e8794b" stroke-width="2" stroke-dasharray="5 4"></line>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="152" y="86">同一把密钥</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="152" y="150">必须靠可信信使</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="152" y="166">先线下把钥匙送到</text>
+<g stroke="#7c8593" stroke-width="1.1" opacity="0.7">
+<circle cx="415" cy="70" r="9" fill="none"></circle><circle cx="360" cy="115" r="9" fill="none"></circle><circle cx="470" cy="115" r="9" fill="none"></circle><circle cx="380" cy="165" r="9" fill="none"></circle><circle cx="450" cy="165" r="9" fill="none"></circle>
+<line x1="415" x2="360" y1="70" y2="115"></line><line x1="415" x2="470" y1="70" y2="115"></line><line x1="415" x2="380" y1="70" y2="165"></line><line x1="415" x2="450" y1="70" y2="165"></line>
+<line x1="360" x2="470" y1="115" y2="115"></line><line x1="360" x2="380" y1="115" y2="165"></line><line x1="360" x2="450" y1="115" y2="165"></line><line x1="470" x2="380" y1="115" y2="165"></line><line x1="470" x2="450" y1="115" y2="165"></line><line x1="380" x2="450" y1="165" y2="165"></line>
+</g>
+</svg>
+<figcaption>图 1 · 对称密码的两个死结：密钥必须先线下安全送达；且 n 人两两通信需要约 n²/2 把钥匙，人一多就管不过来。</figcaption>
+</figure>
+<h2>核心思想 / 方法</h2>
+<h3>想法一：把钥匙拆成一对（公钥 / 私钥）</h3>
+<p>作者的第一个突破，是想象一种<strong>加密和解密用不同密钥</strong>的体制。每人生成一对钥匙：<strong>公钥 <code>PK</code></strong>（公开，谁都能拿）和<strong>私钥 <code>SK</code></strong>（自己私藏）。别人用你的公钥加密的消息，<strong>只有你的私钥能解</strong>；而从公钥<strong>推不出</strong>私钥。</p>
+<p>直觉就是一把<strong>「敞开的挂锁」</strong>：你把开着的锁到处发（公钥），任何人都能拿它锁上箱子寄给你，但锁一旦扣上，只有你手里那把唯一的钥匙（私钥）能开。<strong>能加密的人满世界，能解密的只有你。</strong>密钥分发的死结就此解开——公钥本来就是拿来公开的，被偷看也无所谓。这套东西背后需要一种特殊的运算：<em>单向陷门函数</em>——正向（加密）好算，逆向（解密）除非你握有那个秘密「陷门」（私钥）否则算不动。<strong>本文只给出了这个概念，没造出具体的函数</strong>，这道题两年后由 RSA 补上。</p>
+<h3>想法二：数字签名——把公私钥反过来用</h3>
+<p>如果反过来，用<strong>私钥</strong>处理消息、再让大家用<strong>公钥</strong>去验，会怎样？那就成了<strong>数字签名</strong>：只有握私钥的你能「盖」出这个章，而任何人都能用你的公钥验证它确实出自你、且内容没被改过。这第一次让「<strong>不可抵赖的电子签名</strong>」在原理上成为可能——今天的软件签名、证书、区块链交易，都建在这上面。</p>
+<h3>想法三（可落地的那个）：Diffie–Hellman 密钥交换</h3>
+<p>公钥加密当时还差一个具体函数，但作者给出了一个<strong>当场就能用</strong>的协议，解决「两个陌生人如何在公开信道上协商出共享密钥」。它的安全靠山是<strong>离散对数难题</strong>：算 <code>g^x mod p</code> 很快，但从结果反推 <code>x</code> 极难。</p>
+<p>流程只有三步（<code>g</code>、<code>p</code> 是公开的大数）：</p>
+<ul>
+<li>Alice 私选秘密数 <code>a</code>，公开发出 <code>A = g^a mod p</code>；</li>
+<li>Bob 私选秘密数 <code>b</code>，公开发出 <code>B = g^b mod p</code>；</li>
+<li>Alice 算 <code>B^a = g^(ba) mod p</code>，Bob 算 <code>A^b = g^(ab) mod p</code>——<strong>两人得到同一个数</strong> <code>g^(ab) mod p</code>，这就是共享密钥。</li>
+</ul>
+<p>偷听者只看得到 <code>g、p、A、B</code>，想算出 <code>g^(ab)</code> 就得先从 <code>A</code> 或 <code>B</code> 反推出 <code>a</code> 或 <code>b</code>——即解离散对数，做不到。这正是科普版「调颜料」比喻的数学版：<strong>底色 <code>g</code>、私藏色是指数 <code>a</code>/<code>b</code>、混色是取模幂运算——混（乘方取模）容易，拆（求离散对数）难。</strong></p>
+<figure>
+<svg viewbox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="105" y="24">Alice</text>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="455" y="24">Bob</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="24">公开: g, p</text>
+<line x1="105" x2="105" y1="34" y2="280" stroke="#3a4048" stroke-width="1.4"></line>
+<line x1="455" x2="455" y1="34" y2="280" stroke="#3a4048" stroke-width="1.4"></line>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="105" y="60">私选 a</text>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="455" y="60">私选 b</text>
+<line x1="105" x2="450" y1="95" y2="120" stroke="#f0b429" stroke-width="1.8" marker-end="url(#dh)"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="270" y="98">A = g^a mod p  →</text>
+<line x1="455" x2="110" y1="150" y2="175" stroke="#e8794b" stroke-width="1.8" marker-end="url(#dh2)"></line>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="290" y="153">←  B = g^b mod p</text>
+<rect x="34" y="200" width="142" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="105" y="221">算 B^a = g^(ab)</text>
+<rect x="384" y="200" width="142" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="455" y="221">算 A^b = g^(ab)</text>
+<rect x="188" y="252" width="184" height="34" rx="6" fill="rgba(232,121,75,0.16)" stroke="#e8794b"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="280" y="273">共享密钥 = g^(ab) mod p</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="128">偷听者只见 A、B，反推 a/b = 解离散对数（难）</text>
+<defs>
+<marker id="dh" markerwidth="8" markerheight="8" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="dh2" markerwidth="8" markerheight="8" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker>
+</defs>
+</svg>
+<figcaption>图 2 · Diffie–Hellman 密钥交换：双方各留一个秘密指数、只公开取模幂的结果；两边一乘方就殊途同归到同一个 g^(ab)，偷听者却卡在离散对数上。</figcaption>
+</figure>
+<p>要点在于：<strong>安全性建立在「计算上不可行」而非「信息上不可能」</strong>——这是本文对 Shannon「完美保密需要和消息一样长的密钥」框架的关键转向。密钥可以短、可以公开一半，只要反推的<strong>计算代价</strong>大到没人算得起，就够安全。现代密码学从此改用「计算安全」这把尺子。</p>
+<h2>关键结果</h2>
+<p>这是一篇<strong>理论奠基</strong>之作，没有大规模实验数字，它的「结果」是几个此前不存在、此后成为标配的概念与协议：<strong>（1）</strong>提出公钥 / 私钥体制，把密钥分发从「必须线下共享」变成「公钥随便公开」；<strong>（2）</strong>给出可立即实现的 Diffie–Hellman 密钥交换，让公开信道上凭空协商密钥第一次成为现实；<strong>（3）</strong>提出数字签名与单向陷门函数的概念，指明了「造一个真正的公钥加密系统」的路线图。作者坦承自己<strong>还拿不出</strong>符合要求的陷门函数——这道悬念两年后被 RSA 兑现。仅这几页，就重划了整个领域的地图。</p>
+<h2>为什么重要 / 影响</h2>
+<p>它是<strong>现代密码学的开端</strong>，把这门古老技艺从「政府与军队的秘术」变成一门公开的科学。今天你能安全地网购、登录、收发消息，全靠它开的路：<strong>每一次 HTTPS 握手</strong>、SSH 连接、VPN、加密即时通讯，底层都在做 Diffie–Hellman（或其椭圆曲线变体 ECDH）密钥交换；<strong>整个数字证书与公钥基础设施（PKI）</strong>建在公私钥与数字签名之上；就连比特币的地址与转账签名，也是这套思想的直系后代。RSA、ElGamal、椭圆曲线密码、乃至零知识证明，都从这篇论文长出。可以说，没有这一页，就没有可信的互联网商业。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>安全性未被证明</strong>：整套体系押注在「离散对数 / 大数分解很难」上，但这只是<strong>没人找到快解法</strong>，并没有数学证明它一定难（本质关联 P vs NP 未决）。哪天出现高效算法，地基就会松动。</li>
+<li><strong>基础版挡不住中间人</strong>：原始 Diffie–Hellman 只保证「双方共享了一个密钥」，<strong>不验证对方身份</strong>。攻击者可以两头冒充、分别和你我各做一次交换，全程解密转发（man-in-the-middle）。要堵这个洞，必须叠加<strong>数字证书 / 身份认证</strong>——这也正是后来 PKI 存在的理由。</li>
+<li><strong>只给框架、没给可用的加密函数</strong>：本文提出了公钥加密与陷门函数的<em>概念</em>，却造不出具体实例；真正能用的公钥加密系统要等 RSA（1978）。</li>
+<li><strong>量子威胁</strong>：Shor 算法能在量子计算机上高效解离散对数与大数分解，<strong>一旦大规模量子机成真，DH / RSA 都会被攻破</strong>，学界正转向「后量子密码」。</li>
+<li><strong>慢、只能配角用</strong>：公钥运算比对称加密慢很多，实际系统里通常<strong>只用它协商一把对称密钥</strong>，正文的数据仍用快速的对称密码加密（混合加密）。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：把加解密拆成「公钥 + 私钥」一对，绕开「必须先安全送密钥」的千年死结——公钥可公开，私钥自留。</p>
+<p>② 痛点：对称密码里密钥必须事先线下共享，既难安全送达、又随人数 n²/2 爆炸，进不了「陌生人随时保密通信」的时代。</p>
+<p>③ 机制一：公钥像「敞开的挂锁」，人人能锁、唯你能开；反着用（私钥盖章、公钥验章）就是数字签名。</p>
+<p>④ 机制二（可落地）：Diffie–Hellman 密钥交换——各留秘密指数、只公开 <code>g^a</code>/<code>g^b</code>，双方一乘方殊途同归到 <code>g^(ab)</code>；偷听者卡在离散对数上。</p>
+<p>⑤ 范式转向：安全性从 Shannon 的「信息上不可能」改为「<strong>计算上不可行</strong>」——密钥可短可半公开，只要反推贵到算不起。</p>
+<p>⑥ 结果：提出公钥体制、数字签名、单向陷门函数三大概念 + 一个可用协议；陷门函数的具体实例（RSA）两年后补上。</p>
+<p>⑦ 影响：现代密码学开端，HTTPS / SSH / 证书 / 比特币的共同地基；作者获 2015 图灵奖。</p>
+<p>⑧ 局限：安全性未获证明、基础版挡不住中间人（需 PKI）、公钥慢只作配角、量子计算是长期威胁。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的协议细节与安全性讨论，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
