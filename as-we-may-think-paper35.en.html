@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>As We May Think — CS Papers Deep-Read Paper 35</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 35</p>
+<h1>As We May Think</h1>
+<p class="sub">Vannevar Bush · The Atlantic Monthly · 1945</p>
+<p class="langbar"><a href="as-we-may-think-paper35.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this essay do?</h2>
+<p>Every time you click a blue link and jump to related content, or bookmark a string of useful pages into a folder, you're using an idea — <strong>"click and jump to the related thing"</strong> — that an American scientist named <strong>Vannevar Bush</strong> had already thought through in <strong>1945</strong>. He wrote it in an essay called <em>As We May Think</em>. There were no personal computers then, and no internet. He imagined a desk called the <strong>Memex</strong> — a "memory-extension machine."</p>
+<h2>First, a puzzle</h2>
+<p>World War II had just ended and human knowledge was exploding — more books, taller stacks of papers. But Bush noticed something maddening: <strong>the more there is, the harder it gets to find the one thing you need.</strong> Worse, plenty of important findings were published and then buried in the flood, never dug up again. The problem wasn't that we produced too little — it was that <strong>storing things is easy, finding them is hard, and connecting the related ones is harder still.</strong> Our way of finding information had barely changed in centuries.</p>
+<h2>His idea</h2>
+<p>First, said Bush, solve "hold it all." Using the era's cutting-edge <strong>microfilm</strong> (photographing pages down to tiny images), he predicted the whole Encyclopædia Britannica could be shrunk to the size of a matchbox. So the Memex desk could, in principle, hold every book you'll ever read and every note you'll ever take, called up to a screen at a touch. But that wasn't the real breakthrough — the real breakthrough was <strong>how to connect them all.</strong></p>
+<h2>How did he reach the key step?</h2>
+<p>Bush stared at how libraries file things and spotted the flaw: books are shelved alphabetically or by class number, layer by layer (big class, then sub-class, then sub-sub-class). Finding one means climbing down a tree — and <strong>a given item can only live in one slot.</strong> But, he argued, <strong>that's not how the human mind works</strong> — the mind works by <strong>association</strong>: think of one thing and it snaps instantly to a related one.</p>
+<p>So why can't a machine do the same? Here is the Memex's soul: <strong>let the user tie any two items together</strong> — and afterward, looking at item A, press a button and the machine instantly pulls up the B you tied to it. Tie a string of related items one after another and you've woven a <strong>"trail"</strong>: you can name it, save it, walk the whole thing again later, even <strong>copy the entire trail to a friend.</strong> This is the ancestor of today's <strong>hyperlinks, bookmark folders, and even knowledge graphs.</strong></p>
+<h2>What it led to</h2>
+<p>The people who later invented the mouse and built the first hypertext systems (Douglas Engelbart, Ted Nelson) openly said this essay inspired them. That "click and jump to the related thing" bloodline grew up and became the <strong>World Wide Web</strong> we use every day. An essay with not a single formula — not even one machine ever built — sketched the shape of the whole information world half a century early.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Back in 1945 Bush saw it: rather than shelving knowledge rigidly by class the way a library does — one item, one slot — let people do what the brain does, tying related items together on the fly into named, shareable "trails." That's the source of the hyperlink and the Web. (Though the Memex was mechanical microfilm and was never actually built, and those "trails" still had to be tied by hand, one at a time — what really made vast information findable later was the automatic search engine, not hand-made trails.)</p>
+</div>
+<p class="switch-hint">Want the Memex diagram, how the associative trail works, and what it actually predicted? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">In 1945, Vannevar Bush published <em>As We May Think</em> in The Atlantic Monthly. Facing the explosive post-war growth of scientific literature, he proposed a personal device called the <strong>Memex</strong> to store vast records in compressed form and, through <strong>associative indexing</strong>, to tie items together into named, savable, shareable <strong>"trails"</strong> — using a machine to imitate the mind's own associative way of organizing and retrieving knowledge. It contains no mathematics and never built a single machine, yet it foresaw hypertext, the hyperlink, and personal computing, and is the acknowledged intellectual source of information science and the World Wide Web.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Microfilm</strong>: pages photographed down to tiny images stored on film and read by magnified projection — the most advanced high-density storage of 1945. Bush's Memex used it as its "hard drive."</li>
+<li><strong>Indexing / retrieval</strong>: indexing = arranging a set of records so they can be looked up; retrieval = actually pulling the one you want out of the mass. How to retrieve is what this essay is about.</li>
+<li><strong>Hierarchical / tree filing</strong>: filing by big class → sub-class → smaller class, layer by layer — library call numbers and computer folders both work this way; finding something means tracing down from the top.</li>
+<li><strong>Association</strong>: the way of thinking where one thought instantly triggers a related one. Bush argued machine retrieval should work this way too.</li>
+<li><strong>Hypertext</strong>: text with embedded clickable links that jump you to related content — the word was coined only in 1965 by Ted Nelson, but the idea comes straight from this essay.</li>
+<li><strong>OSRD (U.S. Office of Scientific Research and Development)</strong>: the wartime government agency that coordinated American military research; Bush was its director, coordinating some six thousand scientists (the Manhattan Project among them).</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>Vannevar Bush was an MIT professor and engineer who had earlier built an analog computer, the "differential analyzer"; during World War II he served as <strong>director of the OSRD</strong>, coordinating the military research of some six thousand scientists (the Manhattan Project fell under his coordination). The essay <strong>appeared in The Atlantic Monthly in July 1945</strong> (and was reprinted, illustrated, in Life that September, reaching a far wider audience). It grew out of Bush's long-standing worry about "information overload," and it launches <strong>Douglas Engelbart (augmenting human intellect, the mouse, hypertext systems), Ted Nelson (who coined "hypertext" and started Project Xanadu), and ultimately Tim Berners-Lee's World Wide Web.</strong> This is not an experimental paper but a foundational <em>vision</em>.</p>
+<h2>The problem and the motivation</h2>
+<p>With the war ending, Bush posed a question: the scientists mobilized to win it — where should they turn their energy in peacetime? His answer was to <strong>make the ever-swelling store of human knowledge "usable" again.</strong> The summation of human experience, he wrote, was expanding at a prodigious rate, yet the means we use to thread through the resulting maze to the momentarily important item were "the same as were used in the days of square-rigged ships."</p>
+<p>He diagnosed two layers. The surface layer was the <strong>explosion of volume and specialization</strong>: any one researcher is staggered by the findings of thousands of others, and important conclusions are often published only to be buried and lost to those who come later — not a shortage of output, but <strong>output out of reach</strong>. The deeper root lay in <strong>the filing method itself</strong>: we store records alphabetically or numerically and, to find one, trace it down from class to sub-class. This artificial hierarchy, Bush argued, <strong>runs contrary to how the mind works</strong>, and half the difficulty of retrieval is of its own making. The real bottleneck was never "can we store it" but "can we find it, and can we connect it."</p>
+<h2>Core idea / method</h2>
+<h3>Step one: compression and the Memex desk</h3>
+<p>Bush first bet that photographic / microfilm technology would deliver startling compression — he predicted that "the Encyclopædia Britannica could be reduced to the volume of a matchbox, and a library of a million volumes could be compressed into one end of a desk." Only with that density does carrying a lifetime's reading with you become thinkable.</p>
+<p>The <strong>Memex</strong> (a name he "coined at random," but which later readers gloss as <em>memory + index</em>, a memory extension) is exactly such a device: a desk whose top holds slanting <strong>translucent screens</strong> that project material for reading, plus a keyboard and rows of buttons and levers; inside sits a <strong>microfilm store</strong>. Most content is bought ready-made on film and inserted, but the user can also use a "<strong>dry photography</strong>" process to photograph their own handwritten notes and pictures straight into the film. Bush defined it as "an enlarged, intimate <strong>supplement to a person's memory</strong>" — not a public library but a <strong>private knowledge base you build up yourself over years</strong>. This is the embryo of the later idea of the "personal computer."</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+<rect fill="rgba(255,255,255,0.03)" height="150" rx="8" stroke="#7c8593" width="330" x="115" y="130"></rect>
+<polygon fill="rgba(240,180,41,0.12)" points="150,130 250,130 234,66 176,66" stroke="#f0b429" stroke-width="1.6"></polygon>
+<polygon fill="rgba(240,180,41,0.12)" points="310,130 410,130 384,66 336,66" stroke="#f0b429" stroke-width="1.6"></polygon>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="280" y="52">Slanting translucent screens: project the material you're reading</text>
+<rect fill="rgba(255,255,255,0.06)" height="14" rx="3" stroke="#7c8593" width="70" x="245" y="138"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="148">keyboard</text>
+<circle cx="130" cy="150" fill="rgba(232,121,75,0.2)" r="5" stroke="#e8794b"></circle>
+<circle cx="146" cy="150" fill="rgba(232,121,75,0.2)" r="5" stroke="#e8794b"></circle>
+<circle cx="162" cy="150" fill="rgba(232,121,75,0.2)" r="5" stroke="#e8794b"></circle>
+<text fill="#e8794b" font-size="10.5" x="120" y="176">buttons / levers</text>
+<text fill="#7c8593" font-size="9.5" x="120" y="190">(page, tie a link)</text>
+<circle cx="265" cy="215" fill="none" r="24" stroke="#e8794b" stroke-width="1.6"></circle>
+<circle cx="265" cy="215" fill="#e8794b" r="3"></circle>
+<circle cx="325" cy="215" fill="none" r="24" stroke="#e8794b" stroke-width="1.6"></circle>
+<circle cx="325" cy="215" fill="#e8794b" r="3"></circle>
+<line stroke="#e8794b" stroke-width="1.4" x1="265" x2="325" y1="191" y2="191"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="295" y="258">Microfilm store (the Memex "hard drive")</text>
+<rect fill="rgba(240,180,41,0.08)" height="34" rx="5" stroke="#f0b429" width="82" x="356" y="196"></rect>
+<text fill="#f0b429" font-size="9.5" text-anchor="middle" x="397" y="210">dry-photo platen</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="397" y="224">shoot in your notes</text>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="304">Memex: a "memory-extension desk" holding a lifetime of books and notes</text>
+</svg>
+<figcaption>Fig. 1 · The imagined Memex: slanting translucent screens for reading, keyboard and buttons for control, an internal microfilm store, and a dry-photo platen to shoot personal notes into the store.</figcaption>
+</figure>
+<h3>Step two: associative indexing and "trails" — the real new idea</h3>
+<p>The Memex's soul is not "holds a lot" but <strong>the way it connects.</strong> Bush attacked all alphabetical / numerical hierarchical filing as "<strong>artificial</strong>": to find an item you trace down class by class, and — worse — an item can only be filed in <strong>one place at a time</strong>, even though real material usually touches several topics. He delivered the line that would be quoted endlessly: "<strong>The human mind does not work that way. It operates by association</strong>" — grasp one item and it snaps, along some intricate web of trails carried in the brain, to the next.</p>
+<p>So the Memex's essential feature is <strong>associative indexing</strong>: <strong>the user can tie any two items together, so that thereafter, viewing one, a button press automatically brings up the other.</strong> Tie a string of related items one after another and you weave a <em>trail</em> — which can be <strong>named and saved</strong>, walked again in full later like a road you built yourself, and even <strong>copied and shared</strong> into someone else's Memex. Bush's own example: to work out why the Turkish bow was superior during the Crusades, he ties together items on mechanics, the elasticity of materials, and historical records into one trail, always available to revisit and extend.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="140" y="28">Hierarchical filing (old world)</text>
+<rect fill="rgba(255,255,255,0.04)" height="26" rx="4" stroke="#7c8593" width="74" x="103" y="42"></rect><text fill="#b9c0ca" font-size="10" text-anchor="middle" x="140" y="59">big class</text>
+<rect fill="rgba(255,255,255,0.04)" height="24" rx="4" stroke="#7c8593" width="60" x="59" y="108"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="89" y="124">sub-class</text>
+<rect fill="rgba(255,255,255,0.04)" height="24" rx="4" stroke="#7c8593" width="60" x="161" y="108"></rect><text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="191" y="124">sub-class</text>
+<rect fill="rgba(255,255,255,0.03)" height="22" rx="4" stroke="#565c65" width="44" x="45" y="172"></rect><text fill="#7c8593" font-size="9" text-anchor="middle" x="67" y="187">item</text>
+<rect fill="rgba(255,255,255,0.03)" height="22" rx="4" stroke="#565c65" width="44" x="97" y="172"></rect><text fill="#7c8593" font-size="9" text-anchor="middle" x="119" y="187">item</text>
+<rect fill="rgba(255,255,255,0.03)" height="22" rx="4" stroke="#565c65" width="44" x="150" y="172"></rect><text fill="#7c8593" font-size="9" text-anchor="middle" x="172" y="187">item</text>
+<rect fill="rgba(255,255,255,0.03)" height="22" rx="4" stroke="#565c65" width="44" x="202" y="172"></rect><text fill="#7c8593" font-size="9" text-anchor="middle" x="224" y="187">item</text>
+<line stroke="#7c8593" x1="140" x2="89" y1="68" y2="108"></line>
+<line stroke="#7c8593" x1="140" x2="191" y1="68" y2="108"></line>
+<line stroke="#7c8593" x1="89" x2="67" y1="132" y2="172"></line>
+<line stroke="#7c8593" x1="89" x2="119" y1="132" y2="172"></line>
+<line stroke="#7c8593" x1="191" x2="172" y1="132" y2="172"></line>
+<line stroke="#7c8593" x1="191" x2="224" y1="132" y2="172"></line>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="140" y="212">trace down class by class</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="140" y="226">one item, one slot</text>
+<line stroke="rgba(240,180,41,0.25)" stroke-dasharray="4 4" x1="288" x2="288" y1="20" y2="250"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="430" y="28">Associative trail (Memex)</text>
+<rect fill="rgba(240,180,41,0.12)" height="26" rx="5" stroke="#f0b429" width="56" x="320" y="52"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="348" y="69">A</text>
+<rect fill="rgba(240,180,41,0.12)" height="26" rx="5" stroke="#f0b429" width="56" x="452" y="70"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="480" y="87">B</text>
+<rect fill="rgba(240,180,41,0.12)" height="26" rx="5" stroke="#f0b429" width="56" x="342" y="140"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="370" y="157">C</text>
+<rect fill="rgba(240,180,41,0.12)" height="26" rx="5" stroke="#f0b429" width="56" x="470" y="158"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="498" y="175">D</text>
+<path d="M376,65 C420,60 430,70 452,80" fill="none" marker-end="url(#ar)" stroke="#e8794b" stroke-width="1.8"></path>
+<path d="M478,96 C450,120 400,128 372,140" fill="none" marker-end="url(#ar)" stroke="#e8794b" stroke-width="1.8"></path>
+<path d="M398,155 C430,150 448,158 470,168" fill="none" marker-end="url(#ar)" stroke="#e8794b" stroke-width="1.8"></path>
+<text fill="#e8794b" font-size="10" text-anchor="middle" x="430" y="210">view A, press button → jumps to B → C → D</text>
+<text fill="#f0b429" font-size="10" text-anchor="middle" x="430" y="226">a named, savable, shareable trail</text>
+</svg>
+<figcaption>Fig. 2 · Hierarchical filing vs. associative trail: on the left you climb a tree and each item lives in one slot; on the right related items are "tied" pairwise into a named, shareable trail — the prototype of the hyperlink.</figcaption>
+</figure>
+<h3>Why it was designed this way</h3>
+<p>Because the real difficulty of retrieval is not "can we store it" but "by what relation should items be connected." Hierarchical filing forces every item into one slot and demands that you <strong>already know which class it was filed under</strong> to find it; the associative trail instead lets items connect freely <strong>by how you actually use them and what they relate to</strong>, and it <strong>freezes that "intellectual labor of connecting" so it can be reused and passed on</strong> — a line of thought worked out once need never be worked out again. From this Bush ventured two predictions: that "<strong>wholly new forms of encyclopedia</strong> will appear, ready-made with a mesh of associative trails running through them," and that a new profession will arise — the <strong>trailblazer</strong>, who carves out useful trails through the enormous common record for others to follow.</p>
+<h2>Key results</h2>
+<p>To be honest: <strong>this is not a paper with experiments, data, or baselines</strong> — it is a vision, with not one machine built and not one metric measured. Its "results" can only be judged by <strong>the hit rate of its predictions</strong>: microfilm compression, <strong>speech-to-text</strong> (he described a machine that "types when talked to"), a wearable "cyclops camera," calculating machines that handle symbolic logic, and above all — <strong>associative linking and the personal knowledge base</strong>. Each of these was, over the following half-century, realized by one technology or another. The measure of its success is not what it measured, but <strong>whether those who came after walked the direction it pointed and built something real.</strong></p>
+<h2>Why it matters / impact</h2>
+<p>It is one of the <strong>founding texts of information science</strong>, and its influence came through a relay of key figures. <strong>Douglas Engelbart</strong> read a post-war reprint of it, was deeply moved, and on that basis launched his research into "augmenting human intellect," producing the mouse, screen editing, and the hypertext system NLS; his 1968 "<strong>Mother of All Demos</strong>" was nearly a live demonstration of the Memex. <strong>Ted Nelson</strong> coined the word <em>hypertext</em> in the 1960s and started Project Xanadu, openly crediting Bush as the source. That "click and jump to the related thing" bloodline finally landed, in <strong>Tim Berners-Lee's World Wide Web</strong>, as the hyperlink. Every link you click, every bookmark folder you keep, every knowledge graph you view today is an echo of the Memex "trail."</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>It bet on the wrong medium</strong>: the Memex was <em>analog</em> — microfilm, mechanical film selection, photoelectric scanning; Bush, of all people (a man who had built an analog computer), did not bet on the rising <strong>digital electronic storage</strong>. What ultimately realized his vision was the digital computer, not a film desk.</li>
+<li><strong>Trails were manual and personal</strong>: every link had to be tied by the user, one at a time, with no automatic full-text search and no algorithmic ranking. What later made vast information genuinely reachable was <strong>automatic inverted indexes and PageRank</strong> — "let the machine find it for you" — not the human trailblazing Bush imagined; his predicted "trailblazer" profession largely never materialized.</li>
+<li><strong>No concept of a network</strong>: the Memex was essentially an <strong>isolated desk</strong>; sharing meant physically copying film, with no global networking and no links across machines — yet it was precisely "the network" that gave his idea its true scale.</li>
+<li><strong>The Web didn't fully deliver his trails either</strong>: Web links are mostly <strong>one-way and prone to breaking</strong>; Ted Nelson, in turn, criticized the Web for discarding the <strong>two-way links and version tracking</strong> that Xanadu (following Bush) had envisioned — in a sense, Bush's "trails" were more careful than today's hyperlink.</li>
+<li><strong>It is, in the end, a vision, not engineering</strong>: the Memex was never built and its mechanical feasibility is doubtful; its value lies in the accuracy of its foresight, not the completeness of its execution.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: in 1945 Bush proposed a personal device, the Memex, to store vast records compressed and, via "associative indexing," to string items into named, shareable "trails" — the intellectual source of hypertext and the Web.</p>
+<p>② The pain: post-war knowledge explosion made storing easy, finding hard, and connecting harder; hierarchical filing ("one item, one slot; trace down class by class") runs contrary to the mind's associative way.</p>
+<p>③ Core mechanism: let the user tie any two items together, so viewing one, a button auto-brings the other; a string of ties makes a trail — namable, savable, re-walkable, and shareable.</p>
+<p>④ Why so: the hard part of retrieval is "by what relation to connect," not "can we store it"; trails freeze the intellectual labor of connecting for reuse and for passing on.</p>
+<p>⑤ Companion ideas: microfilm compression (Britannica to a matchbox), the Memex desk (screens + keyboard + film store + dry-photo platen), speech-to-text, wearable camera, the trailblazer profession.</p>
+<p>⑥ Nature of the "results": no experiments, no data — a vision; judged by prediction hit rate, and most of its ideas were later realized.</p>
+<p>⑦ Impact: relayed through Engelbart (mouse, NLS, the 1968 demo) and Ted Nelson (coined "hypertext," Xanadu), it finally landed in Berners-Lee's Web as the hyperlink.</p>
+<p>⑧ Limits: wrong medium (analog film, not digital), all-manual trails with no automatic search, no network concept, the Web never delivered its two-way links, and it remained a vision rather than engineering.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Finish this page ≈ hold the paper's core; for Bush's own words and the famous lines quoted here, go read The Atlantic Monthly, July 1945.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
