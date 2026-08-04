@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>A Mathematical Theory of Communication — IT Paper Deep-Read Paper 36</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 36</p>
+<h1>A Mathematical Theory of Communication</h1>
+<p class="sub">Claude Shannon · Bell Labs · 1948</p>
+<p class="langbar"><a href="mathematical-theory-of-communication-paper36.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>The signal bars on your phone, sending a text, a photo getting quietly shrunk as it saves, 4K video that doesn't stutter — all of it traces back to one 1948 paper and one person: <strong>Claude Shannon</strong>. He did two epoch-making things: he gave "information" a unit of measure — the <strong>bit</strong> — and he proved two iron laws that no communication system can escape. This single paper founded the field of <strong>information theory</strong> and became the bedrock of the entire digital age.</p>
+<h2>An analogy first</h2>
+<p>Picture a number-guessing game: I've picked a number from 1 to 8, and you may only ask yes/no questions. The smart move is "Is it bigger than 4?" — whatever the answer, it cuts the possibilities in half, so three questions always nail it. <strong>Shannon said: the answer to one such yes/no question is exactly 1 bit of information.</strong> Information isn't the sentence itself — it's <strong>how many possibilities it rules out, how much uncertainty it removes</strong>. Being told something you were already sure of carries almost no information; something genuinely surprising carries a lot.</p>
+<h2>What was new: information could finally be "weighed"</h2>
+<p>Before him, the telegraph, the telephone, and radio each had their own ad-hoc tricks, but nobody could say what "information" even was, or whether you could measure it. Shannon stripped the problem clean away from those details — whether you're sending speech, text, or a picture. <strong>He didn't care what a message means; he cared only about which one it was, chosen out of all the possible messages.</strong> Once you think that way, every kind of communication becomes the same math problem, and information finally has a common scale.</p>
+<h2>How he pulled it off</h2>
+<p>The first iron law is about <strong>compression</strong>. Most of any message is predictable "filler" you could guess anyway — in English a <em>q</em> is almost always followed by a <em>u</em>, and you can drop a few letters and still read it fine. Shannon proved that <strong>once you squeeze out all that predictable redundancy, there is a definite floor to how small a source can be packed — go smaller and you start losing content.</strong> That floor is the theoretical ceiling behind today's zip, JPEG, and MP3.</p>
+<p>The second law is even more startling — it's about <strong>fighting noise</strong>. Everyone then believed: a line has static, so to make fewer errors you must send slower, and to make almost no errors you must slow almost to a stop. Shannon proved instead that <strong>every line has a fixed "speed limit" (he called it capacity), and as long as you stay under that limit, some clever code must exist that pushes the error rate to nearly zero — even over a very noisy line.</strong> The trick is to spread the information across a long stretch and keep the "code words" for different messages far enough apart that the noise's random jostling gets averaged out and corrected. That overturned the old belief that faster inevitably means more errors.</p>
+<h2>What it gave us</h2>
+<p><strong>The "bit" became the universal currency of information</strong>: speech, text, images, video, even DNA can be measured with the same ruler and stored and sent the same way — which is exactly the theoretical premise of "everything can be digitized." That speed limit also set engineers worldwide a clear target, and for more than half a century each generation of error-correcting codes has been racing to approach this "Shannon limit."</p>
+<p>One honest caveat: Shannon proved that such a wonderful code <strong>must exist</strong>, but he never told you what it looks like or how to build it — humanity took nearly fifty more years to construct practical codes that hug that limit.</p>
+<h2>Remember it in one line</h2>
+<div class="tl">
+<p>Shannon turned information into something you can weigh (the unit, the bit, = removing one 50/50 uncertainty), and proved two iron laws: every source has a compression floor; every line has a speed limit, and as long as you stay under it, even a noisy channel can be corrected down to nearly no errors. This paper is the cornerstone of the digital world.</p>
+</div>
+<p class="switch-hint">Want Shannon's communication-system diagram, the formulas for entropy and capacity, and that "Shannon limit"? <a data-mode="deep">→ switch to the Deep version</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Shannon's 1948 paper single-handedly founded <strong>information theory</strong>: it turned communication from an empirical craft into a science with precise measures and fundamental laws — measuring information in <strong>bits</strong>, abstracting any communication system into five stages ("source → encode → noisy channel → decode → destination"), and proving two iron laws: ① the limit to which a source can be losslessly compressed equals exactly its <strong>entropy</strong>, and going smaller loses information; ② every channel has a definite <strong>capacity C</strong>, and as long as the transmission rate stays below C, a code exists that drives the error rate arbitrarily close to zero — even over a noisy channel.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>bit</strong>: the basic unit of information; one definite yes/no answer is 1 bit. The name comes from <em>binary digit</em>.</li>
+<li><strong>logarithm (log)</strong>: the "how many times over" operation. The base-2 log <code>log₂N</code> is: how many yes/no questions it takes to pin down one out of N equally likely options (8 options → 3 questions).</li>
+<li><strong>probability / random</strong>: how likely something is (0 to 1); "random" means the outcome isn't fixed in advance, only its probabilities are.</li>
+<li><strong>coding / encoding</strong>: rewriting a message into symbols suited for the channel (e.g. turning letters into a string of 0/1s) is encoding; recovering it at the far end is decoding.</li>
+<li><strong>channel</strong>: the medium carrying the signal — a phone line, fiber, radio waves, even a storage disk all count.</li>
+<li><strong>noise</strong>: random interference in the channel that garbles the transmitted signal and causes reception errors.</li>
+<li><strong>redundancy</strong>: the part of a message that is predictable and can be dropped without losing information (in English a <em>q</em> is almost always followed by <em>u</em>).</li>
+<li><strong>bandwidth / signal-to-noise</strong>: bandwidth is loosely "how fat the pipe is," how much frequency range it carries per second; signal-to-noise ratio (S/N) is signal strength divided by noise strength.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>Author <strong>Claude Shannon</strong>, Bell Labs, published in two parts in the <em>Bell System Technical Journal</em> in 1948. It builds on the early intuitions of Nyquist (1924) and Hartley (1928) that "amount of information ≈ the logarithm of the number of possibilities," but was the first to give a <strong>complete mathematical theory</strong>. A year later it appeared as a book co-authored with Warren Weaver, and the title's "A" (a) became "The" (the definitive one). Everything since — all of digital communication, data compression, error-correcting codes, and Shannon's own 1949 theory of secrecy — is built on top of it.</p>
+<h2>The problem &amp; motivation</h2>
+<p>Before 1948, the telegraph, telephone, and radio each had their own empirical techniques, yet nobody could answer two fundamental questions: <strong>what is "information," and can it be weighed? And how fast can a noisy line reliably carry it?</strong> The engineering common sense of the day was: to fight noise you either crank up the power, widen the bandwidth, or simply slow down — everyone assumed "the faster you send, the more you err, and to make almost no errors you must push the rate nearly to zero." No one knew there was actually a limit that was both <strong>fixed and truly achievable</strong>. Shannon's aim was to lift the communication problem clean out of the physical details and ask directly: what is fundamentally possible, and what is not?</p>
+<h2>Core ideas / method</h2>
+<h3>(a) Strip communication down to pure "choice" — meaning is irrelevant</h3>
+<p>Shannon opens with a startling line: <strong>"The semantic aspects of communication are irrelevant to the engineering problem."</strong> What matters is not what a message <em>means</em>, but <strong>which one it is</strong>, selected from a set of possible messages. He abstracts any communication system into five stages: a source produces a message → a transmitter encodes it into a signal → the signal passes through a (noisy) channel → a receiver decodes it → the destination receives it. The power of this abstraction: whether you're sending speech, text, or images, it all becomes the same math problem — <strong>reconstructing at one end the message chosen at the other</strong>.</p>
+<figure>
+<svg viewBox="0 0 560 235" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1n" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect x="6" y="72" width="74" height="46" rx="7" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect><text x="43" y="100" fill="#e7ebf1" font-size="11.5" text-anchor="middle">source</text>
+<rect x="104" y="72" width="88" height="46" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="148" y="93" fill="#e7ebf1" font-size="11.5" text-anchor="middle">transmitter</text><text x="148" y="108" fill="#7c8593" font-size="10.5" text-anchor="middle">encode</text>
+<circle cx="300" cy="95" r="17" fill="rgba(232,121,75,0.16)" stroke="#e8794b"></circle><text x="300" y="100" fill="#e7ebf1" font-size="15" text-anchor="middle">+</text>
+<rect x="360" y="72" width="88" height="46" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="404" y="93" fill="#e7ebf1" font-size="11.5" text-anchor="middle">receiver</text><text x="404" y="108" fill="#7c8593" font-size="10.5" text-anchor="middle">decode</text>
+<rect x="472" y="72" width="74" height="46" rx="7" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect><text x="509" y="100" fill="#e7ebf1" font-size="11" text-anchor="middle">destination</text>
+<rect x="248" y="184" width="104" height="34" rx="7" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect><text x="300" y="205" fill="#e7ebf1" font-size="12" text-anchor="middle">noise source</text>
+<line x1="80" x2="102" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="192" x2="281" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line><text x="236" y="86" fill="#7c8593" font-size="10.5" text-anchor="middle">signal</text>
+<line x1="319" x2="358" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line><text x="338" y="86" fill="#7c8593" font-size="10.5" text-anchor="middle">received signal</text>
+<line x1="448" x2="470" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="300" x2="300" y1="184" y2="115" stroke="#e8794b" marker-end="url(#a1n)"></line>
+<text x="43" y="60" fill="#7c8593" font-size="10.5" text-anchor="middle">message</text>
+<text x="509" y="60" fill="#7c8593" font-size="10.5" text-anchor="middle">message</text>
+</svg>
+<figcaption>Fig 1 · Shannon's communication system: any communication is abstracted into source → encode → channel (with noise added) → decode → destination, unifying the problem into "reconstruct at the receiver the message the sender chose."</figcaption>
+</figure>
+<h3>(b) The bit: measuring information by "one of two"</h3>
+<p>If information is "choosing one out of several possibilities," then more possibilities means each choice carries more information. Shannon measures it with the base-2 logarithm: choosing one out of N equally likely messages carries <code>log₂N</code> bits. One of 2 = 1 bit (a single yes/no question), one of 4 = 2 bits, one of 8 = 3 bits… <strong>The word "bit" was named right here</strong> (he credits it in the paper to his colleague John Tukey). Intuitively, <strong>1 bit = removing one "fifty-fifty" uncertainty</strong>. Information isn't the message itself — it's how much uncertainty the message removed for you.</p>
+<h3>(c) Entropy: how "surprising" a source is on average</h3>
+<p>In a real source, messages aren't equally likely (in English <em>e</em> vastly outnumbers <em>z</em>). Shannon's measure: <code>H = −Σ pᵢ·log₂ pᵢ</code>, a probability-weighted average of each symbol's "surprise" — this is <strong>entropy</strong>. He proved that the measure satisfying a few natural axioms (continuity, more choices means larger, computable in steps…) is <strong>uniquely</strong> this formula, and its form is identical to Boltzmann's entropy in physics, hence the borrowed name. In plain words: <strong>entropy is how many bits of surprise the source delivers per symbol on average, and it is exactly the limit to which it can be losslessly compressed.</strong> The more uniform the probabilities, the higher the entropy (most uncertain); the more skewed and predictable, the lower.</p>
+<figure>
+<svg viewBox="0 0 560 255" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<line x1="70" x2="70" y1="45" y2="212" stroke="#7c8593"></line>
+<line x1="70" x2="524" y1="212" y2="212" stroke="#7c8593"></line>
+<text x="58" y="55" fill="#7c8593" font-size="11" text-anchor="end">entropy H</text>
+<text x="46" y="56" fill="#7c8593" font-size="10" text-anchor="end">1</text>
+<text x="46" y="216" fill="#7c8593" font-size="10" text-anchor="end">0</text>
+<text x="70" y="230" fill="#7c8593" font-size="10.5" text-anchor="middle">certain</text>
+<text x="510" y="230" fill="#7c8593" font-size="10.5" text-anchor="middle">certain</text>
+<text x="290" y="230" fill="#7c8593" font-size="10.5" text-anchor="middle">50 / 50</text>
+<line x1="290" x2="290" y1="52" y2="212" stroke="#5a6069" stroke-dasharray="3 4"></line>
+<path d="M70,212 L114,137 L158,97 L202,71 L246,57 L290,52 L334,57 L378,71 L422,97 L466,137 L510,212" fill="none" stroke="#f0b429" stroke-width="2.4"></path>
+<circle cx="290" cy="52" r="3.5" fill="#e8794b"></circle>
+<text x="290" y="42" fill="#e7ebf1" font-size="11.5" text-anchor="middle">most uncertain = 1 bit</text>
+<text x="150" y="192" fill="#7c8593" font-size="10.5" text-anchor="middle">very predictable → low H</text>
+</svg>
+<figcaption>Fig 2 · A coin's entropy as its bias changes: at 50/50 it's most uncertain and entropy is maximal (1 bit); the more it leans one way the more predictable and the lower the entropy, reaching 0 when fully certain. Entropy is the compression floor.</figcaption>
+</figure>
+<h3>(d) The noiseless coding theorem: the compression limit is entropy</h3>
+<p>A source can be losslessly compressed down to an average of <strong>H bits per symbol</strong>, and <strong>no fewer</strong>; at the same time, a code can always be designed to approach that limit. The excess, droppable part is <strong>redundancy</strong> — English text is roughly half redundant (which is why you can still read it with a few letters missing, and a .txt zips to about half). This draws a theoretical floor under all data compression (Huffman coding, arithmetic coding, ZIP, JPEG, MP3): <strong>compress as hard as you like, you cannot cross the entropy line without losing information.</strong></p>
+<h3>(e) The noisy-channel coding theorem: the crown of this paper</h3>
+<p>The most counterintuitive and most magnificent result. Define a channel's <strong>capacity</strong> <code>C = max I(X;Y)</code> — the maximum, over all ways of using the input, of "how much uncertainty about the input the output removes" (<code>I</code> is called mutual information). Shannon proved: <strong>as long as the transmission rate R &lt; C, a code exists that makes the error rate arbitrarily close to zero; once R &gt; C, reliable transmission is impossible.</strong> This overturned the old belief that "fast necessarily means errors" — <strong>error going to zero does not require the rate going to zero, only staying below C.</strong></p>
+<figure>
+<svg viewBox="0 0 560 240" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<rect x="62" y="46" width="278" height="156" fill="rgba(240,180,41,0.05)"></rect>
+<rect x="340" y="46" width="180" height="156" fill="rgba(232,121,75,0.07)"></rect>
+<line x1="62" x2="62" y1="40" y2="202" stroke="#7c8593"></line>
+<line x1="62" x2="524" y1="202" y2="202" stroke="#7c8593"></line>
+<text x="52" y="52" fill="#7c8593" font-size="11" text-anchor="end">error rate</text>
+<text x="516" y="220" fill="#7c8593" font-size="11" text-anchor="end">rate R →</text>
+<line x1="340" x2="340" y1="46" y2="202" stroke="#e8794b" stroke-dasharray="4 4"></line>
+<text x="340" y="38" fill="#e8794b" font-size="12" text-anchor="middle">capacity C (speed limit)</text>
+<path d="M62,196 L300,194 L336,190 C348,182 356,150 372,120 C392,84 430,64 508,58" fill="none" stroke="#f0b429" stroke-width="2.4"></path>
+<text x="196" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">R &lt; C</text>
+<text x="196" y="170" fill="#7c8593" font-size="11" text-anchor="middle">a good code exists, error → 0</text>
+<text x="432" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">R &gt; C</text>
+<text x="432" y="170" fill="#7c8593" font-size="11" text-anchor="middle">reliable transmission impossible</text>
+</svg>
+<figcaption>Fig 3 · The channel coding theorem: capacity C is a hard threshold. Below C the error rate can be pushed arbitrarily close to zero; once above C, no code can escape errors.</figcaption>
+</figure>
+<p>The intuition behind the method: <strong>spread the information across a long block and keep the "code words" for different messages far enough apart in signal space</strong> that the noise's random perturbation gets averaged out and corrected. Even better, Shannon's proof used <strong>"random coding"</strong>: pick a huge batch of random code words, and the <em>average</em> error rate over them goes to zero — so at least one good code <strong>must exist</strong> among them. He thereby proved good codes <strong>exist</strong> without telling you what any of them looks like.</p>
+<h3>(f) The continuous channel and the Shannon formula</h3>
+<p>For a continuous channel of bandwidth W, signal power S, and Gaussian noise power N, the capacity is <code>C = W·log₂(1 + S/N)</code> (bits per second). This <strong>Shannon–Hartley formula</strong> tells engineers directly: to send faster, either add bandwidth or raise the signal-to-noise ratio — it remains, to this day, the design yardstick for all wireless and wired communication.</p>
+<h2>Key results</h2>
+<p>This is a theory paper, so the "results" are the theorems themselves — three cornerstones: entropy <code>H = −Σ p·log p</code> gives the lossless-compression limit; the <strong>noisy-channel coding theorem</strong> gives the exact ceiling C for reliable communication and proves the error rate can be arbitrarily small when R &lt; C; and the continuous-channel capacity <code>C = W·log₂(1 + S/N)</code>. Shannon also estimated the redundancy of English at about <strong>50%</strong> (later, in 1951, he had people guess the next letter and estimated English entropy at roughly one bit per letter). The point: <strong>these numbers aren't measured empirical values but proven limits</strong> — they say "no matter how advanced the technology, you cannot cross this line."</p>
+<h2>Why it matters / impact</h2>
+<p>It single-handedly founded an entire discipline. <strong>The "bit" became the universal currency of information</strong> — speech, images, text, even DNA can be measured with one ruler and stored and transmitted with one set of methods, which is precisely the theoretical premise of "digitization." It also set engineers a clear target: the capacity C. For more than half a century since, each generation of error-correcting codes (Hamming codes, Reed–Solomon, then Turbo codes in 1993, LDPC, and 5G's Polar codes) has inched toward this <strong>"Shannon limit"</strong>; data compression, cryptography, and even the cross-entropy, mutual information, and KL divergence of machine learning all borrow its language directly. Put simply: <strong>without this paper, there is no digital world as we know it.</strong></p>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>It proves existence, not construction</strong>: the coding theorem is an existence proof (random coding) — it says a good code must exist but doesn't tell you how to build it or decode it efficiently. Practical capacity-approaching codes came almost half a century later (Turbo codes 1993, the LDPC revival); and hugging the limit often demands very long blocks, which incurs latency.</li>
+<li><strong>It deliberately excludes "meaning"</strong>: Shannon's "information" is only about choice and probability, not semantics or value. That is a strength for engineering but is often misapplied — treating Shannon information as "amount of meaning" is a common misconception; Weaver's introduction tried to extrapolate to the semantic level, but that isn't in Shannon's mathematics.</li>
+<li><strong>It relies on known, well-behaved models</strong>: the theorems assume the source statistics and channel model are known and stationary; real sources are unknown, channels vary over time, and cases with feedback are far more complicated.</li>
+<li><strong>It is largely point-to-point</strong>: the "network information theory" of multiple users, mutual interference, and networking is far harder, and the capacity of many general networks remains an open problem.</li>
+<li><strong>The continuous case has subtleties</strong>: the "differential entropy" of a continuous source is not coordinate-invariant, among other technicalities that require care.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: Shannon founded information theory in 1948, measuring information in bits and proving two fundamental limits — on compression and on transmission.</p>
+<p>② Abstraction: communication = "choosing one" out of possible messages, independent of meaning; the system = source → encode → noisy channel → decode → destination.</p>
+<p>③ The bit: choosing 1 of N carries <code>log₂N</code> bits; 1 bit = removing one fifty-fifty uncertainty. Information = the uncertainty removed.</p>
+<p>④ Entropy <code>H=−Σp·log p</code>: a source's average surprise per symbol, also the lossless-compression limit; redundancy is the squeezable filler (English is about half redundant).</p>
+<p>⑤ The crown — the noisy-channel coding theorem: a channel has capacity C; when R &lt; C the error rate can be made arbitrarily small, when R &gt; C it's impossible. The counterintuitive part: zero-ish error needs no zero-ish rate.</p>
+<p>⑥ The method: long code blocks + code words pulled far apart in signal space so noise is averaged out and corrected; "random coding" proves a good code merely "exists."</p>
+<p>⑦ The Shannon formula <code>C = W·log₂(1+S/N)</code>: bandwidth and signal-to-noise fix the speed ceiling — still the yardstick for communication design.</p>
+<p>⑧ Impact: the bit became information's universal currency, the theoretical root of digitization; error-correcting codes spent half a century chasing the Shannon limit.</p>
+<p>⑨ Limits: existence without construction, so approaching the limit came decades later; excising meaning invites misuse; point-to-point and known-model assumptions leave hard open problems.</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Finishing this page ≈ grasping the paper's core; for the full theorem proofs and mathematical detail, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>A Mathematical Theory of Communication（通信的数学理论）— IT 论文精读 Paper 36</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 36</p>
+<h1>A Mathematical Theory of Communication（通信的数学理论）</h1>
+<p class="sub">Claude Shannon · Bell Labs · 1948</p>
+<p class="langbar"><a href="mathematical-theory-of-communication-paper36.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>你手机右上角的信号格、发一条微信、把照片存进相册时被悄悄压小、看 4K 视频不卡——这些背后都站着 1948 年的一篇论文和一个人：<strong>克劳德·香农（Claude Shannon）</strong>。他做了两件开天辟地的事：给「信息」找到了度量单位——<strong>比特（bit）</strong>；并证明了通信世界里两条谁也绕不过去的铁律。这篇论文单枪匹马开创了「<strong>信息论</strong>」，是整个数字时代的地基。</p>
+<h2>先打个比方</h2>
+<p>想象你在玩「猜数字」：我心里想了 1 到 8 的一个数，你每次只能问是非题。聪明的问法是「大于 4 吗？」——不管答什么，可能性都砍一半，问三次必能猜中。<strong>香农说：这一个「是非题」的答案，就是 1 比特信息。</strong>信息不是那句话本身，而是它<strong>帮你排除了多少种可能、消除了多少不确定</strong>。一件八九不离十的事告诉你，几乎没信息；一件真正出乎意料的事，才信息量大。</p>
+<h2>新在哪：信息第一次能「称重」了</h2>
+<p>在他之前，电报、电话、无线电各有各的土办法，可没人说得清「信息到底是什么、能不能量」。香农把这件事从「传的是语音还是文字还是图片」这些细节里彻底抽离出来——<strong>他不关心消息是什么意思，只关心它是从多少种可能里被挑出来的那一个。</strong>一旦这样想，一切通信都变成同一道数学题，信息也就有了统一的秤。</p>
+<h2>它怎么做到的</h2>
+<p>第一条铁律关于<strong>压缩</strong>。一段话里其实一大半是可以猜到的「水分」——英文里 q 后面几乎总跟着 u，删掉几个字母你照样读得懂。香农证明：<strong>把这些可预测的冗余全挤干，一个信息源能压到的最小体积是有一个确定极限的，再小就要丢东西了。</strong>这就是今天 zip、JPEG、MP3 的理论天花板。</p>
+<p>第二条更惊人，关于<strong>抗噪声</strong>。当时所有人都以为：线路有杂音，想少出错就只能传慢点，想几乎不出错就得慢到几乎不动。香农却证明：<strong>每条线路都有一个固定的「限速」（他叫它容量），只要你的传输速度不超过这个限速，就一定存在一种巧妙的编码，能把出错率压到几乎为零——哪怕线路噪声很大。</strong>诀窍是把信息摊到很长的一段里、让不同消息对应的「暗号」彼此离得足够远，杂音的随机捣乱就被平均掉、纠正回来。这一下把「传得快就必然出错」的老信念给推翻了。</p>
+<h2>它带来了什么</h2>
+<p><strong>「比特」从此成了信息的通用货币</strong>：语音、文字、图片、视频，甚至 DNA，都能用同一把尺子量、同一套办法存和传——这正是「万物皆可数字化」的理论前提。那条「限速」还给全世界工程师立了一个明确的靶子，此后半个多世纪，一代代纠错编码就是在拼命逼近这条「香农极限」。</p>
+<p>说句诚实的：香农证明了「一定存在这么好的编码」，却没告诉你它长什么样、怎么造——人类又花了将近五十年，才造出真正贴近这条极限的实用编码。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>香农把信息变成了可以称重的东西（单位是比特 = 消除一次五五开的不确定），并证明两条铁律：任何信息源都有一个压缩极限；任何线路都有一个「限速」，只要不超速，再吵的噪声也能纠正到几乎不出错。这篇论文是数字世界的奠基石。</p>
+</div>
+<p class="switch-hint">想看香农的通信系统图、熵与容量的公式、还有那条「香农极限」？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">香农 1948 年这篇论文一手创立了<strong>信息论（information theory）</strong>：他把通信从一门经验手艺变成一门有精确度量、有基本定律的科学——用<strong>比特（bit）</strong>度量信息，把任何通信系统抽象成「信源 → 编码 → 有噪信道 → 解码 → 信宿」五段，并证明两条铁律：① 一个信息源能被无损压缩到的极限，正好等于它的<strong>熵（entropy）</strong>，再小就会丢信息；② 每条信道有一个确定的<strong>容量（capacity）C</strong>，只要传输速率低于 C，就存在一种编码能把出错率压到任意小——哪怕信道充满噪声。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>比特（bit）</strong>：信息的基本单位；一个「是 / 否」二选一的确定答案就是 1 比特。名字取自 binary digit（二进制位）。</li>
+<li><strong>对数 log</strong>：问「要翻多少倍」的运算。以 2 为底的对数 <code>log₂N</code> 表示：要多少个是非题才能从 N 个等可能里锁定一个（如 8 个 → 3 个问题）。</li>
+<li><strong>概率 / 随机</strong>：某件事发生的可能性大小（0 到 1）；「随机」指结果事先不确定、只能谈概率。</li>
+<li><strong>编码 / 解码（coding）</strong>：把消息改写成适合在信道上跑的符号串（如把字母变成一串 0/1）叫编码，收端还原回来叫解码。</li>
+<li><strong>信道（channel）</strong>：传信号的媒介——电话线、光纤、无线电波、乃至一块存储盘，都算信道。</li>
+<li><strong>噪声（noise）</strong>：信道里随机的干扰，会把发出的信号弄乱、造成收错。</li>
+<li><strong>冗余（redundancy）</strong>：消息里可预测、能省掉而不丢信息的部分（如英文里 q 后几乎必跟 u）。</li>
+<li><strong>带宽 / 信噪比</strong>：带宽（bandwidth）粗略地说是「管子有多粗」、每秒能承载多少频率；信噪比（S/N）是信号强度与噪声强度之比。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者<strong>克劳德·香农（Claude Shannon）</strong>，贝尔实验室，1948 年分两部分发表于《贝尔系统技术期刊》。它接续 Nyquist（1924）、Hartley（1928）关于「信息量 ≈ 可能性数目的对数」的早期直觉，却第一次给出<strong>完整的数学理论</strong>；次年与 Warren Weaver 合出单行本，标题里的「A（一种）」被改成「The（这套）」。此后所有数字通信、数据压缩、纠错码，乃至香农自己 1949 年的保密通信理论，都建在这篇之上。</p>
+<h2>问题与动机</h2>
+<p>1948 年之前，电报、电话、无线电各有各的经验技巧，却没人能回答两个根本问题：<strong>「信息」到底是什么、能不能称重？一条有噪声的线路，究竟能可靠地传多快？</strong>当时工程界的常识是：要对抗噪声，只能加大功率、加宽带宽，或者干脆把速度降下来——大家默认「传得越快、错得越多，想几乎不出错就得把速率压到接近零」。没有人知道，其实存在一个<strong>既固定、又真能达到</strong>的上限。香农要做的，是把通信问题从物理细节里抽出来，直接问：本质上能做到什么、做不到什么。</p>
+<h2>核心思想 / 方法</h2>
+<h3>(a) 把通信剥到只剩「选择」——语义无关</h3>
+<p>香农开篇就是一句惊人的话：<strong>「通信的语义（意义）方面，与工程问题无关。」</strong>要紧的不是消息「是什么意思」，而是它是从一堆可能消息里被<strong>「选中」的哪一个</strong>。他把任何通信系统抽象成五段：信源产生消息 → 发送器把它编码成信号 → 信号穿过（有噪声的）信道 → 接收器解码 → 信宿收到。这个抽象的威力在于：不管你传的是语音、文字还是图片，都化成同一道数学题——<strong>在一端重建另一端选出的那个消息</strong>。</p>
+<figure>
+<svg viewBox="0 0 560 235" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1n" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect x="6" y="72" width="74" height="46" rx="7" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect><text x="43" y="100" fill="#e7ebf1" font-size="12.5" text-anchor="middle">信源</text>
+<rect x="104" y="72" width="88" height="46" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="148" y="93" fill="#e7ebf1" font-size="12" text-anchor="middle">发送器</text><text x="148" y="108" fill="#7c8593" font-size="10.5" text-anchor="middle">编码</text>
+<circle cx="300" cy="95" r="17" fill="rgba(232,121,75,0.16)" stroke="#e8794b"></circle><text x="300" y="100" fill="#e7ebf1" font-size="15" text-anchor="middle">+</text>
+<rect x="360" y="72" width="88" height="46" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="404" y="93" fill="#e7ebf1" font-size="12" text-anchor="middle">接收器</text><text x="404" y="108" fill="#7c8593" font-size="10.5" text-anchor="middle">解码</text>
+<rect x="472" y="72" width="74" height="46" rx="7" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect><text x="509" y="100" fill="#e7ebf1" font-size="12.5" text-anchor="middle">信宿</text>
+<rect x="248" y="184" width="104" height="34" rx="7" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect><text x="300" y="205" fill="#e7ebf1" font-size="12" text-anchor="middle">噪声源</text>
+<line x1="80" x2="102" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="192" x2="281" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line><text x="236" y="86" fill="#7c8593" font-size="10.5" text-anchor="middle">信号</text>
+<line x1="319" x2="358" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line><text x="338" y="86" fill="#7c8593" font-size="10.5" text-anchor="middle">收到的信号</text>
+<line x1="448" x2="470" y1="95" y2="95" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="300" x2="300" y1="184" y2="115" stroke="#e8794b" marker-end="url(#a1n)"></line>
+<text x="43" y="60" fill="#7c8593" font-size="10.5" text-anchor="middle">消息</text>
+<text x="509" y="60" fill="#7c8593" font-size="10.5" text-anchor="middle">消息</text>
+</svg>
+<figcaption>图 1 · 香农的通信系统：任何通信都被抽象成信源→编码→（叠加噪声的）信道→解码→信宿，问题统一为「在收端重建发端选出的消息」。</figcaption>
+</figure>
+<h3>(b) 比特：用「二选一」度量信息</h3>
+<p>既然信息就是「从若干可能里选一个」，那可能越多、选中一个携带的信息就越多。香农用以 2 为底的对数来量：N 个等可能的消息里选一个，携带 <code>log₂N</code> 比特信息。2 选 1 = 1 比特（一个是非题），4 选 1 = 2 比特，8 选 1 = 3 比特……<strong>「比特（bit）」这个词就此定名</strong>（他在文中把它归功于同事 John Tukey）。直觉上，<strong>1 比特 = 消除一次「五五开」的不确定</strong>。信息不是消息本身，而是它替你消除了多少不确定。</p>
+<h3>(c) 熵：一个信源平均有多「意外」</h3>
+<p>真实信源里各消息并非等可能（英文里 e 远多于 z）。香农给出度量：<code>H = −Σ pᵢ·log₂ pᵢ</code>，把每个符号的「意外量」按其概率加权平均——这就是<strong>熵（entropy）</strong>。他证明：满足几条自然公理（连续、越多选择越大、可分步计算……）的度量，<strong>唯一</strong>就是这个式子，而它的形式恰与物理里的玻尔兹曼熵一模一样，故借用「熵」之名。白话说：<strong>熵就是这个信源平均每个符号带来多少比特的意外，也正好是它能被无损压缩到的极限。</strong>概率越均匀，熵越大（最不确定）；越有偏、越可预测，熵越小。</p>
+<figure>
+<svg viewBox="0 0 560 255" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<line x1="70" x2="70" y1="45" y2="212" stroke="#7c8593"></line>
+<line x1="70" x2="524" y1="212" y2="212" stroke="#7c8593"></line>
+<text x="58" y="55" fill="#7c8593" font-size="11" text-anchor="end">熵 H</text>
+<text x="46" y="56" fill="#7c8593" font-size="10" text-anchor="end">1</text>
+<text x="46" y="216" fill="#7c8593" font-size="10" text-anchor="end">0</text>
+<text x="70" y="230" fill="#7c8593" font-size="10.5" text-anchor="middle">全确定</text>
+<text x="510" y="230" fill="#7c8593" font-size="10.5" text-anchor="middle">全确定</text>
+<text x="290" y="230" fill="#7c8593" font-size="10.5" text-anchor="middle">50 / 50</text>
+<line x1="290" x2="290" y1="52" y2="212" stroke="#5a6069" stroke-dasharray="3 4"></line>
+<path d="M70,212 L114,137 L158,97 L202,71 L246,57 L290,52 L334,57 L378,71 L422,97 L466,137 L510,212" fill="none" stroke="#f0b429" stroke-width="2.4"></path>
+<circle cx="290" cy="52" r="3.5" fill="#e8794b"></circle>
+<text x="290" y="42" fill="#e7ebf1" font-size="11.5" text-anchor="middle">最不确定 = 1 比特</text>
+<text x="150" y="192" fill="#7c8593" font-size="10.5" text-anchor="middle">很可预测 → 熵小</text>
+</svg>
+<figcaption>图 2 · 一枚硬币的熵随「偏向」变化：正反各半时最不确定、熵达最大（1 比特）；越偏向一边越可预测，熵越小，全确定时为 0。熵就是能压到的极限。</figcaption>
+</figure>
+<h3>(d) 无噪编码定理：压缩的极限就是熵</h3>
+<p>一个信源可以被无损压缩到平均每符号 <strong>H 比特</strong>，<strong>不能再少</strong>；同时总能设计编码逼近这个极限。多出来的、可省的那部分叫<strong>冗余</strong>——英文文本约有一半是冗余（所以缺几个字母仍读得懂、txt 压成 zip 能小一半）。这为一切数据压缩（Huffman 编码、算术编码、ZIP、JPEG、MP3）划下了理论地板：<strong>压得再狠，也不可能越过熵这条线而不丢信息。</strong></p>
+<h3>(e) 有噪信道编码定理：本篇的皇冠</h3>
+<p>最反直觉、也最伟大的结果。给信道定义一个<strong>容量</strong> <code>C = max I(X;Y)</code>——在所有可能的输入用法里，「看了输出能对输入减少多少不确定」的最大值（<code>I</code> 叫互信息）。香农证明：<strong>只要传输速率 R &lt; C，就存在一种编码，能让出错率任意接近零；一旦 R &gt; C，可靠传输不可能。</strong>这颠覆了「快就必然错」的旧信念——<strong>出错率趋零，竟然不需要速率趋零，只要不越过 C 就行。</strong></p>
+<figure>
+<svg viewBox="0 0 560 240" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<rect x="62" y="46" width="278" height="156" fill="rgba(240,180,41,0.05)"></rect>
+<rect x="340" y="46" width="180" height="156" fill="rgba(232,121,75,0.07)"></rect>
+<line x1="62" x2="62" y1="40" y2="202" stroke="#7c8593"></line>
+<line x1="62" x2="524" y1="202" y2="202" stroke="#7c8593"></line>
+<text x="52" y="52" fill="#7c8593" font-size="11" text-anchor="end">出错率</text>
+<text x="516" y="220" fill="#7c8593" font-size="11" text-anchor="end">传输速率 R →</text>
+<line x1="340" x2="340" y1="46" y2="202" stroke="#e8794b" stroke-dasharray="4 4"></line>
+<text x="340" y="38" fill="#e8794b" font-size="12" text-anchor="middle">容量 C（限速）</text>
+<path d="M62,196 L300,194 L336,190 C348,182 356,150 372,120 C392,84 430,64 508,58" fill="none" stroke="#f0b429" stroke-width="2.4"></path>
+<text x="196" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">R &lt; C</text>
+<text x="196" y="170" fill="#7c8593" font-size="11" text-anchor="middle">存在好编码，错误率→0</text>
+<text x="432" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">R &gt; C</text>
+<text x="432" y="170" fill="#7c8593" font-size="11" text-anchor="middle">可靠传输不可能</text>
+</svg>
+<figcaption>图 3 · 信道编码定理：容量 C 是一条硬门槛。速率低于 C，出错率可被压到任意接近零；一旦超过 C，无论怎么编码都逃不掉错误。</figcaption>
+</figure>
+<p>做法的直觉是：<strong>把信息摊到很长的一段码块上、让不同消息对应的「码字」在信号空间里彼此离得足够远</strong>，噪声的随机扰动就被平均掉、被纠正回来。更妙的是香农的证明用了<strong>「随机编码」</strong>：随手挑一大堆随机码字，算出来的平均出错率就趋零，那么其中<strong>必定至少存在一个好码</strong>——他因此证明了好码<strong>存在</strong>，却没告诉你它具体长什么样。</p>
+<h3>(f) 连续信道与香农公式</h3>
+<p>对一条带宽 W、信号功率 S、高斯噪声功率 N 的连续信道，容量为 <code>C = W·log₂(1 + S/N)</code>（比特每秒）。这条<strong>香农—哈特利公式</strong>直接告诉工程师：想传得更快，要么加带宽、要么提信噪比——它至今是所有无线 / 有线通信的设计标尺。</p>
+<h2>关键结果</h2>
+<p>这是一篇理论论文，「结果」就是定理本身，三块基石：熵 <code>H = −Σ p·log p</code> 给出无损压缩的极限；<strong>有噪信道编码定理</strong>给出可靠通信的确切上限 C，并证明 R &lt; C 时错误率可任意小；连续信道容量 <code>C = W·log₂(1 + S/N)</code>。香农还顺手估计英文的冗余度约 <strong>50%</strong>（后续 1951 年他让人来猜下一个字母，估出英文的熵约每字母 1 比特出头）。要紧的是：<strong>这些数字不是测出来的经验值，而是证明出来的极限</strong>——它们说的是「无论技术多先进，都不可能越过这条线」。</p>
+<h2>为什么重要 / 影响</h2>
+<p>它凭一己之力开创了一整个学科。<strong>「比特」从此成了信息的通用货币</strong>——语音、图像、文字乃至 DNA，都能用同一把尺子度量、同一套办法存储与传输，这正是「数字化」的理论前提。它还给工程师立了一个明确的靶子：容量 C。此后半个多世纪，一代代纠错码（Hamming 码、Reed–Solomon、到 1993 年的 Turbo 码、LDPC、再到 5G 的 Polar 码）一步步逼近这条<strong>「香农极限」</strong>；数据压缩、密码学，乃至机器学习里的交叉熵、互信息、KL 散度，都直接借用它的语言。可以说，<strong>没有这篇论文，就没有今天的数字世界。</strong></p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>只证存在、不给构造</strong>：编码定理是存在性证明（随机编码），说好码一定存在，却不告诉你怎么造、怎么高效解码。真正逼近容量的实用码晚了近半个世纪（Turbo 码 1993、LDPC 复兴）；且贴近极限往往需要很长的码块，带来延迟。</li>
+<li><strong>刻意剔除「意义」</strong>：香农的「信息」只关乎选择与概率，与语义 / 价值无关。这对工程是优点，却常被误用——把 Shannon 信息量当成「意义的多少」是常见误解；Weaver 在导读里试图外推到语义层，但那并不在香农的数学里。</li>
+<li><strong>依赖已知且良好的模型</strong>：定理假设信源统计与信道模型已知且平稳；现实中信源未知、信道随时间变化、带反馈的情形要复杂得多。</li>
+<li><strong>以点对点为主</strong>：多用户、相互干扰、组网的「网络信息论」远为困难，许多一般网络的容量至今仍是未解之谜。</li>
+<li><strong>连续情形有微妙处</strong>：连续信源的「微分熵」不具坐标不变性等技术细节，需要小心处理。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：香农 1948 年创立信息论，用比特度量信息，并证明压缩与传输的两条基本极限。</p>
+<p>② 抽象：通信 = 从可能的消息里「选中一个」，与语义无关；系统 = 信源→编码→有噪信道→解码→信宿。</p>
+<p>③ 比特：N 选 1 携带 <code>log₂N</code> 比特；1 比特 = 消除一次五五开的不确定。信息 = 消除的不确定量。</p>
+<p>④ 熵 <code>H=−Σp·log p</code>：信源平均每符号的意外量，也是无损压缩的极限；冗余是可挤掉的水分（英文约半是冗余）。</p>
+<p>⑤ 皇冠——有噪信道编码定理：信道有容量 C，R &lt; C 时可把错误率压到任意小、R &gt; C 则不可能；反直觉在于「趋零错误不需趋零速率」。</p>
+<p>⑥ 手法：长码块 + 码字在信号空间里彼此拉远，让噪声被平均纠正；用「随机编码」证明好码只是「存在」。</p>
+<p>⑦ 香农公式 <code>C = W·log₂(1+S/N)</code>：带宽与信噪比决定速度上限，至今是通信设计标尺。</p>
+<p>⑧ 影响：比特成为信息的通用货币，是数字化的理论根；纠错码用半个世纪逼近香农极限。</p>
+<p>⑨ 局限：只证存在不给构造、逼近极限晚了几十年；剔除语义易被误用；点对点、模型已知等假设之外仍是难题。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的定理证明与数学细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
