@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Go To Statement Considered Harmful（GOTO 有害论）— IT 论文精读 Paper 37</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 37</p>
+<h1>Go To Statement Considered Harmful（GOTO 有害论）</h1>
+<p class="sub">Edsger W. Dijkstra · Communications of the ACM · 1968</p>
+<p class="langbar"><a href="goto-considered-harmful-paper37.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1968 年，荷兰计算机科学家 Edsger Dijkstra 给一本学术期刊写了一封两页的短信，标题是《GOTO 语句有害》。信里没有算法、没有公式，却成了软件史上最有名的文章之一，直接改写了「代码该怎么写」这件事。今天你写的 <code>if</code> / <code>while</code> / <code>for</code>、以及几乎每种语言都劝你少用甚至干脆删掉的 <strong>goto</strong>——源头就是这封信。</p>
+<h2>先说 goto 是什么</h2>
+<p>早年的程序像一张写满编号行的清单，<strong>goto</strong> 是一条命令：「别往下读了，直接跳到第 87 行接着执行」。它能往前跳、往后跳、跳进跳出任何地方。方便是真方便，但一个稍大的程序里塞满这种跳转，读起来就像一团缠死的耳机线——业内管这叫<strong>「面条代码」</strong>。</p>
+<h2>Dijkstra 看破的那件怪事</h2>
+<p>他点破了一件很微妙的事：我们读代码是<strong>从上往下、一行行看的</strong>（静态的文字），可程序真正跑起来是<strong>在时间里一步步走的</strong>（动态的过程）。写程序的人脑子里得始终对上这两件事——「我读到的这一行，对应程序跑到哪一步」。而他有个关于人的观察：<strong>人天生擅长看懂静态的排列，却很不擅长在脑中想象一个随时间演化的过程。</strong>所以好代码的关键，是让静态的文字尽量像动态执行的<strong>一张地图</strong>。</p>
+<h2>那个点子</h2>
+<p>goto 恰恰把这张地图撕烂了。打个比方：读一本普通的书，<strong>一个书签</strong>就能标记「我读到哪了」；可要是这本书每一页都写着「现在跳去翻第几页」、跳来跳去，那个书签就没意义了——你光看书签，根本说不清故事进行到哪、之前发生过什么。</p>
+<p>Dijkstra 的主张是：<strong>只用三种「不乱跳」的积木——顺着往下（顺序）、二选一（if 分支）、重复做（循环）——就足以写出任何程序</strong>；而这样写出来的代码，永远能用「读到第几行 +（如果在循环里）转了几圈」这样一个清清楚楚的书签，标出程序此刻走到哪。文字重新变回了可靠的地图。</p>
+<h2>带来了什么</h2>
+<p>这封信点燃了<strong>「结构化编程」</strong>运动。此后新语言纷纷把 if/while/for 做成一等公民、把 goto 打入冷宫；「代码要让人读得懂」第一次被摆到和「能跑」同等重要的位置。今天你几乎不会在正经代码里见到 goto，多半就拜这封信所赐。诚实说一句：后来 Knuth 等人指出，少数情形（比如出错时一跳跳出好几层循环）用一次跳转反而更清楚——所以主流做法是「<strong>极力少用</strong>」，而非「绝对禁止」。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>代码是静态的文字，执行是动态的过程；人脑擅长前者、拙于后者。goto 能任意乱跳，让「读到哪」对不上「跑到哪」，文字不再是执行的地图。改用顺序 / 分支 / 循环三种积木，就永远能用一个清楚的书签标出程序此刻的位置——代码于是可读、可查、可信。</p>
+</div>
+<p class="switch-hint">想看「进度坐标」的精确论证、控制流对比图与后续争论？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Dijkstra 在这封两页的信里论证：<strong>goto</strong>（无限制跳转）会让程序的<strong>静态文字</strong>与它执行时的<strong>动态过程</strong>严重脱节，使人无法用一组简洁的「坐标」说清「程序此刻走到哪、之前经历了什么」；而只要把控制流限制在<strong>顺序、选择（if）、循环</strong>三种结构里，这组坐标就总是存在——代码于是可读、可推理、可验证。这封信点燃了结构化编程（structured programming）运动，奠定了现代控制结构。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>goto（跳转语句）</strong>：一条「直接跳到程序某处继续执行」的命令，可前可后、可跳入跳出任意位置，不受块结构约束。</li>
+<li><strong>控制流（control flow）</strong>：程序里各条语句被执行的先后顺序 / 路径。</li>
+<li><strong>顺序 / 选择 / 循环</strong>：三种基本控制结构——一条条往下走（顺序）、按条件二选一（<code>if-then-else</code>，选择）、重复执行一段（<code>while</code>/<code>for</code>，循环 / 迭代）。</li>
+<li><strong>过程调用（procedure call）</strong>：把一段代码打包命名、可在别处「调用」，执行完自动返回原处继续。</li>
+<li><strong>面条代码（spaghetti code）</strong>：goto 满天飞、控制流互相缠绕、难以看懂的程序，形如一团面条。</li>
+<li><strong>程序不变式（invariant）</strong>：在程序某一点「每次执行到这里都成立」的性质；推理或证明程序正确，靠的就是它。</li>
+<li><strong>结构化编程（structured programming）</strong>：只用顺序 / 选择 / 循环、不用（或极少用）goto 来组织程序的编程范式，本文是它的宣言之一。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者 Edsger W. Dijkstra（荷兰，1972 年图灵奖得主），文章 1968 年 3 月发表于《Communications of the ACM》，其实是一封「致编辑的信」。Dijkstra 原拟标题《反对 GOTO 语句的理由》，被编辑 Niklaus Wirth 改成更醒目的《Go To Statement Considered Harmful》。它上承 Böhm 与 Jacopini 1966 年的理论结果，下启 1970 年代的结构化编程运动，以及 Dijkstra、Hoare、Dahl 合著的《Structured Programming》（1972）。</p>
+<h2>问题与动机</h2>
+<p>1960 年代的主流语言（FORTRAN、汇编，乃至 ALGOL）都以 goto 为核心控制手段：程序是一串带编号的语句，靠 goto 在其间任意跳转。这在小程序里没问题，可程序一大，跳转交织成网，读者几乎无法在脑中重建「执行到底怎么走」。</p>
+<p>Dijkstra 想追问一个更根本的问题：<strong>我们凭什么能相信一个程序是对的？</strong>他给出一个关于人的观察：<strong>人的智力更擅长把握静态的结构关系，而很不擅长在脑中想象随时间演化的过程。</strong>而程序恰恰有两副面孔——写在纸上的是<strong>静态文本</strong>，跑起来是<strong>动态过程</strong>。写程序、读程序、调程序，本质都是在这两者之间来回对应。若二者的对应简单清晰，我们就抓得住；若混乱，我们就失控。goto 正是让二者失控的元凶。</p>
+<h2>核心思想 / 方法</h2>
+<h3>关键在「进度坐标」</h3>
+<p>Dijkstra 的核心论证不是「goto 丑」，而是一件很精确的事：<strong>能不能给「程序此刻的进度」找到一组简洁、有意义的坐标。</strong>他逐一检查了结构化的控制流：</p>
+<ul>
+<li><strong>纯顺序 + 选择（if）</strong>的程序：随时用<strong>一个「文本指针」</strong>——读到第几行——就能说清进度。指针指到哪，程序就走到哪，一一对应。</li>
+<li><strong>加上循环</strong>：一个文本指针不够了，因为循环体里同一行会被反复经过。于是再配一个<strong>动态计数</strong>（第几次迭代）；文本指针 + 计数，就又能唯一地钉住进度。</li>
+<li><strong>加上过程调用</strong>：需要一叠文本指针（调用栈），但依然是一组定义良好的坐标。</li>
+</ul>
+<p>关键在于：这几种结构化控制流，都能让我们<strong>从「控制走到哪」系统地推出一组「进度坐标」</strong>——而这组坐标，正是我们谈论程序状态、写下「执行到这里时 <code>X</code> 必成立」这类<strong>不变式</strong>的立足点。没有它，正确性推理就无从下脚。</p>
+<p>而 goto 把这一切打碎：一旦允许任意跳转，某个文本位置可以从四面八方被抵达，「读到第几行」不再蕴含「之前经历了什么」，那个文本指针<strong>退化成一个无意义的坐标</strong>。你再也没法简洁地刻画进度，也就没法在脑中或纸上稳稳地推理这段程序。Dijkstra 由此断言：goto「太原始了，原始到成了把程序搅乱的诱惑」。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="a" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker>
+<marker id="b" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="c" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+</defs>
+<text fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle" x="140" y="26">goto：任意跳转</text>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="418" y="26">顺序 / 选择 / 循环</text>
+<line stroke="rgba(240,180,41,0.18)" x1="280" x2="280" y1="14" y2="326"></line>
+<!-- LEFT: spaghetti -->
+<g>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="44"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="61">行 10</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="94"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="111">行 20</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="144"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="161">行 30</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="194"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="211">行 40</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="244"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="261">行 50</text>
+<path d="M148,57 C210,64 214,190 152,201" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<path d="M148,207 C226,220 232,96 152,105" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<path d="M148,111 C204,120 208,250 152,257" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<path d="M52,157 C10,168 12,60 50,55" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<text fill="#7c8593" font-size="18" x="16" y="292">🔖</text>
+<text fill="#e8794b" font-size="11" x="40" y="292">书签失效：说不清走到哪</text>
+</g>
+<!-- RIGHT: structured -->
+<g>
+<rect fill="none" height="212" rx="8" stroke="#f0b429" stroke-dasharray="4 3" width="196" x="320" y="44"></rect>
+<text fill="#f0b429" font-size="10.5" x="328" y="60">循环 while（重复）</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="150" x="343" y="70"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="418" y="87">顺序语句</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="150" x="343" y="112"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="418" y="129">if 条件？</text>
+<rect fill="rgba(240,180,41,0.06)" height="24" rx="5" stroke="#7c8593" width="66" x="343" y="156"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="376" y="172">是</text>
+<rect fill="rgba(240,180,41,0.06)" height="24" rx="5" stroke="#7c8593" width="66" x="427" y="156"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="460" y="172">否</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="150" x="343" y="200"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="418" y="217">顺序语句</text>
+<line marker-end="url(#b)" stroke="#7c8593" x1="418" x2="418" y1="96" y2="110"></line>
+<path d="M390,138 L376,154" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M446,138 L460,154" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M376,180 C376,192 418,192 418,198" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M460,180 C460,192 418,192 418,198" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M493,213 C528,213 528,83 495,83" fill="none" marker-end="url(#c)" stroke="#f0b429" stroke-width="1.4"></path>
+<text fill="#f0b429" font-size="16" x="298" y="122">🔖</text>
+<text fill="#f0b429" font-size="10.5" x="322" y="300">书签 = 读到第几行 + 转了几圈</text>
+<text fill="#7c8593" font-size="10.5" x="322" y="316">→ 唯一钉住进度</text>
+</g>
+</svg>
+<figcaption>图 1 · 同一段逻辑的两种控制流。左：goto 可从任意行跳到任意行，「读到第几行」不再说明「程序走到哪」，进度无法用简洁坐标标出（面条代码）。右：只用顺序 / 选择 / 循环，随时可用「读到第几行 +（循环）转了几圈」这个书签唯一地钉住进度。</figcaption>
+</figure>
+<h3>因此只留三种积木</h3>
+<p>Böhm 与 Jacopini 早在 1966 年就证明：任何可计算的流程，都能只用<strong>顺序、选择、循环</strong>三种结构表达，goto 在能力上并非必需。Dijkstra 的主张顺理成章：<strong>主动放弃 goto，把程序限制在这三种「进度坐标始终存在」的积木里。</strong>代价是有时要多写一个布尔变量、多绕一点，但换来的是「文本 ≈ 执行地图」这个可贵性质。要注意，他反对的是<strong>无限制的</strong> goto，而非一切跳转——结构化的分支与循环，本质上就是「被驯服的跳转」。</p>
+<h2>关键结果</h2>
+<p>这是一篇立论文章，没有实验，它的「结果」是论证本身的说服力，加上它援引的理论支撑：<strong>Böhm–Jacopini 定理</strong>保证了「删掉 goto 不损失任何表达能力」，让「少用 / 不用 goto」从审美偏好变成有依据的工程主张。文章给出的可操作结论极简却极硬——<strong>用顺序 / 选择 / 循环组织一切控制流</strong>，并留下那句流传至今的判断：「<em>程序员的水平，是其代码中 goto 密度的减函数</em>」。它的影响力不靠数字，而靠此后二十年整个行业的实践为它背书。</p>
+<h2>为什么重要 / 影响</h2>
+<ul>
+<li>它是<strong>结构化编程运动的导火索</strong>：1970 年代，if-then-else、while、for、带结构的过程成为语言设计标配，goto 被边缘化，甚至从后来的新语言里直接移除。</li>
+<li>它把<strong>「可读性 / 可推理性」抬到与「可运行」并列</strong>的高度——第一次让「人能不能看懂、能不能证明它对」成为评价代码的一等指标，直接连向后来的程序验证、代码规范与代码审查文化。</li>
+<li>它塑造了一代人的<strong>编程直觉</strong>：今天你在几乎任何语言里都本能地用嵌套的块结构、而非乱跳，正是这封信的遗产。</li>
+<li>标题句式「<strong>X considered harmful</strong>」本身成了技术写作的经典模因，被无数后来的文章化用。</li>
+</ul>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>矫枉过正之争</strong>：Donald Knuth 1974 年《Structured Programming with go to Statements》指出，少数情形（多层循环里出错时一跳到底、状态机、性能关键路径）用一次 goto 反而更清楚、更快；他那句名言「过早优化是万恶之源」也出自此文。主流共识因此是「<strong>极力少用</strong>」而非「绝对禁止」。</li>
+<li><strong>goto 只是替罪羊</strong>：真正有害的是任意的、无结构的控制流。后来的 <code>break</code> / <code>continue</code> / 多重 <code>return</code> / 异常，其实都是「受约束的跳转」，用滥了同样能把控制流搞乱——问题从来不在 <code>goto</code> 这个关键字本身。</li>
+<li><strong>一封信不是完整方法论</strong>：如何真正写出可推理的程序，要靠之后 Dijkstra、Hoare 等人的不变式、前后断言、逐步求精等工作补齐；这封信只指出了方向。</li>
+<li><strong>现代仍有 goto 的正当用途</strong>：如 C 语言里集中做错误清理（跳到函数末尾统一释放资源），Linux 内核就大量这样用——一个受纪律约束的 goto 反而让资源管理更清晰。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：goto 让静态代码文本与动态执行过程脱节，改用顺序 / 选择 / 循环即可修复——结构化编程的宣言。</p>
+<p>② 洞见：人脑擅长静态结构、拙于想象动态过程；好代码要让文本成为执行的可靠地图。</p>
+<p>③ 核心机制：结构化控制流总能给「进度」一组简洁坐标（文本指针 +（循环）计数 +（调用）栈）；这正是写不变式、做正确性推理的立足点。</p>
+<p>④ goto 之害：任意跳转让文本位置不再蕴含「之前经历了什么」，坐标退化，推理失据。</p>
+<p>⑤ 理论支撑：Böhm–Jacopini（1966）证明顺序 / 选择 / 循环即足以表达一切流程，删 goto 不损表达力。</p>
+<p>⑥ 名句：「程序员水平是其代码 goto 密度的减函数」；他反对的是「无限制」跳转，而非一切跳转。</p>
+<p>⑦ 影响：引爆结构化编程，if/while/for 成语言标配，可读性 / 可证明性升为一等指标。</p>
+<p>⑧ 局限：Knuth 指出个别情形 goto 更优（「极力少用」而非全禁）；goto 只是无结构控制流的替罪羊；现代错误处理仍有正当 goto。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想读 Dijkstra 的原信与后续争论，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

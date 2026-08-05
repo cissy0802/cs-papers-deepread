@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Go To Statement Considered Harmful — IT Paper Deep-Read Paper 37</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 37</p>
+<h1>Go To Statement Considered Harmful</h1>
+<p class="sub">Edsger W. Dijkstra · Communications of the ACM · 1968</p>
+<p class="langbar"><a href="goto-considered-harmful-paper37.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1968, the Dutch computer scientist Edsger Dijkstra wrote a two-page letter to an academic journal, titled <em>Go To Statement Considered Harmful</em>. It contained no algorithm and no formula, yet it became one of the most famous pieces of writing in software history and rewrote how we think about "how code should be written." The <code>if</code> / <code>while</code> / <code>for</code> you write today — and the <strong>goto</strong> that nearly every language now urges you to avoid or has removed entirely — trace back to this letter.</p>
+<h2>First, what is goto?</h2>
+<p>Early programs looked like a list of numbered lines, and <strong>goto</strong> was a command: "stop reading down the page — jump straight to line 87 and continue there." It could jump forward, jump back, jump into or out of anything. Convenient, genuinely. But stuff a sizeable program full of these jumps and reading it feels like untangling a knotted pair of earbuds — the trade name is <strong>"spaghetti code."</strong></p>
+<h2>The subtle thing Dijkstra saw</h2>
+<p>He pointed out something delicate: we read code <strong>top to bottom, line by line</strong> (static text), but a program actually runs <strong>step by step through time</strong> (a dynamic process). Whoever writes the program must constantly line up those two things — "this line I'm reading corresponds to <em>this</em> step of the run." And he had an observation about people: <strong>humans are naturally good at grasping static arrangements, but rather poor at picturing a process that unfolds over time.</strong> So the key to good code is to make the static text as much like <strong>a map of the dynamic execution</strong> as possible.</p>
+<h2>The idea</h2>
+<p>goto is exactly what rips that map apart. Here's an analogy: reading an ordinary book, a <strong>single bookmark</strong> tells you where you are. But if every page said "now jump to page such-and-such," bouncing around, the bookmark loses its meaning — from the bookmark alone you couldn't say how far the story has gotten or what happened before.</p>
+<p>Dijkstra's claim: <strong>using only three "non-jumping" building blocks — go straight down (sequence), pick one of two (an if branch), and repeat (a loop) — is enough to write any program</strong>; and code written that way always admits a crisp bookmark of the form "which line I've reached + (if inside a loop) how many times around." The text becomes a reliable map again.</p>
+<h2>What it led to</h2>
+<p>The letter ignited the <strong>"structured programming"</strong> movement. New languages made if/while/for first-class citizens and pushed goto to the margins; "code should be readable by a human" was, for the first time, placed on equal footing with "it runs." You almost never see goto in serious code today, largely thanks to this letter. One honest caveat: Knuth and others later noted that in a few cases (say, bailing out of several nested loops at once on an error) a single jump reads more clearly — so the mainstream stance is "<strong>use it very sparingly</strong>," not "ban it outright."</p>
+<h2>Remember this</h2>
+<div class="tl">
+<p>Code is static text; execution is a dynamic process; the human mind is good at the former and poor at the latter. goto can jump anywhere, so "where you're reading" no longer matches "where the run is" — the text stops being a map. Switch to sequence / branch / loop and you can always pin the program's current position with a clear bookmark — so the code becomes readable, checkable, trustworthy.</p>
+</div>
+<p class="switch-hint">Want the precise "progress-coordinate" argument, a control-flow comparison diagram, and the later debate? <a data-mode="deep">→ switch to the Deep version</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">In this two-page letter, Dijkstra argues that <strong>goto</strong> (unrestricted jumping) badly decouples a program's <strong>static text</strong> from the <strong>dynamic process</strong> it executes, making it impossible to describe "where the program is now and what it has been through" with a small set of meaningful "coordinates"; but if control flow is confined to <strong>sequence, selection (if), and iteration (loop)</strong>, those coordinates always exist — so the code becomes readable, reasoned-about, and verifiable. The letter ignited the structured-programming movement and shaped modern control structures.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>goto (jump statement)</strong>: a command to "continue execution at some point in the program," forward or back, into or out of any location, unconstrained by block structure.</li>
+<li><strong>Control flow</strong>: the order / path in which a program's statements are executed.</li>
+<li><strong>Sequence / selection / iteration</strong>: the three basic control structures — go down one by one (sequence), choose one of two by a condition (<code>if-then-else</code>, selection), repeat a block (<code>while</code>/<code>for</code>, iteration/loop).</li>
+<li><strong>Procedure call</strong>: bundle a piece of code under a name so it can be "called" elsewhere, returning to the caller when done.</li>
+<li><strong>Spaghetti code</strong>: a program where goto is everywhere and control flow tangles on itself, hard to follow — like a bowl of noodles.</li>
+<li><strong>Invariant</strong>: a property that "holds every time execution reaches this point"; reasoning about or proving correctness rests on it.</li>
+<li><strong>Structured programming</strong>: the paradigm of organizing programs with only sequence / selection / iteration and no (or almost no) goto; this letter is one of its manifestos.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The author, Edsger W. Dijkstra (Netherlands; 1972 Turing Award), published this in the March 1968 <em>Communications of the ACM</em> — it is in fact a "letter to the editor." Dijkstra's own title was <em>A Case against the GO TO Statement</em>; editor Niklaus Wirth changed it to the punchier <em>Go To Statement Considered Harmful</em>. It builds on the 1966 theoretical result of Böhm and Jacopini, and leads into the 1970s structured-programming movement and the book <em>Structured Programming</em> (1972) by Dijkstra, Hoare, and Dahl.</p>
+<h2>The problem and motivation</h2>
+<p>The dominant languages of the 1960s (FORTRAN, assembly, even ALGOL) used goto as the core means of control: a program was a string of numbered statements with goto jumping arbitrarily among them. Fine for small programs — but as a program grows, the jumps weave into a net and the reader can barely reconstruct in their head "how the execution actually goes."</p>
+<p>Dijkstra was after a more fundamental question: <strong>on what grounds can we believe a program is correct?</strong> He offers an observation about people: <strong>human intellect is better at grasping static, structural relations, and rather poor at picturing processes that evolve over time.</strong> And a program wears two faces — on paper it is <strong>static text</strong>; running, it is a <strong>dynamic process</strong>. Writing, reading, and debugging are all acts of mapping between the two. If that mapping is simple and clear, we keep hold of it; if it is a mess, we lose control. goto is precisely what makes the two lose their grip on each other.</p>
+<h2>Core idea / method</h2>
+<h3>It's all about "progress coordinates"</h3>
+<p>Dijkstra's central argument is not "goto is ugly" but something precise: <strong>can we find a small, meaningful set of coordinates for "the program's current progress"?</strong> He inspects the structured control flows one by one:</p>
+<ul>
+<li><strong>Pure sequence + selection (if)</strong>: a <strong>single "textual pointer"</strong> — which line you've reached — describes progress at any moment. Wherever the pointer sits, that's where the program is: one-to-one.</li>
+<li><strong>Add loops</strong>: one textual pointer no longer suffices, because a line inside a loop body is passed repeatedly. So add a <strong>dynamic count</strong> (which iteration); textual pointer + count again pins progress uniquely.</li>
+<li><strong>Add procedure calls</strong>: you need a stack of textual pointers (the call stack) — still a well-defined set of coordinates.</li>
+</ul>
+<p>The point: each of these structured control flows lets us <strong>derive a set of "progress coordinates" systematically from "where control has reached."</strong> And that set of coordinates is exactly the footing on which we talk about program state and write down <strong>invariants</strong> like "when execution reaches here, <code>X</code> must hold." Without it, correctness reasoning has nowhere to stand.</p>
+<p>goto shatters all of this: once arbitrary jumps are allowed, a given textual position can be arrived at from every direction, so "which line you've reached" no longer implies "what happened before," and the textual pointer <strong>degenerates into a meaningless coordinate</strong>. You can no longer characterize progress compactly, and thus can no longer reason steadily about the code — on paper or in your head. Hence Dijkstra's verdict: goto is "too much an invitation to make a mess of one's program."</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="a" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker>
+<marker id="b" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="c" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+</defs>
+<text fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle" x="140" y="26">goto: jump anywhere</text>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="418" y="26">sequence / selection / loop</text>
+<line stroke="rgba(240,180,41,0.18)" x1="280" x2="280" y1="14" y2="326"></line>
+<g>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="44"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="61">line 10</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="94"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="111">line 20</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="144"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="161">line 30</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="194"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="211">line 40</text>
+<rect fill="rgba(232,121,75,0.08)" height="26" rx="5" stroke="#e8794b" width="96" x="52" y="244"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="100" y="261">line 50</text>
+<path d="M148,57 C210,64 214,190 152,201" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<path d="M148,207 C226,220 232,96 152,105" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<path d="M148,111 C204,120 208,250 152,257" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<path d="M52,157 C10,168 12,60 50,55" fill="none" marker-end="url(#a)" stroke="#e8794b" stroke-width="1.5"></path>
+<text fill="#7c8593" font-size="18" x="16" y="292">🔖</text>
+<text fill="#e8794b" font-size="11" x="40" y="292">bookmark useless: can't say where</text>
+</g>
+<g>
+<rect fill="none" height="212" rx="8" stroke="#f0b429" stroke-dasharray="4 3" width="196" x="320" y="44"></rect>
+<text fill="#f0b429" font-size="10.5" x="328" y="60">while loop (repeat)</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="150" x="343" y="70"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="418" y="87">sequential stmt</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="150" x="343" y="112"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="418" y="129">if condition?</text>
+<rect fill="rgba(240,180,41,0.06)" height="24" rx="5" stroke="#7c8593" width="66" x="343" y="156"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="376" y="172">yes</text>
+<rect fill="rgba(240,180,41,0.06)" height="24" rx="5" stroke="#7c8593" width="66" x="427" y="156"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="460" y="172">no</text>
+<rect fill="rgba(240,180,41,0.1)" height="26" rx="5" stroke="#f0b429" width="150" x="343" y="200"></rect><text fill="#d9dee5" font-size="11" text-anchor="middle" x="418" y="217">sequential stmt</text>
+<line marker-end="url(#b)" stroke="#7c8593" x1="418" x2="418" y1="96" y2="110"></line>
+<path d="M390,138 L376,154" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M446,138 L460,154" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M376,180 C376,192 418,192 418,198" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M460,180 C460,192 418,192 418,198" fill="none" marker-end="url(#b)" stroke="#7c8593"></path>
+<path d="M493,213 C528,213 528,83 495,83" fill="none" marker-end="url(#c)" stroke="#f0b429" stroke-width="1.4"></path>
+<text fill="#f0b429" font-size="16" x="298" y="122">🔖</text>
+<text fill="#f0b429" font-size="10.5" x="322" y="300">bookmark = line reached + laps done</text>
+<text fill="#7c8593" font-size="10.5" x="322" y="316">→ pins progress uniquely</text>
+</g>
+</svg>
+<figcaption>Fig. 1 · Two control flows for the same logic. Left: goto can jump from any line to any line, so "which line you've reached" no longer says "where the program is" — progress has no compact coordinates (spaghetti code). Right: with only sequence / selection / loop, a bookmark of "line reached + (loop) laps done" pins progress uniquely at any moment.</figcaption>
+</figure>
+<h3>Hence, keep only three building blocks</h3>
+<p>Böhm and Jacopini had already proved in 1966 that any computable process can be expressed using only <strong>sequence, selection, and iteration</strong> — goto is not necessary in expressive power. Dijkstra's proposal follows naturally: <strong>give up goto voluntarily and confine programs to these three blocks, in which "progress coordinates always exist."</strong> The cost is sometimes an extra boolean variable or a slight detour; the prize is that precious property, "text ≈ map of execution." Note that what he opposes is <strong>unrestricted</strong> goto, not all jumping — structured branches and loops are, in essence, "tamed jumps."</p>
+<h2>Key results</h2>
+<p>This is a position paper with no experiments; its "result" is the persuasiveness of the argument itself, plus the theory it invokes: the <strong>Böhm–Jacopini theorem</strong> guarantees that "deleting goto costs no expressive power," turning "use goto little or not at all" from an aesthetic preference into a grounded engineering claim. Its actionable conclusion is minimal but hard — <strong>organize all control flow with sequence / selection / iteration</strong> — and it leaves the line still quoted today: "<em>the quality of programmers is a decreasing function of the density of go to statements in the programs they produce.</em>" Its influence rests not on numbers but on two decades of industry practice bearing it out.</p>
+<h2>Why it matters / impact</h2>
+<ul>
+<li>It was the <strong>spark for the structured-programming movement</strong>: in the 1970s, if-then-else, while, for, and structured procedures became standard in language design, and goto was marginalized — even removed outright from later languages.</li>
+<li>It raised <strong>"readability / reasonability" to equal standing with "it runs"</strong> — for the first time making "can a human understand it, can we prove it correct" a first-class criterion for code, leading directly into later program verification, coding standards, and code-review culture.</li>
+<li>It shaped a generation's <strong>programming instincts</strong>: that you reflexively reach for nested block structure rather than wild jumps, in almost any language today, is this letter's legacy.</li>
+<li>The title pattern "<strong>X considered harmful</strong>" itself became a classic meme of technical writing, echoed by countless later pieces.</li>
+</ul>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The "over-correction" debate</strong>: Donald Knuth's 1974 <em>Structured Programming with go to Statements</em> argued that in a few cases (bailing all the way out of nested loops on error, state machines, performance-critical paths) a single goto is actually clearer and faster; his famous line "premature optimization is the root of all evil" comes from that paper too. The mainstream consensus is therefore "<strong>use it very sparingly</strong>," not "ban it outright."</li>
+<li><strong>goto is only a scapegoat</strong>: what is truly harmful is arbitrary, unstructured control flow. Later <code>break</code> / <code>continue</code> / multiple <code>return</code> / exceptions are all "constrained jumps," and abused they can tangle control flow just as badly — the problem was never the <code>goto</code> keyword itself.</li>
+<li><strong>A letter is not a full methodology</strong>: how to actually write reasoned-about programs was filled in later by Dijkstra, Hoare, and others through invariants, pre/post assertions, and stepwise refinement; this letter only pointed the direction.</li>
+<li><strong>goto still has legitimate modern uses</strong>: e.g. centralized error cleanup in C (jump to the end of a function to release resources in one place), as the Linux kernel does extensively — a disciplined goto that actually makes resource handling clearer.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: goto decouples static code text from the dynamic execution process; switching to sequence / selection / iteration fixes it — the manifesto of structured programming.</p>
+<p>② Insight: the human mind is good at static structure, poor at picturing dynamic processes; good code makes the text a reliable map of execution.</p>
+<p>③ Core mechanism: structured control flow always gives "progress" a compact set of coordinates (textual pointer + (loop) count + (call) stack); this is the footing for invariants and correctness reasoning.</p>
+<p>④ Harm of goto: arbitrary jumps make a textual position no longer imply "what came before," coordinates degenerate, reasoning loses its ground.</p>
+<p>⑤ Theoretical backing: Böhm–Jacopini (1966) proved sequence / selection / iteration can express any process — deleting goto loses no expressive power.</p>
+<p>⑥ The famous line: "programmer quality is a decreasing function of goto density"; what he opposes is <em>unrestricted</em> jumping, not all jumping.</p>
+<p>⑦ Impact: it ignited structured programming, made if/while/for language standards, and raised readability / provability to first-class criteria.</p>
+<p>⑧ Limits: Knuth showed goto is better in a few cases ("use sparingly," not banned); goto is only a scapegoat for unstructured control flow; modern error handling still has legitimate goto.</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Reading this page ≈ getting the core of the paper; for Dijkstra's original letter and the debate that followed, go to the source.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
