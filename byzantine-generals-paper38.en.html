@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The Byzantine Generals Problem — CS Papers Deep-Read Paper 38</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 38</p>
+<h1>The Byzantine Generals Problem</h1>
+<p class="sub">Lamport, Shostak, Pease · SRI International · ACM TOPLAS 1982</p>
+<p class="langbar"><a href="byzantine-generals-paper38.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1982, Leslie Lamport and two colleagues posed and solved a question: <strong>if a group of people who can only coordinate by passing messages has some liars and saboteurs mixed in, can the honest ones still agree?</strong> Their answer was striking — <strong>yes, as long as the traitors are fewer than one-third of everyone; once they reach one-third, no.</strong> This idea is the bedrock of every "resist-the-cheaters" system today: Bitcoin, blockchains, fault-tolerant bank ledgers all trace back here.</p>
+<h2>First, an odd story</h2>
+<p>Several divisions of the Byzantine army surround an enemy city, each led by a general, and the generals can only <strong>send word by messenger</strong>. They must <strong>all attack together or all retreat together</strong> — the worst outcome is "half attack, half retreat," which loses for sure. The trouble: some generals are <strong>traitors</strong> who deliberately tell one person "attack" and another "retreat," sowing chaos to keep the loyal generals from lining up. The question: can the loyal generals guarantee they all act as one?</p>
+<h2>Why is it so hard?</h2>
+<p>Take the smallest case: <strong>three people, one traitor</strong>. The paper proves it's <strong>impossible</strong>. Picture yourself, an honest general, receiving two contradictory messages: the commander says "attack," but another general relays "the commander told me to retreat." You simply cannot tell: <strong>is the commander honest and the relayer lying? Or is the commander a traitor who told different people different things?</strong> Those two situations look <strong>identical</strong> to you. You have no way to decide, and any choice can be wrong. With too few people, a traitor's lies are enough to muddy the water past the point of telling truth from falsehood.</p>
+<h2>So what breaks the deadlock?</h2>
+<p>Two things. First, <strong>enough people</strong> — the honest ones must be more than two-thirds (traitors under one-third), so lies can't outnumber truth. Second, <strong>everyone relays and then takes a majority vote</strong>: each person not only hears the commander but also tells everyone else "here's what the commander told me." Now each honest person accumulates a whole pile of "accounts of the commander's order," of which <strong>the traitors can pollute only a few</strong>. Take the majority and the truth surfaces — and every honest person computes the <strong>same</strong> majority, so they all act alike.</p>
+<h2>A shortcut: signatures</h2>
+<p>All that relaying is laborious. The paper offers a second route: <strong>stamp every order with an unforgeable "wax seal" (a digital signature).</strong> The seal can't be faked, and any tampering with the contents shows. Now a traitor can no longer <strong>secretly alter the commander's words to deceive</strong> — the moment he changes anything, checking the seal exposes it. With signatures, <strong>the honest ones can agree no matter how many traitors there are</strong>, and the one-third barrier falls away. The cost: you first need a reliable signature scheme nobody can forge — itself hard to build in the real world.</p>
+<h2>Remember this</h2>
+<div class="tl">
+<p>Among people who coordinate by relaying messages and include liars, as long as the traitors are under one-third, "everyone relays plus majority vote" lets the honest ones act as one; at one-third there's no cure — unless every message carries an unforgeable signature, in which case any number of traitors can be tolerated. This is the starting point of every "resist-the-cheaters" distributed system.</p>
+</div>
+<p class="switch-hint">Want the three-general impossibility proof, the recursive algorithm, and message costs? <a data-mode="deep">→ switch to the Deep version</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">This paper casts the problem of "reaching agreement in a distributed system when some nodes may behave <strong>arbitrarily and maliciously</strong> (lie, send conflicting messages, fake failures)" as an allegory of besieging generals, and proves two foundational results: with <strong>oral messages (a relayed message can be altered)</strong>, tolerating <code>m</code> traitors requires at least <code>3m+1</code> generals (traitors must be fewer than one-third), achieved by a recursive algorithm <code>OM(m)</code>; but once <strong>unforgeable digital signatures</strong> are introduced, <strong>any number of traitors can be tolerated</strong>. It defined the "Byzantine fault" — the strongest fault model — and is the intellectual origin of Byzantine fault tolerance (BFT) and every later blockchain consensus.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Distributed system</strong>: multiple independent computers that can only communicate by sending and receiving messages, cooperating on one task; there is no omniscient center, so consistency must be pieced together through communication.</li>
+<li><strong>Consensus / agreement</strong>: scattered parties all arrive at the same decision about some value (e.g. "attack or retreat," "is this transfer valid").</li>
+<li><strong>Fault model</strong>: the assumption about how a node can break. The weakest is a <em>crash fault</em> (the node simply dies and sends nothing more); the strongest is a <em>Byzantine fault</em> — the node may not only break but also <strong>actively lie, send mutually contradictory messages, and collude with other bad nodes</strong>, behaving in arbitrarily malicious ways.</li>
+<li><strong>Digital signature</strong>: a cryptographic "anti-forgery seal" on a message; only the private-key holder can produce it, anyone can verify it, and it becomes invalid if the content is altered. See this site's piece on <em>New Directions in Cryptography</em>.</li>
+<li><strong>Synchronous model</strong>: assumes message delivery has a known time bound, so "a message that didn't arrive on time" is detectable. The Byzantine Generals solutions rest on this assumption.</li>
+<li><strong>Fault threshold <code>m</code> / node count <code>n</code></strong>: <code>m</code> is the maximum number of faulty nodes the system must tolerate, <code>n</code> the total; the paper's core result is precisely the numerical relationship between them.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors Leslie Lamport, Robert Shostak, and Marshall Pease were at SRI International; the paper appeared in ACM TOPLAS in 1982. It is the <strong>allegorical retelling</strong> of the same group's more formal 1980 paper, <em>Reaching Agreement in the Presence of Faults</em> — it was this "Byzantine generals" framing that made the problem famous. It follows Lamport's 1978 <em>Time, Clocks</em> reflections on ordering events in distributed systems, and opens the whole field of <strong>Byzantine fault tolerance (BFT)</strong>: PBFT (1999) first made it run; Bitcoin (2008) gave it a probabilistic answer in an open network.</p>
+<h2>The problem and motivation</h2>
+<p>Reliable systems often tolerate faults by "running redundant copies and voting for the majority." But that hides an overlooked assumption: <strong>a broken component only "stops working," it doesn't "actively misbehave."</strong> Reality disagrees — a faulty sensor may report <strong>different readings</strong> to different queriers, a bad memory cell may intermittently flip and flip back, a compromised node will <strong>deliberately send carefully crafted false messages</strong>. Such "arbitrary, even maliciously coordinated" failures the authors call <em>Byzantine faults</em>.</p>
+<p>The difficulty: <strong>an honest node cannot, from its own received messages alone, distinguish "the other party is faulty / lying" from "the message source itself is bad."</strong> Worse, a traitor can tell different people different things, making "the world you see" and "the world I see" disagree, so honest parties reach different decisions. The problem is distilled into two requirements (the authors call it <em>interactive consistency</em>):</p>
+<ul>
+<li><strong>IC1</strong>: all <strong>loyal</strong> generals ultimately obey the <strong>same</strong> order.</li>
+<li><strong>IC2</strong>: if the commanding general is loyal, then every loyal general obeys the <strong>order he actually sent</strong>.</li>
+</ul>
+<p>Swap "general" for "computer / replica" and "the commander issues an order" for "some node broadcasts a value," and this is the hardest consistency problem in distributed systems.</p>
+<h2>Core idea / method</h2>
+<h3>The allegory: telling malicious failure as a story anyone can grasp</h3>
+<p>One of the paper's biggest contributions is <strong>the metaphor itself</strong>. Recasting abstract "arbitrary node misbehavior" as "some of the besieging generals are traitors" instantly gave the field a shared language. To focus, the authors reduce "everyone deliberating as equals" to a more basic sub-problem: <strong>one commander sends an order to several lieutenants</strong>, where the commander or some lieutenants may be traitors. Solve this "one-way command" version, then let each general take a turn as commander, and you can stitch together agreement among all.</p>
+<h3>The oral version: why you need 3m+1 generals</h3>
+<p>Consider the <strong>oral message</strong> model — a message is delivered correctly, the receiver knows who sent it, and a missing message is detectable, but <strong>a traitor may freely misreport what he "heard"</strong> (altering the content when relaying, with no accountability). In this model the authors prove a sharp lower bound: <strong>to tolerate <code>m</code> traitors, the total number of generals must be <code>n ≥ 3m+1</code></strong> — that is, <strong>traitors must be fewer than one-third</strong>.</p>
+<p>Why? Look at the smallest counterexample: <strong>three generals, one traitor — no solution.</strong> The honest lieutenant L1 holds only two pieces of information: the order the commander gave directly, and the order lieutenant L2 relays as "what the commander told me." When these conflict, L1 faces two worlds that are, to him, <strong>completely indistinguishable</strong>:</p>
+<figure>
+<svg viewBox="0 0 600 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<!-- Scenario A -->
+<text x="150" y="24" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">Case A: loyal commander, L2 traitor</text>
+<circle cx="150" cy="70" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle>
+<text x="150" y="66" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Cmdr</text>
+<text x="150" y="80" fill="#7c8593" font-size="8.5" text-anchor="middle">loyal</text>
+<circle cx="80" cy="200" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle>
+<text x="80" y="197" fill="#e7ebf1" font-size="11" text-anchor="middle">L1</text>
+<text x="80" y="211" fill="#7c8593" font-size="8.5" text-anchor="middle">loyal·you</text>
+<circle cx="220" cy="200" r="24" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></circle>
+<text x="220" y="197" fill="#e7ebf1" font-size="11" text-anchor="middle">L2</text>
+<text x="220" y="211" fill="#e8794b" font-size="9" text-anchor="middle">traitor</text>
+<line x1="134" y1="90" x2="94" y2="180" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="166" y1="90" x2="206" y2="180" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="196" y1="205" x2="106" y2="205" stroke="#e8794b" marker-end="url(#a1)"></line>
+<text x="92" y="135" fill="#f0b429" font-size="10.5">attack</text>
+<text x="185" y="135" fill="#f0b429" font-size="10.5">attack</text>
+<text x="150" y="228" fill="#e8794b" font-size="10" text-anchor="middle">lies: "commander said retreat"</text>
+<!-- Scenario B -->
+<text x="450" y="24" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">Case B: commander is the traitor</text>
+<circle cx="450" cy="70" r="24" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></circle>
+<text x="450" y="66" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Cmdr</text>
+<text x="450" y="80" fill="#e8794b" font-size="8.5" text-anchor="middle">traitor</text>
+<circle cx="380" cy="200" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle>
+<text x="380" y="197" fill="#e7ebf1" font-size="11" text-anchor="middle">L1</text>
+<text x="380" y="211" fill="#7c8593" font-size="8.5" text-anchor="middle">loyal·you</text>
+<circle cx="520" cy="200" r="24" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle>
+<text x="520" y="197" fill="#e7ebf1" font-size="11" text-anchor="middle">L2</text>
+<text x="520" y="211" fill="#7c8593" font-size="8.5" text-anchor="middle">loyal</text>
+<line x1="434" y1="90" x2="394" y2="180" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="466" y1="90" x2="506" y2="180" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="496" y1="205" x2="406" y2="205" stroke="#7c8593" marker-end="url(#a1)"></line>
+<text x="392" y="135" fill="#f0b429" font-size="10.5">attack</text>
+<text x="485" y="135" fill="#f0b429" font-size="10.5">retreat</text>
+<text x="450" y="228" fill="#7c8593" font-size="10" text-anchor="middle">truthfully: "commander said retreat"</text>
+<text x="300" y="268" fill="#e7ebf1" font-size="11.5" text-anchor="middle">In both cases L1 receives the identical set: { Cmdr→attack, L2→retreat }</text>
+<text x="300" y="288" fill="#e8794b" font-size="11.5" text-anchor="middle">→ he cannot tell them apart; any decision is wrong in one of the two</text>
+</svg>
+<figcaption>Fig 1 · Three generals, one traitor is unsolvable: loyal L1 receives byte-for-byte identical messages whether "commander loyal + L2 lies" or "commander lies" — so no algorithm can satisfy both IC1 and IC2.</figcaption>
+</figure>
+<p>In Case A, IC2 requires L1 to obey the commander's true order "attack"; but in Case B L1 sees exactly the same thing, so if he still "attacks" while, symmetrically, the loyal L2 received "retreat" and obeys it, the two loyal lieutenants act oppositely — violating IC1. <strong>Whatever rule L1 adopts, some case makes him wrong.</strong> A "grouping" reduction then generalizes it: if <code>3m</code> generals could tolerate <code>m</code> traitors, partition them into three groups each simulated by one "super-general," and you'd derive a solution for "three generals, one traitor" — which was just shown impossible. Contradiction. Hence <strong><code>n ≥ 3m+1</code> is a hard lower bound.</strong></p>
+<h3>OM(m): recursive relaying plus majority vote</h3>
+<p>Beyond the bound, the authors give an algorithm <code>OM(m)</code> (Oral Message) that attains it, by <strong>recursively relaying and taking majorities layer by layer</strong>:</p>
+<ul>
+<li><code>OM(0)</code> (when no traitors need tolerating): the commander sends the order to each lieutenant, who accepts it as-is.</li>
+<li><code>OM(m)</code>: the commander sends the order to <code>n−1</code> lieutenants; then <strong>each lieutenant takes "the order he received" as a new order, acts as commander, and runs <code>OM(m−1)</code> to the other lieutenants</strong>; finally each lieutenant takes the <strong>majority</strong> of the <code>n−1</code> values (one straight from the commander, one relayed via each other lieutenant) as his decision.</li>
+</ul>
+<p>The intuition: after an order is relayed over <strong>enough independent paths</strong>, the traitors can pollute only a minority, so a majority vote filters out the true value; and every loyal lieutenant computes the same majority for each "source," so they agree. The figure shows the smallest solvable case — <strong>four generals, one traitor</strong>:</p>
+<figure>
+<svg viewBox="0 0 600 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text x="300" y="22" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">4 generals, 1 traitor: loyal commander sends "attack"</text>
+<circle cx="300" cy="60" r="22" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle>
+<text x="300" y="57" fill="#e7ebf1" font-size="10" text-anchor="middle">Cmdr</text>
+<text x="300" y="70" fill="#7c8593" font-size="8" text-anchor="middle">loyal</text>
+<circle cx="110" cy="180" r="22" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle>
+<text x="110" y="184" fill="#e7ebf1" font-size="10.5" text-anchor="middle">L1</text>
+<circle cx="300" cy="200" r="22" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></circle>
+<text x="300" y="204" fill="#e7ebf1" font-size="10.5" text-anchor="middle">L2</text>
+<circle cx="490" cy="180" r="22" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></circle>
+<text x="490" y="184" fill="#e7ebf1" font-size="10.5" text-anchor="middle">L3</text>
+<text x="490" y="150" fill="#e8794b" font-size="9" text-anchor="middle">traitor</text>
+<line x1="286" y1="76" x2="128" y2="166" stroke="#7c8593" marker-end="url(#a2)"></line>
+<line x1="300" y1="82" x2="300" y2="174" stroke="#7c8593" marker-end="url(#a2)"></line>
+<line x1="314" y1="76" x2="472" y2="166" stroke="#7c8593" marker-end="url(#a2)"></line>
+<text x="180" y="118" fill="#f0b429" font-size="9.5">attack</text>
+<text x="308" y="130" fill="#f0b429" font-size="9.5">attack</text>
+<text x="388" y="118" fill="#f0b429" font-size="9.5">attack</text>
+<line x1="132" y1="180" x2="278" y2="196" stroke="#7c8593" stroke-dasharray="3,3" marker-end="url(#a2)"></line>
+<line x1="468" y1="182" x2="132" y2="184" stroke="#e8794b" stroke-dasharray="3,3" marker-end="url(#a2)"></line>
+<line x1="470" y1="190" x2="322" y2="198" stroke="#e8794b" stroke-dasharray="3,3" marker-end="url(#a2)"></line>
+<text x="300" y="252" fill="#e7ebf1" font-size="10.5" text-anchor="middle">L1's three accounts of the order: attack(direct) · attack(via L2) · retreat(L3 lies)</text>
+<text x="300" y="274" fill="#f0b429" font-size="11" text-anchor="middle">majority(attack, attack, retreat) = attack ✓　L2 likewise → both loyals agree</text>
+<text x="300" y="294" fill="#7c8593" font-size="9.5" text-anchor="middle">dashed = lieutenant relays; traitor L3 pollutes only 1 of 3, can't flip the majority</text>
+</svg>
+<figcaption>Fig 2 · OM(1) works for 4 generals, 1 traitor: each loyal lieutenant collects three accounts of "the commander's order," the traitor pollutes at most one, majority vote recovers the true value, and the loyal ones match.</figcaption>
+</figure>
+<p>The cost is steep: <code>OM(m)</code> needs <code>m+1</code> rounds of communication, and the message count grows <strong>exponentially</strong> in the number of traitors (each recursion level fans out <code>n−1</code> ways). This is why it long stayed theoretical and hard to engineer directly.</p>
+<h3>The signed version: leaving lies nowhere to hide</h3>
+<p>The oral model's fatal flaw is that "relaying can freely alter." The authors' second key is <strong>unforgeable digital signatures</strong>: attach the sender's signature to each order, and stipulate that <strong>a loyal general's signature cannot be forged, any alteration of the content is detectable, and anyone can verify it</strong>. Now a traitor <strong>can no longer tamper with others' words to deceive</strong> — he must either forward faithfully (carrying the original signature) or lie only about his own order, and the latter is exposed the moment the signature is checked.</p>
+<p>Under the signed model, algorithm <code>SM(m)</code> has each lieutenant maintain a set of "orders seen": on receiving a new order bearing a sufficient signature chain, add it, append one's own signature, and forward to those who haven't seen it. Because misreporting is blocked by signatures, <strong>all loyal lieutenants end up with exactly the same set of orders</strong>, and applying the same "choice function" to that set (e.g. the unique value, else default to retreat) makes them agree. The conclusion is extremely strong: <strong>with signatures, the loyal ones can agree no matter how many traitors there are</strong>, and the <code>3m+1</code> shackle breaks. The price is needing a trustworthy, unforgeable signature infrastructure up front — precisely the homework that public-key cryptography and blockchains would do a decade or more later.</p>
+<h2>Key results</h2>
+<p>This is a <strong>theory paper</strong>; its "results" are theorems, not benchmarks:</p>
+<ul>
+<li><strong>Impossibility bound</strong>: in the oral model, a solution tolerating <code>m</code> traitors exists if and only if <code>n ≥ 3m+1</code>; <code>n = 3, m = 1</code> is already unsolvable.</li>
+<li><strong>Achievability</strong>: algorithm <code>OM(m)</code> satisfies IC1 and IC2 when <code>n ≥ 3m+1</code>, attaining the bound with <code>m+1</code> rounds and exponentially many messages.</li>
+<li><strong>The power of signatures</strong>: with unforgeable signatures, <code>SM(m)</code> is solvable for <strong>any <code>m</code></strong>, bypassing <code>3m+1</code> entirely.</li>
+<li><strong>Handling missing messages</strong>: because "absence is detectable" (the synchrony assumption), any order not received is recorded as the default value "retreat," keeping the algorithm converging.</li>
+</ul>
+<h2>Why it matters / impact</h2>
+<p>It equipped the whole field with three things. First, <strong>a vocabulary</strong>: "Byzantine fault / Byzantine fault tolerance" became the universal name for the worst-case, malice-included fault model, opposite "crash fault" — today any talk of fault tolerance begins by asking "which kind are you defending against?" Second, <strong>a quantitative red line</strong>: <code>3m+1</code> (needing a two-thirds honest majority under malice) became a design constant for countless protocols, from PBFT to consortium chains to Tendermint / HotStuff, all writing the tolerance threshold as "fewer than one-third malicious." Third, <strong>an engineering trajectory</strong>: Castro & Liskov's <strong>PBFT</strong> (1999) made it practical (polynomial messages, running real services), and Bitcoin (2008) gave probabilistic Byzantine fault tolerance in a new <strong>open, anonymous</strong> setting — Satoshi's "trustless double-spend" is essentially an open-network Byzantine Generals Problem. Every "resist-the-cheaters" distributed ledger today has this paper in the first cell of its family tree.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>OM(m) is impractical</strong>: its exponential message count kept the original oral algorithm on paper; the Byzantine protocols that actually run (PBFT and successors) came later and mostly lean on signatures to push complexity down to polynomial.</li>
+<li><strong>Strong synchrony assumption</strong>: the algorithm requires "messages have a time bound and absence is detectable." In real asynchronous networks this doesn't always hold — and the famous <strong>FLP impossibility</strong> (1985) proves that under pure asynchrony no deterministic consensus is possible even with a single crash fault, showing the synchrony assumption is no idle decoration.</li>
+<li><strong>Fixed, known participants</strong>: the model assumes the generals are a <strong>closed, membership-known</strong> set (permissioned). It doesn't directly apply to open networks anyone can join anonymously — that needs a Bitcoin-style Sybil-resistance mechanism on top.</li>
+<li><strong>High redundancy cost</strong>: <code>3m+1</code> means tolerating <code>m</code> bad nodes needs three-times-plus the machines, far costlier than the <code>2m+1</code> for crash-only faults (as in Paxos / Raft). Many systems therefore prefer to assume only crash faults.</li>
+<li><strong>The signed version outsources the hard part</strong>: the signed-message scheme's power rests on "an unforgeable signature exists" — but building that cryptographic infrastructure and managing keys is a whole other hard problem.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one sentence: casts "how to agree when nodes may behave arbitrarily maliciously" as besieging generals with traitors, and gives the fault-tolerance bound and algorithms.</p>
+<p>② Pain point: classic fault tolerance assumes "broken = stops working," but real faults may lie, send conflicting messages, collude maliciously (Byzantine faults); honest nodes can't tell "who is faulty / who is deceiving."</p>
+<p>③ Goal: IC1 all loyal generals obey the same order; IC2 when the commander is loyal, they obey his true order.</p>
+<p>④ Oral lower bound: tolerating <code>m</code> traitors needs <code>n ≥ 3m+1</code> (traitors under one-third); three generals with one traitor is unsolvable — loyal parties receive identical messages in two cases and can't distinguish them.</p>
+<p>⑤ Algorithm <code>OM(m)</code>: recursive relaying plus majority vote, attaining the bound in <code>m+1</code> rounds, but exponential message count makes it impractical.</p>
+<p>⑥ Signed version <code>SM(m)</code>: unforgeable signatures expose lies, any number of traitors solvable, bypassing <code>3m+1</code> — at the cost of needing reliable signature infrastructure.</p>
+<p>⑦ Impact: defined the "Byzantine fault tolerance" vocabulary and the <code>3m+1</code> red line; opened PBFT, Tendermint/HotStuff, and Bitcoin and every anti-cheating consensus.</p>
+<p>⑧ Limitations: strong synchrony assumption (cf. FLP asynchronous impossibility), membership must be fixed and known, high redundancy cost, and the signed version outsources the hard part to cryptography.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for full proofs and algorithm details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
