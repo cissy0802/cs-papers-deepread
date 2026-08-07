@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>End-to-End Arguments in System Design（端到端论证）— IT 论文精读 Paper 39</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 39</p>
+<h1>End-to-End Arguments in System Design（端到端论证）</h1>
+<p class="sub">Saltzer, Reed &amp; Clark · MIT · 1984</p>
+<p class="langbar"><a href="end-to-end-arguments-paper39.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1984 年，MIT 三位研究者（Saltzer、Reed、Clark）写了一篇几页纸的短文，回答一个每个系统设计者都躲不开的问题：<strong>一个功能，到底该塞进网络里让网络替大家做，还是留给两头的程序自己做？</strong>它给的答案，直接塑造了整个互联网的样子——为什么网络本身是「笨管道」，而真正的聪明活（保证不丢的 TCP、加密的 HTTPS）都跑在你的电脑和对面的服务器里，而不是中间的路由器上。</p>
+<h2>先打个比方</h2>
+<p>你要寄一份重要合同。快递公司拍胸脯保证「运输途中绝不弄丢弄破」。可就算他们全程做到完好——<strong>装进信封之前你可能就漏印了一页，对方拆开后也可能把它落在碎纸机旁边被误撕。</strong>快递再可靠，也管不了信封之外发生的事。所以真正靠谱的做法只有一个：<strong>对方收到后，照着清单核对一遍，发现缺页就让你重寄。</strong></p>
+<h2>这跟网络有什么关系？</h2>
+<p>把一个文件从一台电脑传到另一台，数据要一路经过：硬盘 → 内存 → 网线和路由器 → 又回内存 → 再写进硬盘。人们本能地想：<strong>让网络负责「保证不出错」不就万事大吉了？</strong>可数据离开网络之后、写进硬盘之前那一段，网络根本看不见——内存偶尔翻错一个位、硬盘写偏一个字节，网络都管不着，也不知道。它只能保证「在网线上的那一程」没出错。</p>
+<h2>那个朴素又深刻的判断</h2>
+<p>三人于是提出：<strong>有些功能，只有真正在两头收发数据的程序自己才能完整、正确地做到；网络在中间抢着做同样的事，既做不全、又拖累所有人。</strong>所以——把这类功能留给两头，让网络保持简单。这就是「端到端论证」。</p>
+<p>具体到传文件，靠谱办法是两头各算一个「指纹」：发送方对原文件算一个短短的校验码，接收方把收到并写进硬盘的文件<strong>再算一个</strong>，一比对，不一样就重传。<strong>这个「两头核对」能抓住全程任何一个环节的错——包括网络永远看不见的那些。</strong>既然两头无论如何都得核对，网络再额外保证一遍「不丢不错」，对「文件到底对不对」这件事就是多余的（顶多帮忙少几次重传，算个性能上的便利，不是正确性的必需）。</p>
+<h2>它带来了什么？</h2>
+<p>这条原则成了互联网的骨架哲学——<strong>「笨网络、聪明两头」</strong>。网络核心只管尽力把数据包往目标扔，<strong>不保证不丢、不保证顺序</strong>；真正的可靠传输、加密、身份核对，全都装在你的电脑和服务器这两头。好处是：网络简单、通用，谁都能在它上面跑新花样——网页、视频、直播、区块链，都不用改动网络本身。今天整个互联网能长成这样，很大程度上就是照着这句话搭的。</p>
+<p>但它不是铁律：<strong>如果某一段路特别烂</strong>（比如早年信号很差的无线链路），让底层先自己补一道纠错，也确实值得——到底哪些功能该下放到两头、哪些可以留在网络里帮忙，仍要靠工程判断。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>有些事只有收发两头自己才能真正做对（比如确认文件一字不差），网络在中间做也做不全、还连累所有人——所以把聪明活留给两头、让网络保持简单。互联网的「笨管道 + 聪明终端」正是这么来的。</p>
+</div>
+<p class="switch-hint">想看文件传输的完整威胁模型、端到端校验怎么走、以及它为什么是 TCP/IP 的哲学地基？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">这篇论文提出了一条影响整个互联网架构的<strong>系统设计原则</strong>——「<strong>端到端论证（end-to-end argument）</strong>」：一个功能，若只有靠通信两端的应用程序的知识与配合才能<strong>完整且正确</strong>地实现，那么把它做进底层通信系统里往往既不可能、也不划算；底层顶多把它当作一种<strong>性能优化</strong>来做，而不能替代两端自己那一道。它论证了「为什么该把复杂功能推到网络边缘、让网络核心保持简单」，是 TCP/IP「笨网络、聪明终端」设计的思想地基。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>分层 / 协议层（layer）</strong>：网络软件按功能切成若干层，每层只管一件事、并给上一层提供服务（如底层搬字节、上层管应用）。「功能放在哪一层」正是本文要谈的。</li>
+<li><strong>通信子系统 / 网络（communication subsystem）</strong>：负责把数据从一台机器搬到另一台的那部分——网线、路由器、以及两端的传输软件。相对地，「应用」是真正产生和使用数据的程序。</li>
+<li><strong>端点 / 应用（endpoint / application）</strong>：通信的两头，即真正收发并使用数据的程序（文件传输程序、浏览器、邮件客户端），而不是中间的路由器。</li>
+<li><strong>数据包 / 分组（packet）</strong>：网络传输时数据被切成的小块，各自带着地址在网上独立地跑，可能丢失、损坏、重复或乱序到达。</li>
+<li><strong>校验和（checksum）</strong>：对一段数据算出的一个短「指纹」；两端各算一次、一比对，就知道数据中途有没有被改动。</li>
+<li><strong>可靠传输 / 重传（reliable delivery / retransmission）</strong>：通信系统努力保证数据不丢不错不乱序；做法通常是发现出错就再发一次。</li>
+<li><strong>TCP / IP</strong>：互联网的两个核心协议。<code>IP</code> 只「尽力而为」地把数据包投出去、不保证送达；<code>TCP</code> 跑在两端的主机里，用校验与重传把可靠性补上。这套分工正是端到端论证的产物。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 Jerome Saltzer、David Reed、David Clark，来自 MIT 计算机科学实验室（LCS）——同一批人正深度参与早期互联网 TCP/IP 的设计。文章 1981 年在分布式计算会议上首发、1984 年发表于 <em>ACM Transactions on Computer Systems</em>。它把当时网络设计里零散的直觉<strong>提炼成一条可复述的原则</strong>，上承 ARPANET / 早期互联网的工程实践，下启后来「网络中立」「互联网沙漏架构」等一系列争论，被公认为系统与网络领域最有影响力的设计论文之一。</p>
+<h2>问题与动机</h2>
+<p>设计一个分层系统时，反复出现同一个抉择：<strong>某个功能——可靠传输、加密、去重、排序——应该做在底层（网络里，让所有人共享），还是留给顶层（每个应用自己做）？</strong>把它放低层看起来很诱人：一次做好，所有应用都省心。当时不少人正是这么想的——既然网络能保证「可靠交付」，应用不就不用操心了吗？</p>
+<p>本文要说的，恰恰是这个直觉<strong>常常是错的</strong>。作者用一个具体到骨头的例子拆穿它：把一个文件从 A 机器的硬盘，稳妥地搬到 B 机器的硬盘上——这件看似简单的事，能出错的地方多得惊人，而「让网络负责可靠」根本盖不住它们。</p>
+<h2>核心思想 / 方法</h2>
+<h3>那个决定性的例子：仔细的文件传输</h3>
+<p>跟着数据走一遍。它要经过这么一条链：A 的硬盘 → 读进 A 的内存缓冲 → 文件传输程序交给网络 → 一路数据包穿过网络 → 到 B 的内存 → 写进 B 的硬盘。<strong>每一段都可能悄悄出错：</strong></p>
+<ul>
+<li>A 的硬盘读出时就有硬件错、或文件系统缓冲有 bug，读进内存的已经是坏数据；</li>
+<li>数据在 A 或 B 的内存里静静躺着时，偶发的内存位翻转把它改了；</li>
+<li>网络把数据包<strong>丢了、弄坏了、弄重了、或打乱了顺序</strong>；</li>
+<li>B 往硬盘写的时候出错；</li>
+<li>传到一半，A 或 B 崩溃重启。</li>
+</ul>
+<figure>
+<svg viewBox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<!-- host A -->
+<rect x="26" y="70" width="150" height="150" rx="8" fill="rgba(240,180,41,0.05)" stroke="rgba(240,180,41,0.4)"></rect>
+<text x="101" y="60" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">主机 A（发送）</text>
+<rect x="46" y="88" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="101" y="107" font-size="11.5" fill="#b9c0ca" text-anchor="middle">硬盘</text>
+<line x1="101" y1="118" x2="101" y2="132" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="46" y="134" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="101" y="153" font-size="11.5" fill="#b9c0ca" text-anchor="middle">内存缓冲</text>
+<line x1="101" y1="164" x2="101" y2="178" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="46" y="180" width="110" height="30" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="101" y="199" font-size="11" fill="#e7ebf1" text-anchor="middle">传输程序</text>
+<!-- network -->
+<rect x="205" y="120" width="150" height="52" rx="26" fill="rgba(232,121,75,0.08)" stroke="#e8794b" stroke-dasharray="4 3"></rect>
+<text x="280" y="143" font-size="12" font-weight="700" fill="#e8794b" text-anchor="middle">网络</text>
+<text x="280" y="160" font-size="10.5" fill="#7c8593" text-anchor="middle">丢 / 坏 / 重 / 乱序</text>
+<line x1="156" y1="195" x2="205" y2="150" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="355" y1="150" x2="404" y2="195" stroke="#7c8593" marker-end="url(#a1)"></line>
+<!-- host B -->
+<rect x="384" y="70" width="150" height="150" rx="8" fill="rgba(240,180,41,0.05)" stroke="rgba(240,180,41,0.4)"></rect>
+<text x="459" y="60" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">主机 B（接收）</text>
+<rect x="404" y="180" width="110" height="30" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="459" y="199" font-size="11" fill="#e7ebf1" text-anchor="middle">接收程序</text>
+<line x1="459" y1="180" x2="459" y2="166" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="404" y="134" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="459" y="153" font-size="11.5" fill="#b9c0ca" text-anchor="middle">内存缓冲</text>
+<line x1="459" y1="134" x2="459" y2="120" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="404" y="88" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="459" y="107" font-size="11.5" fill="#b9c0ca" text-anchor="middle">硬盘</text>
+<!-- error marks -->
+<text x="168" y="110" font-size="15" fill="#e8794b">✕</text>
+<text x="168" y="156" font-size="15" fill="#e8794b">✕</text>
+<text x="378" y="156" font-size="15" fill="#e8794b">✕</text>
+<text x="378" y="110" font-size="15" fill="#e8794b">✕</text>
+<!-- end-to-end check arc -->
+<path d="M101,225 C101,275 459,275 459,225" fill="none" stroke="#f0b429" stroke-width="1.8" stroke-dasharray="6 4"></path>
+<text x="280" y="292" font-size="11.5" fill="#f0b429" text-anchor="middle">端到端校验：两头各算文件指纹、比对，不符就重传</text>
+</svg>
+<figcaption>图 1 · 文件从 A 盘到 B 盘，全链每一环（硬盘、内存、网络、再内存、再硬盘）都可能出错。橙色 ✕ 标的错，网络根本看不见——只有两头应用亲自「算指纹再比对」才能全抓住。</figcaption>
+</figure>
+<p>关键洞察来了：<strong>假设网络提供了完美的「可靠交付」——每一跳都校验、丢了就重传</strong>，它能保证文件正确到达吗？<strong>不能。</strong>因为最要命的那些错发生在<em>网络看不见的地方</em>：数据从硬盘读进内存那一刻已经坏了，或在主机内存里被翻了个位，或写盘时写偏了。网络只管「在网线上的那一程」，管不了信封之外。</p>
+<h3>唯一真正管用的办法：端到端检查</h3>
+<p>要真的确认文件一字不差，只有一条路：<strong>发送端的应用程序算出整个文件的校验和、随文件一起送；接收端把文件<em>写进硬盘之后</em>再重新读出来算一遍校验和，两者一比。</strong>不符，就整份重传。这道<em>端到端检查（end-to-end check）</em>之所以万能，正因为它<strong>横跨了全部环节</strong>——包括硬盘、内存这些网络永远够不着的地方。</p>
+<p>于是决定性的结论浮出水面：<strong>既然两头无论如何都得做这道端到端检查（否则就不能保证正确），那么让底层网络<em>再</em>保证一遍可靠交付，对「正确性」而言就是多余的。</strong>正确性这件事，只能、也必须由两端来负责——这就是端到端论证。作者原话的意思是：这个功能「只有靠端点应用的知识与配合才能完整正确地实现，所以把它做进通信系统本身是不可能的」。</p>
+<figure>
+<svg viewBox="0 0 560 210" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<!-- smart edges dumb core -->
+<rect x="30" y="60" width="120" height="90" rx="10" fill="rgba(240,180,41,0.1)" stroke="#f0b429" stroke-width="1.6"></rect>
+<text x="90" y="50" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">聪明的终端</text>
+<text x="90" y="90" font-size="11" fill="#e7ebf1" text-anchor="middle">可靠传输</text>
+<text x="90" y="110" font-size="11" fill="#e7ebf1" text-anchor="middle">加密 / 认证</text>
+<text x="90" y="130" font-size="11" fill="#e7ebf1" text-anchor="middle">去重 / 排序</text>
+<rect x="410" y="60" width="120" height="90" rx="10" fill="rgba(240,180,41,0.1)" stroke="#f0b429" stroke-width="1.6"></rect>
+<text x="470" y="50" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">聪明的终端</text>
+<text x="470" y="90" font-size="11" fill="#e7ebf1" text-anchor="middle">可靠传输</text>
+<text x="470" y="110" font-size="11" fill="#e7ebf1" text-anchor="middle">加密 / 认证</text>
+<text x="470" y="130" font-size="11" fill="#e7ebf1" text-anchor="middle">去重 / 排序</text>
+<!-- core -->
+<rect x="185" y="82" width="190" height="46" rx="8" fill="rgba(232,121,75,0.08)" stroke="#e8794b" stroke-dasharray="4 3"></rect>
+<text x="280" y="100" font-size="12" font-weight="700" fill="#e8794b" text-anchor="middle">笨网络（IP）</text>
+<text x="280" y="118" font-size="10.5" fill="#7c8593" text-anchor="middle">只尽力搬数据包，不保证</text>
+<line x1="150" y1="105" x2="185" y2="105" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="375" y1="105" x2="410" y2="105" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="280" y="175" font-size="11.5" fill="#b9c0ca" text-anchor="middle">复杂功能推到边缘，网络核心保持简单、通用</text>
+</svg>
+<figcaption>图 2 · 端到端论证塑造的架构：可靠性、加密、排序等复杂功能放在两端主机里；中间网络（IP）只「尽力而为」地转发数据包。这正是 TCP/IP「沙漏」结构的由来。</figcaption>
+</figure>
+<h3>「不能替代，但能帮忙」——性能这一面</h3>
+<p>论证并不是说底层可靠性<strong>毫无价值</strong>。设想文件很大、网络又特别不可靠（比如每个包都有不小概率丢）：如果只靠端到端检查，一旦最后比对失败就得<strong>整份重传</strong>，代价高得离谱。这时在底层做一层「丢包就重传单个包」的机制，能大大<strong>降低</strong>端到端重试被触发的概率——这是正当的<strong>性能优化</strong>。</p>
+<p>但要点在于分寸：底层这层可靠性<strong>能减少、却永远不能消除</strong>顶层那道检查（因为它盖不住网络之外的错）。而把它放进网络，成本要<strong>所有应用</strong>分摊——哪怕那些根本不需要它的应用（比如只想尽快传、丢一点无所谓的实时语音）。所以要不要在底层加，纯粹是一道<strong>工程权衡</strong>：值不值这个普摊的成本，取决于网络到底有多烂。</p>
+<h3>同一把尺子，量别的功能</h3>
+<p>作者用同一逻辑扫过一串功能，结论都指向「端点」：</p>
+<ul>
+<li><strong>加密与认证</strong>：只在网络链路上加密，数据一进节点主机就又变回明文，且应用无法核验网络是否真的加密对了、密钥也得应用自己管——<strong>保密与真伪只能端到端保证</strong>。（这正是今天 HTTPS/TLS 端到端加密、而非只靠链路加密的道理。）</li>
+<li><strong>投递确认</strong>：网络告诉你「包已送到对方主机」，并不等于「对方的程序真的收到并处理了」——真正的确认必须来自对端应用的<strong>回应</strong>，是端到端的。</li>
+<li><strong>去重与排序</strong>：如果重复是应用层自己的重试造成的，网络那层根本管不着；顺序保证同理，最终得端点来兜底。</li>
+</ul>
+<p>值得强调的是：作者反复声明这是一条<strong>指导原则、不是铁律</strong>——「端点」到底在哪、该把线划在哪里，都要看具体应用，需要工程判断，而非机械套用。</p>
+<h2>关键结果</h2>
+<p>这篇论文没有实验数字、没有跑分——它的「结果」是一个<strong>被反复验证的设计判断</strong>。最有力的证据，是它所辩护的架构<strong>确实成了赢家</strong>：互联网选择了「<strong>尽力而为的 IP + 主机里的 TCP</strong>」这条路，让可靠性、拥塞控制、加密统统住在两端。事实证明，这种「笨核心」极其<strong>能扛演化</strong>——从文件传输到万维网、流媒体、视频通话、乃至区块链，全都能在<strong>不改动网络核心</strong>的前提下长出来。相较之下，那些试图把智能塞进网络的方案（如复杂的电信式网络）大多没能这样自由生长。这条原则也因此被写进几乎所有网络与系统课程，成为公认的设计准则。</p>
+<h2>为什么重要 / 影响</h2>
+<p>它把「功能该放哪一层」从一门手艺变成一条<strong>可言说、可辩论的原则</strong>，深远地影响了系统设计的思维方式：</p>
+<ul>
+<li><strong>互联网的架构哲学</strong>：TCP/IP 的分工、IP 之所以「简单到只做转发」（即所谓<em>沙漏 / 窄腰</em>结构——底层多样、上层多样，中间只有一层薄薄的 IP），本质上是端到端论证的落地。</li>
+<li><strong>「笨网络、聪明终端」成了共识</strong>：把创新推到边缘，让任何人不必征得网络同意就能部署新应用——这是互联网爆炸式创新的结构性原因。</li>
+<li><strong>延伸到网络中立性争论</strong>：「网络应保持中立、不该对特定应用区别对待」，其技术根基正是端到端论证。</li>
+</ul>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>现实中的网络早已不「笨」了</strong>：NAT、防火墙、CDN、深度包检测、各种中间盒（middlebox）纷纷把功能塞回网络，纯粹的端到端已被侵蚀——连作者之一 Clark 后来也在《Rethinking the design of the Internet》(2001) 里讨论：当出现不互相信任的各方、以及第三方（政府、运营商）的诉求时，一些功能会被迫回到网络里。</li>
+<li><strong>性能这一面常被低估</strong>：在无线等高丢包链路上，坚持「纯端到端」反而糟糕——TCP 会把链路丢包误当成拥塞而降速，于是催生了链路层重传、split-connection、snoop 等「违反」端到端却很实用的方案。到底该不该下放，仍是个案权衡。</li>
+<li><strong>「端点在哪」并不总是清楚</strong>：应用一复杂（多级代理、缓存、服务网格），谁算真正的「端」变得模糊，原则的套用需要再解释。</li>
+<li><strong>它是原则、不是算法</strong>：不能机械照搬，最终仍依赖设计者的判断——这既是它的灵活，也是它常被误用（用来支持互相矛盾的结论）的原因。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：功能若只有靠通信两端应用的知识与配合才能完整正确地实现，就该放在端点，而不是做进底层网络。</p>
+<p>② 痛点：设计分层系统时，总有把可靠性、加密等功能塞进底层「一次做好、大家共享」的诱惑——但这常常是错的。</p>
+<p>③ 决定性例子：仔细的文件传输——数据要过硬盘、内存、网络、再内存、再硬盘，每环都可能出错，而网络看不见硬盘/内存里的错。</p>
+<p>④ 机制：唯一可靠的办法是端到端校验（两头各算文件校验和、比对、不符重传）；既然它必不可少，底层再保证可靠对「正确性」就是多余。</p>
+<p>⑤ 但底层可以「帮忙」：在很烂的网络上，底层重传能<strong>降低</strong>（但不能消除）端到端重试的概率，是正当的性能优化——要不要加是工程权衡。</p>
+<p>⑥ 同一逻辑推及加密/认证、投递确认、去重排序，结论都指向端点。</p>
+<p>⑦ 影响：塑造了 TCP/IP「尽力而为 IP + 主机里 TCP」的沙漏架构、「笨网络聪明终端」共识，以及网络中立性的技术根基。</p>
+<p>⑧ 局限：现实网络已被中间盒侵蚀；高丢包链路上纯端到端反而低效；「端点在哪」有时模糊；它是需要判断的原则、非机械公式。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整论证与更多例子，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

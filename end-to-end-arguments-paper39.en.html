@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>End-to-End Arguments in System Design — CS Papers Deep-Read Paper 39</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 39</p>
+<h1>End-to-End Arguments in System Design</h1>
+<p class="sub">Saltzer, Reed &amp; Clark · MIT · 1984</p>
+<p class="langbar"><a href="end-to-end-arguments-paper39.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1984, three MIT researchers (Saltzer, Reed, Clark) wrote a short paper answering a question every system designer runs into: <strong>should a given function be built into the network for everyone to share, or left to the programs at the two ends to do themselves?</strong> Their answer shaped the entire internet — it's why the network itself is a "dumb pipe" while the real cleverness (TCP that guarantees delivery, HTTPS that encrypts) lives in your computer and the server, not in the routers in between.</p>
+<h2>An analogy first</h2>
+<p>You need to mail an important contract. The courier swears the package "will never be lost or damaged in transit." But even if they keep that promise perfectly — <strong>you might have left a page out before sealing the envelope, and the recipient might drop it next to a shredder after opening it.</strong> A reliable courier can't control what happens outside the envelope. So the only truly dependable approach is this: <strong>the recipient checks the received document against a checklist, and if a page is missing, asks you to resend.</strong></p>
+<h2>What has this got to do with networks?</h2>
+<p>To move a file from one computer to another, the data travels: disk → memory → cables and routers → back into memory → written to disk again. The instinct is: <strong>just make the network responsible for "guaranteeing no errors" and we're done, right?</strong> But the stretch after the data leaves the network and before it's written to disk is invisible to the network — a bit flipping in memory, a byte written wrong to disk: the network can't touch those, and doesn't even know. It can only guarantee "the leg that runs over the wire."</p>
+<h2>The plain but deep judgment</h2>
+<p>So the three proposed: <strong>some functions can only be implemented completely and correctly by the programs actually sending and receiving the data at the two ends; if the network in the middle rushes to do the same thing, it does it incompletely AND slows everyone down.</strong> So — leave those functions to the ends, and keep the network simple. This is the "end-to-end argument."</p>
+<p>For file transfer specifically, the dependable method is for each end to compute a "fingerprint": the sender computes a short checksum of the original file, the receiver computes <strong>another one</strong> of the file it received and wrote to disk, and compares. If they differ, resend. <strong>This "check at both ends" catches an error in any link of the whole chain — including the ones the network can never see.</strong> Since the ends have to do this check anyway, the network additionally guaranteeing "no loss, no errors" is redundant for the question of whether the file is actually correct (at best it saves a few resends — a performance convenience, not a correctness necessity).</p>
+<h2>What did it bring about?</h2>
+<p>This principle became the internet's skeletal philosophy — <strong>"dumb network, smart ends."</strong> The network core just does its best to fling packets toward the target; it <strong>guarantees neither delivery nor order</strong>. Real reliable transport, encryption, and identity checks all live in your computer and the server, the two ends. The payoff: the network is simple and general, and anyone can run new tricks on top of it — web pages, video, live streaming, blockchains — without changing the network itself. That today's internet grew the way it did is, to a large degree, because it was built to this sentence.</p>
+<p>But it isn't an iron law: <strong>if one stretch of the path is especially bad</strong> (say, the poor-signal wireless links of the early days), having the lower layer patch errors first is genuinely worth it — which functions to push to the ends and which to keep in the network still takes engineering judgment.</p>
+<h2>Remember this</h2>
+<div class="tl">
+<p>Some things can only be gotten right by the two ends themselves (like confirming a file arrived byte-for-byte); the network in the middle can't do them completely and drags everyone down trying — so leave the clever work to the ends and keep the network simple. The internet's "dumb pipes + smart endpoints" comes straight from this.</p>
+</div>
+<p class="switch-hint">Want the full file-transfer threat model, how the end-to-end check runs, and why it's the philosophical foundation of TCP/IP? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">This paper proposes a <strong>system-design principle</strong> that shaped the whole architecture of the internet — the <strong>end-to-end argument</strong>: if a function can be implemented <strong>completely and correctly</strong> only with the knowledge and help of the application programs standing at the two ends of a communication system, then building it into the low-level communication system is often neither possible nor worthwhile; the lower level can at best provide it as a <strong>performance optimization</strong>, not as a substitute for the ends doing it themselves. It argues "why complex functionality belongs at the network's edges while the core stays simple," and is the intellectual foundation of TCP/IP's "dumb network, smart endpoints" design.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Layer / protocol layer</strong>: network software is sliced by function into layers, each doing one job and offering a service to the layer above (the low layer moves bytes; a high layer handles the application). "Which layer a function belongs in" is exactly what this paper is about.</li>
+<li><strong>Communication subsystem / network</strong>: the part responsible for moving data from one machine to another — cables, routers, and the transport software at both ends. By contrast, an "application" is the program that actually produces and consumes the data.</li>
+<li><strong>Endpoint / application</strong>: the two ends — the programs that actually send, receive, and use the data (a file-transfer program, a browser, a mail client) — as opposed to the routers in between.</li>
+<li><strong>Packet</strong>: the small chunk data is sliced into for transmission; each carries an address and travels the network independently, and may be lost, corrupted, duplicated, or reordered on arrival.</li>
+<li><strong>Checksum</strong>: a short "fingerprint" computed over a block of data; each end computes it once and compares, revealing whether the data was altered in transit.</li>
+<li><strong>Reliable delivery / retransmission</strong>: the communication system tries to guarantee data arrives without loss, corruption, or reordering — usually by resending whatever it detects went wrong.</li>
+<li><strong>TCP / IP</strong>: the internet's two core protocols. <code>IP</code> only makes a "best effort" to deliver packets and guarantees nothing; <code>TCP</code> runs in the hosts at both ends and adds reliability via checksums and retransmission. This division of labor is itself a product of the end-to-end argument.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Jerome Saltzer, David Reed, and David Clark of MIT's Laboratory for Computer Science — the same group deeply involved in designing early-internet TCP/IP. The paper was first presented at a distributed-computing conference in 1981 and published in <em>ACM Transactions on Computer Systems</em> in 1984. It <strong>distilled scattered design intuitions of the era into one restatable principle</strong>, building on the engineering practice of the ARPANET / early internet and opening onto later debates over "network neutrality" and the internet's "hourglass" architecture. It is widely regarded as one of the most influential design papers in systems and networking.</p>
+<h2>The problem &amp; the motivation</h2>
+<p>Designing a layered system, the same choice keeps recurring: <strong>should a function — reliable delivery, encryption, deduplication, ordering — be done at the low level (in the network, shared by all) or left to the high level (each application on its own)?</strong> Putting it low looks tempting: do it once, and every application is spared the trouble. Plenty of people thought exactly that at the time — if the network can guarantee "reliable delivery," why should applications worry about it?</p>
+<p>What this paper shows is that this instinct is <strong>often wrong</strong>. The authors puncture it with a concrete, down-to-the-bone example: moving a file from machine A's disk, safely, onto machine B's disk — a deceptively simple task where the places things can go wrong are startlingly many, and "let the network handle reliability" covers none of the worst ones.</p>
+<h2>The core idea &amp; method</h2>
+<h3>The decisive example: careful file transfer</h3>
+<p>Follow the data. It travels this chain: A's disk → read into A's memory buffer → the transfer program hands it to the network → packets cross the network → into B's memory → written to B's disk. <strong>Every leg can quietly fail:</strong></p>
+<ul>
+<li>A's disk read has a hardware error, or the file-system buffering has a bug — what reaches memory is already corrupt;</li>
+<li>while the data sits quietly in A's or B's memory, a stray bit flip alters it;</li>
+<li>the network <strong>drops, corrupts, duplicates, or reorders</strong> packets;</li>
+<li>B errs while writing to disk;</li>
+<li>midway through, A or B crashes and restarts.</li>
+</ul>
+<figure>
+<svg viewBox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect x="26" y="70" width="150" height="150" rx="8" fill="rgba(240,180,41,0.05)" stroke="rgba(240,180,41,0.4)"></rect>
+<text x="101" y="60" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">Host A (sender)</text>
+<rect x="46" y="88" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="101" y="107" font-size="11.5" fill="#b9c0ca" text-anchor="middle">Disk</text>
+<line x1="101" y1="118" x2="101" y2="132" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="46" y="134" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="101" y="153" font-size="11.5" fill="#b9c0ca" text-anchor="middle">Memory buffer</text>
+<line x1="101" y1="164" x2="101" y2="178" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="46" y="180" width="110" height="30" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="101" y="199" font-size="11" fill="#e7ebf1" text-anchor="middle">Transfer app</text>
+<rect x="205" y="120" width="150" height="52" rx="26" fill="rgba(232,121,75,0.08)" stroke="#e8794b" stroke-dasharray="4 3"></rect>
+<text x="280" y="143" font-size="12" font-weight="700" fill="#e8794b" text-anchor="middle">Network</text>
+<text x="280" y="160" font-size="10.5" fill="#7c8593" text-anchor="middle">drop / corrupt / dup / reorder</text>
+<line x1="156" y1="195" x2="205" y2="150" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="355" y1="150" x2="404" y2="195" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="384" y="70" width="150" height="150" rx="8" fill="rgba(240,180,41,0.05)" stroke="rgba(240,180,41,0.4)"></rect>
+<text x="459" y="60" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">Host B (receiver)</text>
+<rect x="404" y="180" width="110" height="30" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="459" y="199" font-size="11" fill="#e7ebf1" text-anchor="middle">Receive app</text>
+<line x1="459" y1="180" x2="459" y2="166" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="404" y="134" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="459" y="153" font-size="11.5" fill="#b9c0ca" text-anchor="middle">Memory buffer</text>
+<line x1="459" y1="134" x2="459" y2="120" stroke="#7c8593" marker-end="url(#a1)"></line>
+<rect x="404" y="88" width="110" height="30" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="459" y="107" font-size="11.5" fill="#b9c0ca" text-anchor="middle">Disk</text>
+<text x="168" y="110" font-size="15" fill="#e8794b">✕</text>
+<text x="168" y="156" font-size="15" fill="#e8794b">✕</text>
+<text x="378" y="156" font-size="15" fill="#e8794b">✕</text>
+<text x="378" y="110" font-size="15" fill="#e8794b">✕</text>
+<path d="M101,225 C101,275 459,275 459,225" fill="none" stroke="#f0b429" stroke-width="1.8" stroke-dasharray="6 4"></path>
+<text x="280" y="292" font-size="11.5" fill="#f0b429" text-anchor="middle">End-to-end check: each end fingerprints the file, compares, resends on mismatch</text>
+</svg>
+<figcaption>Fig 1 · Moving a file from A's disk to B's disk, every link (disk, memory, network, memory again, disk again) can fail. The copper ✕ errors are invisible to the network — only the end applications computing and comparing fingerprints catch them all.</figcaption>
+</figure>
+<p>Here is the key insight: <strong>suppose the network offers perfect "reliable delivery" — every hop checksummed, everything lost is resent.</strong> Does that guarantee the file arrives correct? <strong>No.</strong> Because the deadliest errors happen <em>where the network cannot see</em>: the data was already corrupt the moment it was read from disk into memory, or a bit was flipped in host memory, or it was written wrong to disk. The network only owns "the leg on the wire"; it cannot own what happens outside the envelope.</p>
+<h3>The only thing that actually works: the end-to-end check</h3>
+<p>To truly confirm the file is byte-for-byte correct, there is exactly one path: <strong>the sending application computes a checksum over the whole file and sends it along; the receiving application, <em>after writing the file to disk</em>, reads it back and recomputes the checksum, and compares.</strong> Mismatch — resend the whole thing. This <em>end-to-end check</em> is all-powerful precisely because it <strong>spans every link</strong> — including disk and memory, places the network can never reach.</p>
+<p>So the decisive conclusion surfaces: <strong>since the two ends must do this end-to-end check anyway (or correctness cannot be guaranteed), having the lower-level network <em>additionally</em> guarantee reliable delivery is redundant for correctness.</strong> Correctness can only, and must, be the responsibility of the two ends — that is the end-to-end argument. The authors' own phrasing: the function "can completely and correctly be implemented only with the knowledge and help of the application standing at the endpoints of the communication system. Therefore, providing that function as a feature of the communication system itself is not possible."</p>
+<figure>
+<svg viewBox="0 0 560 210" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<rect x="30" y="60" width="120" height="90" rx="10" fill="rgba(240,180,41,0.1)" stroke="#f0b429" stroke-width="1.6"></rect>
+<text x="90" y="50" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">Smart endpoint</text>
+<text x="90" y="90" font-size="11" fill="#e7ebf1" text-anchor="middle">Reliable delivery</text>
+<text x="90" y="110" font-size="11" fill="#e7ebf1" text-anchor="middle">Encrypt / authenticate</text>
+<text x="90" y="130" font-size="11" fill="#e7ebf1" text-anchor="middle">Dedup / ordering</text>
+<rect x="410" y="60" width="120" height="90" rx="10" fill="rgba(240,180,41,0.1)" stroke="#f0b429" stroke-width="1.6"></rect>
+<text x="470" y="50" font-size="12" font-weight="700" fill="#f0b429" text-anchor="middle">Smart endpoint</text>
+<text x="470" y="90" font-size="11" fill="#e7ebf1" text-anchor="middle">Reliable delivery</text>
+<text x="470" y="110" font-size="11" fill="#e7ebf1" text-anchor="middle">Encrypt / authenticate</text>
+<text x="470" y="130" font-size="11" fill="#e7ebf1" text-anchor="middle">Dedup / ordering</text>
+<rect x="185" y="82" width="190" height="46" rx="8" fill="rgba(232,121,75,0.08)" stroke="#e8794b" stroke-dasharray="4 3"></rect>
+<text x="280" y="100" font-size="12" font-weight="700" fill="#e8794b" text-anchor="middle">Dumb network (IP)</text>
+<text x="280" y="118" font-size="10.5" fill="#7c8593" text-anchor="middle">best-effort packets, no guarantees</text>
+<line x1="150" y1="105" x2="185" y2="105" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="375" y1="105" x2="410" y2="105" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="280" y="175" font-size="11.5" fill="#b9c0ca" text-anchor="middle">Complex functions pushed to the edges; the core stays simple and general</text>
+</svg>
+<figcaption>Fig 2 · The architecture the end-to-end argument shapes: reliability, encryption, and ordering live in the hosts at both ends; the network in between (IP) only forwards packets "best-effort." This is where TCP/IP's "hourglass" comes from.</figcaption>
+</figure>
+<h3>"Can't replace, but can help" — the performance side</h3>
+<p>The argument does <strong>not</strong> say low-level reliability is worthless. Imagine a large file over a very unreliable network (every packet has a non-trivial chance of loss): relying on the end-to-end check alone means that one failed final comparison forces a <strong>whole-file resend</strong> — absurdly expensive. Here a lower layer that "resends the individual lost packet" can greatly <strong>reduce</strong> the probability that the end-to-end retry is triggered — a legitimate <strong>performance optimization</strong>.</p>
+<p>But the point is proportion: this lower-level reliability <strong>can reduce, never eliminate</strong> the top-level check (it can't cover errors outside the network). And putting it in the network makes <strong>every application</strong> pay for it — even applications that don't need it (say real-time voice that just wants speed and can tolerate a little loss). So whether to add it low is purely an <strong>engineering trade-off</strong>: whether the shared cost is worth it depends on just how bad the network is.</p>
+<h3>Same yardstick, other functions</h3>
+<p>The authors sweep the same logic across a string of functions, and the conclusion always points to the endpoints:</p>
+<ul>
+<li><strong>Encryption &amp; authentication</strong>: encrypting only on the network links leaves data as cleartext the moment it enters a node's host, and the application can't verify the network actually encrypted correctly — plus key management is the application's concern anyway. <strong>Secrecy and authenticity can only be guaranteed end-to-end.</strong> (This is exactly why today's HTTPS/TLS encrypts end-to-end rather than relying on link encryption.)</li>
+<li><strong>Delivery acknowledgment</strong>: the network telling you "the packet reached the target host" does not mean "the target's program actually received and acted on it" — real confirmation must come from the peer application's <strong>response</strong>, which is end-to-end.</li>
+<li><strong>Deduplication &amp; ordering</strong>: if a duplicate was generated by an application-level retry, the network layer can't suppress it; ordering is the same — the endpoints ultimately have to backstop it.</li>
+</ul>
+<p>Worth stressing: the authors repeatedly note this is a <strong>guiding principle, not an iron law</strong> — where "the endpoints" actually are, and where to draw the line, depend on the specific application and require engineering judgment, not mechanical application.</p>
+<h2>Key results</h2>
+<p>This paper has no experimental numbers, no benchmarks — its "result" is a <strong>repeatedly vindicated design judgment</strong>. The strongest evidence is that the architecture it defends <strong>actually won</strong>: the internet chose "<strong>best-effort IP + TCP in the hosts</strong>," letting reliability, congestion control, and encryption all live at the two ends. That "dumb core" has proven extraordinarily <strong>evolvable</strong> — from file transfer to the web, streaming media, video calls, and even blockchains, all grew on top <strong>without changing the network core</strong>. By contrast, schemes that tried to stuff intelligence into the network (like complex telecom-style networks) largely could not grow so freely. The principle is accordingly taught in nearly every networking and systems course as an accepted design canon.</p>
+<h2>Why it matters / impact</h2>
+<p>It turned "which layer a function belongs in" from a craft into a <strong>statable, debatable principle</strong>, profoundly shaping how systems are designed:</p>
+<ul>
+<li><strong>The internet's architectural philosophy</strong>: TCP/IP's division of labor, and IP's being "simple enough to only forward" (the so-called <em>hourglass / thin waist</em> — diverse layers below, diverse layers above, a single thin IP layer between), are essentially the end-to-end argument made concrete.</li>
+<li><strong>"Dumb network, smart endpoints" became consensus</strong>: pushing innovation to the edges so that anyone can deploy a new application without the network's permission — this is a structural reason for the internet's explosive innovation.</li>
+<li><strong>It extends into the network-neutrality debate</strong>: "the network should stay neutral and not treat particular applications differently" rests technically on the end-to-end argument.</li>
+</ul>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>Real networks are no longer "dumb"</strong>: NATs, firewalls, CDNs, deep packet inspection, and assorted middleboxes have pushed functions back into the network, eroding the pure end-to-end model — even co-author Clark later discussed, in "Rethinking the design of the Internet" (2001), how mutually distrustful parties and third-party demands (governments, carriers) force some functions back into the network.</li>
+<li><strong>The performance side is often underrated</strong>: on high-loss links like wireless, insisting on "pure end-to-end" can be bad — TCP misreads link loss as congestion and slows down, which spawned link-layer retransmission, split-connection, and snoop schemes that "violate" end-to-end yet are very practical. Whether to push a function down remains a case-by-case trade-off.</li>
+<li><strong>"Where the endpoint is" isn't always clear</strong>: as an application grows complex (multi-tier proxies, caches, service meshes), which node counts as the true "end" gets blurry, and applying the principle needs reinterpretation.</li>
+<li><strong>It's a principle, not an algorithm</strong>: it can't be applied mechanically and still relies on the designer's judgment — which is both its flexibility and the reason it is often misused (invoked to support contradictory conclusions).</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① One line: if a function can be implemented completely and correctly only with the knowledge and help of the applications at the two ends, it belongs at the endpoints, not built into the low-level network.</p>
+<p>② The pain: designing layered systems, there's always the temptation to stuff reliability, encryption, etc. into the low level to "do it once, share it with all" — but that's often wrong.</p>
+<p>③ The decisive example: careful file transfer — data crosses disk, memory, network, memory, disk, every link can fail, and the network can't see the disk/memory errors.</p>
+<p>④ Mechanism: the only reliable way is an end-to-end check (each end computes the file checksum, compares, resends on mismatch); since it's indispensable, lower-level reliability is redundant for correctness.</p>
+<p>⑤ But the low level can "help": on a bad network, low-level retransmission can <strong>reduce</strong> (not eliminate) the chance of an end-to-end retry — a legitimate performance optimization; whether to add it is an engineering trade-off.</p>
+<p>⑥ The same logic extends to encryption/authentication, delivery acknowledgment, and dedup/ordering — all pointing to the endpoints.</p>
+<p>⑦ Impact: it shaped TCP/IP's "best-effort IP + TCP in the hosts" hourglass, the "dumb network, smart endpoints" consensus, and the technical basis of network neutrality.</p>
+<p>⑧ Limits: real networks are eroded by middleboxes; pure end-to-end is inefficient on high-loss links; "where the endpoint is" can blur; it's a judgment-requiring principle, not a mechanical formula.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ grasping the paper's core; for the full argument and more examples, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
