@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>RSA Public-Key Cryptosystem — CS Papers Deep-Read Paper 40</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 40</p>
+<h1>RSA Public-Key Cryptosystem</h1>
+<p class="sub">Rivest, Shamir, Adleman · MIT · CACM 1978</p>
+<p class="langbar"><a href="rsa-paper40.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>That little padlock in your browser bar, every online payment, every message no one else can read — almost all of it stands on <strong>RSA</strong>. In 1977 three people at MIT (Rivest, Shamir, Adleman) built the first <strong>genuinely usable</strong> "public lock, private key" encryption scheme: <strong>the lock you can hand out to everyone, the key only you hold</strong>. Today's global HTTPS, digital signatures, and secure payments all trace back to this one paper.</p>
+<h2>The pain of the old world</h2>
+<p>Before it, encryption was like an ordinary lock: <strong>the same key both locks and unlocks the door</strong>. That created a deadlock — to send a stranger a secret message, you first had to get that key safely into their hands; but if you already had a secure channel to pass the key, why encrypt at all? <strong>"To communicate securely, first communicate securely"</strong> — a chicken-and-egg trap. Billions of stranger-pairs worldwide would each have to secretly swap a key in advance. It simply couldn't scale.</p>
+<h2>The idea</h2>
+<p>RSA <strong>splits the key in two</strong>: a <strong>public lock</strong> and a <strong>private key</strong> — and crucially, <strong>what the lock closes, only the key can open; the lock can't reopen it</strong>. You scatter your public lock like a business card; anyone wanting to send you a secret snaps their message shut with your lock — <strong>but once locked, even they can't reopen it</strong>. Only you, holding the private key, can. Two total strangers can now communicate securely <strong>without ever swapping a secret in advance</strong>. The deadlock is broken.</p>
+<h2>What makes it hold?</h2>
+<p>The secret hides in an arithmetic fact a schoolchild understands yet the fastest supercomputer chokes on: <strong>multiply two very large prime numbers together and you're done in an instant; but hand someone that product and ask which two primes made it, and essentially no one can compute the answer.</strong> Like stirring two paints into a new color in a second — then trying to separate them again.</p>
+<p>Your "public lock" is essentially that giant product; your "private key" is the pair of primes only you know. <strong>Others can use the product to scramble a message (lock it), but without that pair of primes they can't untangle it back (unlock it).</strong> Bigger numbers mean more safety — today's numbers are so large that all the world's computers running to the end of the universe couldn't crack them.</p>
+<h2>Run it backward: signatures</h2>
+<p>The lock-and-key can also be played in reverse: you "stamp" a document with your <strong>private key</strong>, and anyone can check it with the <strong>public lock</strong> you handed out — confirming "this really is from you, and not a word was changed" — because only you hold the private key. This is a <strong>digital signature</strong>: online contracts, software updates, and certificates all rely on it to prove "I am who I say I am."</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Split the key into a "public lock + private key" — the lock goes to everyone, only you can open it — resting on "multiplying two big primes is easy, factoring the product back is nearly impossible." Strangers communicate securely with no secret swapped in advance, and run backward it also signs. The cost: it's slow (used only to lock one small key), and a future quantum computer could break it.</p>
+</div>
+<p class="switch-hint">Want the public/private data-flow diagram, the real formulas, and how the "trapdoor" works? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">RSA gave the first <strong>practical</strong> public-key cryptosystem: everyone holds a key pair — a public <code>(n, e)</code> and a private <code>d</code>; anyone can encrypt or verify with your public key, only you can decrypt or sign with the private one. It realizes "encryption" as a single modular exponentiation <code>c = m^e mod n</code>, with security resting on the assumption that <strong>factoring large integers is hard</strong>: knowing the public <code>n</code> still doesn't yield the private <code>d</code>, because that would require factoring <code>n</code> into two large primes. This paper turned Diffie–Hellman's year-old public-key <em>concept</em> into a concrete, computable algorithm.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Cryptography</strong>: the study of turning messages into gibberish only an intended party can read, and of verifying a message's authenticity.</li>
+<li><strong>Symmetric cipher</strong>: the traditional scheme where the <strong>same</strong> key encrypts and decrypts (e.g., today's AES); fast, but both sides must first secretly share that key.</li>
+<li><strong>Public-key cryptography</strong>: each person holds a key pair — public key shared, private key kept; one key encrypts and only the other can decrypt, with no pre-shared secret. RSA is its first practical realization.</li>
+<li><strong>Prime</strong>: an integer divisible only by 1 and itself (2, 3, 5, 61…). Every integer factors uniquely into a product of primes.</li>
+<li><strong>Factoring</strong>: recovering "which primes multiply to this large integer." Multiplying forward is fast; splitting back is brutally slow — RSA's lifeblood.</li>
+<li><strong>Modular arithmetic (mod)</strong>: "keep only the remainder after division," like a clock wrapping around — <code>15 mod 12 = 3</code>. Wrapping scrambles and hides the original number.</li>
+<li><strong>Modular exponentiation</strong>: computing <code>m^e mod n</code> ("multiply m by itself e times, then take the remainder mod n"). Fast algorithms make this instant even for hundred-digit numbers.</li>
+<li><strong>Trapdoor one-way function</strong>: easy forward, brutally hard to reverse — <strong>unless you hold a secret (the trapdoor)</strong>, which makes reversing easy. RSA's private key is that trapdoor.</li>
+<li><strong>Digital signature</strong>: an "electronic seal" made with the private key; anyone can verify with the matching public key that it truly came from the owner and was not tampered with.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Ron Rivest, Adi Shamir, and Leonard Adleman, all then at MIT; the paper was written in 1977 and published in <em>Communications of the ACM</em> in February 1978. It directly follows Diffie and Hellman's 1976 <em>New Directions in Cryptography</em> — which proposed the <strong>concept</strong> of public keys and digital signatures plus key exchange, but gave no complete scheme that could both encrypt and sign. RSA turned that vision into a <strong>computable algorithm for the first time</strong>. The three won the 2002 Turing Award. (Later-declassified records show Clifford Cocks at Britain's GCHQ had privately devised an equivalent scheme back in 1973, but secrecy kept it from publication or historical influence.)</p>
+<h2>The problem and the motivation</h2>
+<p>Before 1976 all ciphers were <em>symmetric</em>: same key to lock and unlock. That raised two intractable problems.</p>
+<p>First, <strong>key distribution</strong>: to talk secretly, two parties must first share a key — but how do you get that key there safely? If you already had a secure channel for it, why encrypt at all? A chicken-and-egg deadlock. Worse, <code>N</code> people talking pairwise need about <code>N²/2</code> distinct keys — unmanageable at scale. Second, <strong>digital signatures</strong>: in the physical world a signature or seal proves "I sent this, unaltered," but with symmetric crypto both sides share one key, so either could forge the other — you <strong>cannot prove to a third party who really signed</strong>.</p>
+<p>Diffie–Hellman pointed the way — split the encrypt/decrypt capability into two <strong>asymmetric</strong> halves, and negotiate a shared key over a public channel — but they built <strong>no</strong> concrete scheme that could encrypt an arbitrary message and also sign. The missing piece was a suitable <em>trapdoor one-way function</em>: anyone can compute forward (everyone can encrypt), only the private-key holder can compute backward (only I can decrypt). RSA supplied it.</p>
+<h2>The core idea</h2>
+<h3>The trapdoor one-way function: turning "hard" into a foundation</h3>
+<p>For public-key crypto to work you need an operation where <strong>given the public key anyone can compute forward (encrypt), but reversing it (decrypt) is infeasible unless you hold the private-key "trapdoor."</strong> RSA's trapdoor lives in the gulf between "easy to multiply" and "hard to factor" — multiplying two big primes is instant, yet splitting the product back into primes stalls even the best algorithms and hardware.</p>
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<rect x="60" y="70" width="120" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="120" y="90" fill="#e7ebf1" font-size="12.5" text-anchor="middle">two large primes</text>
+<text x="120" y="108" fill="#f5c451" font-size="12.5" text-anchor="middle">p , q</text>
+<rect x="380" y="70" width="120" height="46" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text x="440" y="90" fill="#e7ebf1" font-size="12.5" text-anchor="middle">product</text>
+<text x="440" y="108" fill="#f5c451" font-size="12.5" text-anchor="middle">n = p·q</text>
+<defs>
+<marker id="ag" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e05c5c"/></marker>
+</defs>
+<line x1="184" y1="82" x2="374" y2="82" stroke="#f0b429" stroke-width="2" marker-end="url(#ag)"/>
+<text x="279" y="74" fill="#f0b429" font-size="11.5" text-anchor="middle">multiply: instant (easy)</text>
+<line x1="374" y1="104" x2="184" y2="104" stroke="#e05c5c" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#ar)"/>
+<text x="279" y="126" fill="#e05c5c" font-size="11.5" text-anchor="middle">factor: recovering p, q is brutal ✕</text>
+<text x="279" y="165" fill="#7c8593" font-size="11.5" text-anchor="middle">this one-way gap is RSA's security foundation;</text>
+<text x="279" y="183" fill="#7c8593" font-size="11.5" text-anchor="middle">knowing p, q (the trapdoor) lets you recover the private key</text>
+</svg>
+<figcaption>Fig 1 · Trapdoor: multiplying p·q into n is instant; factoring n back into p, q is brutal — the wider the gap, the safer, while whoever knows p, q (the private-key holder) skips past it.</figcaption>
+</figure>
+<h3>Making keys: from two primes to a public/private pair</h3>
+<p>Key generation is four steps, each only elementary number theory:</p>
+<ul>
+<li>① Randomly pick two large primes <code>p</code>, <code>q</code>; multiply to get <code>n = p·q</code> (the <strong>modulus</strong>, hundreds of decimal digits).</li>
+<li>② Compute <code>φ(n) = (p−1)(q−1)</code> (<strong>Euler's totient</strong>, intuitively "how many numbers from 1 to n are coprime to n"; you need p, q to compute it).</li>
+<li>③ Choose a public exponent <code>e</code> coprime to <code>φ(n)</code> (commonly <code>65537</code>).</li>
+<li>④ Find <code>d</code> such that <code>e·d ≡ 1 (mod φ(n))</code> — i.e., d is the "inverse of e modulo φ(n)," computed instantly by the extended Euclidean algorithm.</li>
+</ul>
+<p>So: <strong>public key = <code>(n, e)</code></strong>, published; <strong>private key = <code>d</code></strong> (along with p, q), kept secret. The crux: <strong>d is determined by e and φ(n), and φ(n) in turn needs p, q; an outsider sees only n, so to get φ(n) they must first factor n — which is exactly the hard problem.</strong></p>
+<h3>Encrypt and decrypt: one modular-exponent round trip</h3>
+<p>Encode the message as a number <code>m</code> smaller than n. Encryption is one modular exponentiation: <code>c = m^e mod n</code> (use the public key to scramble m into ciphertext c). Decryption is another: <code>m = c^d mod n</code> (use the private key to restore c back to m). The two exponents e, d act like a pair of inverse dials — turn e then turn d, and you land exactly back where you started.</p>
+<p>Why does it come back around? Because a number-theory fact guarantees <code>m^(e·d) ≡ m (mod n)</code> — since we chose <code>e·d ≡ 1 (mod φ(n))</code>, raising to the e-th then the d-th power circles all the way around modulo n and returns to m (the machinery is <strong>Euler's theorem / Fermat's little theorem</strong>; the derivation can be skipped, the intuition being "e and d cancel each other modulo φ(n)"). <strong>An attacker sees <code>(n, e, c)</code>; to solve for m they need d; to get d they need φ(n); to get φ(n) they need to factor n into p, q — every route loops back to the factoring problem.</strong></p>
+<p>A real small example (numbers tiny for illustration; real ones are hundreds of digits): take <code>p=61</code>, <code>q=53</code>, so <code>n=3233</code>, <code>φ(n)=3120</code>; take <code>e=17</code>, giving <code>d=2753</code> (since <code>17×2753=46801=15×3120+1</code>). Encrypt <code>m=65</code>: <code>65^17 mod 3233 = 2790</code>; decrypt <code>2790^2753 mod 3233 = 65</code>, back exactly.</p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="b1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="90" y="30" fill="#d9dee5" font-size="12.5" text-anchor="middle" font-weight="700">sender</text>
+<text x="470" y="30" fill="#d9dee5" font-size="12.5" text-anchor="middle" font-weight="700">receiver (me)</text>
+<line x1="280" y1="18" x2="280" y2="282" stroke="#2a2f37" stroke-dasharray="3,4"/>
+<rect x="30" y="52" width="120" height="40" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="90" y="77" fill="#b9c0ca" font-size="12.5" text-anchor="middle">plaintext m</text>
+<rect x="30" y="128" width="120" height="52" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="90" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">c = m^e mod n</text>
+<text x="90" y="168" fill="#f0b429" font-size="11" text-anchor="middle">with my public key (n,e)</text>
+<line x1="90" y1="92" x2="90" y2="126" stroke="#7c8593" marker-end="url(#b1)"/>
+<rect x="230" y="210" width="100" height="40" rx="7" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="280" y="235" fill="#e7ebf1" font-size="12.5" text-anchor="middle">ciphertext c</text>
+<path d="M150,154 C200,154 200,214 226,226" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#b1)"/>
+<path d="M334,226 C380,214 380,154 408,150" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#b1)"/>
+<text x="280" y="270" fill="#7c8593" font-size="10.5" text-anchor="middle">sent over an insecure channel</text>
+<text x="280" y="284" fill="#e05c5c" font-size="10.5" text-anchor="middle">eavesdropper sees only c, cannot restore without d</text>
+<rect x="410" y="128" width="120" height="52" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="470" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">m = c^d mod n</text>
+<text x="470" y="168" fill="#f0b429" font-size="11" text-anchor="middle">with my private key d</text>
+<rect x="410" y="52" width="120" height="40" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="470" y="77" fill="#b9c0ca" font-size="12.5" text-anchor="middle">recovered m</text>
+<line x1="470" y1="126" x2="470" y2="94" stroke="#7c8593" marker-end="url(#b1)"/>
+</svg>
+<figcaption>Fig 2 · Encrypt/decrypt: the sender scrambles m into c with "my" public (n,e); c travels an open channel where an eavesdropper lacking d can't recover m; only I, holding d, compute c^d mod n to restore m.</figcaption>
+</figure>
+<h3>Run it backward: digital signatures</h3>
+<p>RSA's symmetric beauty is that the two keys <strong>can swap roles</strong>. To sign, reverse it: the author computes <code>s = m^d mod n</code> with the <strong>private</strong> key to stamp the message, and anyone computes <code>s^e mod n</code> with the <strong>public</strong> key — if it restores m, it proves "this truly came from the private-key holder, unaltered," since only they have d and no one else can forge an s that verifies. This made <strong>publicly verifiable, non-repudiable</strong> electronic signatures possible for the first time. (Real systems hash the message before signing and add proper padding — see limitations.)</p>
+<h2>Key results</h2>
+<p>As a 1978 algorithm paper, its "result" is not a benchmark but <strong>presenting and arguing the scheme itself is workable and secure</strong>: correctness is guaranteed rigorously by <code>m^(e·d) ≡ m (mod n)</code>; security reduces to "no efficient algorithm factors n into p, q or derives the private key from the public one." The authors estimated that, with the factoring algorithms of the day, breaking an n of about <strong>200 decimal digits (≈664 bits)</strong> would take astronomical time. They also posed the famous <strong>RSA-129</strong> challenge (a 129-digit number) with a prize for factoring it — solved only in <strong>1994</strong> by thousands of machines working together, confirming in reverse that "factoring really is hard; only the safety margin must keep rising with compute." Today's practical keys are commonly <strong>2048 bits or larger</strong>.</p>
+<h2>Why it mattered</h2>
+<p>RSA turned public-key crypto from "a beautiful idea" into a <strong>deployable engineering reality</strong>, propping up the trust backbone of the modern digital world: the browser–server handshake in <strong>HTTPS/TLS</strong>, <strong>digital certificates and certificate authorities (CAs)</strong>, <strong>PGP</strong> email encryption, code and software-update signing, and early e-commerce and online banking all long centered on RSA. It turned "encrypt" and "sign" — things that previously required a pre-shared secret or in-person notarization — into operations any two strangers can perform over an open network. The three authors not only won the Turing Award but founded RSA the company, pushing the algorithm across the whole industry. Without it, there is no internet on which we can safely pay, log in, and communicate.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Slow, unfit for bulk encryption</strong>: modular exponentiation is orders of magnitude slower than symmetric ciphers, so in practice RSA almost never encrypts the body directly — instead <strong>hybrid encryption</strong> uses RSA to encrypt a random symmetric key, and a fast cipher like AES handles the body.</li>
+<li><strong>"Textbook RSA" is insecure; padding is mandatory</strong>: raw <code>m^e mod n</code> is deterministic (same plaintext always yields the same ciphertext, open to dictionary matching) and malleable (<code>c₁·c₂</code> is the ciphertext of <code>m₁·m₂</code>, exploitable). Real systems require proper padding (<strong>OAEP</strong> for encryption, <strong>PSS</strong> for signatures); Bleichenbacher's attack on the old PKCS#1 v1.5 padding once compromised many systems.</li>
+<li><strong>Implementation is full of pitfalls</strong>: weak randomness in prime generation, keys sharing a prime factor, small exponents without padding (Coppersmith / Håstad broadcast attacks), and timing/side channels can all break a mathematically sound RSA in practice.</li>
+<li><strong>Security is an assumption, not a proof</strong>: factoring has never been proven hard, nor has "breaking RSA requires factoring" been proven; a breakthrough in factoring would sink RSA.</li>
+<li><strong>The quantum sword of Damocles</strong>: Shor's algorithm (1994) shows a <strong>sufficiently large quantum computer factors large integers efficiently</strong>, fully breaking RSA — the direct driver of today's migration to <strong>post-quantum cryptography (PQC)</strong>.</li>
+<li><strong>Not the earliest</strong>: GCHQ's Cocks had privately derived an equivalent construction back in 1973, but secrecy kept it unpublished — RSA was the independent and first <strong>public</strong> invention.</li>
+</ul>
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: the first practical public-key scheme — public <code>(n,e)</code> lets anyone encrypt/verify, private <code>d</code> lets only you decrypt/sign.</p>
+<p>② The pain: symmetric crypto has the "key distribution" deadlock (to communicate securely, first communicate securely) and can't "prove to a third party who signed"; RSA breaks it with two asymmetric keys.</p>
+<p>③ Trapdoor: security rests on "multiplying big primes is easy, factoring the product back is brutal"; whoever knows p, q skips the hard part.</p>
+<p>④ Keygen: <code>n=p·q</code>, <code>φ=(p−1)(q−1)</code>, pick e, find <code>d≡e⁻¹ (mod φ)</code>; d needs φ, φ needs p, q.</p>
+<p>⑤ Round trip: encrypt <code>c=m^e mod n</code>, decrypt <code>m=c^d mod n</code>, coming back via <code>m^(ed)≡m (mod n)</code> (Euler/Fermat).</p>
+<p>⑥ Reverse = signature: sign <code>s=m^d mod n</code> with the private key, verify <code>s^e mod n</code> with the public one — publicly verifiable, non-repudiable.</p>
+<p>⑦ Impact: the foundation of HTTPS/TLS, digital certificates, PGP, and software signing; the trio won the 2002 Turing Award.</p>
+<p>⑧ Limits: slow (hence hybrid encryption); insecure raw, needs OAEP/PSS padding; implementation pitfalls; security is an assumption; Shor's algorithm lets a quantum computer break it, driving post-quantum migration.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full number-theory proof and parameter details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
