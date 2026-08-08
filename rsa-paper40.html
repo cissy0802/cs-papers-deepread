@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>RSA 公钥密码体制 — IT 论文精读 Paper 40</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 40</p>
-<h1>RSA 公钥密码体制</h1>
+<h1 data-tts="03bc5f44f29d5dda">RSA 公钥密码体制</h1>
 <p class="sub">Rivest, Shamir, Adleman · MIT · CACM 1978</p>
 <p class="langbar"><a href="rsa-paper40.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,27 +44,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="c9f615ba22823923">这篇论文干了什么？</h2>
 <p>你在浏览器地址栏见过那把小锁、在网上付过款、发过一条没人能偷看的消息——这些背后几乎都站着 <strong>RSA</strong>。1977 年，MIT 的三个人（Rivest、Shamir、Adleman）造出了第一套<strong>真正能用</strong>的「公开锁、私藏钥」加密法：<strong>锁可以到处发、钥匙只有你有</strong>。今天全球的 HTTPS、数字签名、安全支付，源头都能追到这一篇。</p>
-<h2>旧世界的痛</h2>
+<h2 data-tts="1b21bbf148dc900d">旧世界的痛</h2>
 <p>在它之前，加密像一把普通的锁：<strong>锁门和开门用的是同一把钥匙</strong>。于是有个死结——你想给一个陌生人发密信，得先想办法把那把钥匙安全地交到他手上；可要是你们之间已经有条安全通道能传钥匙，那还加什么密？<strong>「想安全通信，得先安全通信」</strong>，鸡生蛋、蛋生鸡。全世界几亿对陌生人两两之间都得预先偷偷换钥匙，根本转不动。</p>
-<h2>那个点子</h2>
+<h2 data-tts="330d497f53a7bd81">那个点子</h2>
 <p>RSA 把一把钥匙<strong>拆成了两半</strong>：一把<strong>公开锁</strong>、一把<strong>私藏钥</strong>，而且<strong>锁上的只能用钥开、不能用锁再开回去</strong>。你把公开锁像发名片一样满世界散出去；任何人想给你发密信，就用你的锁把消息「咔哒」锁进盒子——<strong>但锁上之后连他自己也打不开了</strong>，只有攥着私藏钥的你能打开。从此两个素不相识的人，<strong>不用事先换任何秘密</strong>，也能安全通信。死结解开了。</p>
-<h2>它凭什么锁得住？</h2>
+<h2 data-tts="b105e016fc9bbee1">它凭什么锁得住？</h2>
 <p>秘密藏在一个小学生都懂、却难倒最快超级计算机的算术事实里：<strong>把两个很大的质数乘起来，一瞬间就算完；可给你那个乘积，让你反推是哪两个质数乘出来的，几乎没人算得动。</strong>就像把两种颜料一搅就成新色、想再分开却无从下手。</p>
 <p>你的「公开锁」本质上就是那个巨大的乘积；你的「私藏钥」就是那对只有你知道的质数。<strong>别人拿乘积能把消息搅乱（上锁），但没有那对质数就理不清、还原不回来（开锁）。</strong>数字越大越安全——如今用的数字大到，就算全世界的电脑一起算到宇宙尽头也拆不开。</p>
-<h2>反过来用，就是签名</h2>
+<h2 data-tts="518f37113b8b395a">反过来用，就是签名</h2>
 <p>这套锁钥还能倒着玩：你用<strong>私藏钥</strong>给一份文件「盖个章」，别人用你满世界发的<strong>公开锁</strong>一验，就能确认「这真是你盖的、且一个字没被改过」——因为只有你有那把私钥。这就是<strong>数字签名</strong>，网上合同、软件更新、证书全靠它证明「我是我」。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="ef298da606d9f946">一句话记住</h2>
 <div class="tl">
 <p>把钥匙拆成「公开锁 + 私藏钥」，锁能随便发、只有你能开——靠的是「两个大质数相乘容易、把乘积拆回质数极难」。陌生人不用先换秘密就能安全通信，倒过来用还能签名。代价是它算得慢（只用来锁一把小钥匙），而且未来的量子计算机可能把它拆开。</p>
 </div>
 <p class="switch-hint">想看公钥/私钥的数据流图、真实公式和那道「陷门」的原理？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="a52f0e3981af12ae">一句话</h2>
 <p class="lead">RSA 给出了第一套<strong>实用</strong>的公钥密码体制：每人有一对钥匙——公开的 <code>(n, e)</code> 和私藏的 <code>d</code>；任何人都能用你的公钥加密或验签，只有你能用私钥解密或签名。它把「加密」实现成一次模幂运算 <code>c = m^e mod n</code>，其安全性建立在<strong>大整数分解极难</strong>这一假设上：知道公钥 <code>n</code> 却算不出私钥 <code>d</code>，因为那需要先把 <code>n</code> 分解成两个大质数。这一篇把 Diffie–Hellman 一年前提出的公钥「概念」第一次落地成可算的算法。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="2e3e05ac5df0a118">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>密码学（cryptography）</strong>：研究怎样把消息变成只有指定对象能读懂的乱码、以及怎样验证消息真伪的学问。</li>
@@ -77,37 +78,37 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>数字签名（digital signature）</strong>：用私钥给消息盖的「电子章」，任何人用对应公钥可验证它确实出自本人、且未被篡改。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="ee6c1f3d5c33e8f6">坐标</h2>
 <p>作者是 Ron Rivest、Adi Shamir、Leonard Adleman，三人当时都在 MIT；论文 1977 年写成、1978 年 2 月发表于《Communications of the ACM》。它直接接续 Diffie 与 Hellman 1976 年的《New Directions in Cryptography》——那篇提出了「公钥」和「数字签名」的<strong>设想</strong>与密钥交换，却没给出一个能同时做加密和签名的完整方案；RSA 正是把这个设想<strong>第一次变成可算的算法</strong>。三人因此获 2002 年图灵奖。（后来解密的档案显示，英国 GCHQ 的 Clifford Cocks 早在 1973 年就秘密想出了等价方案，但因保密未能公开、也未影响历史进程。）</p>
-<h2>问题与动机</h2>
+<h2 data-tts="00499d69755d4cc2">问题与动机</h2>
 <p>1976 年之前，所有密码都是<em>对称</em>的：锁门与开门同一把钥匙。这带来两个绕不过去的难题。</p>
 <p>第一是<strong>密钥分发</strong>：要和某人保密通信，你俩得先共享一把密钥；可这把密钥本身怎么安全送达？若已有安全通道传它，又何必加密——鸡生蛋的死结。而且 <code>N</code> 个人两两通信需要约 <code>N²/2</code> 把不同密钥，规模一大就管理不动。第二是<strong>数字签名</strong>：现实里签名/盖章能证明「这是我发的、没被改」，可对称密码里双方共享同一把钥匙，谁都能伪造对方，<strong>无法向第三方证明到底是谁签的</strong>。</p>
 <p>Diffie–Hellman 指出了出路——把加解密的能力<strong>拆成不对称的两半</strong>，并给出了在公开信道上协商共享密钥的方法；但他们<strong>没有</strong>造出一个能直接加密任意消息、又能签名的具体体制。缺的那块拼图，就是一个合适的<em>陷门单向函数</em>：正着谁都能算（人人能加密），倒着只有持私钥者能算（唯我能解密）。RSA 补上了它。</p>
-<h2>核心思想 / 方法</h2>
-<h3>陷门单向函数：把「难」变成安全的地基</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="25852d93d95d01fd">陷门单向函数：把「难」变成安全的地基</h3>
 <p>公钥密码要成立，需要一个这样的运算：<strong>给了公钥，人人都能正着算（加密）；但想倒着还原（解密），除非握有私钥这道「陷门」，否则难到不可行。</strong>RSA 找到的陷门，就藏在「乘法易、分解难」的鸿沟里——把两个大质数相乘一瞬完成，把乘积拆回质数却让最强的算法与硬件都望而却步。</p>
 <figure>
-<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<rect x="60" y="70" width="120" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="120" y="90" fill="#e7ebf1" font-size="12.5" text-anchor="middle">两个大质数</text>
-<text x="120" y="108" fill="#f5c451" font-size="12.5" text-anchor="middle">p , q</text>
-<rect x="380" y="70" width="120" height="46" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<text x="440" y="90" fill="#e7ebf1" font-size="12.5" text-anchor="middle">乘积</text>
-<text x="440" y="108" fill="#f5c451" font-size="12.5" text-anchor="middle">n = p·q</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<rect fill="rgba(240,180,41,0.1)" height="46" rx="8" stroke="#f0b429" width="120" x="60" y="70"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="120" y="90">两个大质数</text>
+<text fill="#f5c451" font-size="12.5" text-anchor="middle" x="120" y="108">p , q</text>
+<rect fill="rgba(232,121,75,0.12)" height="46" rx="8" stroke="#e8794b" width="120" x="380" y="70"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="440" y="90">乘积</text>
+<text fill="#f5c451" font-size="12.5" text-anchor="middle" x="440" y="108">n = p·q</text>
 <defs>
-<marker id="ag" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
-<marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e05c5c"/></marker>
+<marker id="ag" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="ar" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e05c5c"></path></marker>
 </defs>
-<line x1="184" y1="82" x2="374" y2="82" stroke="#f0b429" stroke-width="2" marker-end="url(#ag)"/>
-<text x="279" y="74" fill="#f0b429" font-size="11.5" text-anchor="middle">相乘：一瞬完成（易）</text>
-<line x1="374" y1="104" x2="184" y2="104" stroke="#e05c5c" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#ar)"/>
-<text x="279" y="126" fill="#e05c5c" font-size="11.5" text-anchor="middle">分解：拆回 p、q 极难 ✕</text>
-<text x="279" y="165" fill="#7c8593" font-size="11.5" text-anchor="middle">这道单向的落差就是 RSA 的安全地基；</text>
-<text x="279" y="183" fill="#7c8593" font-size="11.5" text-anchor="middle">知道 p、q（陷门）才能轻松倒推出私钥</text>
+<line marker-end="url(#ag)" stroke="#f0b429" stroke-width="2" x1="184" x2="374" y1="82" y2="82"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="279" y="74">相乘：一瞬完成（易）</text>
+<line marker-end="url(#ar)" stroke="#e05c5c" stroke-dasharray="5,4" stroke-width="2" x1="374" x2="184" y1="104" y2="104"></line>
+<text fill="#e05c5c" font-size="11.5" text-anchor="middle" x="279" y="126">分解：拆回 p、q 极难 ✕</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="279" y="165">这道单向的落差就是 RSA 的安全地基；</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="279" y="183">知道 p、q（陷门）才能轻松倒推出私钥</text>
 </svg>
 <figcaption>图 1 · 陷门：p、q 相乘得 n 一瞬完成，反过来把 n 分解回 p、q 极难——落差越大越安全，而知道 p、q 的人（持私钥者）能绕过这道难关。</figcaption>
 </figure>
-<h3>造钥匙：从两个质数到一对公私钥</h3>
+<h3 data-tts="f6656500d67fe9e1">造钥匙：从两个质数到一对公私钥</h3>
 <p>密钥生成分四步，每一步都只是初等数论：</p>
 <ul>
 <li>① 随机取两个大质数 <code>p</code>、<code>q</code>，相乘得 <code>n = p·q</code>（叫<strong>模数</strong>，几百位十进制数）。</li>
@@ -116,44 +117,44 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li>④ 求 <code>d</code>，使 <code>e·d ≡ 1 (mod φ(n))</code>——即 d 是 e「关于 φ(n) 的逆」，用扩展欧几里得算法秒算。</li>
 </ul>
 <p>于是：<strong>公钥 = <code>(n, e)</code></strong>，公开发布；<strong>私钥 = <code>d</code></strong>（连同 p、q）自己藏好。要点在于：<strong>d 由 e 和 φ(n) 决定，而 φ(n) 又要靠 p、q 才能算出；旁人只看得到 n，想得到 φ(n) 就得先把 n 分解——这正是难题所在。</strong></p>
-<h3>加密与解密：一趟模幂来回</h3>
+<h3 data-tts="427de27f9cc819f6">加密与解密：一趟模幂来回</h3>
 <p>把消息编码成一个比 n 小的数 <code>m</code>。加密就是一次模幂：<code>c = m^e mod n</code>（用公钥把 m 搅成密文 c）。解密是另一次模幂：<code>m = c^d mod n</code>（用私钥把 c 还原回 m）。两把指数 e、d 像一对互逆的旋钮，先拧 e 再拧 d，正好转回原样。</p>
 <p>它为什么转得回来？因为一个数论事实保证了 <code>m^(e·d) ≡ m (mod n)</code>——由于当初就让 <code>e·d ≡ 1 (mod φ(n))</code>，先 e 次方再 d 次方等于绕模 n 转了整整一圈又回到 m（背后是<strong>欧拉定理 / 费马小定理</strong>；推导可略，直觉就是「e 和 d 在模 φ(n) 的意义下互相抵消」）。<strong>攻击者看得到 <code>(n, e, c)</code>，想解出 m 就得知道 d；想知道 d 就得知道 φ(n)；想知道 φ(n) 就得把 n 分解成 p、q——绕来绕去都撞回那道分解难题。</strong></p>
 <p>举个真实小例子（数字小仅为演示，实际要几百位）：取 <code>p=61</code>、<code>q=53</code>，则 <code>n=3233</code>、<code>φ(n)=3120</code>；取 <code>e=17</code>，算得 <code>d=2753</code>（因 <code>17×2753=46801=15×3120+1</code>）。加密 <code>m=65</code>：<code>65^17 mod 3233 = 2790</code>；解密 <code>2790^2753 mod 3233 = 65</code>，分毫不差地转回。</p>
 <figure>
-<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="b1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<text x="90" y="30" fill="#d9dee5" font-size="12.5" text-anchor="middle" font-weight="700">发送方</text>
-<text x="470" y="30" fill="#d9dee5" font-size="12.5" text-anchor="middle" font-weight="700">接收方（我）</text>
-<line x1="280" y1="18" x2="280" y2="282" stroke="#2a2f37" stroke-dasharray="3,4"/>
-<rect x="30" y="52" width="120" height="40" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="90" y="77" fill="#b9c0ca" font-size="12.5" text-anchor="middle">明文 m</text>
-<rect x="30" y="128" width="120" height="52" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="90" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">c = m^e mod n</text>
-<text x="90" y="168" fill="#f0b429" font-size="11" text-anchor="middle">用我的公钥 (n,e)</text>
-<line x1="90" y1="92" x2="90" y2="126" stroke="#7c8593" marker-end="url(#b1)"/>
-<rect x="230" y="210" width="100" height="40" rx="7" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
-<text x="280" y="235" fill="#e7ebf1" font-size="12.5" text-anchor="middle">密文 c</text>
-<path d="M150,154 C200,154 200,214 226,226" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#b1)"/>
-<path d="M334,226 C380,214 380,154 408,150" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#b1)"/>
-<text x="280" y="270" fill="#7c8593" font-size="10.5" text-anchor="middle">经不安全信道传输</text>
-<text x="280" y="284" fill="#e05c5c" font-size="10.5" text-anchor="middle">偷看者只见 c，缺 d 无法还原</text>
-<rect x="410" y="128" width="120" height="52" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="470" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">m = c^d mod n</text>
-<text x="470" y="168" fill="#f0b429" font-size="11" text-anchor="middle">用我的私钥 d</text>
-<rect x="410" y="52" width="120" height="40" rx="7" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="470" y="77" fill="#b9c0ca" font-size="12.5" text-anchor="middle">还原出 m</text>
-<line x1="470" y1="126" x2="470" y2="94" stroke="#7c8593" marker-end="url(#b1)"/>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="b1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#d9dee5" font-size="12.5" font-weight="700" text-anchor="middle" x="90" y="30">发送方</text>
+<text fill="#d9dee5" font-size="12.5" font-weight="700" text-anchor="middle" x="470" y="30">接收方（我）</text>
+<line stroke="#2a2f37" stroke-dasharray="3,4" x1="280" x2="280" y1="18" y2="282"></line>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="7" stroke="#7c8593" width="120" x="30" y="52"></rect>
+<text fill="#b9c0ca" font-size="12.5" text-anchor="middle" x="90" y="77">明文 m</text>
+<rect fill="rgba(240,180,41,0.1)" height="52" rx="7" stroke="#f0b429" width="120" x="30" y="128"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="90" y="150">c = m^e mod n</text>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="90" y="168">用我的公钥 (n,e)</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="90" x2="90" y1="92" y2="126"></line>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="7" stroke="#e8794b" width="100" x="230" y="210"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="235">密文 c</text>
+<path d="M150,154 C200,154 200,214 226,226" fill="none" marker-end="url(#b1)" stroke="#7c8593" stroke-width="1.6"></path>
+<path d="M334,226 C380,214 380,154 408,150" fill="none" marker-end="url(#b1)" stroke="#7c8593" stroke-width="1.6"></path>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="270">经不安全信道传输</text>
+<text fill="#e05c5c" font-size="10.5" text-anchor="middle" x="280" y="284">偷看者只见 c，缺 d 无法还原</text>
+<rect fill="rgba(240,180,41,0.1)" height="52" rx="7" stroke="#f0b429" width="120" x="410" y="128"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="470" y="150">m = c^d mod n</text>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="470" y="168">用我的私钥 d</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="7" stroke="#7c8593" width="120" x="410" y="52"></rect>
+<text fill="#b9c0ca" font-size="12.5" text-anchor="middle" x="470" y="77">还原出 m</text>
+<line marker-end="url(#b1)" stroke="#7c8593" x1="470" x2="470" y1="126" y2="94"></line>
 </svg>
 <figcaption>图 2 · 加密/解密：发送方用「我」公开的 (n,e) 把 m 搅成密文 c；c 在公开信道上传输，偷看者缺私钥 d 还不出 m；只有握 d 的我能算 c^d mod n 还原 m。</figcaption>
 </figure>
-<h3>倒过来用：数字签名</h3>
+<h3 data-tts="1db62cc10e43c90c">倒过来用：数字签名</h3>
 <p>RSA 的对称之美在于两把钥匙<strong>可以互换角色</strong>。签名时反着来：作者用<strong>私钥</strong>算 <code>s = m^d mod n</code> 给消息盖章，任何人用其<strong>公钥</strong>算 <code>s^e mod n</code> 若还原出 m，就证明「这确实出自私钥持有者、且内容未被改动」——因为只有他有 d，别人伪造不出能通过验证的 s。这第一次让<strong>可公开验证、又无法抵赖</strong>的电子签名成为可能。（实际系统里先对消息做哈希再签，并加规范填充，见下文局限。）</p>
-<h2>关键结果</h2>
+<h2 data-tts="c63487b00cba7e9f">关键结果</h2>
 <p>作为一篇 1978 年的算法论文，它的「结果」不是跑分，而是<strong>给出并论证了方案本身可行且安全</strong>：正确性由 <code>m^(e·d) ≡ m (mod n)</code> 严格保证；安全性归结为「无有效算法能从 n 分解出 p、q，或直接从公钥求私钥」。作者估算，用当时的分解算法，破解一个约 <strong>200 位十进制（≈664 比特）</strong> 的 n 需要天文级的时间。他们还在文末抛出著名的 <strong>RSA-129</strong> 挑战（一个 129 位十进制数），悬赏分解——这道题直到 <strong>1994 年</strong>才被上千台机器协作攻克，反过来印证了「分解确实很难，只是随算力增长安全边界要不断上调」。今天的实用密钥已普遍用 <strong>2048 比特及以上</strong>。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="fbf6aebfbb96acfc">为什么重要 / 影响</h2>
 <p>RSA 把公钥密码从「一个漂亮设想」变成了<strong>可部署的工程现实</strong>，直接支撑起现代数字社会的信任骨架：<strong>HTTPS/TLS</strong> 里浏览器与网站的握手、<strong>数字证书与证书颁发机构（CA）</strong>、<strong>PGP</strong> 邮件加密、代码与软件更新签名、乃至早期的电子商务与网银，长期都以 RSA 为核心。它把「加密」和「签名」这两件此前需要预共享秘密或当面公证才能做的事，变成了任何两个陌生实体在开放网络上就能完成的操作。三位作者不仅拿下图灵奖，还创办了 RSA 公司，把这套算法推向了整个产业。可以说，没有它，就没有今天可以放心付款、登录、通信的互联网。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="27091e3dcafa1046">局限与批评</h2>
 <ul>
 <li><strong>慢，不适合加密大数据</strong>：模幂比对称密码慢几个数量级，所以现实中几乎从不用 RSA 直接加密正文，而是<strong>混合加密</strong>——用 RSA 加密一把随机的对称密钥，正文再交给 AES 之类快速算法。</li>
 <li><strong>「教科书 RSA」不安全，必须加填充</strong>：直接 <code>m^e mod n</code> 是确定性的（同一明文永远得同一密文，可被字典比对），且具可乘性（<code>c₁·c₂</code> 对应 <code>m₁·m₂</code> 的密文，可被恶意利用）。真实系统必须用规范填充（加密用 <strong>OAEP</strong>、签名用 <strong>PSS</strong>）；历史上 Bleichenbacher 对旧填充 PKCS#1 v1.5 的攻击就曾大面积中招。</li>
@@ -162,7 +163,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>量子计算的达摩克利斯之剑</strong>：Shor 算法（1994）表明<strong>足够大的量子计算机能高效分解大整数</strong>，从而彻底攻破 RSA——这正是当下<strong>后量子密码（PQC）</strong>迁移的直接动因。</li>
 <li><strong>并非最早</strong>：GCHQ 的 Cocks 早在 1973 年已私下得到等价构造，只是因保密未公开——RSA 是独立且第一个<strong>公开</strong>的发明。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="3beadc2ea3388e42">要点</h2>
 <div class="tl">
 <p>① 一句话：第一套实用公钥体制——公钥 <code>(n,e)</code> 人人可加密/验签，私钥 <code>d</code> 只有你能解密/签名。</p>
 <p>② 痛点：对称密码有「密钥分发」死结（想安全通信得先安全通信）和「无法向第三方证明谁签的」；RSA 用不对称的两把钥匙破局。</p>
