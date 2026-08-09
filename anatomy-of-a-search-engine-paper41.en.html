@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The Anatomy of a Large-Scale Hypertextual Web Search Engine (PageRank) — CS Papers Deep-Read Paper 41</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 41</p>
+<h1>The Anatomy of a Search Engine (PageRank)</h1>
+<p class="sub">Sergey Brin &amp; Lawrence Page · Stanford · WWW7 · 1998</p>
+<p class="langbar"><a href="anatomy-of-a-search-engine-paper41.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1998, two Stanford PhD students, Sergey Brin and Larry Page, wrote a paper describing a search-engine prototype they'd built — called <strong>Google</strong>. With one key idea, it turned web search (slow and frustrating at the time) into something that "puts the page you most want to see right at the top, whatever you search for." This paper is, quite literally, the company's birth certificate.</p>
+
+<h2>First, how bad the old world was</h2>
+<p>By the mid-1990s the web was exploding, but search engines were still dumb: you typed a word, and they went looking for "which pages contain this word, and contain it a lot." The trouble is that <strong>"contains the word" and "is a good page" are two completely different things</strong>. A junk page stuffed with keywords could easily outrank a genuinely authoritative one. Search "university" and the top hit might be no university at all. Back then people even relied on hand-curated web directories (like early Yahoo) to find things — but the web grew far faster than people could catalog it.</p>
+
+<h2>The new idea: let pages vote for each other</h2>
+<p>Brin and Page's insight was beautifully simple: <strong>don't just look at what a page says about itself — look at how others treat it.</strong> Web pages are wired together by <strong>links</strong>. A link on page A that points to page B is like <strong>A casting a vote for B, saying "this page is worth seeing."</strong> The more pages link to you, the more trustworthy you probably are.</p>
+<p>But there's a subtler layer: <strong>not every vote counts the same.</strong> One recommendation from an authoritative page is worth more than a hundred from unknown ones. So "importance" becomes a <strong>recursive</strong> thing — important pages cast heavier votes, and they in turn were voted up by other important pages. This "who's important depends on who's recommended by whom" score is called <strong>PageRank</strong>.</p>
+
+<h2>How is it actually computed?</h2>
+<p>Picture someone <strong>aimlessly clicking links</strong> across the web: land on a page, click one of its links at random, jump to the next, and keep going; occasionally, bored, they type a fresh address into the bar and jump somewhere at random to start over. After countless clicks, <strong>the fraction of time they spend on a given page is its PageRank</strong> — well-connected important pages get passed through constantly, obscure ones almost never. This "random surfer" picture is exactly what PageRank really is.</p>
+<p>One more trick is just as crucial: <strong>how others refer to you is often more accurate than how you describe yourself.</strong> Countless pages linking to Google label the link text "search engine" — so even if the target page never says those words, the engine knows to surface it for that query. This "text on a link" is called <strong>anchor text</strong>. It lets a search engine make sense of images and downloadable files (which contain no text of their own), and describe pages it hasn't even crawled yet.</p>
+
+<h2>What it led to</h2>
+<p>Layering these two signals — "the votes" and "how others refer to you" — on top of the old "does the word appear" approach set result quality apart overnight: ten links on the first page, every one on target. This machinery grew into Google and rewrote how the whole internet finds information. It has a cost too (one honest note): once ranking rides on links, people start <strong>manufacturing links and faking votes</strong> to game it — an arms race that continues to this day.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Don't just read what a page says about itself — look at who links to it, and who links to those linkers. Treat links as weighted recommendations (PageRank), add "what words others use to refer to it" (anchor text), and you can surface the page most worth seeing out of an exploding web. This is where Google began.</p>
+</div>
+<p class="switch-hint">Want the link-voting diagram, the random-surfer formula, and the prototype's architecture? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">This paper introduces the search-engine prototype <strong>Google</strong>, built on two ideas that turn the web's <strong>hyperlink structure</strong> into a quality signal: <strong>PageRank</strong> — a recursive global importance score for every page based on "who links to you, and how important those pages are" (equivalent to the long-run probability that a "random surfer" lands on the page); and <strong>anchor text</strong> — describing a page using the text on links that point to it. Layered on top of traditional text matching, these made large-scale web search "on-target on the first page" for the first time, with a full system architecture that scales to the whole web.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Search engine</strong>: a system that crawls and indexes a huge pile of web pages in advance, then, given your query, returns relevant pages <em>ranked</em>. The hard part was never "find pages with the word" — it's "rank the ones most worth seeing first."</li>
+<li><strong>Hyperlink / link</strong>: the clickable text or button on a page that jumps to another. The web's links weave all pages into one giant directed graph.</li>
+<li><strong>Crawler / crawling</strong>: the program that follows links to download pages one by one — the engine's "restocking" step.</li>
+<li><strong>Index / inverted index</strong>: a big table mapping "word → all pages containing it," so a search can instantly find which pages a word appears on, instead of scanning the whole web live.</li>
+<li><strong>Directed graph / node / in-links & out-links</strong>: treat each page as a "dot" and each link as an arrow. Links pointing at a page are its <em>in-links</em>; links leaving it are <em>out-links</em>.</li>
+<li><strong>Eigenvector / power iteration</strong>: an algorithm that repeatedly "plug in, update, plug in again" until the numbers stop changing. PageRank uses it to close in on the final scores round by round, without solving an astronomically large system of equations.</li>
+<li><strong>IR (information retrieval)</strong>: the field of "finding and ranking documents relevant to a query from a collection" — a search engine's home turf.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are Stanford PhD students Sergey Brin and Lawrence (Larry) Page; the paper appeared at the Seventh International World Wide Web Conference (WWW7) in 1998. Its intellectual root is academic <strong>citation analysis</strong> (a paper is more important the more — and the more authoritatively — it is cited); a contemporary alternative was Jon Kleinberg's <strong>HITS</strong>, which splits pages into "authorities" and "hubs." Downstream, this paper grew into Google and made "judge a page's quality by link structure" the industry-wide paradigm for search.</p>
+
+<h2>The problem and the motivation</h2>
+<p>By the late 1990s the number of web pages was growing exponentially, but a person's daily reading capacity was not — most users look only at the top ten results. Search engines of the day ranked mainly by <strong>text matching</strong>: the more a word appears on a page, and the closer to the title, the higher it ranks. This had two fatal flaws.</p>
+<p>First, <strong>"contains the word" isn't "is a good page."</strong> The authors note that on some engines, searching a well-known company's name wouldn't even surface its own homepage near the top. Second, text matching is <strong>trivially manipulated</strong> — stuff a page with keywords and you climb, so junk results "wash out any results a user is actually interested in." The other option was hand-curated directories (like early Yahoo): high quality, but <strong>hopelessly unable to keep pace with the web's growth</strong>. The core tension emerges: <strong>the web hides an extraordinarily valuable, almost unused quality signal — the hyperlinks themselves.</strong> Someone willingly placing a link to another page is a costly "endorsement."</p>
+
+<h2>The core idea</h2>
+
+<h3>PageRank: links as weighted votes</h3>
+<p>PageRank's intuition in a line: <strong>a page's importance comes from how many pages link to it, and how important those linking pages are themselves.</strong> Each link is a <em>vote</em>, but votes are weighted — one vote from an important page is worth far more than one from an unknown. That gives a recursive definition: to know how important A is, you first need to know how important A's linkers are, which depends on <em>their</em> linkers…</p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs>
+<marker id="pa" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="pg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e8794b"/></marker>
+</defs>
+<circle cx="70" cy="60" r="13" fill="rgba(255,255,255,0.04)" stroke="#7c8593"/>
+<circle cx="60" cy="150" r="13" fill="rgba(255,255,255,0.04)" stroke="#7c8593"/>
+<circle cx="70" cy="240" r="13" fill="rgba(255,255,255,0.04)" stroke="#7c8593"/>
+<circle cx="180" cy="205" r="18" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="180" y="209" fill="#b9c0ca" font-size="11" text-anchor="middle">Q</text>
+<circle cx="320" cy="140" r="40" fill="rgba(240,180,41,0.16)" stroke="#f0b429" stroke-width="2"/>
+<text x="320" y="138" fill="#f5c451" font-size="15" font-weight="700" text-anchor="middle">B</text>
+<text x="320" y="154" fill="#7c8593" font-size="9" text-anchor="middle">high PageRank</text>
+<circle cx="480" cy="150" r="24" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="480" y="154" fill="#e7ebf1" font-size="12" text-anchor="middle">D</text>
+<line x1="83" y1="63" x2="282" y2="128" stroke="#7c8593" stroke-width="1.3" marker-end="url(#pa)"/>
+<line x1="73" y1="149" x2="280" y2="139" stroke="#7c8593" stroke-width="1.3" marker-end="url(#pa)"/>
+<line x1="82" y1="236" x2="284" y2="156" stroke="#7c8593" stroke-width="1.3" marker-end="url(#pa)"/>
+<line x1="196" y1="196" x2="288" y2="160" stroke="#f0b429" stroke-width="1.8" marker-end="url(#pg)"/>
+<line x1="360" y1="143" x2="454" y2="149" stroke="#e8794b" stroke-width="2" marker-end="url(#pg)"/>
+<path d="M500,120 C520,60 300,30 90,42" fill="none" stroke="#5a6069" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#pa)"/>
+<text x="300" y="26" fill="#7c8593" font-size="10" text-anchor="middle">15% chance: jump to a random page (no link click)</text>
+<text x="118" y="286" fill="#7c8593" font-size="10.5">many votes into B → B ranks high</text>
+<text x="392" y="196" fill="#e8794b" font-size="10.5">B's vote is heavy → D rises too</text>
+</svg>
+<figcaption>Fig 1 · PageRank ≈ weighted votes / random surfer: a link is a vote, and a vote from a high-scoring page (B) counts more; the score flows onward along links (B→D). The dashed arrow is the 15% "got bored, jump at random," which keeps the walk moving and computable.</figcaption>
+</figure>
+
+<p>How do you compute this chicken-and-egg recursion? The paper uses the <strong>random surfer</strong> model: imagine someone starting on any page who, <strong>with probability <code>d</code> (set to 0.85), clicks a random out-link on the current page</strong> and jumps onward; and <strong>with probability <code>1−d</code> (0.15) "gets bored" and jumps to a random page anywhere</strong> to start over. Let them walk forever, and <strong>the long-run probability of being on a given page is defined as its PageRank</strong>. As a formula:</p>
+<p><code>PR(A) = (1−d)/N + d · Σ PR(Tᵢ)/C(Tᵢ)</code></p>
+<p>In plain terms: A's score = a baseline "random-jump" share everyone gets, plus the score passed in by every page <code>Tᵢ</code> that links to A — <strong>each <code>Tᵢ</code> splits its own score <code>PR(Tᵢ)</code> evenly across its <code>C(Tᵢ)</code> out-links</strong>, and A receives one such share. That <code>1−d</code> baseline also quietly fixes two headaches: "dead-end" pages with no out-links don't swallow all the score, and a small clique of pages linking only to each other can't hoard score forever.</p>
+<p>Mathematically, PageRank is the <em>principal eigenvector</em> of this enormous link matrix; rather than solve an astronomically large system, you just do <strong>power iteration</strong> — give every page an initial score, update once by the formula, feed the results back in, and repeat until the scores stop changing appreciably. The paper reports that on a graph of about 322 million links, it converges in roughly <strong>52 iterations</strong>, and the iteration count grows slowly as the graph doubles — so it scales with the web.</p>
+
+<h3>Anchor text: describing a page by "what others call it"</h3>
+<p>The second key idea is <strong>anchor text</strong>: the clickable text on a link usually describes not the page it <em>sits on</em>, but the page it <em>points to</em>. The authors <strong>attribute that text to the target page</strong>. This buys three things: first, the collective way others refer to a page is often <strong>more accurate and concise</strong> than the page's self-description (countless pages link to Google with "search engine"); second, it lets the engine <strong>index objects with no text of their own</strong> — images, programs, databases; and third, it can even <strong>describe pages the crawler hasn't fetched yet</strong>. Relatively uncommon at the time, it hugely improved recall and relevance.</p>
+
+<h3>Putting the signals together: the prototype's architecture</h3>
+<p>PageRank is a <strong>global, query-independent</strong> importance score; on its own it would surface pages that are "important but off-topic." So the real ranking is a <strong>fusion of signals</strong>: for every occurrence of a word, Google records its <strong>position, font size, capitalization, and whether it's in the title / anchor / URL</strong> (the paper calls these "hit lists," split into "fancy hits" and "plain hits"); it then combines the <strong>proximity</strong> of terms in multi-word queries, the weights of hit types, and finally <strong>multiplies by PageRank</strong> to get the ordering. Below is the full data flow, from crawl to answer.</p>
+
+<figure>
+<svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="20" y="24" width="120" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="80" y="45" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Crawler (fetch)</text>
+<rect x="20" y="86" width="120" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="80" y="107" fill="#b9c0ca" font-size="11" text-anchor="middle">Repository (compressed)</text>
+<rect x="20" y="148" width="120" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="80" y="169" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Indexer (parse)</text>
+<line x1="80" y1="58" x2="80" y2="84" stroke="#7c8593" marker-end="url(#ar)"/>
+<line x1="80" y1="120" x2="80" y2="146" stroke="#7c8593" marker-end="url(#ar)"/>
+<rect x="185" y="120" width="118" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="244" y="139" fill="#b9c0ca" font-size="10.5" text-anchor="middle">forward index (barrels)</text>
+<rect x="185" y="158" width="118" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="244" y="177" fill="#b9c0ca" font-size="10.5" text-anchor="middle">lexicon</text>
+<rect x="185" y="196" width="118" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="244" y="215" fill="#b9c0ca" font-size="10.5" text-anchor="middle">anchors</text>
+<line x1="140" y1="163" x2="182" y2="135" stroke="#7c8593" marker-end="url(#ar)"/>
+<line x1="140" y1="165" x2="182" y2="173" stroke="#7c8593" marker-end="url(#ar)"/>
+<line x1="140" y1="168" x2="182" y2="211" stroke="#7c8593" marker-end="url(#ar)"/>
+<rect x="348" y="120" width="96" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="396" y="139" fill="#e7ebf1" font-size="11" text-anchor="middle">sorter</text>
+<rect x="348" y="158" width="96" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="396" y="177" fill="#b9c0ca" font-size="10.5" text-anchor="middle">inverted index</text>
+<line x1="303" y1="135" x2="346" y2="135" stroke="#7c8593" marker-end="url(#ar)"/>
+<line x1="396" y1="150" x2="396" y2="156" stroke="#7c8593" marker-end="url(#ar)"/>
+<rect x="185" y="248" width="118" height="30" rx="6" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+<text x="244" y="267" fill="#f5c451" font-size="11" text-anchor="middle">PageRank compute</text>
+<line x1="244" y1="226" x2="244" y2="246" stroke="#7c8593" marker-end="url(#ar)"/>
+<rect x="452" y="196" width="90" height="46" rx="6" fill="rgba(240,180,41,0.18)" stroke="#f0b429" stroke-width="2"/>
+<text x="497" y="216" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">Searcher</text>
+<text x="497" y="232" fill="#7c8593" font-size="9.5" text-anchor="middle">rank + answer</text>
+<line x1="444" y1="173" x2="450" y2="200" stroke="#7c8593" marker-end="url(#ar)"/>
+<path d="M303,263 C400,263 450,250 470,244" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="497" y="270" fill="#7c8593" font-size="10" text-anchor="middle">↑ query</text>
+<text x="497" y="286" fill="#7c8593" font-size="10" text-anchor="middle">↓ results</text>
+</svg>
+<figcaption>Fig 2 · The prototype's data flow: crawler → repository → indexer splits out "forward index / lexicon / anchors" → sorter builds the inverted index; PageRank is computed separately and, at query time, combines with text hits to decide the final ranking.</figcaption>
+</figure>
+
+<h2>Key results</h2>
+<p>What the paper delivers is a real running system (hosted at <code>google.stanford.edu</code>). At scale: it crawled and indexed about <strong>24 million pages</strong>, discovered about <strong>76 million URLs</strong>, with a lexicon of about <strong>14 million words</strong> and a compressed page repository in the <strong>tens of gigabytes</strong>. On quality, the authors show a set of representative queries whose results are <strong>markedly more relevant</strong> than several commercial engines of the day — most strikingly on broad queries where "one word matches countless pages," where PageRank's lift of authoritative pages shows best. The paper also stresses that storage, indexing, and querying were all engineered <strong>to scale as the web keeps growing</strong>.</p>
+
+<h2>Why it mattered</h2>
+<p>This paper set the underlying paradigm of modern search: <strong>a page's value is written not only in the page itself, but in the links pointing to it.</strong> "Judge quality by link structure" became standard for search engines, spawned Google directly, and reshaped how the entire internet retrieves information. It engineered an academic insight (citation analysis) to web scale and proved the power of the combination "link analysis + text retrieval + scalable architecture." Together with Kleinberg's contemporaneous HITS, it launched "web link analysis" as a research direction that ran for over two decades.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>PageRank is query-independent</strong>: it's a global "importance prior," the same no matter what you search. So it must be bound to text relevance, or "important but off-topic" pages creep up; by contrast the contemporaneous HITS is computed per query.</li>
+<li><strong>Once ranking rides on links, people manufacture links</strong>: link farms, link buying, and coordinated anchor-text "Google bombs" appeared fast. This spawned a two-decade arms race (nofollow, TrustRank, later anti-spam algorithms like Penguin) — the paper's clean assumptions don't hold in an adversarial environment.</li>
+<li><strong>Rich get richer</strong>: old pages have more links, rank higher, and get linked even more — a Matthew effect; new or good pages can stay buried, a structural bias.</li>
+<li><strong>Only a small piece of today's ranking</strong>: modern search uses hundreds of signals and machine-learned ranking (e.g., RankBrain, BERT-style models); PageRank has long been heavily modified and de-emphasized, and the public "toolbar PageRank" number stopped updating in 2016. This paper is a starting point, not the finish line.</li>
+<li><strong>The authors' own honest note</strong>: an appendix specifically discusses advertising and conflicts of interest, arguing that "advertising-funded search engines are inherently biased" and that search should be more transparent and academic — a stance in telling contrast with Google's later life as an advertising giant.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: the paper introduces the search prototype "Google," whose core is scoring page quality by hyperlink structure — PageRank + anchor text.</p>
+<p>② The pain: 1990s search ranked by text matching alone, "contains the word" ≠ "is a good page," and it was trivially gamed by keyword stuffing; hand-curated directories couldn't keep pace.</p>
+<p>③ PageRank: treat links as weighted votes, important pages cast heavier votes, defined recursively; equivalent to a "random surfer's" long-run probability of being on the page.</p>
+<p>④ Mechanism: <code>PR(A)=(1−d)/N + d·Σ PR(Tᵢ)/C(Tᵢ)</code>, d=0.85; the link matrix's principal eigenvector, computed by power iteration, converging in ~52 iterations and scaling.</p>
+<p>⑤ Anchor text: describe a page by the text on links pointing to it — often more accurate than self-description, and it indexes images / uncrawled pages.</p>
+<p>⑥ Fused ranking: PageRank (global) × text hits (position / font / title / proximity); with a full scalable crawler → repository → index → searcher architecture.</p>
+<p>⑦ Results and impact: a ~24-million-page prototype with markedly more relevant results; set the "quality via links" paradigm, spawned Google, reshaped how the internet finds information.</p>
+<p>⑧ Limits: query-independent, easily spammed via links, rich-get-richer; only one piece of modern ranking's hundreds of signals; the authors' warning on advertising bias is especially ironic.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full system implementation and data structures, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
