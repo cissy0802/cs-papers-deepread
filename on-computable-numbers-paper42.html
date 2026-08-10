@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>On Computable Numbers（图灵机 / 可计算性）— IT 论文精读 Paper 42</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,44 +36,34 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 42</p>
-<h1>On Computable Numbers（图灵机 / 可计算性）</h1>
+<h1 data-tts="449817ec628a813d">On Computable Numbers（图灵机 / 可计算性）</h1>
 <p class="sub">Alan Turing · King's College, Cambridge · 1936（发表于 Proc. London Math. Soc., 1937）</p>
 <p class="langbar"><a href="on-computable-numbers-paper42.en.html">EN →</a></p>
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="809f018bdfb8419d">这篇论文干了什么？</h2>
 <p>你每天打开手机，同一块芯片一会儿是相机、一会儿是地图、一会儿是聊天框——<strong>一台机器，装上不同的「说明书」，就变成任何机器</strong>。这个想法不是工程师先造出来的，而是 1936 年一个 24 岁的英国数学家 <strong>图灵（Alan Turing）</strong>在一篇纯数学论文里先想清楚的。他为了回答一个抽象的数学问题，顺手把「什么叫计算」这件事彻底讲明白了，还画出了今天所有电脑的祖宗蓝图。</p>
-
-<h2>先说个怪问题</h2>
+<h2 data-tts="ef9f2cf6e05450d4">先说个怪问题</h2>
 <p>当时数学界的大人物希尔伯特（Hilbert）问了一个野心勃勃的问题：<strong>能不能找到一套死板的步骤，把任何一句数学命题喂进去，机器照着走就能自动吐出「对」或「错」？</strong>如果有，数学家岂不是可以下岗了。可要回答「到底有没有这套步骤」，得先卡住一个更基本的问题：<strong>「一套死板的步骤」本身是什么意思？</strong>在图灵之前，这个「死板」「机械」「照章办事」全凭直觉，谁也没说清。</p>
-
-<h2>图灵的点子：盯着一个人算账</h2>
+<h2 data-tts="048cea0e194d6e6a">图灵的点子：盯着一个人算账</h2>
 <p>图灵没有去憋一个高深定义，而是<strong>去看一个真人是怎么用纸笔算题的</strong>，然后把它剥到不能再简：一条可以无限长的<strong>纸带</strong>，格子里写着符号；一支只盯着<strong>一格</strong>看的笔尖；脑子里只有<strong>有限几个念头</strong>（比如「正在进位」）；再加一张死板的<strong>对照表</strong>——「现在是这个念头、看到这个符号，那就：改写这一格、把笔尖挪一格、换个念头」。反复照做，就是「计算」。这台想象出来的机器，后人叫它<strong>图灵机</strong>。它简单到近乎可笑，却<strong>能算的东西，跟今天最强的超算一模一样多</strong>。</p>
-
-<h2>一台能变成任何机器的机器</h2>
+<h2 data-tts="0c1e143779365ba8">一台能变成任何机器的机器</h2>
 <p>真正惊人的一步在这里。既然每台图灵机的「对照表」不过是一串符号，那就<strong>把这张表也抄到纸带上，当数据读</strong>。图灵造了一台特别的机器：你把「某台机器 M 的说明书」写在它的纸带上，它读一读，就能<strong>装成 M、干 M 会干的一切</strong>。他管它叫<strong>通用机（universal machine）</strong>。这就是「软件」的诞生——<strong>程序不再是焊死的电路，而是可以被读、被换的一段数据</strong>。你手里的电脑，本质就是这台通用机。</p>
-
-<h2>有些事，机器永远算不出来</h2>
+<h2 data-tts="a37e71948a139524">有些事，机器永远算不出来</h2>
 <p>接着图灵给这套无所不能的机器画了一条硬边界。他问：<strong>能不能有一台机器，看一眼别人的说明书，就判定「这台机器会不会永远跑下去、还是会卡死」？</strong>他证明<strong>不可能</strong>。手法是让机器去审判「它自己」——就像问「这句话是假话」，一自我指涉就转不出去了。于是回到希尔伯特那个大问题：<strong>那套判定一切数学命题的万能步骤，根本不存在。</strong>数学里永远有机器碰不到的角落。这不是机器还不够快，是<strong>逻辑上办不到</strong>——这条边界，至今没人能越过。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="62c40cea3c53429d">一句话记住</h2>
 <div class="tl">
 <p>图灵为了回答「有没有判定一切的万能步骤」，先把「计算」定义成一台极简的纸带机器，再发明了「读说明书就能变成任何机器」的通用机（现代电脑的蓝图），最后证明：有些问题机器永远判定不了，那套万能步骤不存在。一篇纯数学论文，同时立起了计算机的地基和它的天花板。</p>
 </div>
-
 <p class="switch-hint">想看图灵机的结构图、通用机、对角论证怎么把机器逼到自相矛盾？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
 <div class="mode mode-deep" hidden="">
-
-<h2>一句话</h2>
+<h2 data-tts="c89f05fdd5c06ee5">一句话</h2>
 <p class="lead">图灵为了回答希尔伯特的<strong>判定问题（Entscheidungsproblem）</strong>，给「机械计算」下了第一个令人信服的精确定义——<strong>图灵机（Turing machine）</strong>；由此引出三件事：把每台机器编码成数据、造出能模拟一切机器的<strong>通用机（universal machine，现代存储程序计算机的蓝图）</strong>；用对角论证证明<strong>存在机器无法判定的问题</strong>；进而证明判定问题<strong>无解</strong>——一阶逻辑没有万能的判定算法。这篇论文同时奠定了「什么是算法」与「算法办不到什么」。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="d147584a072537b3">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>算法 / 机械步骤（algorithm / effective procedure）</strong>：一套死板、有限、不靠灵感、照着走保证能执行的操作步骤。图灵这篇的任务就是把这个模糊直觉钉成精确定义。</li>
@@ -84,17 +75,13 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>λ 演算 / 递归函数（lambda calculus / recursive functions）</strong>：邱奇（Church）和哥德尔各自给「可计算」下的另外两种定义。三者后来被证明等价——这就是「邱奇–图灵论题」的由来。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="86e530a632b3c8cf">坐标</h2>
 <p>作者阿兰·图灵，写作时是剑桥国王学院 24 岁的研究员，论文 1936 年投出、1937 年刊于《伦敦数学会会刊》。它直接回应<strong>希尔伯特与阿克曼（1928）</strong>的判定问题，站在<strong>哥德尔不完备定理（1931）</strong>的肩上；几乎同时，普林斯顿的<strong>邱奇（Church）</strong>用 λ 演算独立得到了同样的否定结论（早图灵几个月）。图灵随后赴普林斯顿成为邱奇的学生，并在论文附录里证明了自己的「机器可计算」与邱奇的「λ 可定义」<strong>是同一回事</strong>。下启的是整个计算机科学——冯·诺依曼架构、可计算性理论、复杂度理论，源头都在这里。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="21dfd0ca5830dc37">问题与动机</h2>
 <p>二十世纪初，希尔伯特梦想把全部数学装进一套形式系统，再配一台「判定机」：任给一句数学命题，机械地走一遍就知道它真假可证与否。1931 年哥德尔证明<strong>任何足够强的系统里都有真而不可证的命题</strong>，击碎了「完备」这一半的梦。但还剩最后一问，即<strong>判定问题</strong>：哪怕系统不完备，有没有一套机械步骤，至少能判定「一个命题是不是逻辑上永真」？</p>
 <p>要回答「有没有这样的机械步骤」，先得回答一个更隐蔽的前置问题：<strong>「机械步骤」到底是什么？</strong>只要「算法」还停在「凭直觉照章办事」的模糊状态，你就<strong>永远没法证明某件事「任何算法都做不到」</strong>——因为你根本没圈定「任何算法」是什么。这正是卡住所有人的地方。图灵的破局之处，是<strong>先把「计算」本身定义清楚</strong>，问题才第一次变得可证。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>图灵机：把「计算」剥到骨头</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="9b15182eb0769bbd">图灵机：把「计算」剥到骨头</h3>
 <p>图灵的出发点朴素得惊人：<strong>观察一个人（当年真管做计算的人叫「computer」）是怎么用纸笔算题的</strong>，再把无关的血肉全部剥掉，只留计算所必需的骨架。他的洞察是——人算题时，任一瞬间真正依赖的东西其实<strong>有限</strong>：眼睛只盯着纸上一小块、脑中只有有限个「心理状态」、每一步动作也只有有限种。把这些理想化，就得到一台机器：</p>
 <ul>
 <li>一条向两端无限延伸的<strong>纸带</strong>，切成方格，每格写一个来自<strong>有限字母表</strong>的符号（可以空白）；</li>
@@ -104,108 +91,101 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>机器就靠反复查这张表往下走。<strong>为什么这样设计？</strong>因为它把「机械计算」压到了不能再省：无限纸带 = 不限量的草稿纸；一次只看一格 = 承认人的注意力有限；有限状态 + 有限规则 = 「照章办事、不靠灵感」。凡是能被任何明确算法算出来的，都能翻译成这样一张表。反过来，这台机器简单到可以拿它当「算法」的<strong>数学定义</strong>本身。</p>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="280" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">无限纸带（每格一个符号）</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="26">无限纸带（每格一个符号）</text>
 <g font-size="15" text-anchor="middle">
-<rect x="40" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="70" y="70" fill="#b9c0ca">…</text>
-<rect x="100" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="130" y="70" fill="#b9c0ca">1</text>
-<rect x="160" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="190" y="70" fill="#b9c0ca">0</text>
-<rect x="220" y="40" width="60" height="46" fill="rgba(240,180,41,0.14)" stroke="#f0b429" stroke-width="2"/><text x="250" y="70" fill="#f5c451" font-weight="700">1</text>
-<rect x="280" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="310" y="70" fill="#b9c0ca">1</text>
-<rect x="340" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="370" y="70" fill="#b9c0ca">0</text>
-<rect x="400" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="430" y="70" fill="#b9c0ca">·</text>
-<rect x="460" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="490" y="70" fill="#b9c0ca">…</text>
+<rect fill="none" height="46" stroke="#7c8593" width="60" x="40" y="40"></rect><text fill="#b9c0ca" x="70" y="70">…</text>
+<rect fill="none" height="46" stroke="#7c8593" width="60" x="100" y="40"></rect><text fill="#b9c0ca" x="130" y="70">1</text>
+<rect fill="none" height="46" stroke="#7c8593" width="60" x="160" y="40"></rect><text fill="#b9c0ca" x="190" y="70">0</text>
+<rect fill="rgba(240,180,41,0.14)" height="46" stroke="#f0b429" stroke-width="2" width="60" x="220" y="40"></rect><text fill="#f5c451" font-weight="700" x="250" y="70">1</text>
+<rect fill="none" height="46" stroke="#7c8593" width="60" x="280" y="40"></rect><text fill="#b9c0ca" x="310" y="70">1</text>
+<rect fill="none" height="46" stroke="#7c8593" width="60" x="340" y="40"></rect><text fill="#b9c0ca" x="370" y="70">0</text>
+<rect fill="none" height="46" stroke="#7c8593" width="60" x="400" y="40"></rect><text fill="#b9c0ca" x="430" y="70">·</text>
+<rect fill="none" height="46" stroke="#7c8593" width="60" x="460" y="40"></rect><text fill="#b9c0ca" x="490" y="70">…</text>
 </g>
-<path d="M250,132 L242,112 L258,112 Z" fill="#f0b429"/>
-<line x1="250" y1="132" x2="250" y2="150" stroke="#f0b429" stroke-width="1.5"/>
-<rect x="196" y="150" width="108" height="40" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="250" y="168" fill="#e7ebf1" font-size="12" text-anchor="middle">读写头</text>
-<text x="250" y="184" fill="#f5c451" font-size="11.5" text-anchor="middle">状态 q₃</text>
-<rect x="330" y="146" width="212" height="72" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
-<text x="436" y="166" fill="#7c8593" font-size="11" text-anchor="middle">行为表里查这一条：</text>
-<text x="436" y="187" fill="#e7ebf1" font-size="12" text-anchor="middle">(q₃, 读到 1) →</text>
-<text x="436" y="206" fill="#f5c451" font-size="12" text-anchor="middle">写 0 · 右移 · 转 q₅</text>
+<path d="M250,132 L242,112 L258,112 Z" fill="#f0b429"></path>
+<line stroke="#f0b429" stroke-width="1.5" x1="250" x2="250" y1="132" y2="150"></line>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="8" stroke="#f0b429" width="108" x="196" y="150"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="250" y="168">读写头</text>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="250" y="184">状态 q₃</text>
+<rect fill="rgba(255,255,255,0.02)" height="72" rx="8" stroke="#7c8593" width="212" x="330" y="146"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="436" y="166">行为表里查这一条：</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="436" y="187">(q₃, 读到 1) →</text>
+<text fill="#f5c451" font-size="12" text-anchor="middle" x="436" y="206">写 0 · 右移 · 转 q₅</text>
 </svg>
 <figcaption>图 1 · 一台图灵机：无限纸带 + 只看一格的读写头 + 有限状态 + 一张死板的行为表。每一步「看到什么 → 改写、挪动、换念头」，反复照做就是全部的「计算」。</figcaption>
 </figure>
 <p>图灵这篇的字面目标其实是定义<strong>可计算数（computable number）</strong>：一个实数如果它的（二进制）小数展开能被这样一台机器<strong>一位一位地打印出来</strong>，就叫可计算。π、e、所有代数数都可计算。一台能永远打印下去、不卡死的机器，他叫它<strong>circle-free（无环）</strong>。</p>
-
-<h3>把机器编码成数字：可数 vs 不可数</h3>
+<h3 data-tts="e5e8fef65e352e1e">把机器编码成数字：可数 vs 不可数</h3>
 <p>关键的一跃：既然每台机器不过是一张有限的行为表，就能把它<strong>整个写成一串符号、再看成一个整数</strong>（图灵叫它「说明数 / description number」）。这一步看似记账小技巧，威力却极大。它意味着<strong>所有图灵机可以逐个编号：机器 1、机器 2、机器 3……</strong>——机器的总数是<strong>可数</strong>的。</p>
 <p>可实数是<strong>不可数</strong>的（康托尔早已证明）。于是马上得到一个惊人的结论：<strong>绝大多数实数是「不可计算」的</strong>——它们的小数展开没有任何算法能生成。可计算数虽然囊括了我们叫得出名字的一切数，却只是实数汪洋里可数的一小撮。这也顺手把「机器无所不能」的幻觉先戳破了一半。</p>
-
-<h3>通用机：程序即数据</h3>
+<h3 data-tts="2f328d625b960c1b">通用机：程序即数据</h3>
 <p>既然每台机器 M 都能写成一段数据（它的说明数），图灵便造出一台<strong>通用机 U</strong>：把「M 的说明书」连同 M 的输入一起写在 U 的纸带上，U 读一段、执行一步、再读一段……<strong>一步步把 M 模拟出来，算出跟 M 一模一样的结果</strong>。一台机器，喂不同的说明书，就成为任何一台机器。</p>
 <p>这就是<strong>「存储程序」思想的数学原型</strong>：程序不再是硬接线的专用装置，而是<strong>和数据放在同一条纸带上、可以被读取和替换的符号串</strong>。今天每一台电脑——一块通用硬件，靠加载不同软件而变身相机、浏览器、游戏机——本质上都是图灵这台通用机的物理实现。十年后冯·诺依曼架构把它落地成真机器。</p>
 <figure>
-<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ua" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
-<text x="150" y="34" fill="#7c8593" font-size="11.5" text-anchor="middle">同一条纸带上的两段数据</text>
-<rect x="40" y="46" width="140" height="42" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<text x="110" y="64" fill="#e7ebf1" font-size="12.5" text-anchor="middle">M 的说明书</text>
-<text x="110" y="80" fill="#7c8593" font-size="10.5" text-anchor="middle">（程序 = 数据）</text>
-<rect x="180" y="46" width="80" height="42" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="220" y="71" fill="#b9c0ca" font-size="12" text-anchor="middle">M 的输入</text>
-<line x1="150" y1="90" x2="150" y2="118" stroke="#7c8593" stroke-width="1.5" marker-end="url(#ua)"/>
-<rect x="90" y="118" width="120" height="48" rx="10" fill="rgba(232,121,75,0.14)" stroke="#e8794b" stroke-width="2"/>
-<text x="150" y="139" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">通用机 U</text>
-<text x="150" y="156" fill="#7c8593" font-size="10.5" text-anchor="middle">读一步 · 模拟一步</text>
-<line x1="210" y1="142" x2="300" y2="142" stroke="#7c8593" stroke-width="1.5" marker-end="url(#ua)"/>
-<rect x="300" y="120" width="150" height="44" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="375" y="147" fill="#f5c451" font-size="12.5" text-anchor="middle">＝ M 会算出的结果</text>
-<text x="375" y="60" fill="#7c8593" font-size="11" text-anchor="middle" width="150">换一份说明书，</text>
-<text x="375" y="78" fill="#7c8593" font-size="11" text-anchor="middle">U 就变成另一台机器</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ua" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="150" y="34">同一条纸带上的两段数据</text>
+<rect fill="rgba(240,180,41,0.12)" height="42" rx="6" stroke="#f0b429" width="140" x="40" y="46"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="110" y="64">M 的说明书</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="110" y="80">（程序 = 数据）</text>
+<rect fill="rgba(255,255,255,0.03)" height="42" rx="6" stroke="#7c8593" width="80" x="180" y="46"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="220" y="71">M 的输入</text>
+<line marker-end="url(#ua)" stroke="#7c8593" stroke-width="1.5" x1="150" x2="150" y1="90" y2="118"></line>
+<rect fill="rgba(232,121,75,0.14)" height="48" rx="10" stroke="#e8794b" stroke-width="2" width="120" x="90" y="118"></rect>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="150" y="139">通用机 U</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="150" y="156">读一步 · 模拟一步</text>
+<line marker-end="url(#ua)" stroke="#7c8593" stroke-width="1.5" x1="210" x2="300" y1="142" y2="142"></line>
+<rect fill="rgba(240,180,41,0.08)" height="44" rx="8" stroke="#f0b429" width="150" x="300" y="120"></rect>
+<text fill="#f5c451" font-size="12.5" text-anchor="middle" x="375" y="147">＝ M 会算出的结果</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" width="150" x="375" y="60">换一份说明书，</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="375" y="78">U 就变成另一台机器</text>
 </svg>
 <figcaption>图 2 · 通用机：把「某台机器的说明书」当数据读进来，一台机器就能模拟任何机器——「程序即数据」，现代存储程序计算机的蓝图。</figcaption>
 </figure>
-
-<h3>不可判定性：让机器审判它自己</h3>
+<h3 data-tts="895c40c945ce1ab2">不可判定性：让机器审判它自己</h3>
 <p>有了能编号的机器和通用机，图灵抛出致命一问：<strong>能不能有一台机器 D，只看别人的说明数，就判定「那台机器是不是 circle-free（会不会永远算下去、还是终将卡死）」？</strong>他证明<strong>这样的 D 不存在</strong>，用的正是康托尔的对角论证。</p>
 <p>直觉是这样的：假设 D 存在。那就能借它列出所有「乖机器」（circle-free 的），逐个编号，把它们打印出的无穷 0/1 序列排成一张无限大的表——第 <em>n</em> 行是第 <em>n</em> 台乖机器的输出。现在<strong>沿对角线取值、再逐位翻转</strong>，造一个新序列 β：它第 <em>n</em> 位故意跟第 <em>n</em> 台机器的第 <em>n</em> 位<strong>不同</strong>。于是 β 跟表里<strong>每一行都至少差一位</strong>，不可能是表中任何一台机器算的。可是——如果 D 真存在，「造 β」这套流程本身就是个算法，β 也该由某台乖机器算出、就在表里。<strong>它既在表里、又不在表里，矛盾。</strong>所以 D 不存在。</p>
 <p>矛盾的根子是<strong>自我指涉</strong>：那台「造对角线」的机器最终会被要求算<strong>它自己那一位</strong>，于是陷入「要输出跟自己不一样的值」的死结——正是「这句话是假话」那种转不出去的怪圈。<strong>结论：存在机器判定不了的问题。</strong>（图灵原文说的是「circle-free 与否」不可判定；今天教科书里更常见的等价说法是<strong>停机问题（halting problem）</strong>：没有算法能对任意程序 + 输入，判定它会停下还是死循环。）</p>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="280" y="24" fill="#7c8593" font-size="11.5" text-anchor="middle">每台「乖机器」打印的无穷序列，排成一张表</text>
-<g font-size="13" font-family="'SF Mono',monospace">
-<text x="60" y="62" fill="#7c8593" font-size="11.5" text-anchor="end">M₁</text>
-<text x="60" y="92" fill="#7c8593" font-size="11.5" text-anchor="end">M₂</text>
-<text x="60" y="122" fill="#7c8593" font-size="11.5" text-anchor="end">M₃</text>
-<text x="60" y="152" fill="#7c8593" font-size="11.5" text-anchor="end">M₄</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="24">每台「乖机器」打印的无穷序列，排成一张表</text>
+<g font-family="'SF Mono',monospace" font-size="13">
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="60" y="62">M₁</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="60" y="92">M₂</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="60" y="122">M₃</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="60" y="152">M₄</text>
 <!-- rows -->
-<text x="90" y="62" fill="#0f1216" font-weight="700"><tspan>0</tspan></text>
-<rect x="80" y="48" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="93" y="63" fill="#0f1216" font-size="13" text-anchor="middle" font-weight="700">0</text>
-<text x="123" y="63" fill="#b9c0ca" text-anchor="middle">1</text><text x="153" y="63" fill="#b9c0ca" text-anchor="middle">1</text><text x="183" y="63" fill="#b9c0ca" text-anchor="middle">0</text><text x="213" y="63" fill="#b9c0ca" text-anchor="middle">1</text><text x="243" y="63" fill="#7c8593" text-anchor="middle">…</text>
-<text x="93" y="93" fill="#b9c0ca" text-anchor="middle">1</text>
-<rect x="110" y="78" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="123" y="93" fill="#0f1216" text-anchor="middle" font-weight="700">1</text>
-<text x="153" y="93" fill="#b9c0ca" text-anchor="middle">0</text><text x="183" y="93" fill="#b9c0ca" text-anchor="middle">0</text><text x="213" y="93" fill="#b9c0ca" text-anchor="middle">1</text><text x="243" y="93" fill="#7c8593" text-anchor="middle">…</text>
-<text x="93" y="123" fill="#b9c0ca" text-anchor="middle">0</text><text x="123" y="123" fill="#b9c0ca" text-anchor="middle">1</text>
-<rect x="140" y="108" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="153" y="123" fill="#0f1216" text-anchor="middle" font-weight="700">0</text>
-<text x="183" y="123" fill="#b9c0ca" text-anchor="middle">1</text><text x="213" y="123" fill="#b9c0ca" text-anchor="middle">0</text><text x="243" y="123" fill="#7c8593" text-anchor="middle">…</text>
-<text x="93" y="153" fill="#b9c0ca" text-anchor="middle">1</text><text x="123" y="153" fill="#b9c0ca" text-anchor="middle">0</text><text x="153" y="153" fill="#b9c0ca" text-anchor="middle">1</text>
-<rect x="170" y="138" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="183" y="153" fill="#0f1216" text-anchor="middle" font-weight="700">1</text>
-<text x="213" y="153" fill="#b9c0ca" text-anchor="middle">1</text><text x="243" y="153" fill="#7c8593" text-anchor="middle">…</text>
+<text fill="#0f1216" font-weight="700" x="90" y="62"><tspan>0</tspan></text>
+<rect fill="#f0b429" height="20" opacity="0.9" width="26" x="80" y="48"></rect><text fill="#0f1216" font-size="13" font-weight="700" text-anchor="middle" x="93" y="63">0</text>
+<text fill="#b9c0ca" text-anchor="middle" x="123" y="63">1</text><text fill="#b9c0ca" text-anchor="middle" x="153" y="63">1</text><text fill="#b9c0ca" text-anchor="middle" x="183" y="63">0</text><text fill="#b9c0ca" text-anchor="middle" x="213" y="63">1</text><text fill="#7c8593" text-anchor="middle" x="243" y="63">…</text>
+<text fill="#b9c0ca" text-anchor="middle" x="93" y="93">1</text>
+<rect fill="#f0b429" height="20" opacity="0.9" width="26" x="110" y="78"></rect><text fill="#0f1216" font-weight="700" text-anchor="middle" x="123" y="93">1</text>
+<text fill="#b9c0ca" text-anchor="middle" x="153" y="93">0</text><text fill="#b9c0ca" text-anchor="middle" x="183" y="93">0</text><text fill="#b9c0ca" text-anchor="middle" x="213" y="93">1</text><text fill="#7c8593" text-anchor="middle" x="243" y="93">…</text>
+<text fill="#b9c0ca" text-anchor="middle" x="93" y="123">0</text><text fill="#b9c0ca" text-anchor="middle" x="123" y="123">1</text>
+<rect fill="#f0b429" height="20" opacity="0.9" width="26" x="140" y="108"></rect><text fill="#0f1216" font-weight="700" text-anchor="middle" x="153" y="123">0</text>
+<text fill="#b9c0ca" text-anchor="middle" x="183" y="123">1</text><text fill="#b9c0ca" text-anchor="middle" x="213" y="123">0</text><text fill="#7c8593" text-anchor="middle" x="243" y="123">…</text>
+<text fill="#b9c0ca" text-anchor="middle" x="93" y="153">1</text><text fill="#b9c0ca" text-anchor="middle" x="123" y="153">0</text><text fill="#b9c0ca" text-anchor="middle" x="153" y="153">1</text>
+<rect fill="#f0b429" height="20" opacity="0.9" width="26" x="170" y="138"></rect><text fill="#0f1216" font-weight="700" text-anchor="middle" x="183" y="153">1</text>
+<text fill="#b9c0ca" text-anchor="middle" x="213" y="153">1</text><text fill="#7c8593" text-anchor="middle" x="243" y="153">…</text>
 </g>
-<line x1="82" y1="50" x2="196" y2="158" stroke="#e8794b" stroke-width="1.5" stroke-dasharray="3 3"/>
-<text x="300" y="112" fill="#f0b429" font-size="11.5">对角线：0 1 0 1 …</text>
-<text x="300" y="132" fill="#e8794b" font-size="11.5">逐位翻转 → β：1 0 1 0 …</text>
-<rect x="296" y="150" width="230" height="60" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
-<text x="411" y="172" fill="#e7ebf1" font-size="11.5" text-anchor="middle">β 与每一行都差一位，</text>
-<text x="411" y="190" fill="#e7ebf1" font-size="11.5" text-anchor="middle">不可能在表中 —— 却又该在，</text>
-<text x="411" y="202" fill="#f5c451" font-size="11.5" text-anchor="middle">矛盾 ⇒ 判定机不存在</text>
+<line stroke="#e8794b" stroke-dasharray="3 3" stroke-width="1.5" x1="82" x2="196" y1="50" y2="158"></line>
+<text fill="#f0b429" font-size="11.5" x="300" y="112">对角线：0 1 0 1 …</text>
+<text fill="#e8794b" font-size="11.5" x="300" y="132">逐位翻转 → β：1 0 1 0 …</text>
+<rect fill="rgba(232,121,75,0.1)" height="60" rx="8" stroke="#e8794b" width="230" x="296" y="150"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="411" y="172">β 与每一行都差一位，</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="411" y="190">不可能在表中 —— 却又该在，</text>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="411" y="202">矛盾 ⇒ 判定机不存在</text>
 </svg>
 <figcaption>图 3 · 对角论证：沿对角线取值再翻转，造出一个「不在表里」的序列 β。若「判定机器好坏」的机器存在，β 又该在表里——自相矛盾，故此判定不可能。</figcaption>
 </figure>
-
-<h3>回击判定问题：一记归约</h3>
+<h3 data-tts="5b1db785f40623df">回击判定问题：一记归约</h3>
 <p>最后一步把机器的不可判定<strong>搬到逻辑上</strong>。图灵证明：任一台图灵机的运行，都能<strong>翻译成一句一阶逻辑命题</strong>——机器会怎样跑，等价于这句命题是否永真。于是<strong>倘若真有判定问题的万能算法</strong>（能判定任意逻辑命题永真与否），就能拿它去判定「机器会不会卡死」，可后者刚被证明不可判定——矛盾。<strong>所以判定问题无解：不存在能判定一切一阶逻辑命题的机械步骤。</strong>希尔伯特的最后一半梦，就此终结。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="0839788c4d0819b5">关键结果</h2>
 <p>这是一篇纯数学论文，没有实验，「结果」就是几条彼此咬合的定理：<strong>①</strong> 图灵机给出了「机械可计算」的精确定义；<strong>②</strong> 机器可逐个编号（可数），故绝大多数实数不可计算；<strong>③</strong> 存在<strong>通用机</strong>，一台机器能模拟任何机器；<strong>④</strong> 「机器是否 circle-free」<strong>不可判定</strong>（即现代停机问题的原型）；<strong>⑤</strong> 由此<strong>判定问题无解</strong>。附录里他还证明「图灵机可计算」与邱奇的「λ 可定义」<strong>完全等价</strong>——两条截然不同的路，圈出的是同一片「可计算」疆域，这份巧合正是<strong>邱奇–图灵论题</strong>的证据。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="cd50019f2cb90c3e">为什么重要 / 影响</h2>
 <p>很难找到比它<strong>影响更奠基</strong>的计算机论文。它一次性交付了三块地基：<strong>其一，「算法 / 可计算」有了公认定义</strong>，理论计算机科学从此有了研究对象；<strong>其二，通用机 = 存储程序计算机的蓝图</strong>，「程序即数据、一机通用」的思想直接通向冯·诺依曼架构和今天的每一台电脑；<strong>其三，不可判定性划出了计算的绝对边界</strong>，衍生出停机问题、Rice 定理，以及「不存在完美的通用程序验证器、完美查毒引擎」等一整套「机器办不到什么」的结果。可以说，今天你能在一块芯片上装任何软件、也能证明某些自动化任务<strong>原则上不可能</strong>，两件事的根都在这 36 页里。图灵测试、人工智能是他后来的事，而计算本身的定义，就诞生于此。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="0f633c2dff1437c8">局限与批评</h2>
 <ul>
 <li><strong>邱奇–图灵论题是「论题」不是「定理」</strong>：「图灵机能算的 = 一切直觉上可机械计算的」这句话，涉及「直觉上可计算」这个非形式概念，<strong>无法被证明</strong>，只能靠证据支持（尽管几乎无人质疑）。</li>
 <li><strong>图灵机是定义工具，不是工程设计</strong>：无限纸带、一次挪一格，慢到荒谬，从没打算拿来真造机器。真机器来自 EDVAC / 冯·诺依曼一脉；这篇 1936 年论文对实际机器设计的直接因果影响有多大，史学界仍有争论（有人认为更多是事后追认的血统）。</li>
@@ -214,8 +194,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>与物理世界的边界有争议</strong>：「物理可实现的计算是否也不超出图灵机」（物理版邱奇–图灵论题）、以及超计算 / 量子计算能否突破，属于持续的哲学与理论争论——不过量子计算改变的是效率，并不能算出图灵机算不出的东西。</li>
 <li><strong>优先权</strong>：邱奇用 λ 演算早几个月得到同一否定结论；只是图灵「模拟真人计算」的定义最直观、最有说服力，连哥德尔都认为它才真正说清了「机械步骤」。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="4f02242485d853fb">要点</h2>
 <div class="tl">
 <p>① 一句话：为回答希尔伯特「有没有判定一切数学命题的机械步骤」，图灵先把「计算」定义成图灵机，再证明这套万能步骤不存在。</p>
 <p>② 痛点：不先把「算法 / 机械步骤」定义清楚，就无法证明「任何算法都做不到某事」——这卡住了判定问题。</p>
