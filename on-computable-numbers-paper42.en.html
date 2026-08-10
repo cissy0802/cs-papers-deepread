@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>On Computable Numbers (The Turing Machine) — CS Papers Deep-Read Paper 42</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 42</p>
+<h1>On Computable Numbers (The Turing Machine)</h1>
+<p class="sub">Alan Turing · King's College, Cambridge · 1936 (Proc. London Math. Soc., 1937)</p>
+<p class="langbar"><a href="on-computable-numbers-paper42.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>Every day you open your phone, and the same chip becomes a camera, then a map, then a chat box — <strong>one machine that turns into any machine when you load a different "instruction sheet."</strong> Engineers didn't think of that first. A 24-year-old mathematician, <strong>Alan Turing</strong>, worked it out in 1936 in a pure-math paper. Setting out to answer an abstract question, he pinned down exactly <strong>what "to compute" means</strong> — and sketched the blueprint for every computer that would ever exist.</p>
+
+<h2>First, an odd question</h2>
+<p>The towering mathematician David Hilbert had posed an ambitious challenge: <strong>is there some rote procedure that takes any mathematical statement, and mechanically grinds out "true" or "false"?</strong> If so, mathematicians could retire. But to answer "is there such a procedure?", you first hit a deeper snag: <strong>what does "a rote procedure" even mean?</strong> Before Turing, "rote," "mechanical," "by the book" were pure intuition — nobody had made them precise.</p>
+
+<h2>Turing's idea: watch a person do arithmetic</h2>
+<p>Turing didn't strain for a grand definition. He <strong>watched how a real person computes with pencil and paper</strong>, then stripped it to the bone: an endless <strong>tape</strong> of squares holding symbols; a pencil tip that looks at <strong>one square</strong> at a time; a handful of <strong>states of mind</strong> ("carrying a digit"); and a rigid <strong>lookup table</strong> — "in this state, seeing this symbol: rewrite the square, move the tip one step, switch state." Do that over and over, and that's "computing." This imagined device is the <strong>Turing machine</strong>. It's almost laughably simple, yet <strong>it can compute exactly as much as today's mightiest supercomputer</strong>.</p>
+
+<h2>A machine that can become any machine</h2>
+<p>Here comes the staggering step. Since every Turing machine's lookup table is just a string of symbols, <strong>write that table onto the tape too, and read it as data</strong>. Turing built one special machine: put "the instruction sheet of some machine M" on its tape, let it read, and it will <strong>impersonate M and do everything M does</strong>. He called it the <strong>universal machine</strong>. This is the birth of "software" — <strong>a program is no longer hard-wired circuitry, but a piece of data you can read and swap out.</strong> The computer in your hand is, at heart, this universal machine.</p>
+
+<h2>Some things a machine can never work out</h2>
+<p>Then Turing drew a hard boundary around this all-powerful device. He asked: <strong>could there be a machine that glances at another's instruction sheet and decides whether it will run forever or eventually jam?</strong> He proved <strong>no</strong> — by making a machine sit in judgment over <strong>itself</strong>, like the sentence "this sentence is false" that spins out the moment it turns on itself. So back to Hilbert's grand question: <strong>that universal deciding procedure simply does not exist.</strong> Mathematics always holds corners no machine can reach — not because machines are too slow, but because <strong>logic forbids it</strong>. That boundary has never been crossed.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>To answer "is there a universal procedure that decides everything," Turing first defined "computing" as a minimal tape machine, then invented the universal machine that "reads an instruction sheet and becomes any machine" (the blueprint of every computer), then proved that some questions no machine can ever decide — so the universal procedure doesn't exist. One pure-math paper laid both the foundation of computers and their ceiling.</p>
+</div>
+
+<p class="switch-hint">Want the machine diagram, the universal machine, and how the diagonal argument corners a machine into contradicting itself? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">To answer Hilbert's <strong>Entscheidungsproblem (decision problem)</strong>, Turing gave the first convincing precise definition of "mechanical computation" — the <strong>Turing machine</strong> — and from it drew three things: encode every machine as data and build a <strong>universal machine</strong> that simulates any machine (the blueprint of the stored-program computer); prove by a diagonal argument that <strong>some problems no machine can decide</strong>; and hence prove the decision problem <strong>has no solution</strong> — first-order logic has no universal deciding algorithm. The paper founded both "what an algorithm is" and "what algorithms cannot do."</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Algorithm / effective procedure</strong>: a rigid, finite, inspiration-free sequence of steps guaranteed to be executable by rote. Turing's whole task was to nail this fuzzy intuition down to a precise definition.</li>
+<li><strong>Entscheidungsproblem (decision problem)</strong>: Hilbert's 1928 question — is there a mechanical procedure that, for any first-order logic statement, decides whether it is "valid" (always true). "Entscheidung" is German for "decision."</li>
+<li><strong>First-order logic</strong>: the standard formal logic using "for all x," "there exists x," predicates, and connectives — the common language of mathematical statements.</li>
+<li><strong>Countable / uncountable</strong>: an infinity that can be paired one-to-one with the naturals 1,2,3… is "countable" (integers, rationals); the reals are "uncountable," a strictly bigger infinity. This gap is the crux of the diagonal argument here.</li>
+<li><strong>Diagonal argument</strong>: Cantor's trick for proving the reals uncountable — read down the diagonal of an infinite table and flip each value to build an object "not in the table," forcing a contradiction.</li>
+<li><strong>Hilbert's program / Gödel incompleteness</strong>: Hilbert wanted to reduce all of mathematics to one mechanically decidable formal system; Gödel's 1931 incompleteness theorems had already dashed part of that dream, and this paper delivers another blow, from the angle of computability.</li>
+<li><strong>Lambda calculus / recursive functions</strong>: the separate definitions of "computable" given by Church and by Gödel. All three were later proved equivalent — the origin of the "Church–Turing thesis."</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The author, Alan Turing, was a 24-year-old fellow at King's College, Cambridge; the paper was submitted in 1936 and published in 1937 in the Proceedings of the London Mathematical Society. It answers the decision problem of <strong>Hilbert and Ackermann (1928)</strong>, standing on the shoulders of <strong>Gödel's incompleteness theorems (1931)</strong>. Almost simultaneously, <strong>Alonzo Church</strong> at Princeton reached the same negative result independently (a few months earlier) using the lambda calculus. Turing then went to Princeton as Church's student, and in an appendix proved his own "machine-computable" is <strong>the same notion</strong> as Church's "lambda-definable." Downstream lies all of computer science — the von Neumann architecture, computability theory, complexity theory all trace back here.</p>
+
+<h2>The problem and the motivation</h2>
+<p>Early in the 20th century, Hilbert dreamed of packing all of mathematics into one formal system, plus a "deciding machine": feed in any statement, grind mechanically, and learn whether it's true and provable. In 1931 Gödel proved that <strong>any sufficiently strong system contains true-but-unprovable statements</strong>, shattering the "complete" half of that dream. But one question remained — the <strong>decision problem</strong>: even if the system is incomplete, is there a mechanical procedure that can at least decide whether a statement is logically valid?</p>
+<p>To answer "is there such a procedure," you must first answer a subtler prior question: <strong>what is a "mechanical procedure"?</strong> As long as "algorithm" stayed at "follow the rules by intuition," you could <strong>never prove that something is beyond every algorithm</strong> — because you'd never pinned down what "every algorithm" means. That was the wall everyone hit. Turing's breakthrough was to <strong>define "computation" itself first</strong>, so the question could, for the first time, be proved.</p>
+
+<h2>The core idea</h2>
+
+<h3>The Turing machine: computation stripped to the bone</h3>
+<p>Turing's starting point is startlingly plain: <strong>watch how a person (back then, a human doing computation was literally called a "computer") works with pencil and paper</strong>, then strip away everything but the bare essentials. His insight was that at any instant a person really depends on only <strong>finitely</strong> much: the eyes fix on one small patch of paper, the mind holds a finite number of "states," and each move is one of finitely many kinds. Idealize these and you get a machine:</p>
+<ul>
+<li>a <strong>tape</strong> extending endlessly in both directions, divided into squares, each holding one symbol from a <strong>finite alphabet</strong> (possibly blank);</li>
+<li>a <strong>read/write head</strong> that at any moment <strong>scans one square</strong>, and can read and rewrite it;</li>
+<li>finitely many <strong>internal states</strong> (Turing's "m-configurations" — the machine's current "state of mind");</li>
+<li>a rigid <strong>table of behavior (transition rules)</strong>: <code>(current state, symbol read) → (write a symbol, move one square left or right, switch to a new state)</code>.</li>
+</ul>
+<p>The machine just keeps consulting this table. <strong>Why design it this way?</strong> Because it compresses "mechanical computation" to the irreducible: an endless tape = unlimited scratch paper; scanning one square at a time = human attention is finite; finite states + finite rules = "by the book, no inspiration." Anything computable by any well-defined algorithm can be translated into such a table. Conversely, the machine is simple enough to serve as the <strong>mathematical definition of "algorithm"</strong> itself.</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="280" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">endless tape (one symbol per square)</text>
+<g font-size="15" text-anchor="middle">
+<rect x="40" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="70" y="70" fill="#b9c0ca">…</text>
+<rect x="100" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="130" y="70" fill="#b9c0ca">1</text>
+<rect x="160" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="190" y="70" fill="#b9c0ca">0</text>
+<rect x="220" y="40" width="60" height="46" fill="rgba(240,180,41,0.14)" stroke="#f0b429" stroke-width="2"/><text x="250" y="70" fill="#f5c451" font-weight="700">1</text>
+<rect x="280" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="310" y="70" fill="#b9c0ca">1</text>
+<rect x="340" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="370" y="70" fill="#b9c0ca">0</text>
+<rect x="400" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="430" y="70" fill="#b9c0ca">·</text>
+<rect x="460" y="40" width="60" height="46" fill="none" stroke="#7c8593"/><text x="490" y="70" fill="#b9c0ca">…</text>
+</g>
+<path d="M250,132 L242,112 L258,112 Z" fill="#f0b429"/>
+<line x1="250" y1="132" x2="250" y2="150" stroke="#f0b429" stroke-width="1.5"/>
+<rect x="196" y="150" width="108" height="40" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="250" y="168" fill="#e7ebf1" font-size="12" text-anchor="middle">read/write head</text>
+<text x="250" y="184" fill="#f5c451" font-size="11.5" text-anchor="middle">state q₃</text>
+<rect x="330" y="146" width="212" height="72" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
+<text x="436" y="166" fill="#7c8593" font-size="11" text-anchor="middle">look up this rule:</text>
+<text x="436" y="187" fill="#e7ebf1" font-size="12" text-anchor="middle">(q₃, read 1) →</text>
+<text x="436" y="206" fill="#f5c451" font-size="12" text-anchor="middle">write 0 · move right · go q₅</text>
+</svg>
+<figcaption>Fig 1 · A Turing machine: an endless tape + a head that scans one square + finite states + a rigid table. Each step is "see something → rewrite, move, switch state"; doing this over and over is all there is to "computing."</figcaption>
+</figure>
+<p>The paper's literal goal is to define <strong>computable numbers</strong>: a real number is computable if its (binary) expansion can be <strong>printed out, digit by digit,</strong> by such a machine. π, e, and all algebraic numbers are computable. A machine that keeps printing forever without jamming, Turing calls <strong>circle-free</strong>.</p>
+
+<h3>Encoding machines as numbers: countable vs uncountable</h3>
+<p>The crucial leap: since each machine is just a finite table of behavior, you can <strong>write the whole thing as a string of symbols, then read it as an integer</strong> (Turing's "description number"). This bookkeeping trick is immensely powerful. It means <strong>all Turing machines can be numbered one by one: machine 1, machine 2, machine 3…</strong> — the machines are <strong>countable</strong>.</p>
+<p>But the reals are <strong>uncountable</strong> (Cantor proved this long before). So a startling conclusion follows at once: <strong>the vast majority of real numbers are "uncomputable"</strong> — no algorithm generates their expansion. The computable numbers include every number we can name, yet they are only a countable sliver in the ocean of reals. That already punctures half the illusion that "machines can do anything."</p>
+
+<h3>The universal machine: program is data</h3>
+<p>Since every machine M can be written as data (its description number), Turing built a <strong>universal machine U</strong>: put "M's instruction sheet" plus M's input on U's tape, and U reads a bit, executes a step, reads more… <strong>simulating M step by step and computing exactly what M would.</strong> One machine, fed different instruction sheets, becomes any machine.</p>
+<p>This is the <strong>mathematical prototype of the "stored program"</strong>: a program is no longer a hard-wired special-purpose device, but <strong>a symbol string sitting on the same tape as the data, readable and replaceable.</strong> Every computer today — one piece of general hardware that becomes a camera, a browser, a game console by loading different software — is a physical realization of Turing's universal machine. A decade later, the von Neumann architecture turned it into real hardware.</p>
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ua" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<text x="150" y="34" fill="#7c8593" font-size="11.5" text-anchor="middle">two pieces of data on one tape</text>
+<rect x="40" y="46" width="140" height="42" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="110" y="64" fill="#e7ebf1" font-size="12.5" text-anchor="middle">M's instruction sheet</text>
+<text x="110" y="80" fill="#7c8593" font-size="10.5" text-anchor="middle">(program = data)</text>
+<rect x="180" y="46" width="80" height="42" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="220" y="71" fill="#b9c0ca" font-size="12" text-anchor="middle">M's input</text>
+<line x1="150" y1="90" x2="150" y2="118" stroke="#7c8593" stroke-width="1.5" marker-end="url(#ua)"/>
+<rect x="90" y="118" width="120" height="48" rx="10" fill="rgba(232,121,75,0.14)" stroke="#e8794b" stroke-width="2"/>
+<text x="150" y="139" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">universal machine U</text>
+<text x="150" y="156" fill="#7c8593" font-size="10.5" text-anchor="middle">read a step · simulate a step</text>
+<line x1="210" y1="142" x2="300" y2="142" stroke="#7c8593" stroke-width="1.5" marker-end="url(#ua)"/>
+<rect x="300" y="120" width="150" height="44" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="375" y="147" fill="#f5c451" font-size="12.5" text-anchor="middle">= what M would compute</text>
+<text x="375" y="60" fill="#7c8593" font-size="11" text-anchor="middle">swap the sheet,</text>
+<text x="375" y="78" fill="#7c8593" font-size="11" text-anchor="middle">U becomes another machine</text>
+</svg>
+<figcaption>Fig 2 · The universal machine: read "some machine's instruction sheet" as data, and one machine simulates any machine — "program is data," the blueprint of the modern stored-program computer.</figcaption>
+</figure>
+
+<h3>Undecidability: make a machine judge itself</h3>
+<p>With numberable machines and a universal machine in hand, Turing asks the fatal question: <strong>could there be a machine D that, just from another's description number, decides whether that machine is circle-free (will it keep computing forever, or eventually jam)?</strong> He proves <strong>no such D exists</strong>, using exactly Cantor's diagonal argument.</p>
+<p>The intuition runs thus: suppose D exists. Then you could use it to list all the "good" machines (the circle-free ones), number them, and lay their infinite 0/1 outputs into a giant table — row <em>n</em> is the output of the <em>n</em>-th good machine. Now <strong>read down the diagonal and flip each digit</strong> to build a new sequence β: its <em>n</em>-th digit is deliberately <strong>different</strong> from the <em>n</em>-th machine's <em>n</em>-th digit. So β differs from <strong>every row in at least one place</strong> and cannot be any machine in the table. Yet — if D really exists, "building β" is itself an algorithm, so β should be computed by some good machine and be <strong>in</strong> the table. <strong>It is both in and not in the table: a contradiction.</strong> Hence D does not exist.</p>
+<p>The root of the contradiction is <strong>self-reference</strong>: the "build the diagonal" machine is eventually asked to compute <strong>its own digit</strong>, and gets stuck in "output something different from itself" — the same knot as "this sentence is false." <strong>Conclusion: some problems no machine can decide.</strong> (Turing's original phrasing is that "circle-free-ness" is undecidable; the textbook version today is the equivalent <strong>halting problem</strong>: no algorithm can decide, for an arbitrary program and input, whether it halts or loops forever.)</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="280" y="24" fill="#7c8593" font-size="11.5" text-anchor="middle">each "good machine" prints an infinite sequence — laid into a table</text>
+<g font-size="13" font-family="'SF Mono',monospace">
+<text x="60" y="62" fill="#7c8593" font-size="11.5" text-anchor="end">M₁</text>
+<text x="60" y="92" fill="#7c8593" font-size="11.5" text-anchor="end">M₂</text>
+<text x="60" y="122" fill="#7c8593" font-size="11.5" text-anchor="end">M₃</text>
+<text x="60" y="152" fill="#7c8593" font-size="11.5" text-anchor="end">M₄</text>
+<rect x="80" y="48" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="93" y="63" fill="#0f1216" font-size="13" text-anchor="middle" font-weight="700">0</text>
+<text x="123" y="63" fill="#b9c0ca" text-anchor="middle">1</text><text x="153" y="63" fill="#b9c0ca" text-anchor="middle">1</text><text x="183" y="63" fill="#b9c0ca" text-anchor="middle">0</text><text x="213" y="63" fill="#b9c0ca" text-anchor="middle">1</text><text x="243" y="63" fill="#7c8593" text-anchor="middle">…</text>
+<text x="93" y="93" fill="#b9c0ca" text-anchor="middle">1</text>
+<rect x="110" y="78" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="123" y="93" fill="#0f1216" text-anchor="middle" font-weight="700">1</text>
+<text x="153" y="93" fill="#b9c0ca" text-anchor="middle">0</text><text x="183" y="93" fill="#b9c0ca" text-anchor="middle">0</text><text x="213" y="93" fill="#b9c0ca" text-anchor="middle">1</text><text x="243" y="93" fill="#7c8593" text-anchor="middle">…</text>
+<text x="93" y="123" fill="#b9c0ca" text-anchor="middle">0</text><text x="123" y="123" fill="#b9c0ca" text-anchor="middle">1</text>
+<rect x="140" y="108" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="153" y="123" fill="#0f1216" text-anchor="middle" font-weight="700">0</text>
+<text x="183" y="123" fill="#b9c0ca" text-anchor="middle">1</text><text x="213" y="123" fill="#b9c0ca" text-anchor="middle">0</text><text x="243" y="123" fill="#7c8593" text-anchor="middle">…</text>
+<text x="93" y="153" fill="#b9c0ca" text-anchor="middle">1</text><text x="123" y="153" fill="#b9c0ca" text-anchor="middle">0</text><text x="153" y="153" fill="#b9c0ca" text-anchor="middle">1</text>
+<rect x="170" y="138" width="26" height="20" fill="#f0b429" opacity="0.9"/><text x="183" y="153" fill="#0f1216" text-anchor="middle" font-weight="700">1</text>
+<text x="213" y="153" fill="#b9c0ca" text-anchor="middle">1</text><text x="243" y="153" fill="#7c8593" text-anchor="middle">…</text>
+</g>
+<line x1="82" y1="50" x2="196" y2="158" stroke="#e8794b" stroke-width="1.5" stroke-dasharray="3 3"/>
+<text x="300" y="112" fill="#f0b429" font-size="11.5">diagonal: 0 1 0 1 …</text>
+<text x="300" y="132" fill="#e8794b" font-size="11.5">flip each → β: 1 0 1 0 …</text>
+<rect x="296" y="150" width="234" height="60" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<text x="413" y="172" fill="#e7ebf1" font-size="11.5" text-anchor="middle">β differs from every row,</text>
+<text x="413" y="190" fill="#e7ebf1" font-size="11.5" text-anchor="middle">so it can't be in the table — yet must be,</text>
+<text x="413" y="202" fill="#f5c451" font-size="11.5" text-anchor="middle">contradiction ⇒ no deciding machine</text>
+</svg>
+<figcaption>Fig 3 · The diagonal argument: read down the diagonal and flip each value to build a sequence β "not in the table." If a machine that "decides good machines" existed, β would have to be in the table too — a contradiction, so that decision is impossible.</figcaption>
+</figure>
+
+<h3>Striking back at the decision problem: a reduction</h3>
+<p>The last step carries the machine undecidability <strong>onto logic</strong>. Turing shows any Turing machine's run can be <strong>translated into a single first-order logic statement</strong> — how the machine behaves is equivalent to whether that statement is valid. So <strong>if a universal algorithm for the decision problem existed</strong> (deciding validity of any logical statement), you could use it to decide "will the machine jam" — which was just proved undecidable. Contradiction. <strong>Therefore the decision problem has no solution: there is no mechanical procedure that decides all first-order logic statements.</strong> The last half of Hilbert's dream ends here.</p>
+
+<h2>Key results</h2>
+<p>This is a pure-math paper with no experiments; the "results" are a few interlocking theorems: <strong>①</strong> the Turing machine gives a precise definition of "mechanically computable"; <strong>②</strong> machines can be numbered one by one (countable), so the vast majority of reals are uncomputable; <strong>③</strong> a <strong>universal machine</strong> exists — one machine can simulate any machine; <strong>④</strong> "is a machine circle-free" is <strong>undecidable</strong> (the prototype of today's halting problem); <strong>⑤</strong> hence the <strong>decision problem has no solution</strong>. In an appendix he further proves "Turing-machine-computable" and Church's "lambda-definable" are <strong>exactly equivalent</strong> — two utterly different roads enclosing the same territory of "computable," a coincidence that is the evidence for the <strong>Church–Turing thesis</strong>.</p>
+
+<h2>Why it mattered</h2>
+<p>Few computer-science papers are more foundational. It delivered three foundations at once: <strong>first, "algorithm / computable" acquired an agreed definition</strong>, giving theoretical computer science an object to study; <strong>second, the universal machine = the blueprint of the stored-program computer</strong>, the idea "program is data, one machine for all" leading straight to the von Neumann architecture and every computer today; <strong>third, undecidability drew computing's absolute boundary</strong>, spawning the halting problem, Rice's theorem, and a whole family of "what machines cannot do" results (no perfect general program verifier, no perfect antivirus). You could say that today's ability to load any software onto a single chip, and to prove some automation tasks impossible in principle, both root in these 36 pages. The Turing test and AI came later from Turing; the definition of computation itself was born here.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The Church–Turing thesis is a "thesis," not a theorem</strong>: the claim that "what a Turing machine computes = everything intuitively mechanically computable" involves the informal notion of "intuitively computable," and <strong>cannot be proved</strong> — only supported by evidence (though virtually no one doubts it).</li>
+<li><strong>The Turing machine is a definitional tool, not an engineering design</strong>: an infinite tape, one square at a time, absurdly slow — never meant to be built. Real machines came from the EDVAC/von Neumann lineage; how much this 1936 paper causally influenced actual machine design is still debated among historians (some see it as retroactively claimed lineage).</li>
+<li><strong>The original had technical errors</strong>: Turing's machine descriptions (especially the universal-machine construction) are intricate and contain bugs, fixed only by a 1937 correction note and by later work (e.g., Post) — the seminal paper was not flawless.</li>
+<li><strong>It speaks only of "can it," not "how fast"</strong>: computability is black-and-white (computable / not), and says nothing about <strong>how much time or space</strong> a computation costs. The world of efficiency (P vs NP, complexity theory) is a separate later development from Cook and others in the 1970s.</li>
+<li><strong>Its boundary with the physical world is contested</strong>: whether "physically realizable computation stays within the Turing machine" (the physical Church–Turing thesis) and whether hypercomputation/quantum computing can break it are ongoing philosophical and theoretical debates — though quantum computing changes efficiency, not what can be computed at all.</li>
+<li><strong>Priority</strong>: Church reached the same negative result a few months earlier via lambda calculus; it was only that Turing's "simulate a real person computing" definition was the most intuitive and convincing — even Gödel felt it was the one that truly captured "mechanical procedure."</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: to answer Hilbert's "is there a mechanical procedure that decides every mathematical statement," Turing first defined "computing" as a Turing machine, then proved that universal procedure doesn't exist.</p>
+<p>② The pain: without first defining "algorithm / mechanical procedure," you cannot prove "no algorithm can do X" — which stalled the decision problem.</p>
+<p>③ The Turing machine: endless tape + a head scanning one square + finite states + a rigid table, <code>(state, read) → (write, move, new state)</code> — the mathematical definition of "algorithm" itself.</p>
+<p>④ Encoding: each machine can be written as a number and enumerated (countable); the reals are uncountable, so <strong>most reals are uncomputable</strong>.</p>
+<p>⑤ Universal machine: read a "machine's instruction sheet" as data, and one machine simulates any machine — "program is data," the blueprint of the stored-program computer.</p>
+<p>⑥ Undecidability: by a diagonal argument + self-reference, "is a machine circle-free (today's halting problem)" has no deciding algorithm.</p>
+<p>⑦ Reduction: translate a machine's run into a logic statement to prove the <strong>decision problem unsolvable</strong>; an appendix proves equivalence to Church's lambda calculus (Church–Turing thesis).</p>
+<p>⑧ Impact and limits: laid the foundations of the definition of algorithm, the universal-machine blueprint, and the boundary of computation; but the thesis is unprovable, the machine impractical, the original had errors, and it addresses feasibility only, not efficiency.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full machine constructions and proof details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
