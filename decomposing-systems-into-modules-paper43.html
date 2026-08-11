@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>如何把系统拆成模块 · 信息隐藏 — IT 论文精读 Paper 43</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 43</p>
+<h1>如何把系统拆成模块 · 信息隐藏</h1>
+<p class="sub">David Parnas · Carnegie Mellon · CACM 1972</p>
+<p class="langbar"><a href="decomposing-systems-into-modules-paper43.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>把一个大程序拆成几块（<strong>模块</strong>）来写，几乎是所有软件的必经步骤。可 1972 年，David Parnas 追问了一个当时没人认真回答的问题：<strong>到底该按什么标准去切这一刀？</strong>他给的答案叫<strong>信息隐藏（information hiding）</strong>——这正是今天你能悄悄换掉一个模块而不牵动全身、一个大团队能各写各的、以及「面向对象」「API」这些词能存在的根本原因。</p>
+<h2>先看看大家惯常怎么切</h2>
+<p>最自然的切法是<strong>按步骤</strong>：程序先读输入、再加工、再排序、最后输出——那就一步一个模块，照着流程图一刀刀分。听起来天经地义，几乎每个新手都会这么干。</p>
+<h2>这么切的坏处</h2>
+<p>问题是，这些「按步骤」切出来的模块，其实<strong>共用着一个心照不宣的秘密</strong>：数据在内存里长什么样（一行怎么存、一个字怎么摆）。哪天你想换个更省内存的存法，会发现<strong>几乎每个模块都得跟着改</strong>——因为每块都直接摸着那份数据格式。牵一发动全身，这正是软件难改、难分工的病根。</p>
+<h2>Parnas 的点子</h2>
+<p>他说：别按步骤切，<strong>按「秘密」切</strong>。先坐下来列一张单子——<strong>哪些设计决定以后最可能变？</strong>（数据怎么存、用什么排序法、外部数据什么格式……）然后让<strong>每一个这样的决定，单独藏进一个模块里，只有它自己知道</strong>。别的模块想用它，只能隔着一扇「窗口」（一组说好的函数）打交道，<strong>永远看不见窗口后面是怎么实现的</strong>。</p>
+<h2>为什么这样就好使</h2>
+<p>把模块想成一家餐厅的<strong>厨房</strong>：你（别的模块）只在取餐窗口点菜、拿菜，厨房里用什么锅、按什么菜谱、怎么摆盘，是厨房关起门来的<strong>秘密</strong>。哪天厨房换了灶具、改了做法，只要窗口端出来的还是那道菜，<strong>你根本不用知道、也一行都不用改</strong>。于是「改动被关在一个房间里」，出不来；而且大家各管一个房间，事先只要把「窗口长什么样」约定好，就能同时开工、互不打扰。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>别按「程序的处理步骤」拆模块，按「以后最可能变的设计决定」拆——每个模块藏一个这样的「秘密」，只把一扇稳定的窗口（接口）露给别人。于是改动被关在一块地方、团队能各写各的。这条准则长成了后来的封装、抽象数据类型、面向对象和 API。</p>
+</div>
+<p style="margin-top:12px">（一句诚实的代价：你得<strong>猜对「什么会变」</strong>。猜错了，就把根本不会变的东西藏了起来白费劲，甚至为了「万一要变」过度设计。）</p>
+<p class="switch-hint">想看两种拆法的对照图、KWIC 例子和它如何长成面向对象？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Parnas 指出：把系统拆成模块，<strong>不该按「处理步骤 / 流程图」来切</strong>，而应按<strong>信息隐藏（information hiding）</strong>——先列出「最可能改变的设计决定」，让<strong>每个模块各藏一个这样的「秘密」</strong>，只通过一个尽量少暴露内部的<strong>接口</strong>与外界打交道。这样改动被局限在单个模块内、团队能独立开发、模块也各自可独立理解。这篇短文是<strong>封装、抽象数据类型、面向对象、乃至现代 API / 微服务边界</strong>的思想源头。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>模块（module）</strong>：把大程序切分出来的一块。Parnas 强调它是一份<strong>「职责/工作的分派」</strong>，不等于「一段子程序」——是「谁负责哪个决定」，而非「按执行先后切的一段代码」。</li>
+<li><strong>接口（interface）</strong>：模块对外开的「窗口」——一组说好的函数/操作及其行为约定。别人只透过它使用该模块，看不到内部实现。</li>
+<li><strong>实现（implementation）</strong>：模块窗口背后真正干活的代码与数据结构，可以随时改写，只要窗口行为不变。</li>
+<li><strong>流程图（flowchart）</strong>：按程序执行的先后步骤画的图（先做什么、再做什么）。按它来分模块，就是「按处理步骤切」。</li>
+<li><strong>KWIC 索引</strong>：Key Word In Context，一种老式关键词索引：把每行文字做所有「循环移位」（把第一个词挪到末尾，反复做），再按字母序列出。本文拿它当拆解示范的例子。</li>
+<li><strong>循环移位（circular shift）</strong>：把一行词里的第一个词删掉、接到该行末尾，得到一行新排列；反复做就得到这行的全部循环移位。</li>
+<li><strong>抽象数据类型 / 封装</strong>：把一份数据和「只能这样操作它」的一组函数打包，隐藏其内部表示——正是信息隐藏落地成的编程构件。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者 David Parnas，写于卡内基梅隆大学，发表在 1972 年 12 月的《ACM 通讯》（CACM）。它上承 1960 年代对「结构化编程」「模块化」的讨论（Dijkstra 的《Go To 有害》正是同一波思潮），却把「模块化」从一句口号变成<strong>一条可操作的判定准则</strong>；下启 1970 年代的抽象数据类型（Liskov 等）、1980 年代的面向对象，以及 Parnas 本人后续的「<strong>uses 层次</strong>」（1979）与「<strong>程序族</strong>」思想。它常被列为软件工程被引最多、影响最深的文章之一。</p>
+<h2>问题与动机</h2>
+<p>到 1970 年代初，「把大程序拆成模块」已被公认是好事——能分工、能各自编译调试、能替换。但当时人们说的「模块化」只到<strong>「切成几块」为止，几乎没人回答「按什么标准切」</strong>。而 Parnas 敏锐地看到：<strong>拆法不同，收益天差地别。同样是拆成模块，一种拆法让系统好改好分工，另一种拆法让它处处掣肘。</strong></p>
+<p>他用一个小系统（KWIC 索引）当靶子，摆出两种都「看起来合理」的拆法，逐条比较它们在<strong>可改性、可分工、可理解</strong>上的表现，从而逼出真正该用的准则。他要反对的，正是当时最流行、最「自然」的那种拆法——<strong>按流程图的处理步骤切</strong>。</p>
+<h2>核心思想 / 方法</h2>
+<h3>靶子：KWIC 索引系统</h3>
+<p>任务很简单：给一堆文字行，输出它们所有<em>循环移位</em>、并按字母序排列。比如「the quick fox」会生成「quick fox the」「fox the quick」等，全部行的所有移位混在一起排序输出。麻雀虽小，够用来对照两种拆法。</p>
+<h3>拆法一：按处理步骤切（大多数人的做法）</h3>
+<p>照着数据的流动，一步一个模块：<strong>①输入</strong>（读入并存进内存）→ <strong>②循环移位</strong>（生成所有移位）→ <strong>③字母排序</strong> → <strong>④输出</strong> → 外加一个 <strong>⑤主控</strong> 管调度。干净、直观、和流程图一一对应。</p>
+<p><strong>但有个隐患：这五块都直接读写同一份内存里的数据，都得知道「行、字、字符到底怎么存」。</strong>输入模块决定了把字符打包存（比如四个字符塞一个机器字省内存），那么移位、排序、输出模块全都得照这个格式去读。<strong>存储格式这个决定，被五个模块共享着。</strong></p>
+<figure>
+<svg viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="280" y="24">拆法一 · 按处理步骤切</text>
+<rect fill="rgba(240,180,41,0.10)" height="34" rx="6" stroke="#f0b429" width="104" x="24" y="46"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="76" y="68">输入</text>
+<rect fill="rgba(240,180,41,0.10)" height="34" rx="6" stroke="#f0b429" width="104" x="152" y="46"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="204" y="68">循环移位</text>
+<rect fill="rgba(240,180,41,0.10)" height="34" rx="6" stroke="#f0b429" width="104" x="280" y="46"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="332" y="68">字母排序</text>
+<rect fill="rgba(240,180,41,0.10)" height="34" rx="6" stroke="#f0b429" width="104" x="408" y="46"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="460" y="68">输出</text>
+<path d="M128,63 L150,63" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<path d="M256,63 L278,63" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<path d="M384,63 L406,63" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(232,121,75,0.12)" height="40" rx="6" stroke="#e8794b" width="436" x="24" y="168"></rect>
+<text fill="#f3b48a" font-size="12" text-anchor="middle" x="242" y="192">共享的数据格式：行 / 字 / 字符在内存里怎么存</text>
+<line stroke="#e8794b" stroke-dasharray="4 3" x1="76" x2="76" y1="80" y2="168"></line>
+<line stroke="#e8794b" stroke-dasharray="4 3" x1="204" x2="204" y1="80" y2="168"></line>
+<line stroke="#e8794b" stroke-dasharray="4 3" x1="332" x2="332" y1="80" y2="168"></line>
+<line stroke="#e8794b" stroke-dasharray="4 3" x1="460" x2="460" y1="80" y2="168"></line>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="513" y="150">改一处</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="513" y="166">→全改</text>
+</svg>
+<figcaption>图 1 · 拆法一：四个模块像流水线一样按步骤排开，却都直接依赖同一份「存储格式」。想换存储方式，四个模块统统要改。</figcaption>
+</figure>
+<h3>拆法二：按「秘密」切（信息隐藏）</h3>
+<p>Parnas 的替代方案，起点完全不同——<strong>不看流程，先列「难做的、或以后最可能改的设计决定」，每个决定单独封进一个模块，对其余模块隐藏起来。</strong>于是同一个 KWIC 拆成：</p>
+<ul>
+<li><strong>行存储模块</strong>：藏「行、字、字符究竟怎么存」。对外只给 <code>取第 i 行第 j 字第 k 个字符</code> 之类的函数——别人取字符，不知道也不关心它是打包存还是一字一格。</li>
+<li><strong>循环移位器</strong>：藏「所有移位是<em>预先算好存起来</em>，还是<em>用到时现算</em>」。对外只给「第 i 个移位的第 j 个字」这样的函数。</li>
+<li><strong>字母排序器</strong>：藏「用什么排序算法、是一次性全排还是按需找」。对外只给「有序序列里的第 i 项」。</li>
+<li><strong>输入 / 输出 / 主控</strong>：各藏外部数据格式与调度细节。</li>
+</ul>
+<p>关键差别一句话：<strong>拆法一的模块之间靠「共享一份数据结构」联系，接口把内部表示暴露无遗；拆法二的模块之间只靠「一组函数」联系，接口尽量不透露里面是怎么做的。</strong>每个模块都是一个黑盒，外面看得见的只有窗口。</p>
+<figure>
+<svg viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="280" y="24">拆法二 · 按秘密切（信息隐藏）</text>
+<g>
+<rect fill="rgba(255,255,255,0.02)" height="92" rx="8" stroke="#f0b429" width="232" x="24" y="44"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="6" width="232" x="24" y="44"></rect>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="140" y="61">接口（函数）</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="140" y="88">行存储模块</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="108">🔒 秘密：字符/行到底怎么存</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="124">（打包？一字一格？）</text>
+</g>
+<g>
+<rect fill="rgba(255,255,255,0.02)" height="92" rx="8" stroke="#f0b429" width="232" x="304" y="44"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="6" width="232" x="304" y="44"></rect>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="420" y="61">接口（函数）</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="420" y="88">循环移位器</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="420" y="108">🔒 秘密：移位预存还是现算</text>
+</g>
+<g>
+<rect fill="rgba(255,255,255,0.02)" height="92" rx="8" stroke="#f0b429" width="232" x="24" y="160"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="6" width="232" x="24" y="160"></rect>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="140" y="177">接口（函数）</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="140" y="204">字母排序器</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="224">🔒 秘密：用什么排序算法</text>
+</g>
+<g>
+<rect fill="rgba(255,255,255,0.02)" height="92" rx="8" stroke="#f0b429" width="232" x="304" y="160"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="6" width="232" x="304" y="160"></rect>
+<text fill="#f5c451" font-size="11.5" text-anchor="middle" x="420" y="177">接口（函数）</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="420" y="204">输入 / 输出 / 主控</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="420" y="224">🔒 秘密：外部数据格式</text>
+</g>
+<text fill="#8fb98f" font-size="11" text-anchor="middle" x="280" y="266">每个模块只露出接口、锁住秘密 → 改动关在盒内、彼此可独立开发</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="286">模块间只靠函数往来，不共享内部数据表示</text>
+</svg>
+<figcaption>图 2 · 拆法二：每个模块封住一个「最可能变的设计决定」，只把一组稳定的函数（接口）露给别人；里面怎么实现是它自己的秘密。</figcaption>
+</figure>
+<h3>为什么第二种更好：三条判据</h3>
+<p><strong>① 可改性（changeability）。</strong>想换存储格式？拆法一里四个模块全得动；拆法二里改动<strong>只落在「行存储模块」内部</strong>，接口不变，别人无感。同理，想把「移位预先全算好」改成「用到时现算」以省内存，拆法二里只动循环移位器一家。<strong>把「会变的决定」和「依赖它的代码」隔开，是这条准则的全部要害。</strong></p>
+<p><strong>② 可独立开发（independent development）。</strong>拆法二里模块之间只需事先约定<strong>接口（函数长什么样、行为如何）</strong>，各队就能关起门各写各的实现，几乎不用互相打听内部；拆法一里大家共享数据结构，任何一方改动内部都要惊动别人，协作成本高。</p>
+<p><strong>③ 可理解性（comprehensibility）。</strong>拆法二里每个模块能被<strong>单独读懂、单独验证</strong>，因为它的行为由接口完整描述，不必先搞懂别的模块的内部。</p>
+<p>Parnas 特别澄清两点，都很反直觉：其一，<strong>「模块」不是「流程图上的一步」，而是一份「职责的分派」</strong>——是「谁来负责保守哪个秘密」。其二，<strong>该被隐藏的往往不是「细枝末节」，而恰恰是那些「难的、或早晚要变的核心设计决定」</strong>；接口要设计得<strong>尽量少暴露</strong>内部，暴露越少，日后越自由。</p>
+<h2>关键结果</h2>
+<p>这是一篇<strong>论证性（而非实验）</strong>的论文，它的「结果」是那张对照表：同一个 KWIC 系统，两种拆法在可改性、可分工、可理解三项上高下立判——<strong>按步骤切的版本，一个存储决定的改动会波及全部模块；按秘密切的版本，同样的改动被关在单个模块里。</strong>结论掷地有声：<strong>决定模块化好坏的，不是「切了没有」，而是「按什么标准切」；正确的标准是信息隐藏，而不是流程图。</strong>他也正面回应了效率顾虑——隐藏实现看似要多绕一层函数调用，但接口是设计约定、不等于必须用低效的子程序调用实现，完全可以在保持隐藏的前提下高效落地。</p>
+<h2>为什么重要 / 影响</h2>
+<p>这篇短文把「模块化」从口号变成方法论，几乎定义了此后半个世纪的软件结构思想：</p>
+<ul>
+<li><strong>封装与抽象数据类型</strong>：把数据和操作它的函数打包、藏起内部表示——正是信息隐藏的直接落地，1970 年代经 Liskov 等发展成抽象数据类型。</li>
+<li><strong>面向对象</strong>：class 用 private 字段 + public 方法把「表示」锁在里面，就是信息隐藏的语言级实现；「针对接口编程，而非实现」是它的口头禅版本。</li>
+<li><strong>现代边界无处不在</strong>：库的 API、微服务的接口契约、操作系统的系统调用、硬件的指令集——凡是「稳定接口 + 可替换实现」的地方，用的都是同一条准则。</li>
+<li>它也开启了 Parnas 本人的后续经典：「<strong>uses 层次</strong>」（怎么组织模块间的依赖）与「<strong>程序族</strong>」（为「会变」而设计一整族程序）。</li>
+</ul>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>要「猜对什么会变」</strong>：整条准则的成败押在「预判哪些决定会变」上。猜错了——把其实稳定的东西藏起来、或漏掉真正会变的——就白费甚至有害；这与「别过度设计、YAGNI」的告诫存在张力。</li>
+<li><strong>可能带来开销与过度抽象</strong>：多一层接口/间接调用有性能与复杂度成本（现代内联/编译优化已大幅缓解，但设计上仍可能为「万一」堆出过多抽象层）。</li>
+<li><strong>只给了单个准则，没给整体结构</strong>：如何组织众多模块之间的依赖关系、避免环、分层，本文未答——Parnas 自己后来用「uses 关系」「程序族」补上。</li>
+<li><strong>抽象会泄漏</strong>：接口再干净，性能特征、错误行为等仍可能「漏」出实现细节，使用者被迫了解内部；信息隐藏是理想，现实中难做到绝对。</li>
+<li><strong>KWIC 是玩具例子</strong>：用一个小系统说清了原理，但把准则用在超大系统上，还需要额外的组织手段（分层、依赖管理、团队边界）配合。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：拆模块别按「处理步骤/流程图」切，按「信息隐藏」切——每个模块藏一个「最可能变的设计决定」，只露稳定接口。</p>
+<p>② 痛点：按步骤切出的模块共享同一份数据格式，一个存储决定改动就波及全部模块，难改也难分工。</p>
+<p>③ 核心：先列「难的/会变的设计决定」，每个决定封进一个模块当「秘密」，别人只能隔着一组函数（接口）用它，看不见实现。</p>
+<p>④ 三大收益：可改性（改动被关在盒内）、可独立开发（只需约定接口）、可理解（每个模块单独可懂）。</p>
+<p>⑤ 两点澄清：模块是「职责分派」不是「流程图一步」；该藏的恰是核心难题、接口要尽量少暴露。</p>
+<p>⑥ 论证方式：拿 KWIC 索引对照两种拆法，逐条比可改/可分工/可理解——按秘密切完胜。</p>
+<p>⑦ 影响：封装、抽象数据类型、面向对象的 class、API / 微服务边界，全是这条准则的后代。</p>
+<p>⑧ 局限：成败押在「猜对什么会变」；多层抽象有开销、易过度设计；抽象会泄漏；只给准则未给整体结构（后由 uses 层次 / 程序族补足）。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要 KWIC 两种拆法的完整模块清单与原始论证，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

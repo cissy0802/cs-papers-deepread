@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>On Decomposing Systems into Modules (Information Hiding) — CS Papers Deep-Read Paper 43</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 43</p>
+<h1>On Decomposing Systems into Modules · Information Hiding</h1>
+<p class="sub">David Parnas · Carnegie Mellon · CACM 1972</p>
+<p class="langbar"><a href="decomposing-systems-into-modules-paper43.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>Splitting a big program into pieces (<strong>modules</strong>) is a near-universal step in building software. But in 1972, David Parnas pressed a question nobody had really answered: <strong>by what criterion should you make the cut?</strong> His answer, <strong>information hiding</strong>, is exactly why you can quietly swap out one module without disturbing the rest, why a large team can each build their own part, and why words like "object-oriented" and "API" exist at all.</p>
+<h2>How people usually cut it</h2>
+<p>The most natural cut is <strong>by processing step</strong>: the program reads input, then processes, then sorts, then outputs — so make one module per step, slicing along the flowchart. It sounds obvious, and almost every beginner does it.</p>
+<h2>The trouble with that</h2>
+<p>The catch is that these "by-step" modules all <strong>share an unspoken secret</strong>: how the data is laid out in memory (how a line is stored, how a word sits). The day you want a more memory-efficient layout, you find <strong>nearly every module has to change too</strong> — because each one reaches directly into that data format. Pull one thread and the whole thing moves; this is the root of why software is hard to change and hard to divide up.</p>
+<h2>Parnas's idea</h2>
+<p>He said: don't cut by step — <strong>cut by "secret."</strong> First sit down and list <strong>which design decisions are most likely to change later</strong> (how data is stored, which sort algorithm, what format the external data has…). Then <strong>seal each such decision inside its own module, known only to that module.</strong> Any other module that wants to use it can only deal with it through a "window" (a set of agreed-upon functions), and <strong>can never see how it's implemented behind that window.</strong></p>
+<h2>Why this works</h2>
+<p>Think of a module as a restaurant <strong>kitchen</strong>. You (the other modules) only order and pick up at the service window; what pans they use, what recipe they follow, how they plate it, is the kitchen's <strong>secret</strong>, kept behind closed doors. If the kitchen swaps its stove or changes its method, as long as the same dish still comes out the window, <strong>you never need to know, and don't change a single line.</strong> The change is sealed in one room and can't leak out — and everyone can run their own room in parallel, needing only to agree in advance on what the windows look like.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Don't split modules by "the program's processing steps" — split by "the design decisions most likely to change." Each module hides one such "secret" and exposes only a stable window (an interface) to the rest. Change stays contained, and teams can each build their own part. This criterion grew into encapsulation, abstract data types, object-oriented programming, and the API.</p>
+</div>
+<p style="margin-top:12px">(One honest cost: you have to <strong>guess right about "what will change."</strong> Guess wrong and you've hidden things that never change — wasted effort — or over-engineered for a change that never comes.)</p>
+<p class="switch-hint">Want the side-by-side of the two decompositions, the KWIC example, and how it grew into OOP? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden>
+<h2>In one sentence</h2>
+<p class="lead">Parnas argues that a system should be split into modules <strong>not by "processing steps / the flowchart,"</strong> but by <strong>information hiding</strong>: first list the design decisions <em>most likely to change</em>, then have <strong>each module hide one such "secret,"</strong> dealing with the rest only through an <strong>interface</strong> that exposes as little of its innards as possible. Then change is confined to a single module, teams can develop independently, and each module can be understood on its own. This short paper is the source of <strong>encapsulation, abstract data types, object-oriented programming, and modern API / microservice boundaries.</strong></p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Module</strong>: a piece carved out of a big program. Parnas stresses it is a <strong>"responsibility assignment,"</strong> not "a subprogram" — it's "who owns which decision," not "a slice of code cut along the order of execution."</li>
+<li><strong>Interface</strong>: the "window" a module opens to the outside — a set of agreed functions/operations and their promised behavior. Others use the module only through it, never seeing the inside.</li>
+<li><strong>Implementation</strong>: the actual code and data structures behind the window; free to be rewritten anytime, as long as the window's behavior is unchanged.</li>
+<li><strong>Flowchart</strong>: a diagram of the program's steps in execution order (do this, then that). Modularizing by it = "cutting by processing step."</li>
+<li><strong>KWIC index</strong>: Key Word In Context, an old-style keyword index: take each line of text, make all its "circular shifts" (move the first word to the end, repeatedly), then list them alphabetically. The paper uses it as its worked example.</li>
+<li><strong>Circular shift</strong>: remove the first word of a line and append it at the end, yielding a new arrangement; do it repeatedly to get all circular shifts of that line.</li>
+<li><strong>Abstract data type / encapsulation</strong>: bundle a piece of data with the only functions allowed to touch it, hiding its internal representation — the programming construct that information hiding grew into.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The author is David Parnas, writing at Carnegie Mellon University, published in the December 1972 <em>Communications of the ACM</em> (CACM). It follows the 1960s discussions of "structured programming" and "modularity" (Dijkstra's <em>Go To Considered Harmful</em> is part of the same wave), but turns "modularity" from a slogan into <strong>an actionable criterion</strong>; it launches the 1970s abstract data types (Liskov et al.), 1980s object orientation, and Parnas's own later ideas of the "<strong>uses hierarchy</strong>" (1979) and "<strong>program families</strong>." It is routinely listed among the most cited, most influential papers in software engineering.</p>
+<h2>The problem and the motivation</h2>
+<p>By the early 1970s, "split a big program into modules" was accepted as good — it lets you divide labor, compile and debug pieces separately, and replace them. But "modularity" as then discussed stopped at <strong>"cut it into pieces," with almost no answer to "cut it by what criterion."</strong> Parnas saw sharply that <strong>the criterion makes all the difference: same "split into modules," yet one split makes the system easy to change and divide, another makes it fight you at every turn.</strong></p>
+<p>He uses a small system (a KWIC index) as his target, lays out two decompositions that both "look reasonable," and compares them point by point on <strong>changeability, independent development, and comprehensibility</strong> — forcing out the criterion you should actually use. What he argues against is the most popular, most "natural" split of the day: <strong>cutting along the flowchart's processing steps.</strong></p>
+<h2>The core idea</h2>
+<h3>The target: a KWIC index system</h3>
+<p>The task is simple: given a set of text lines, output all their <em>circular shifts</em> in alphabetical order. "the quick fox" yields "quick fox the," "fox the quick," and so on; all shifts of all lines are merged and sorted for output. Tiny, but enough to contrast two decompositions.</p>
+<h3>Decomposition 1: cut by processing step (what most people do)</h3>
+<p>Following the flow of data, one module per step: <strong>①Input</strong> (read and store in memory) → <strong>②Circular Shift</strong> (generate all shifts) → <strong>③Alphabetize</strong> → <strong>④Output</strong> → plus a <strong>⑤Master Control</strong> to sequence them. Clean, intuitive, one-to-one with the flowchart.</p>
+<p><strong>But there's a hidden hazard: all five read and write the same in-memory data, and all must know "exactly how lines, words, and characters are stored."</strong> If Input decides to pack characters (say four chars per machine word to save memory), then Shift, Alphabetize, and Output all must read in that format. <strong>The storage decision is shared across five modules.</strong></p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="280" y="24" fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle">Decomposition 1 · cut by processing step</text>
+<rect x="24" y="46" width="104" height="34" rx="6" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><text x="76" y="68" fill="#e7ebf1" font-size="12" text-anchor="middle">Input</text>
+<rect x="152" y="46" width="104" height="34" rx="6" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><text x="204" y="68" fill="#e7ebf1" font-size="12" text-anchor="middle">Circular Shift</text>
+<rect x="280" y="46" width="104" height="34" rx="6" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><text x="332" y="68" fill="#e7ebf1" font-size="12" text-anchor="middle">Alphabetize</text>
+<rect x="408" y="46" width="104" height="34" rx="6" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><text x="460" y="68" fill="#e7ebf1" font-size="12" text-anchor="middle">Output</text>
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<path d="M128,63 L150,63" fill="none" stroke="#7c8593" marker-end="url(#a1)"/>
+<path d="M256,63 L278,63" fill="none" stroke="#7c8593" marker-end="url(#a1)"/>
+<path d="M384,63 L406,63" fill="none" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="24" y="168" width="436" height="40" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text x="242" y="192" fill="#f3b48a" font-size="12" text-anchor="middle">Shared data format: how lines / words / chars are stored</text>
+<line x1="76" y1="80" x2="76" y2="168" stroke="#e8794b" stroke-dasharray="4 3"/>
+<line x1="204" y1="80" x2="204" y2="168" stroke="#e8794b" stroke-dasharray="4 3"/>
+<line x1="332" y1="80" x2="332" y2="168" stroke="#e8794b" stroke-dasharray="4 3"/>
+<line x1="460" y1="80" x2="460" y2="168" stroke="#e8794b" stroke-dasharray="4 3"/>
+<text x="513" y="150" fill="#e8794b" font-size="11.5" text-anchor="middle">change 1</text>
+<text x="513" y="166" fill="#e8794b" font-size="11.5" text-anchor="middle">→ change all</text>
+</svg>
+<figcaption>Fig 1 · Decomposition 1: the four modules line up like a pipeline by step, yet all depend directly on one shared "storage format." Change the layout, and all four must change.</figcaption>
+</figure>
+<h3>Decomposition 2: cut by "secret" (information hiding)</h3>
+<p>Parnas's alternative starts from a completely different place — <strong>not the flow: first list the "difficult, or most-likely-to-change design decisions," and seal each one inside its own module, hidden from the rest.</strong> The same KWIC then splits into:</p>
+<ul>
+<li><strong>Line Storage module</strong>: hides "how lines, words, and characters are actually stored." It offers only functions like <code>get char k of word j of line i</code> — callers fetch a character without knowing or caring whether it's packed or one-per-cell.</li>
+<li><strong>Circular Shifter</strong>: hides "whether all shifts are <em>precomputed and stored</em> or <em>computed on demand</em>." It offers only functions like "word j of shift i."</li>
+<li><strong>Alphabetizer</strong>: hides "which sort algorithm, and whether it sorts all at once or finds on demand." It offers only "the i-th item in sorted order."</li>
+<li><strong>Input / Output / Master Control</strong>: each hides external data formats and sequencing details.</li>
+</ul>
+<p>The key difference in one line: <strong>Decomposition 1's modules connect by "sharing a data structure," their interfaces exposing the internal representation; Decomposition 2's modules connect only by "a set of functions," their interfaces revealing as little as possible about how the work is done.</strong> Each module is a black box; all that's visible from outside is the window.</p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="280" y="24" fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle">Decomposition 2 · cut by secret (information hiding)</text>
+<g>
+<rect x="24" y="44" width="232" height="92" rx="8" fill="rgba(255,255,255,0.02)" stroke="#f0b429"/>
+<rect x="24" y="44" width="232" height="26" rx="6" fill="rgba(240,180,41,0.16)"/>
+<text x="140" y="61" fill="#f5c451" font-size="11.5" text-anchor="middle">interface (functions)</text>
+<text x="140" y="88" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Line Storage</text>
+<text x="140" y="108" fill="#7c8593" font-size="10.5" text-anchor="middle">🔒 secret: how chars/lines are stored</text>
+<text x="140" y="124" fill="#7c8593" font-size="10.5" text-anchor="middle">(packed? one-per-cell?)</text>
+</g>
+<g>
+<rect x="304" y="44" width="232" height="92" rx="8" fill="rgba(255,255,255,0.02)" stroke="#f0b429"/>
+<rect x="304" y="44" width="232" height="26" rx="6" fill="rgba(240,180,41,0.16)"/>
+<text x="420" y="61" fill="#f5c451" font-size="11.5" text-anchor="middle">interface (functions)</text>
+<text x="420" y="88" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Circular Shifter</text>
+<text x="420" y="108" fill="#7c8593" font-size="10.5" text-anchor="middle">🔒 secret: shifts stored or computed</text>
+</g>
+<g>
+<rect x="24" y="160" width="232" height="92" rx="8" fill="rgba(255,255,255,0.02)" stroke="#f0b429"/>
+<rect x="24" y="160" width="232" height="26" rx="6" fill="rgba(240,180,41,0.16)"/>
+<text x="140" y="177" fill="#f5c451" font-size="11.5" text-anchor="middle">interface (functions)</text>
+<text x="140" y="204" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Alphabetizer</text>
+<text x="140" y="224" fill="#7c8593" font-size="10.5" text-anchor="middle">🔒 secret: which sort algorithm</text>
+</g>
+<g>
+<rect x="304" y="160" width="232" height="92" rx="8" fill="rgba(255,255,255,0.02)" stroke="#f0b429"/>
+<rect x="304" y="160" width="232" height="26" rx="6" fill="rgba(240,180,41,0.16)"/>
+<text x="420" y="177" fill="#f5c451" font-size="11.5" text-anchor="middle">interface (functions)</text>
+<text x="420" y="204" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Input / Output / Master Control</text>
+<text x="420" y="224" fill="#7c8593" font-size="10.5" text-anchor="middle">🔒 secret: external data format</text>
+</g>
+<text x="280" y="266" fill="#8fb98f" font-size="11" text-anchor="middle">each module shows only its interface, locks its secret → change stays in the box, teams work independently</text>
+<text x="280" y="286" fill="#7c8593" font-size="10.5" text-anchor="middle">modules talk only through functions, never sharing internal representation</text>
+</svg>
+<figcaption>Fig 2 · Decomposition 2: each module seals one "most-likely-to-change design decision," exposing only a stable set of functions (the interface); how it's implemented is its own secret.</figcaption>
+</figure>
+<h3>Why the second is better: three criteria</h3>
+<p><strong>① Changeability.</strong> Want a new storage format? In Decomposition 1 all four modules must move; in Decomposition 2 the change <strong>falls only inside "Line Storage,"</strong> the interface unchanged, and no one else notices. Likewise, changing "precompute all shifts" to "compute on demand" to save memory touches only the Circular Shifter. <strong>Separating "the decision that will change" from "the code that depends on it" is the whole point of the criterion.</strong></p>
+<p><strong>② Independent development.</strong> In Decomposition 2, modules need only agree in advance on the <strong>interface (what the functions look like and how they behave)</strong>, after which each team builds its implementation behind closed doors, barely needing to consult the others. In Decomposition 1 everyone shares data structures, so any internal change disturbs the rest — coordination is costly.</p>
+<p><strong>③ Comprehensibility.</strong> In Decomposition 2 each module can be <strong>read and verified on its own</strong>, because its behavior is fully described by its interface, without first understanding another module's internals.</p>
+<p>Parnas underlines two points, both counterintuitive. First, <strong>a "module" is not "a step on the flowchart" but "an assignment of responsibility"</strong> — of "who keeps which secret." Second, <strong>what should be hidden is often not "trivial details" but precisely the "hard, or sooner-or-later-changing core design decisions"</strong>; the interface should be designed to <strong>expose as little as possible</strong> — the less it reveals, the more freedom you keep later.</p>
+<h2>Key results</h2>
+<p>This is an <strong>argumentative (not experimental)</strong> paper; its "result" is that comparison table: for the same KWIC system, the two decompositions rank starkly differently on changeability, division of labor, and comprehensibility — <strong>the by-step version lets one storage change ripple through every module, while the by-secret version confines the same change to a single module.</strong> The conclusion lands hard: <strong>what determines whether a modularization is good is not "whether you split," but "by what criterion" — and the right criterion is information hiding, not the flowchart.</strong> He also addresses the efficiency worry head-on: hiding an implementation seems to cost an extra function-call layer, but an interface is a design agreement, not a mandate to implement it via slow subroutine calls — you can keep the hiding and still be efficient.</p>
+<h2>Why it mattered</h2>
+<p>This short paper turned "modularity" from a slogan into a methodology, and all but defined half a century of thinking about software structure:</p>
+<ul>
+<li><strong>Encapsulation and abstract data types</strong>: bundling data with the functions that touch it and hiding the internal representation is information hiding made concrete; in the 1970s Liskov and others developed it into abstract data types.</li>
+<li><strong>Object orientation</strong>: a class locks its "representation" inside via private fields + public methods — information hiding at the language level; "program to an interface, not an implementation" is its bumper-sticker form.</li>
+<li><strong>Modern boundaries everywhere</strong>: a library's API, a microservice's interface contract, an OS's system calls, a chip's instruction set — anywhere there's a "stable interface + replaceable implementation," it's the same criterion.</li>
+<li>It also opened Parnas's own later classics: the "<strong>uses hierarchy</strong>" (how to organize dependencies among modules) and "<strong>program families</strong>" (designing a whole family of programs for what will change).</li>
+</ul>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>You must "guess right about what will change"</strong>: the whole criterion rides on predicting which decisions will change. Guess wrong — hide what's actually stable, or miss what truly changes — and it's wasted or even harmful; this sits in tension with "don't over-engineer / YAGNI."</li>
+<li><strong>It can bring overhead and over-abstraction</strong>: an extra interface/indirection layer has performance and complexity costs (modern inlining/compiler optimization eases much of it, but designs can still pile up too many abstraction layers "just in case").</li>
+<li><strong>It gives one criterion, not the whole structure</strong>: how to organize dependencies among many modules, avoid cycles, and layer them is not answered here — Parnas himself later filled it in with the "uses relation" and "program families."</li>
+<li><strong>Abstractions leak</strong>: however clean an interface, performance characteristics, error behavior, and the like can still "leak" implementation details, forcing users to learn the internals; information hiding is an ideal, hard to achieve absolutely in practice.</li>
+<li><strong>KWIC is a toy example</strong>: it makes the principle clear on a small system, but applying the criterion to very large systems needs additional organizing means (layering, dependency management, team boundaries).</li>
+</ul>
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: don't split modules by "processing steps / the flowchart," split by "information hiding" — each module hides one "most-likely-to-change design decision" and exposes only a stable interface.</p>
+<p>② The pain: by-step modules share one data format, so a single storage change ripples through all of them — hard to change, hard to divide.</p>
+<p>③ Core: first list the "hard / changeable design decisions," seal each inside a module as its "secret," and let others use it only through a set of functions (the interface), never seeing the implementation.</p>
+<p>④ Three payoffs: changeability (change stays in the box), independent development (only agree on interfaces), comprehensibility (each module understandable alone).</p>
+<p>⑤ Two clarifications: a module is a "responsibility assignment," not "a flowchart step"; what to hide is the core hard problem, and the interface should expose as little as possible.</p>
+<p>⑥ Method of argument: contrast two decompositions of a KWIC index point by point on change/labor/understanding — by-secret wins decisively.</p>
+<p>⑦ Impact: encapsulation, abstract data types, the OOP class, API / microservice boundaries are all descendants of this criterion.</p>
+<p>⑧ Limits: success rides on "guessing what will change"; layered abstraction has costs and invites over-design; abstractions leak; it gives a criterion but not the whole structure (later filled by the uses hierarchy / program families).</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full module lists of both KWIC decompositions and the original argument, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
