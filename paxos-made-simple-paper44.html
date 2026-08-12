@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 44</p>
-<h1>Paxos Made Simple</h1>
+<h1 data-tts="2c2dacd0c37f9ea2">Paxos Made Simple</h1>
 <p class="sub">Leslie Lamport · Microsoft Research · ACM SIGACT News · 2001</p>
 <p class="langbar"><a href="paxos-made-simple-paper44.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,27 +44,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="0b527c2228b5cc60">这篇论文干了什么？</h2>
 <p>2001 年，Leslie Lamport 用大白话重讲了他自己发明的 <strong>Paxos</strong>——一个让一群分布在各地、彼此只能靠不靠谱的网络通信的计算机，就「某一件事」达成<strong>唯一、且永不反悔的一致决定</strong>的方法。今天你用的几乎每个大型在线服务背后都有它的影子：数据库怎么选出主节点、一条数据到底写没写、集群里谁说了算——这类「所有机器必须认同同一个答案」的问题，靠的就是 Paxos 这类<strong>共识（consensus）</strong>算法。</p>
-<h2>先说个难处</h2>
+<h2 data-tts="47d4827cd9eddf81">先说个难处</h2>
 <p>想象一群朋友要靠打电话约<strong>同一家</strong>餐厅，但电话会随机掉线，有人会突然睡着、过一会儿又醒来（对应机器崩溃重启），消息可能迟到、重复。要求很苛刻：最后大家必须定在<strong>同一家</strong>，而且一旦定了，就<strong>绝不能有人以为定的是另一家</strong>。难点在于：没有一个「所有人都信的中心」，消息又不可靠，怎么保证不会出现「一半人以为定了 A、一半人以为定了 B」？（有个前提：这里<strong>没人撒谎</strong>，机器只会崩溃、不会故意发假消息——会撒谎是另一个更难的问题。）</p>
-<h2>那个点子</h2>
+<h2 data-tts="e4db5e14d12c2eb7">那个点子</h2>
 <p>Paxos 的办法是<strong>两轮沟通 + 排队号</strong>。谁想提议，先领一个<strong>越来越大的号码牌</strong>（后领的号一定比先领的大）。<strong>第一轮</strong>他拿着号去问「过半数」的人：「能答应我吗？」；<strong>第二轮</strong>才把自己想定的餐厅正式推上去，让过半数人「接受」。<strong>一家餐厅被过半数人接受，就算「定了」。</strong></p>
-<h2>到底怎么保证不打架？</h2>
+<h2 data-tts="b5fcba4b082f52b8">到底怎么保证不打架？</h2>
 <p>两条规矩顶住了一切。第一条：<strong>每个人只认号大的</strong>——一旦你答应了 5 号，就不再理睬任何号更小的人。第二条、也是最妙的一条：<strong>提议者在第二轮"推自己的餐厅"之前，必须先问一圈；只要有人说"我已经接受过某家了"，他就必须改推那一家、放弃自己原本想定的。</strong></p>
 <p>再加上「过半数」这个设计的妙处——<strong>任意两拨「过半数」的人，必然至少有一个人重叠</strong>。于是只要一家餐厅已经被定过，后来的任何人在问那一圈时，<strong>总会撞上那个"重叠的人"、从他嘴里听说这家已定，从而乖乖沿用它。</strong>决定因此永远唯一、永不翻案。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="2d66005821b12830">带来了什么</h2>
 <p>这套「先问一圈、再推、认大号、沿用旧值」的规矩，成了几乎所有需要强一致的分布式系统的地基：谷歌的 <strong>Chubby</strong> 锁服务、<strong>Spanner</strong> 全球数据库，以及各种数据库的主从选举，骨子里都是它。后来更好懂的 <strong>Raft</strong>，也是同一套思想的重新包装。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="b49eaae5f03887c2">一句话记住</h2>
 <div class="tl">
 <p>让一群不可靠的机器就一件事达成唯一决定：领个只增的号码牌、先问过半数人一圈、谁号大听谁的；而且在推自己的值之前，必须先沿用别人已接受的值——靠「任意两个过半数必然重叠」，被定过的值就再也翻不了案。诚实说：它<strong>出了名地难懂</strong>，且只扛机器崩溃、不扛撒谎，纯 Paxos 还会因两人互相抢号而卡住（要靠选一个"领头的"来解决）。</p>
 </div>
 <p class="switch-hint">想看两阶段协议的流程图、过半数为何必然重叠、以及它怎么变成真实系统？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="dab77631d49ead8e">一句话</h2>
 <p class="lead">Paxos 是一个在「消息会丢失、重复、延迟，机器会崩溃重启、但没人撒谎」的异步分布式系统里，让多个进程就<strong>单个值</strong>达成一致的<strong>共识算法</strong>。它用<strong>提案编号</strong> + <strong>过半数（quorum）</strong>两个机制，保证<strong>安全性永远成立</strong>（最多只有一个值被选定、且选定后不再更改），而把无法与之两全的<strong>活性</strong>（一定选出某值）交给「选一个领头提议者」来兜底。这篇 2001 年的《Paxos Made Simple》，是 Lamport 对自己 1998 年那篇晦涩的《The Part-Time Parliament》的白话重写，是几乎所有强一致分布式系统（Chubby、Spanner…）的共识内核。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="d7f5d4097c219f10">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>共识（consensus）</strong>：一组进程就某个值达成一致——所有正常进程最终认定<em>同一个</em>值，且这个值确实被某个进程提出过。分布式系统最基础的难题之一。</li>
@@ -76,23 +76,23 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>FLP 不可能性</strong>：Fischer-Lynch-Paterson（1985）的结论——在纯异步、哪怕只有一个进程可能崩溃的模型里，不存在既保证「一定终止」又保证「绝不出错」的确定性算法。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="49c61da73f7a1c39">坐标</h2>
 <p>作者 Leslie Lamport（微软研究院）。《Paxos Made Simple》发表于 2001 年 ACM SIGACT News，是他 1998 年论文《The Part-Time Parliament》——用希腊小岛议会作寓言、几乎没人读懂——的极简重述（算法其实早在 1990 年前后就成形）。它上承 Lamport 自己的逻辑时钟（1978）与共识问题、绕开 FLP 不可能性（1985）；下启工业界大量落地（Chubby、ZooKeeper 的 Zab、Spanner），并直接催生了 2014 年以「可理解」为卖点的 <strong>Raft</strong>。Lamport 也因这一系列分布式工作获 <strong>2013 年图灵奖</strong>。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="249bc2a24dded6e7">问题与动机</h2>
 <p>分布式系统里最基础的难题之一：一组机器如何就「某<strong>一个</strong>值」达成一致——比如谁是主节点、日志的下一条该是什么。看似简单，难在环境极端不友好：网络会丢包、乱序、重复；机器会崩溃、重启（重启后还得记得崩溃前的承诺）。人们想要三条铁律：<strong>只有被提出过的值才可能被选中；最终只有一个值被选中；没被选中，就不能让谁误以为选中了。</strong></p>
 <p>更糟的是理论天花板——<strong>FLP 不可能性</strong>证明：纯异步下只要有一个进程可能崩溃，就不存在既保证「一定选出结果」又保证「绝不选错」的确定性算法。于是现实的取舍是：<strong>安全性（绝不选错）绝不能破，活性（一定选出）可以在网络恢复正常时再兑现。</strong>Paxos 正是这一取舍的经典答案。此前虽有两阶段提交等方案，但它们要么无法容忍协调者崩溃、要么会阻塞；Paxos 第一次给出一个<strong>能容忍少数崩溃、且被严格证明安全</strong>的最小协议。</p>
-<h2>核心思想 / 方法</h2>
-<h3>三种角色，与「选定」的定义</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="3060ef7e4075ef7d">三种角色，与「选定」的定义</h3>
 <p>Paxos 把进程分成三种角色（一个进程可同时兼任）：<strong>提议者（proposer）</strong>提出候选值；<strong>接受者（acceptor）</strong>投票；<strong>学习者（learner）</strong>得知结果。核心规定极简：<strong>一个值被"过半数"接受者「接受」，就算被"选定"（chosen）。</strong></p>
-<h3>为什么偏偏是「过半数」</h3>
+<h3 data-tts="931f053a15370226">为什么偏偏是「过半数」</h3>
 <p>用过半数、而非全体，是全篇的关键设计：<strong>任意两个过半数集合，必然至少有一个共同成员。</strong>这个重叠点像一个<em>「见证人」</em>——它一旦参与过某个决定，就能在后来的询问里把这个决定捅出来，从而<strong>不可能有两个不同的值各自凑齐过半数、还互不知情</strong>。</p>
 <figure>
-<svg viewBox="0 0 560 210" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
-<circle cx="86" cy="86" r="27" fill="rgba(240,180,41,0.18)" stroke="#f0b429" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="86" y="91">A1</text>
-<circle cx="180" cy="86" r="27" fill="rgba(240,180,41,0.18)" stroke="#f0b429" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="180" y="91">A2</text>
-<circle cx="274" cy="86" r="29" fill="rgba(240,180,41,0.2)" stroke="#e8794b" stroke-width="3"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="274" y="91">A3</text>
-<circle cx="368" cy="86" r="27" fill="rgba(232,121,75,0.1)" stroke="#e8794b" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="368" y="91">A4</text>
-<circle cx="462" cy="86" r="27" fill="rgba(232,121,75,0.1)" stroke="#e8794b" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="462" y="91">A5</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<circle cx="86" cy="86" fill="rgba(240,180,41,0.18)" r="27" stroke="#f0b429" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="86" y="91">A1</text>
+<circle cx="180" cy="86" fill="rgba(240,180,41,0.18)" r="27" stroke="#f0b429" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="180" y="91">A2</text>
+<circle cx="274" cy="86" fill="rgba(240,180,41,0.2)" r="29" stroke="#e8794b" stroke-width="3"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="274" y="91">A3</text>
+<circle cx="368" cy="86" fill="rgba(232,121,75,0.1)" r="27" stroke="#e8794b" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="368" y="91">A4</text>
+<circle cx="462" cy="86" fill="rgba(232,121,75,0.1)" r="27" stroke="#e8794b" stroke-width="1.6"></circle><text fill="#e7ebf1" font-size="13" text-anchor="middle" x="462" y="91">A5</text>
 <path d="M59,128 L59,140 L301,140 L301,128" fill="none" stroke="#f0b429" stroke-width="1.3"></path>
 <text fill="#f0b429" font-size="11.5" text-anchor="middle" x="180" y="158">过半数接受了 v ⇒ v 已选定</text>
 <path d="M247,44 L247,32 L489,32 L489,44" fill="none" stroke="#e8794b" stroke-width="1.3"></path>
@@ -101,70 +101,70 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 1 · 过半数必然重叠：{A1,A2,A3} 已把 v 选定；后来者问的任何过半数（如 {A3,A4,A5}）都躲不开 A3，于是必然听说 v——两个不同值不可能都被选定。</figcaption>
 </figure>
-<h3>两阶段协议</h3>
+<h3 data-tts="891c4318b139b025">两阶段协议</h3>
 <p>每个提案带一个唯一且递增的编号 <code>n</code>。协议分两轮（见图 2）：</p>
 <ul>
 <li><strong>第一阶段 · Prepare / Promise</strong>：提议者选定编号 n，向过半数接受者发 <code>prepare(n)</code>。接受者若<em>没答应过比 n 更大的编号</em>，就<strong>承诺</strong>：今后不再接受编号小于 n 的提案；并<strong>回报</strong>自己已接受过的、编号最高的提案值（若有）。</li>
 <li><strong>第二阶段 · Accept / Accepted</strong>：提议者收到过半数承诺后，发 <code>accept(n, v)</code>。这里的 v 有一条铁规：<strong>若任何一份承诺里带回了"已接受的值"，v 必须取其中编号最高的那个；只有当所有人都没回报任何值时，提议者才能填自己想要的值。</strong>接受者收到 accept(n,v)，只要期间没答应过更大的编号，就接受它。</li>
 </ul>
 <figure>
-<svg viewBox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
-<defs><marker id="pa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
-<marker id="pb" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="pa" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="pb" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
 <text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="105" y="24">提议者</text>
 <text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="440" y="24">过半数接受者</text>
-<line x1="105" x2="105" y1="34" y2="285" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<line x1="440" x2="440" y1="34" y2="285" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<rect x="60" y="52" width="440" height="86" rx="7" fill="rgba(240,180,41,0.05)" stroke="rgba(240,180,41,0.25)"></rect>
-<text fill="#f0b429" font-size="11" x="68" y="68" font-family="'SF Mono',monospace">第一阶段 PREPARE</text>
-<line x1="105" x2="432" y1="86" y2="86" stroke="#f0b429" stroke-width="1.7" marker-end="url(#pa)"></line>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="105" x2="105" y1="34" y2="285"></line>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="440" x2="440" y1="34" y2="285"></line>
+<rect fill="rgba(240,180,41,0.05)" height="86" rx="7" stroke="rgba(240,180,41,0.25)" width="440" x="60" y="52"></rect>
+<text fill="#f0b429" font-family="'SF Mono',monospace" font-size="11" x="68" y="68">第一阶段 PREPARE</text>
+<line marker-end="url(#pa)" stroke="#f0b429" stroke-width="1.7" x1="105" x2="432" y1="86" y2="86"></line>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="268" y="80">① prepare(n)</text>
-<line x1="440" x2="113" y1="120" y2="120" stroke="#7c8593" stroke-width="1.5" marker-end="url(#pb)"></line>
+<line marker-end="url(#pb)" stroke="#7c8593" stroke-width="1.5" x1="440" x2="113" y1="120" y2="120"></line>
 <text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="268" y="114">② promise：不再收更小的号 + 回报已接受的最高值</text>
-<rect x="60" y="164" width="440" height="98" rx="7" fill="rgba(232,121,75,0.05)" stroke="rgba(232,121,75,0.25)"></rect>
-<text fill="#e8794b" font-size="11" x="68" y="180" font-family="'SF Mono',monospace">第二阶段 ACCEPT</text>
-<line x1="105" x2="432" y1="200" y2="200" stroke="#f0b429" stroke-width="1.7" marker-end="url(#pa)"></line>
+<rect fill="rgba(232,121,75,0.05)" height="98" rx="7" stroke="rgba(232,121,75,0.25)" width="440" x="60" y="164"></rect>
+<text fill="#e8794b" font-family="'SF Mono',monospace" font-size="11" x="68" y="180">第二阶段 ACCEPT</text>
+<line marker-end="url(#pa)" stroke="#f0b429" stroke-width="1.7" x1="105" x2="432" y1="200" y2="200"></line>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="268" y="194">③ accept(n, v)</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="268" y="216">v = 回报中编号最高的值，若无则自选</text>
-<line x1="440" x2="113" y1="242" y2="242" stroke="#7c8593" stroke-width="1.5" marker-end="url(#pb)"></line>
+<line marker-end="url(#pb)" stroke="#7c8593" stroke-width="1.5" x1="440" x2="113" y1="242" y2="242"></line>
 <text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="268" y="236">④ accepted</text>
 <text fill="#f0b429" font-size="11.5" text-anchor="middle" x="280" y="282">过半数 accepted ⇒ 值被"选定"</text>
 </svg>
 <figcaption>图 2 · 两阶段协议：先"问一圈"拿承诺并打听已被接受的值（第一阶段），再"推值"求接受（第二阶段）；过半数接受即选定。</figcaption>
 </figure>
-<h3>安全性的心脏</h3>
+<h3 data-tts="05d19de570357f3b">安全性的心脏</h3>
 <p>把上面两条合起来看，第二阶段填值的规则其实是：<code>v = 过半数回报里编号最高的已接受值（若有），否则自选</code>。正是这条「<strong>推自己的值前，先问一圈、并沿用已被接受的值</strong>」的规则，加上"过半数必重叠"，共同保证了——<strong>一旦某值 v 被选定（过半数接受），此后任何更高编号的提案也只会带 v。</strong>于是"选定的值唯一、且不可更改"。（论文用一串不变式 P1 / P2a / P2b / P2c 严谨推出这一点；但直觉就是上面这句话。）</p>
-<h3>接受者只需记两个数</h3>
+<h3 data-tts="8ec9762ab40cb61f">接受者只需记两个数</h3>
 <p>每个接受者只要把两样东西写进持久存储：<strong>答应过的最大 prepare 编号</strong>、<strong>已接受的最高编号提案及其值</strong>。崩溃重启后，凭这两个数就能恢复之前的承诺、不会反悔——这是容错的关键。</p>
-<h3>活性，与「决斗的提议者」</h3>
+<h3 data-tts="673b837ef58b6155">活性，与「决斗的提议者」</h3>
 <p>安全归安全，Paxos 会卡<strong>活性</strong>：两个提议者可能反复抢号——p 用 n1 拿到承诺，q 用 n2&gt;n1 抢先、作废了 p 的第二阶段；p 再用 n3&gt;n2 抢回……如此拉锯，谁也定不下来（这正是 FLP 说的躲不掉的情形）。解法是<strong>选出一个"领头提议者"（leader）</strong>，只让它发提案。领头选举<strong>不必完美</strong>——选错只影响效率、<em>不影响安全</em>；只要最终有一段时间只有一个稳定 leader，就能定下来。</p>
-<h3>Multi-Paxos 与状态机复制</h3>
+<h3 data-tts="3aeaf39e9a6a5c7e">Multi-Paxos 与状态机复制</h3>
 <p>上面只定「一个值」。真实系统要定的是<strong>一长串命令（一份日志）</strong>：给日志的每个槽位跑一个独立的 Paxos 实例即可。优化在于——一个稳定的 leader 可以<strong>为一整段未来槽位一次性做完第一阶段</strong>，之后每条新命令只需第二阶段一个来回，这就是 <strong>Multi-Paxos</strong>。把它套在「确定性状态机」上（各副本按同一顺序执行同一串命令），就得到<strong>状态机复制</strong>：一个能容忍少数机器崩溃、对外却像单机一样强一致的服务。这才是 Paxos 在工业界真正的用法。</p>
 <figure>
-<svg viewBox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
-<defs><marker id="pc" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="pc" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
 <text fill="#f0b429" font-size="11.5" x="30" y="24">共识层：每个槽位一个 Paxos 实例，定下同一条命令序列</text>
-<rect x="30" y="36" width="98" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="79" y="57">1: put x=1</text>
-<rect x="140" y="36" width="98" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="189" y="57">2: del y</text>
-<rect x="250" y="36" width="98" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="299" y="57">3: put z=7</text>
-<rect x="360" y="36" width="98" height="34" rx="5" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="409" y="57">4: …</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="5" stroke="#f0b429" width="98" x="30" y="36"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="79" y="57">1: put x=1</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="5" stroke="#f0b429" width="98" x="140" y="36"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="189" y="57">2: del y</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="5" stroke="#f0b429" width="98" x="250" y="36"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="299" y="57">3: put z=7</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="5" stroke="#f0b429" width="98" x="360" y="36"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="409" y="57">4: …</text>
 <text fill="#7c8593" font-size="15" x="470" y="58">→</text>
-<line x1="120" x2="120" y1="72" y2="150" stroke="#7c8593" stroke-width="1.2" marker-end="url(#pc)"></line>
-<line x1="270" x2="270" y1="72" y2="150" stroke="#7c8593" stroke-width="1.2" marker-end="url(#pc)"></line>
-<line x1="420" x2="420" y1="72" y2="150" stroke="#7c8593" stroke-width="1.2" marker-end="url(#pc)"></line>
+<line marker-end="url(#pc)" stroke="#7c8593" stroke-width="1.2" x1="120" x2="120" y1="72" y2="150"></line>
+<line marker-end="url(#pc)" stroke="#7c8593" stroke-width="1.2" x1="270" x2="270" y1="72" y2="150"></line>
+<line marker-end="url(#pc)" stroke="#7c8593" stroke-width="1.2" x1="420" x2="420" y1="72" y2="150"></line>
 <text fill="#7c8593" font-size="11" text-anchor="middle" x="270" y="120">同一顺序喂给每个副本</text>
-<rect x="40" y="156" width="140" height="44" rx="6" fill="rgba(232,121,75,0.08)" stroke="#e8794b"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="110" y="175">副本 1</text><text fill="#7c8593" font-size="10" text-anchor="middle" x="110" y="191">确定性状态机</text>
-<rect x="210" y="156" width="140" height="44" rx="6" fill="rgba(232,121,75,0.08)" stroke="#e8794b"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="280" y="175">副本 2</text><text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="191">确定性状态机</text>
-<rect x="380" y="156" width="140" height="44" rx="6" fill="rgba(232,121,75,0.08)" stroke="#e8794b"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="450" y="175">副本 3</text><text fill="#7c8593" font-size="10" text-anchor="middle" x="450" y="191">确定性状态机</text>
+<rect fill="rgba(232,121,75,0.08)" height="44" rx="6" stroke="#e8794b" width="140" x="40" y="156"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="110" y="175">副本 1</text><text fill="#7c8593" font-size="10" text-anchor="middle" x="110" y="191">确定性状态机</text>
+<rect fill="rgba(232,121,75,0.08)" height="44" rx="6" stroke="#e8794b" width="140" x="210" y="156"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="280" y="175">副本 2</text><text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="191">确定性状态机</text>
+<rect fill="rgba(232,121,75,0.08)" height="44" rx="6" stroke="#e8794b" width="140" x="380" y="156"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="450" y="175">副本 3</text><text fill="#7c8593" font-size="10" text-anchor="middle" x="450" y="191">确定性状态机</text>
 <text fill="#f0b429" font-size="12" text-anchor="middle" x="280" y="230">同样的命令 + 同样的顺序 ⇒ 三份副本状态永远一致</text>
 </svg>
 <figcaption>图 3 · 状态机复制：用一串 Paxos 实例定下唯一的命令序列，喂给每个副本的确定性状态机——少数机器崩溃也不影响整体一致，这是 Paxos 的主战场。</figcaption>
 </figure>
-<h2>关键结果</h2>
+<h2 data-tts="855e3bb313e6083a">关键结果</h2>
 <p>这是一篇<strong>理论</strong>论文，没有数据集、没有基准跑分——它的"结果"是<strong>一个被严格证明的正确性保证</strong>，以及推出它的方式。论文从「安全性到底要什么」出发，一步步逼出 prepare / accept 两阶段是<strong>必要且充分</strong>的最小机制，证明：<strong>在任意消息丢失 / 重复 / 延迟、任意少数接受者崩溃下，安全性恒成立</strong>（最多一个值被选定、选定不可更改）；而<strong>活性</strong>则在「有唯一稳定 leader + 网络最终送达」时达成。它同时坦白 FLP 的边界——纯异步下无法保证一定终止，这不是缺陷、而是理论必然。这种「从需求反推算法」的写法，本身也是它被反复引用、成为教科书范本的原因之一。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="56489b7f94a7fb07">为什么重要 / 影响</h2>
 <p>Paxos 是分布式共识的<strong>奠基算法</strong>，几乎定义了"如何在会崩溃的机器上做强一致"这件事。谷歌的 <strong>Chubby</strong> 锁服务、<strong>Spanner</strong> 全球数据库、Megastore 等核心系统的共识内核都是 Paxos；ZooKeeper 的 Zab、etcd / Consul 用的 Raft，都是它的近亲或再包装。可以说，今天几乎所有"强一致 + 高可用"的分布式存储，其容错骨架都能追溯到这里。它也是 Lamport 2013 年图灵奖的代表作之一。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="d00b1c58c01d62cd">局限与批评</h2>
 <ul>
 <li><strong>出了名地难懂</strong>：初版《The Part-Time Parliament》的希腊议会寓言几乎没人读懂、被搁置多年；即便这篇"Made Simple"，业界仍普遍觉得难。这直接催生了 2014 年的 <strong>Raft</strong>——明确以"可理解性"为设计目标，用"选主 + 日志复制"重新组织，并论证 Paxos 的<em>单值</em>形式并不贴合人们真正要建的日志系统。</li>
 <li><strong>论文与可运行系统之间有巨大鸿沟</strong>：谷歌工程师的《Paxos Made Live》记录了把它变成产品要补的一大堆东西——磁盘损坏、成员变更、日志压缩、master 租约、性能优化……只看论文远不足以实现。</li>
@@ -172,7 +172,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>无活性保证</strong>：受 FLP 约束，纯异步下可能一直定不下来；实践必须叠加 leader 选举与超时等时序假设，否则"决斗的提议者"会让系统卡住。</li>
 <li><strong>Multi-Paxos 讲得含糊</strong>：论文对如何把单值 Paxos 扩成实用的日志复制只给了梗概，大量细节留给了后人——这也是它长期"人人听说、少有人真懂"的原因之一。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="012cc56ed4e9de7c">要点</h2>
 <div class="tl">
 <p>① 问题：让一群会崩溃、只能靠不可靠网络通信、但不会撒谎的机器，就单个值达成唯一且不反悔的一致。</p>
 <p>② 取舍：受 FLP 限制无法两全——Paxos 让<strong>安全性永远成立</strong>、活性在网络恢复时兑现。</p>
