@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Congestion Avoidance and Control（TCP 拥塞控制）— IT 论文精读 Paper 45</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 45</p>
+<h1>Congestion Avoidance and Control（TCP 拥塞控制）</h1>
+<p class="sub">Van Jacobson &amp; Michael Karels · SIGCOMM 1988</p>
+<p class="langbar"><a href="congestion-avoidance-and-control-paper45.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1988 年，Van Jacobson 给互联网的传输协议 <strong>TCP</strong> 打了一个补丁，让全网在流量暴涨时<strong>不会一起卡死</strong>。你今天每一次刷视频、下文件、开网页，背后都有它悄悄在替你「踩油门、踩刹车」——决定这一刻该发多快。没有它，互联网早在三十多年前就撑不下去了。</p>
+<h2>先说个怪事</h2>
+<p>1986 年秋天，两台相距几百米、中间只隔三跳的机器之间，网速<strong>从每秒 3 万多比特暴跌到每秒 40 比特</strong>——慢了将近一千倍。没有人拔线、没有人攻击，就是<strong>大家一起拼命发，结果谁也发不动了</strong>。这很像高峰期的高速：车一多到某个点，不是慢一点，而是整条路彻底堵死、几乎不动。工程师给这个现象起了个名字：<strong>拥塞崩溃</strong>。</p>
+<h2>那个点子</h2>
+<p>互联网上<strong>没有一个交通指挥中心</strong>告诉每台机器该发多快。Jacobson 的关键判断是：既然没人管，那就让<strong>每个发送方自己去「感觉」路堵不堵、然后自觉地收着点发</strong>。可网络又不会主动说「我堵了」——那发送方靠什么感觉？靠一个朴素的信号：<strong>丢包</strong>。在一条好线路上，包很少因为出错而丢，几乎全是因为某个路口<strong>排队排爆了、被丢掉</strong>。所以「我发的包没到」＝「前面堵了」，这就是网络在跟你说话。</p>
+<h2>它到底怎么做到的</h2>
+<p>三个小动作，凑成一套自律：</p>
+<p>① <strong>按回音的节奏发</strong>。每发出一个包，对方收到会回一声「收到」（ACK）。Jacobson 让发送方<strong>只有听到一声回音、才放一个新包进网</strong>——就像往漏斗里倒水，只按它漏下去的速度倒，网络自然不会被灌爆。这声声回音，就成了替你打拍子的节拍器。</p>
+<p>② <strong>顺时慢加、堵时猛减</strong>。一切顺利时，每过一轮就把发送量<strong>悄悄加一点点</strong>（小心翼翼往上试探）；一旦丢了包，立刻把发送量<strong>砍掉一半</strong>（急刹车）。慢慢加、狠狠减——正是这种「不对称」让所有人最终稳稳分到一份公平的带宽，而不是一起挤爆。</p>
+<p>③ <strong>起步先试探，别一上来就猛冲</strong>。刚开始不知道路有多宽，就<strong>从发一个包起步、每轮翻倍</strong>，直到第一次感到阻力再转成慢加——像进一条陌生的路先探探深浅，而不是一脚油门冲进去。</p>
+<figure>
+<svg viewbox="0 0 560 190" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="60" y1="150" x2="530" y2="150" stroke="#7c8593"></line>
+<line x1="60" y1="150" x2="60" y2="30" stroke="#7c8593"></line>
+<text x="52" y="34" fill="#7c8593" font-size="11" text-anchor="end">发送量</text>
+<text x="524" y="168" fill="#7c8593" font-size="11" text-anchor="end">时间 →</text>
+<path d="M60,150 C78,150 88,96 100,70 C104,62 108,58 112,58" fill="none" stroke="#f0b429" stroke-width="2.2"></path>
+<path d="M112,58 L150,44 L150,101 L188,88 L188,88 L188,88 L226,74 L226,131 L264,118 L264,64 L302,50 L302,107 L340,94 L340,94 L378,80 L378,137 L416,124 L416,70 L454,56 L454,113 L492,100" fill="none" stroke="#e8794b" stroke-width="2.2"></path>
+<text x="86" y="118" fill="#f0b429" font-size="10.5">起步翻倍</text>
+<text x="300" y="30" fill="#e7ebf1" font-size="11.5" text-anchor="middle">慢慢加速 ↗　一丢包就减半 ↓</text>
+</svg>
+<figcaption>图 · 顺时一点点加速、丢包时立刻减半——形成一条「锯齿」，让大家自动收敛到公平又不堵的速度。</figcaption>
+</figure>
+<h2>带来了什么</h2>
+<p>这套办法被装进当年的操作系统、成了 TCP 的标准动作，互联网从此再没发生过大范围拥塞崩溃，也才撑得起后来爆炸式的增长。直到今天，你手机上每一条连接，骨子里还在跑它的「慢加猛减」。诚实地说一句代价：它<strong>把所有丢包都当成「堵了」</strong>——可无线网里，包常常是被干扰弄丢的、路根本没堵，这时它也会白白地把速度减半，这是它在 Wi-Fi、4G 时代被诟病的老毛病。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>没有中央调度，就让每个发送方按「对方的回音」打拍子发包、顺利时慢慢加速、一丢包就把速度砍半、起步先翻倍试探——靠这套人人自律的「慢加猛减」，互联网在没人指挥的情况下不再一起堵死。它是今天每一条网络连接的隐形司机。</p>
+</div>
+<p class="switch-hint">想看拥塞崩溃曲线、自时钟原理、AIMD 与超时估计的机制？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">这篇论文诊断了 1986 年互联网首次<strong>拥塞崩溃（congestion collapse）</strong>的成因，并给 TCP 加上一套让端到端<strong>自我调速</strong>的算法——<strong>慢启动（slow-start）</strong>、<strong>拥塞避免（加性增、乘性减 AIMD）</strong>、更准的<strong>往返时间与超时估计</strong>——核心思想是把丢包当作「网络堵了」的信号，让每个发送方在没有中央调度的前提下自觉收放流量。这套算法进入 4.3BSD 后成为 TCP 的事实标准，是互联网得以规模化而不崩溃的关键地基。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>TCP</strong>：互联网最主要的传输协议，负责把数据可靠、有序地从一台机器送到另一台（丢了会重发）。你的网页、视频、下载大多跑在 TCP 上。</li>
+<li><strong>包 / 分组（packet）</strong>：数据被切成的小块，每块单独在网络里传送、各自寻路。</li>
+<li><strong>路由器（router）</strong>：网络里的「路口」，负责把包从一条线路转发到下一条；转不过来时把包暂存在<strong>队列</strong>里，队列满了就丢包。</li>
+<li><strong>ACK（确认）</strong>：接收方每收到数据就回给发送方的一声「收到」，发送方靠它知道哪些包到了。</li>
+<li><strong>RTT（往返时间，round-trip time）</strong>：一个包发出去、到收到对应 ACK 回来所花的时间；网络越堵、排队越久，RTT 越长。</li>
+<li><strong>窗口（window）</strong>：TCP 里「还没收到确认就允许在途的数据量」；窗口越大发得越猛。本文新增的<em>拥塞窗口</em>就是用它来调速。</li>
+<li><strong>带宽（bandwidth）</strong>：一条线路每秒能通过的数据量，好比水管的粗细。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者 Van Jacobson（劳伦斯伯克利国家实验室 LBL）与 Michael Karels（UC Berkeley），发表于 SIGCOMM 1988。它上承 1970 年代的 TCP/IP 与「端到端论证」（把智能放在两端、网络保持简单）；正面回应 1986 年起频发的拥塞崩溃；下启后来所有拥塞控制的谱系——Tahoe、Reno、NewReno，直到 CUBIC、BBR，都建在它奠定的框架上。</p>
+<h2>问题与动机</h2>
+<p>1986 年 10 月，Jacobson 观测到一件荒唐事：从 LBL 到伯克利校园、相距约几百米、中间仅三跳的链路，<strong>吞吐量从 32 Kbps 崩到 40 bps</strong>——掉了近三个数量级。没有硬件故障，纯粹是流量本身把网络逼死了。这就是<em>拥塞崩溃</em>。</p>
+<p>崩溃的机理是一个<strong>正反馈的死亡螺旋</strong>：网络一堵，包在路由器队列里排队、RTT 变长；可当时的 TCP 用一个固定的超时公式（<code>超时 ≈ 2 × 平滑RTT</code>），在高负载下这个超时严重偏短，于是发送方<strong>把还在路上排队、并没真丢的包又重发了一遍</strong>；重复的包让本已拥堵的网络负载翻倍、更堵、RTT 更长、更多误判超时、更多重发……直到网络里跑的几乎全是无用的重复包，有效吞吐趋近于零。</p>
+<figure>
+<svg viewbox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="66" y1="188" x2="530" y2="188" stroke="#7c8593"></line>
+<line x1="66" y1="188" x2="66" y2="30" stroke="#7c8593"></line>
+<text x="58" y="34" fill="#7c8593" font-size="11" text-anchor="end">有效吞吐</text>
+<text x="524" y="207" fill="#7c8593" font-size="11" text-anchor="end">注入网络的流量 →</text>
+<path d="M66,188 C150,110 200,66 250,60 C300,66 330,120 360,150 C400,178 460,184 512,186" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<line x1="250" y1="60" x2="250" y2="188" stroke="#7c8593" stroke-width="1" stroke-dasharray="4 4"></line>
+<text x="250" y="50" fill="#f0b429" font-size="11" text-anchor="middle">最佳工作点</text>
+<text x="150" y="150" fill="#7c8593" font-size="10.5" text-anchor="middle">越发越快</text>
+<text x="430" y="150" fill="#e7ebf1" font-size="11" text-anchor="middle">越发反而越慢</text>
+<path d="M400,120 C420,132 430,142 438,152" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#ca1)"></path>
+<defs><marker id="ca1" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text x="452" y="112" fill="#f0b429" font-size="10.5">拥塞崩溃</text>
+</svg>
+<figcaption>图 1 · 拥塞崩溃：注入流量超过某个点后，重复重传挤占带宽，有效吞吐不升反<strong>崩</strong>——不是慢一点，是几乎归零。目标是把系统稳定在「最佳工作点」附近。</figcaption>
+</figure>
+<p>更深的问题是：互联网<strong>没有中央调度</strong>，谁也不知道全局有多少流量、瓶颈在哪。所以控制只能是<strong>分布式、端到端</strong>的——每个连接自己观察、自己决定收放。难点在于：一群自私的发送方，靠各自的局部信息，怎么能<strong>自发</strong>收敛到「既不浪费带宽、又不把网络挤爆、还彼此公平」的状态？</p>
+<h2>核心思想 / 方法</h2>
+<h3>包守恒与自时钟：让 ACK 替你打拍子</h3>
+<p>Jacobson 的出发点是一条物理直觉——<strong>包守恒（conservation of packets）</strong>：一条运行在「平衡态」的连接，应当做到<strong>网络里少出去一个包，才放一个新包进来</strong>，让在途的包总量稳定，正好填满而不溢出这条路。</p>
+<p>怎么实现这种「一出一进」？答案优雅得近乎免费：<strong>用返回的 ACK 当时钟</strong>（<em>self-clocking，自时钟</em>）。每个 ACK 回来，说明有一个包已经离开网络、被对方收下，此时才允许注入一个新包。于是<strong>发送速率被自动锁定在瓶颈的处理速率上</strong>——瓶颈多久放行一个包，ACK 就多久回来一次，新包就多久发一个。你不需要知道瓶颈带宽是多少，网络自己会通过 ACK 的节奏「告诉」你。</p>
+<figure>
+<svg viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<rect x="26" y="86" width="70" height="60" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="61" y="120" fill="#e7ebf1" font-size="12" text-anchor="middle">发送方</text>
+<rect x="464" y="86" width="70" height="60" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="499" y="120" fill="#e7ebf1" font-size="12" text-anchor="middle">接收方</text>
+<!-- fat pipe -->
+<path d="M96,92 L232,92 L266,110 L294,110 L328,92 L464,92 L464,140 L328,140 L294,122 L266,122 L232,140 L96,140 Z" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></path>
+<text x="280" y="80" fill="#7c8593" font-size="10.5" text-anchor="middle">瓶颈（最窄处）</text>
+<!-- packets going right, spaced -->
+<rect x="120" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<rect x="160" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<rect x="272" y="106" width="12" height="12" rx="2" fill="#e8794b"></rect>
+<rect x="372" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<rect x="412" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<text x="180" y="70" fill="#e8794b" font-size="10.5" text-anchor="middle">被瓶颈拉开间距的数据包 →</text>
+<!-- ACK returning -->
+<path d="M464,176 L96,176" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ca2)"></path>
+<defs><marker id="ca2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text x="280" y="170" fill="#f0b429" font-size="10.5" text-anchor="middle">← ACK 回音（间距 = 瓶颈节奏）</text>
+<text x="280" y="204" fill="#e7ebf1" font-size="11.5" text-anchor="middle">每收到一声 ACK，才放一个新包进网 → 速率自动贴合瓶颈</text>
+</svg>
+<figcaption>图 2 · 自时钟：数据包穿过瓶颈时被拉开成「瓶颈节奏」，接收方按这个节奏回 ACK；发送方以 ACK 为拍子放新包，速率自动锁定在瓶颈处理速率上，既填满又不溢出。</figcaption>
+</figure>
+<h3>慢启动：怎么开始才能进入平衡态</h3>
+<p>自时钟只在「已经平衡」时成立，可连接刚建立时网络里一个包都还没有，ACK 时钟也就没启动。此时若按对方通告的大窗口<strong>一次性把一整窗数据全砸进去</strong>，瞬间就会冲爆瓶颈队列。<em>慢启动</em>的做法是：把新增的<strong>拥塞窗口 <code>cwnd</code></strong> 从 <strong>1 个包</strong>起步，<strong>每收到一个 ACK 就把 cwnd 加 1</strong>。效果是窗口<strong>每过一个 RTT 翻一倍</strong>——1、2、4、8……名字叫「慢」，其实是指数增长，但相对「一上来就满窗」已是极温柔的试探。它一路加速，直到撞上第一次丢包或到达阈值，把 ACK 时钟平稳地「点着」。</p>
+<h3>拥塞避免：加性增、乘性减（AIMD）</h3>
+<p>试探到接近网络容量后，就不能再翻倍了，否则一步就冲过头。TCP 维护一个阈值 <code>ssthresh</code>：<strong>cwnd 低于阈值时用慢启动（指数涨）；高于阈值后切换到<em>拥塞避免</em>——每个 RTT 只把窗口加 1（把 cwnd 每收到一个 ACK 增 <code>1/cwnd</code>）</strong>，即<strong>加性增（additive increase）</strong>，小步慢挪地贴着容量试探。</p>
+<p>一旦检测到丢包（判定为拥塞），就<strong>乘性减（multiplicative decrease）</strong>：把阈值砍半 <code>ssthresh = cwnd/2</code>，并把 cwnd 打回 1、重新慢启动爬升到新阈值再转加性增。为什么增是「加」、减是「乘」而不对称？因为<strong>拥塞一旦发生，队列是爆炸式堆积的，只有指数级（乘性）的猛减才压得住；而探测富余带宽必须保守，所以用最温和的加性增</strong>。这一「慢升－骤降」的<em>锯齿</em>，正是让众多连接<strong>自发收敛到公平且高效</strong>共享的关键——这背后有控制论上的依据（加性增乘性减能收敛到公平线）。</p>
+<figure>
+<svg viewbox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="60" y1="186" x2="534" y2="186" stroke="#7c8593"></line>
+<line x1="60" y1="186" x2="60" y2="26" stroke="#7c8593"></line>
+<text x="52" y="30" fill="#7c8593" font-size="11" text-anchor="end">cwnd</text>
+<text x="528" y="204" fill="#7c8593" font-size="11" text-anchor="end">时间 →</text>
+<line x1="60" y1="70" x2="534" y2="70" stroke="#7c8593" stroke-dasharray="4 4" stroke-width="1"></line>
+<text x="150" y="64" fill="#7c8593" font-size="10" text-anchor="end">ssthresh 阈值</text>
+<!-- slow start exp -->
+<path d="M60,186 C78,186 92,150 100,120 C108,92 116,74 128,70" fill="none" stroke="#f0b429" stroke-width="2.4"></path>
+<text x="86" y="150" fill="#f0b429" font-size="10.5">慢启动（翻倍）</text>
+<!-- additive increase linear then drop -->
+<path d="M128,70 L250,40" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<line x1="250" y1="40" x2="250" y2="150" stroke="#e8794b" stroke-width="2.4" stroke-dasharray="3 3"></line>
+<path d="M250,150 L380,110" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<line x1="380" y1="110" x2="380" y2="176" stroke="#e8794b" stroke-width="2.4" stroke-dasharray="3 3"></line>
+<path d="M380,176 L500,140" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<text x="196" y="34" fill="#e8794b" font-size="10.5">加性增（每 RTT +1）</text>
+<circle cx="250" cy="40" r="4" fill="#f0b429"></circle>
+<circle cx="380" cy="110" r="4" fill="#f0b429"></circle>
+<text x="264" y="96" fill="#e7ebf1" font-size="10.5">丢包 → 乘性减</text>
+</svg>
+<figcaption>图 3 · AIMD 锯齿：慢启动指数爬到阈值，转为每 RTT +1 的加性增小步试探；一遇丢包就把速度乘性减半，如此往复。慢升骤降让流量稳稳围着可用容量波动、且各连接趋于公平。</figcaption>
+</figure>
+<h3>更准的超时：给死亡螺旋拆引信</h3>
+<p>拥塞崩溃的导火索是<strong>误判超时导致的无谓重传</strong>，所以这篇同样重写了超时估计。旧 TCP 只跟踪平滑后的平均 RTT、用固定倍数 2 定超时；Jacobson 指出高负载下 RTT 的<strong>波动</strong>本身很大，必须把波动也估进来。新公式同时跟踪 RTT 的均值与<strong>平均偏差</strong>，取 <code>超时 = 平滑RTT + 4 × 偏差</code>，让超时随网络抖动自适应地放宽，从根上减少「把没丢的包当丢了」的误伤。再配合<strong>重传超时的指数退避</strong>（连续重传时把等待时间成倍拉长）与 <strong>Karn 算法</strong>（重传过的包不拿来估 RTT，避免二义性），才真正掐断了那条正反馈螺旋。</p>
+<h2>关键结果</h2>
+<p>论文一共给 TCP 加了<strong>七个相互配合的新算法</strong>（上面的自时钟/慢启动、拥塞避免、RTT 方差估计、指数退避等）。效果直接而戏剧：在 Jacobson 团队的测试链路上，同样的硬件、同样的负载，加上这套算法后，一条严重拥塞、吞吐几乎归零的连接被重新拉回<strong>接近链路带宽的稳定吞吐</strong>，且多条连接能公平共存而不再互相拖垮。这些代码随 <strong>4.3BSD（Tahoe）</strong>发布、迅速被各操作系统采纳，成为全互联网 TCP 的默认行为。它没有华丽的定理，胜在<strong>可落地、立竿见影、且不需要改动网络中间设备</strong>——纯靠两端软件升级就治好了全网的病。</p>
+<h2>为什么重要 / 影响</h2>
+<p>它奠定了互联网拥塞控制的<strong>整个范式</strong>：端到端、以丢包为信号、AIMD 收敛到公平。后来的 <strong>Reno / NewReno</strong>（加上快速重传、快速恢复，丢包时不必打回 1 而是减半后继续）、<strong>CUBIC</strong>（Linux 默认，为高带宽长距离链路重设增长曲线）乃至 Google 的 <strong>BBR</strong>，全都是在它的框架上迭代或与之对话。更深远的是它示范了一种思想：<strong>在没有中央权威的大规模系统里，靠一致的、自私但自律的局部规则，也能涌现出全局的稳定与公平</strong>——这条「TCP 友好（TCP-friendly）」的社会契约，是互联网能长成今天这样而不塌的隐形宪法。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>把丢包一律当拥塞</strong>：在无线 / 移动链路上，包常因信道干扰而丢、并非网络堵塞，AIMD 却照样减半，导致 Wi-Fi、蜂窝网上吞吐无谓下降——这是它最被诟病的假设。</li>
+<li><strong>缓冲区膨胀（bufferbloat）</strong>：因为它一直加窗直到把队列灌满、丢包才收手，现代路由器又配了超大缓冲区，结果队列长期积压、时延飙升——高吞吐却换来糟糕的延迟。</li>
+<li><strong>RTT 不公平</strong>：加性增按 RTT 计步，RTT 短的连接涨窗更快，会抢到更多带宽，对远程连接不公平。</li>
+<li><strong>难填「又粗又长」的管道</strong>：每 RTT 只加一个包，在高带宽大时延链路上爬满带宽太慢，催生了 CUBIC 等更激进的增长曲线。</li>
+<li><strong>依赖大家都守规矩</strong>：整套稳定建立在所有发送方都遵循 AIMD 之上；一个不退让的流可以挤垮守规矩的邻居，这也推动了后来对模型化（如 BBR 直接测量瓶颈带宽与 RTT）的探索。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：给 TCP 加一套端到端自我调速算法，把丢包当拥塞信号，让没有中央调度的互联网不再一起崩溃。</p>
+<p>② 痛点：1986 年拥塞崩溃，吞吐从 32 Kbps 崩到 40 bps；祸首是误判超时→无谓重传→更堵的正反馈死亡螺旋。</p>
+<p>③ 包守恒 + 自时钟：以返回的 ACK 为拍子，一出一进地放包，速率自动锁定瓶颈处理速率，无需知道带宽。</p>
+<p>④ 慢启动：cwnd 从 1 起步、每 RTT 翻倍，温和地点着 ACK 时钟、进入平衡态。</p>
+<p>⑤ 拥塞避免 AIMD：过阈值后每 RTT 只 +1（加性增），丢包则阈值减半（乘性减）；慢升骤降的锯齿收敛到公平又高效。</p>
+<p>⑥ 拆引信：用 RTT 均值＋偏差估超时（<code>SRTT + 4×偏差</code>）＋指数退避＋Karn 算法，掐断误判重传的螺旋。</p>
+<p>⑦ 影响：随 4.3BSD 落地成 TCP 标准，互联网从此不再拥塞崩溃；Reno/CUBIC/BBR 皆其后裔，确立端到端拥塞控制范式。</p>
+<p>⑧ 局限：丢包≠一定拥塞（无线吃亏）、缓冲区膨胀、RTT 不公平、难填高带宽长时延管道、依赖人人守规矩。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整算法伪码与实测曲线，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

@@ -84,7 +84,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="group">操作系统 · 网络架构</div>
 <a class="entry" href="unix-time-sharing-paper33.html"><span class="num">Paper 1</span><span class="title">The UNIX Time-Sharing System（UNIX）— 用「一切皆文件 + 小工具用管道自由拼接 + 树状文件夹」几个极简点子，做出一个又小又通用的操作系统，Linux、macOS、安卓、iOS 都是它的思想后代</span><span class="meta">Ritchie &amp; Thompson · 1974</span></a>
 <a class="entry" href="end-to-end-arguments-paper39.html"><span class="num">Paper 2</span><span class="title">End-to-End Arguments in System Design（端到端论证）— 有些功能只有收发两头自己才能做对（如确认文件一字不差），网络在中间也做不全、还连累所有人，所以把聪明活留给两头、让网络保持简单——TCP/IP「笨管道 + 聪明终端」的思想地基</span><span class="meta">Saltzer, Reed &amp; Clark · 1984</span></a>
-<div class="entry todo"><span class="num"></span><span class="title">Congestion Avoidance and Control — 让互联网没有在流量下崩溃</span><span class="meta">Van Jacobson · 1988</span></div>
+<a class="entry" href="congestion-avoidance-and-control-paper45.html"><span class="num">Paper 3</span><span class="title">Congestion Avoidance and Control（TCP 拥塞控制）— 没有中央调度，就让每个发送方按「对方的回音（ACK）」打拍子发包、顺利时慢慢加速、一丢包就把速度砍半，用这套人人自律的「慢加猛减」让互联网不再在流量下一起崩溃</span><span class="meta">Van Jacobson · 1988</span></a>
 <div class="group">密码学 · 安全 · 去中心化</div>
 <a class="entry" href="new-directions-in-cryptography-paper34.html"><span class="num"></span><span class="title">New Directions in Cryptography — 把钥匙拆成「公开一把 + 私藏一把」，两个陌生人当众也能约出暗号，现代加密的地基</span><span class="meta">Diffie &amp; Hellman · 1976</span></a>
 <a class="entry" href="rsa-paper40.html"><span class="num"></span><span class="title">RSA — 第一个能真正落地的公钥体制，把加密与数字签名押在「大数分解极难」上</span><span class="meta">Rivest, Shamir &amp; Adleman · 1978</span></a>

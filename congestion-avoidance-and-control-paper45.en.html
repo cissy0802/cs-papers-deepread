@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Congestion Avoidance and Control (TCP Congestion Control) — CS Papers Deep-Read Paper 45</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 45</p>
+<h1>Congestion Avoidance and Control</h1>
+<p class="sub">Van Jacobson &amp; Michael Karels · SIGCOMM 1988</p>
+<p class="langbar"><a href="congestion-avoidance-and-control-paper45.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1988, Van Jacobson patched the internet's transport protocol, <strong>TCP</strong>, so the whole network <strong>wouldn't jam and seize up</strong> when traffic surged. Every time you stream a video, download a file, or open a page today, it is quietly working the gas and the brake for you — deciding how fast to send at each moment. Without it, the internet would have buckled more than thirty years ago.</p>
+<h2>A strange thing first</h2>
+<p>In the fall of 1986, two machines a few hundred meters apart, just three hops away, saw their speed <strong>crash from about 32,000 bits per second to 40 bits per second</strong> — nearly a thousand times slower. Nobody pulled a cable, nobody attacked it; <strong>everyone just sent as hard as they could, and then nobody could get through</strong>. It's like a highway at rush hour: past a certain point, more cars don't mean slower — the whole road locks up and barely moves. Engineers named it <strong>congestion collapse</strong>.</p>
+<h2>The idea</h2>
+<p>There is <strong>no central traffic controller</strong> on the internet telling each machine how fast to send. Jacobson's key call was: since no one is in charge, let <strong>each sender feel out whether the road is jammed and voluntarily hold back</strong>. But the network won't announce "I'm congested" — so what does the sender feel with? A humble signal: <strong>dropped packets</strong>. On a decent link, packets almost never vanish from errors; they vanish because some junction's <strong>queue overflowed and threw them away</strong>. So "my packet didn't arrive" = "it's jammed ahead." That's the network talking to you.</p>
+<h2>How it actually pulls this off</h2>
+<p>Three small moves add up to self-discipline:</p>
+<p>① <strong>Send at the rhythm of the echoes.</strong> Every packet you send, the other side answers with an "got it" (an ACK). Jacobson lets the sender <strong>release a new packet only when it hears an echo come back</strong> — like pouring water into a funnel only as fast as it drains, so the network never overflows. Those returning echoes become a metronome keeping time for you.</p>
+<p>② <strong>Speed up slowly, cut back hard.</strong> While all is well, each round nudges the sending rate up <strong>just a hair</strong> (a cautious probe upward); the instant a packet is lost, <strong>halve the rate</strong> at once (slam the brakes). Gentle up, brutal down — that asymmetry is exactly what lets everyone settle into a fair share of the road instead of all piling in.</p>
+<p>③ <strong>Start by testing, don't floor it.</strong> At the start you don't know how wide the road is, so <strong>begin with one packet and double each round</strong> until you first feel resistance, then switch to the slow nudging — like easing into an unfamiliar road rather than gunning it.</p>
+<figure>
+<svg viewbox="0 0 560 190" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="60" y1="150" x2="530" y2="150" stroke="#7c8593"></line>
+<line x1="60" y1="150" x2="60" y2="30" stroke="#7c8593"></line>
+<text x="52" y="34" fill="#7c8593" font-size="11" text-anchor="end">send rate</text>
+<text x="524" y="168" fill="#7c8593" font-size="11" text-anchor="end">time →</text>
+<path d="M60,150 C78,150 88,96 100,70 C104,62 108,58 112,58" fill="none" stroke="#f0b429" stroke-width="2.2"></path>
+<path d="M112,58 L150,44 L150,101 L188,88 L226,74 L226,131 L264,118 L264,64 L302,50 L302,107 L340,94 L378,80 L378,137 L416,124 L416,70 L454,56 L454,113 L492,100" fill="none" stroke="#e8794b" stroke-width="2.2"></path>
+<text x="86" y="118" fill="#f0b429" font-size="10.5">double at start</text>
+<text x="300" y="30" fill="#e7ebf1" font-size="11.5" text-anchor="middle">nudge up ↗　halve on any loss ↓</text>
+</svg>
+<figcaption>Fig · Nudge the rate up while things go well, halve it the moment a packet drops — a "sawtooth" that makes everyone converge to a fair, un-jammed speed.</figcaption>
+</figure>
+<h2>What it brought</h2>
+<p>These moves went into the operating systems of the day and became TCP's standard behavior; the internet never suffered another large-scale congestion collapse, and only then could it carry its later explosive growth. To this day, every connection on your phone still runs this "nudge up, halve down" at its core. One honest cost: it <strong>treats every lost packet as "jammed"</strong> — but on wireless, packets are often lost to interference with no jam at all, and it will still needlessly cut the rate in half. That's its old sore spot in the Wi-Fi and cellular era.</p>
+<h2>Remember it in one line</h2>
+<div class="tl">
+<p>With no central dispatcher, let each sender pace its packets to the returning echoes, nudge up while things go well, halve on any loss, and double gently at startup. Through this shared self-discipline of "nudge up, halve down," the internet stops jamming itself even though no one is in charge. It is the invisible driver behind every network connection today.</p>
+</div>
+<p class="switch-hint">Want the collapse curve, the ACK-clock, and the mechanics of AIMD and timeout estimation? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">This paper diagnoses the cause of the internet's first <strong>congestion collapse</strong> (1986) and adds to TCP a set of algorithms for end-to-end <strong>self-regulation</strong> — <strong>slow-start</strong>, <strong>congestion avoidance (additive-increase / multiplicative-decrease, AIMD)</strong>, and better <strong>round-trip-time and timeout estimation</strong>. The core idea: treat packet loss as the signal that "the network is jammed," so every sender voluntarily throttles up and down with no central dispatcher. Shipped in 4.3BSD, these algorithms became TCP's de-facto standard and are a key foundation for why the internet scaled instead of collapsing.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>TCP</strong>: the internet's main transport protocol, delivering data reliably and in order between machines (lost data is resent). Your pages, videos, and downloads mostly ride on TCP.</li>
+<li><strong>Packet</strong>: the small chunk data is sliced into; each travels the network and finds its own path.</li>
+<li><strong>Router</strong>: a network "junction" that forwards packets from one link to the next; when it can't keep up it holds packets in a <strong>queue</strong>, and drops them when the queue is full.</li>
+<li><strong>ACK (acknowledgement)</strong>: the "got it" the receiver returns for data it receives, telling the sender which packets arrived.</li>
+<li><strong>RTT (round-trip time)</strong>: the time from sending a packet to getting its ACK back; the more jammed the network and the longer the queues, the larger the RTT.</li>
+<li><strong>Window</strong>: how much data TCP allows in flight before it must be acknowledged; a bigger window sends harder. The paper's new <em>congestion window</em> is how it regulates the rate.</li>
+<li><strong>Bandwidth</strong>: how much data a link can pass per second — like the thickness of a pipe.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>By Van Jacobson (Lawrence Berkeley National Laboratory) and Michael Karels (UC Berkeley), published at SIGCOMM 1988. It builds on 1970s TCP/IP and the "end-to-end argument" (put intelligence at the two ends, keep the network simple); it answers head-on the congestion collapses that began recurring in 1986; and it seeds the entire lineage of later congestion control — Tahoe, Reno, NewReno, on through CUBIC and BBR — all built on the framework it laid down.</p>
+<h2>The problem &amp; motivation</h2>
+<p>In October 1986, Jacobson observed something absurd: on a link from LBL to the Berkeley campus — a few hundred meters, only three hops — <strong>throughput crashed from 32 Kbps to 40 bps</strong>, nearly three orders of magnitude. No hardware failure; traffic itself had strangled the network. This is <em>congestion collapse</em>.</p>
+<p>The mechanism is a <strong>positive-feedback death spiral</strong>: once the network jams, packets pile up in router queues and RTT grows; but TCP of the day used a fixed timeout formula (<code>timeout ≈ 2 × smoothed RTT</code>) that badly underestimates under load, so the sender <strong>retransmits packets that were merely queued, not actually lost</strong>. The duplicate packets double the load on an already-congested network — more jam, longer RTT, more false timeouts, more retransmissions — until almost everything in flight is useless duplicates and useful throughput approaches zero.</p>
+<figure>
+<svg viewbox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="66" y1="188" x2="530" y2="188" stroke="#7c8593"></line>
+<line x1="66" y1="188" x2="66" y2="30" stroke="#7c8593"></line>
+<text x="58" y="34" fill="#7c8593" font-size="11" text-anchor="end">useful throughput</text>
+<text x="524" y="207" fill="#7c8593" font-size="11" text-anchor="end">traffic injected →</text>
+<path d="M66,188 C150,110 200,66 250,60 C300,66 330,120 360,150 C400,178 460,184 512,186" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<line x1="250" y1="60" x2="250" y2="188" stroke="#7c8593" stroke-width="1" stroke-dasharray="4 4"></line>
+<text x="250" y="50" fill="#f0b429" font-size="11" text-anchor="middle">sweet spot</text>
+<text x="150" y="150" fill="#7c8593" font-size="10.5" text-anchor="middle">faster is better</text>
+<text x="432" y="150" fill="#e7ebf1" font-size="11" text-anchor="middle">more traffic → slower</text>
+<path d="M400,120 C420,132 430,142 438,152" fill="none" stroke="#f0b429" stroke-width="1.4" marker-end="url(#ca1)"></path>
+<defs><marker id="ca1" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text x="454" y="112" fill="#f0b429" font-size="10.5">collapse</text>
+</svg>
+<figcaption>Fig 1 · Congestion collapse: past a point, duplicate retransmissions eat the bandwidth and useful throughput doesn't just dip — it <strong>collapses</strong> toward zero. The goal is to hold the system near the "sweet spot."</figcaption>
+</figure>
+<p>The deeper problem: the internet has <strong>no central dispatcher</strong> — no one knows the global traffic or where the bottleneck is. So control must be <strong>distributed and end-to-end</strong>: each connection observes and decides for itself. The hard part: how can a crowd of selfish senders, each with only local information, <strong>spontaneously</strong> converge on a state that wastes no bandwidth, doesn't overrun the network, and is fair to one another?</p>
+<h2>Core idea &amp; method</h2>
+<h3>Conservation of packets &amp; self-clocking: let ACKs keep time</h3>
+<p>Jacobson starts from a physical intuition — <strong>conservation of packets</strong>: a connection running "in equilibrium" should <strong>only inject a new packet once an old one has left the network</strong>, keeping the number in flight steady and filling the path exactly without overflowing it.</p>
+<p>How to achieve this "one out, one in"? The answer is elegant to the point of being nearly free: <strong>use the returning ACKs as a clock</strong> (<em>self-clocking</em>). Each ACK that comes back means one packet has left the network and been received; only then is a new packet allowed in. The <strong>send rate is thus automatically locked to the bottleneck's service rate</strong> — however fast the bottleneck releases a packet is how fast the ACK returns, which is how fast a new packet is sent. You never need to know the bottleneck bandwidth; the network "tells" you through the timing of the ACKs.</p>
+<figure>
+<svg viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<rect x="26" y="86" width="70" height="60" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="61" y="120" fill="#e7ebf1" font-size="12" text-anchor="middle">sender</text>
+<rect x="464" y="86" width="70" height="60" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="499" y="120" fill="#e7ebf1" font-size="12" text-anchor="middle">receiver</text>
+<path d="M96,92 L232,92 L266,110 L294,110 L328,92 L464,92 L464,140 L328,140 L294,122 L266,122 L232,140 L96,140 Z" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></path>
+<text x="280" y="80" fill="#7c8593" font-size="10.5" text-anchor="middle">bottleneck (narrowest point)</text>
+<rect x="120" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<rect x="160" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<rect x="272" y="106" width="12" height="12" rx="2" fill="#e8794b"></rect>
+<rect x="372" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<rect x="412" y="102" width="16" height="16" rx="3" fill="#e8794b"></rect>
+<text x="180" y="70" fill="#e8794b" font-size="10.5" text-anchor="middle">packets spaced by the bottleneck →</text>
+<path d="M464,176 L96,176" stroke="#f0b429" stroke-width="1.6" marker-end="url(#ca2)"></path>
+<defs><marker id="ca2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text x="280" y="170" fill="#f0b429" font-size="10.5" text-anchor="middle">← ACK echoes (spacing = bottleneck rhythm)</text>
+<text x="280" y="204" fill="#e7ebf1" font-size="11.5" text-anchor="middle">one new packet per ACK → rate auto-matches the bottleneck</text>
+</svg>
+<figcaption>Fig 2 · Self-clocking: packets crossing the bottleneck get spread to the "bottleneck rhythm"; the receiver ACKs at that rhythm; the sender paces new packets to those ACKs, locking the rate to the bottleneck's service rate — filling it without overflow.</figcaption>
+</figure>
+<h3>Slow-start: how to begin so you reach equilibrium</h3>
+<p>Self-clocking only holds once you're already in equilibrium, but at connection start there isn't a single packet in the network yet, so the ACK clock hasn't started. If you <strong>dump a whole window of data at once</strong> based on the receiver's advertised window, you instantly flood the bottleneck queue. <em>Slow-start</em> instead sets the new <strong>congestion window <code>cwnd</code></strong> to <strong>1 packet</strong> and <strong>adds 1 to cwnd for each ACK</strong>. The effect: the window <strong>doubles every RTT</strong> — 1, 2, 4, 8… Despite the name "slow," it's exponential growth, but relative to "full window immediately" it's a very gentle probe. It ramps up until the first loss or a threshold, cleanly "lighting" the ACK clock.</p>
+<h3>Congestion avoidance: additive-increase, multiplicative-decrease (AIMD)</h3>
+<p>Once probing gets near the network's capacity, you can no longer keep doubling, or one step overshoots. TCP keeps a threshold <code>ssthresh</code>: <strong>while cwnd is below it, use slow-start (exponential); above it, switch to <em>congestion avoidance</em> — grow the window by only 1 per RTT (increment cwnd by <code>1/cwnd</code> per ACK)</strong>, i.e. <strong>additive increase</strong>, inching up snugly against capacity. On a detected loss (read as congestion), it does <strong>multiplicative decrease</strong>: halve the threshold (<code>ssthresh = cwnd/2</code>), reset cwnd to 1, and slow-start back up to the new threshold before resuming additive increase. Why is increase "additive" but decrease "multiplicative"? Because <strong>once congestion sets in, queues build explosively, and only an exponential (multiplicative) cut can rein it in; while probing for spare bandwidth must stay conservative, so use the gentlest additive increase</strong>. This "slow rise, sharp drop" <em>sawtooth</em> is exactly what lets many connections <strong>spontaneously converge to fair, efficient sharing</strong> — a result with grounding in control theory (additive-increase / multiplicative-decrease converges to the fairness line).</p>
+<figure>
+<svg viewbox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="60" y1="186" x2="534" y2="186" stroke="#7c8593"></line>
+<line x1="60" y1="186" x2="60" y2="26" stroke="#7c8593"></line>
+<text x="52" y="30" fill="#7c8593" font-size="11" text-anchor="end">cwnd</text>
+<text x="528" y="204" fill="#7c8593" font-size="11" text-anchor="end">time →</text>
+<line x1="60" y1="70" x2="534" y2="70" stroke="#7c8593" stroke-dasharray="4 4" stroke-width="1"></line>
+<text x="150" y="64" fill="#7c8593" font-size="10" text-anchor="end">ssthresh</text>
+<path d="M60,186 C78,186 92,150 100,120 C108,92 116,74 128,70" fill="none" stroke="#f0b429" stroke-width="2.4"></path>
+<text x="86" y="150" fill="#f0b429" font-size="10.5">slow-start (double)</text>
+<path d="M128,70 L250,40" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<line x1="250" y1="40" x2="250" y2="150" stroke="#e8794b" stroke-width="2.4" stroke-dasharray="3 3"></line>
+<path d="M250,150 L380,110" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<line x1="380" y1="110" x2="380" y2="176" stroke="#e8794b" stroke-width="2.4" stroke-dasharray="3 3"></line>
+<path d="M380,176 L500,140" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<text x="196" y="34" fill="#e8794b" font-size="10.5">additive increase (+1 / RTT)</text>
+<circle cx="250" cy="40" r="4" fill="#f0b429"></circle>
+<circle cx="380" cy="110" r="4" fill="#f0b429"></circle>
+<text x="266" y="96" fill="#e7ebf1" font-size="10.5">loss → multiplicative decrease</text>
+</svg>
+<figcaption>Fig 3 · The AIMD sawtooth: slow-start climbs exponentially to the threshold, then additive increase inches up +1 per RTT; a loss halves the rate, and the cycle repeats. Slow rise, sharp drop keeps traffic oscillating around available capacity while connections trend toward fairness.</figcaption>
+</figure>
+<h3>Better timeouts: defusing the death spiral</h3>
+<p>The fuse of congestion collapse is <strong>needless retransmission from false timeouts</strong>, so the paper also rewrites timeout estimation. Old TCP tracked only the smoothed mean RTT with a fixed multiplier of 2; Jacobson points out that under load the <strong>variation</strong> in RTT is itself large and must be estimated too. The new formula tracks both the mean RTT and its <strong>mean deviation</strong>, taking <code>timeout = smoothed RTT + 4 × deviation</code>, so the timeout loosens adaptively with network jitter and stops mistaking un-lost packets for lost ones at the root. Combined with <strong>exponential backoff of the retransmit timer</strong> (doubling the wait on successive retransmissions) and <strong>Karn's algorithm</strong> (don't use a retransmitted packet to estimate RTT, avoiding ambiguity), it finally cuts that positive-feedback spiral.</p>
+<h2>Key results</h2>
+<p>The paper adds <strong>seven cooperating new algorithms</strong> to TCP (the self-clocking/slow-start, congestion avoidance, RTT-variance estimation, exponential backoff, and more above). The effect was direct and dramatic: on Jacobson's test links, with the same hardware and load, a severely congested connection whose throughput had cratered to near zero was pulled back to <strong>stable throughput close to the link bandwidth</strong>, and multiple connections could coexist fairly instead of dragging one another down. The code shipped with <strong>4.3BSD (Tahoe)</strong> and was rapidly adopted across operating systems, becoming default TCP behavior across the internet. It has no glamorous theorem; its strength is that it is <strong>deployable, immediately effective, and requires no change to devices in the middle of the network</strong> — a pure end-software upgrade that cured a network-wide disease.</p>
+<h2>Why it matters / impact</h2>
+<p>It established the <strong>whole paradigm</strong> of internet congestion control: end-to-end, loss as the signal, AIMD converging to fairness. Later work — <strong>Reno / NewReno</strong> (adding fast retransmit and fast recovery, so a loss halves the window and continues rather than resetting to 1), <strong>CUBIC</strong> (Linux's default, reshaping the growth curve for high-bandwidth long-distance links), and Google's <strong>BBR</strong> — all iterate on or argue with its framework. More profoundly, it demonstrated an idea: <strong>in a large-scale system with no central authority, consistent, selfish-but-self-disciplined local rules can make global stability and fairness emerge</strong>. This "TCP-friendly" social contract is the invisible constitution that let the internet grow into what it is without falling over.</p>
+<h2>Limitations &amp; critiques</h2>
+<ul>
+<li><strong>It reads every loss as congestion</strong>: on wireless / mobile links, packets are often lost to channel interference rather than a jam, yet AIMD still halves — needlessly cutting throughput on Wi-Fi and cellular. This is its most-criticized assumption.</li>
+<li><strong>Bufferbloat</strong>: because it keeps growing the window until it fills the queue and a loss forces it back, and modern routers ship oversized buffers, queues stay chronically backed up and latency soars — high throughput bought with terrible delay.</li>
+<li><strong>RTT unfairness</strong>: additive increase is paced per RTT, so shorter-RTT connections grow their window faster and grab more bandwidth, unfair to distant connections.</li>
+<li><strong>Hard to fill a "fat, long" pipe</strong>: adding just one packet per RTT is far too slow to fill a high-bandwidth, high-latency link, which spurred more aggressive growth curves like CUBIC.</li>
+<li><strong>Depends on everyone playing fair</strong>: the whole stability rests on all senders following AIMD; a single non-yielding flow can crush its well-behaved neighbors, which also drove later model-based approaches (e.g. BBR directly measuring bottleneck bandwidth and RTT).</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: add end-to-end self-regulation to TCP, treat loss as the congestion signal, and keep the internet — which has no central dispatcher — from collapsing together.</p>
+<p>② The pain: the 1986 congestion collapse dropped throughput from 32 Kbps to 40 bps; the culprit was a positive-feedback death spiral of false timeouts → needless retransmits → more jam.</p>
+<p>③ Conservation + self-clocking: pace packets to the returning ACKs, one out and one in, locking the rate to the bottleneck's service rate without knowing the bandwidth.</p>
+<p>④ Slow-start: cwnd starts at 1 and doubles per RTT, gently lighting the ACK clock into equilibrium.</p>
+<p>⑤ Congestion avoidance (AIMD): above the threshold grow only +1 per RTT (additive increase); on loss halve the threshold (multiplicative decrease); the slow-rise, sharp-drop sawtooth converges to fair and efficient.</p>
+<p>⑥ Defusing the fuse: estimate the timeout from RTT mean + deviation (<code>SRTT + 4×dev</code>), plus exponential backoff and Karn's algorithm, cutting the false-retransmit spiral.</p>
+<p>⑦ Impact: shipped with 4.3BSD as TCP's standard; the internet stopped collapsing; Reno/CUBIC/BBR are its descendants, and it defined the end-to-end congestion-control paradigm.</p>
+<p>⑧ Limits: loss ≠ always congestion (wireless suffers), bufferbloat, RTT unfairness, hard to fill fat-long pipes, depends on everyone playing fair.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for the full algorithm pseudocode and measured curves, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
