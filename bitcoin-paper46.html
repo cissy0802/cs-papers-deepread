@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Bitcoin（比特币白皮书）— IT 论文精读 Paper 46</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,44 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 46</p>
-<h1>Bitcoin（比特币白皮书）</h1>
+<h1 data-tts="ebae8628fdba93d2">Bitcoin（比特币白皮书）</h1>
 <p class="sub">中本聪（Satoshi Nakamoto）· 匿名发表 · 2008</p>
 <p class="langbar"><a href="bitcoin-paper46.en.html">EN →</a></p>
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="3d8bd084116d704f">这篇论文干了什么？</h2>
 <p>2008 年，一个化名<strong>中本聪</strong>的人（至今没人知道他是谁）贴出一篇 9 页的短文，提出了 <strong>比特币</strong>。它想解决一件事：<strong>让互不相识、也不信任对方的两个陌生人，不经过银行、不经过任何中间机构，直接把「钱」转给对方，而且没人能赖账、没人能造假。</strong>这篇文章后来长成了「区块链」和整个加密货币行业的起点。</p>
-
-<h2>先说个难题：数字的钱能被复制</h2>
+<h2 data-tts="e54d0ed9449ce638">先说个难题：数字的钱能被复制</h2>
 <p>现实里的钞票你花出去就没了。可网上的钱只是一串数据——<strong>数据能无限复制</strong>。我完全可以把同一笔「电子币」同时发给张三和李四，两边都以为收到了钱，这叫<strong>「双花」（花两次）</strong>。过去怎么防？很简单：所有转账都经过<strong>银行这个中心</strong>，它记一本账，说「这笔花过了」，第二笔就作废。可这样你就得完全信任这个中心——它能收费、能冻结你、能回滚交易，还是个一坏就全瘫的单点。</p>
-
-<h2>新在哪：把「记账权」交给全世界</h2>
+<h2 data-tts="faa0d428df5952b2">新在哪：把「记账权」交给全世界</h2>
 <p>中本聪的野心是<strong>把银行这个中心彻底去掉</strong>，改成让<strong>全网所有人一起维护同一本账</strong>：每笔转账都当众广播，谁都能看、谁都能记。问题立刻来了——既然没人说了算，<strong>该听谁的？</strong>坏人只要伪造一百万个假身份来「投票」，就能操纵这本账。</p>
-
-<h2>怎么做到的：让作弊贵到不划算</h2>
+<h2 data-tts="f7369e183493073f">怎么做到的：让作弊贵到不划算</h2>
 <p>中本聪的绝招是：<strong>想往账本上添一页，必须先付出真实代价——解一道极费劲的计算难题（俗称「挖矿」）。</strong>这题没有捷径，只能靠计算机疯狂试错、烧大量电力才能碰对答案；但别人核对你的答案只要一瞬间。于是「谁说了算」不再看你有多少假身份，而看<strong>你投入了多少真算力</strong>——假身份再多也没用，因为算力伪造不了。</p>
 <p>更妙的是，账本一页扣着一页锁成链条（这就是「区块链」）。<strong>你要改早先某一页，就得把它之后每一页的难题全部重解一遍</strong>，还要抢在全世界诚实矿工继续往前加新页之前追上——只要老实人这边算力占多数，作弊者<strong>永远追不上</strong>。于是大家约定：<strong>最长的那条链就是公认的真账。</strong>那谁愿意干这费电的苦力？系统<strong>每添一页就发一笔崭新的比特币</strong>奖给解题人——这既是新币的发行方式，也是个精妙算盘：手握重兵（算力）的人，与其费劲造假、砸掉自己手里币的价值，不如老实挖矿领奖，<strong>诚实反而最赚</strong>。</p>
-
-<h2>它带来了什么</h2>
+<h2 data-tts="d97d214de583f976">它带来了什么</h2>
 <p>比特币第一次证明：<strong>一群互不信任的陌生人，不靠任何中心，也能对「谁把钱给了谁」达成一份人人认同的账本。</strong>这个新范式催生了区块链、以太坊、智能合约、去中心化金融一整个行业。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="82e34bf7fb986b80">一句话记住</h2>
 <div class="tl">
 <p>比特币把银行这个中心换成全网共记的一本账，用「解难题才能记账 + 最长链才算数 + 记账有币赏」让作弊贵到不划算，从而不靠任何中间人就防住了「同一笔钱花两次」。诚实的代价是：这套机制极其耗电，且它设想的「日常电子现金」并没真正实现，反而更多成了投机与炒作的资产。</p>
 </div>
 <p class="switch-hint">想看「币 = 一串签名」「区块链 + 工作量证明」的结构图、以及攻击成功率的定量分析？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
 <div class="mode mode-deep" hidden="">
-
-<h2>一句话</h2>
+<h2 data-tts="dd6cd08782ef268c">一句话</h2>
 <p class="lead">中本聪提出<strong>比特币</strong>——一套不依赖任何银行或可信第三方、纯靠点对点网络运行的电子现金系统。它用<strong>工作量证明（proof-of-work）+ 最长链规则</strong>，让互相匿名、可随意进出的陌生人也能就「交易发生的先后顺序」达成一份人人认同的账本，从而解决了数字货币最棘手的<strong>双花（double-spending）</strong>问题。这也是<strong>区块链</strong>与整个加密货币领域的起点。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="34252a3b966c7f43">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>双花（double-spending）</strong>：数字货币只是数据、能被复制，同一枚币被拥有者先后花给两个人，两边都以为收到了钱——这是没有中心账本时最难防的攻击。</li>
@@ -85,142 +77,131 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>共识（consensus）</strong>：分布式系统里让所有诚实节点对某件事（这里是「交易的唯一顺序」）取得一致。经典算法（拜占庭将军、Paxos）都假设参与者名单已知——比特币不假设。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
-<p>2008 年 10 月，化名<strong>中本聪</strong>者在一个密码学邮件列表贴出这篇 9 页白皮书；2009 年 1 月发布开源软件并挖出「创世块」。它站在密码学与分布式系统几十年积累之上——公钥密码与数字签名（Diffie-Hellman、RSA，见 paper34/40）、Haber & Stornetta 的<strong>文档时间戳链</strong>、Adam Back 的 <strong>Hashcash</strong>（工作量证明防垃圾邮件）、戴维的 <strong>b-money</strong> 设想、Merkle 树。它与 Lamport 的<strong>拜占庭将军问题</strong>（paper38）遥相呼应，却给出了一条全新的路：在<strong>开放、匿名、无准入</strong>的网络里达成容错一致。下启比特币之后的一整个区块链 / 加密货币 / 智能合约（以太坊）/ DeFi 世界。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="6d3c75a9154daec3">坐标</h2>
+<p>2008 年 10 月，化名<strong>中本聪</strong>者在一个密码学邮件列表贴出这篇 9 页白皮书；2009 年 1 月发布开源软件并挖出「创世块」。它站在密码学与分布式系统几十年积累之上——公钥密码与数字签名（Diffie-Hellman、RSA，见 paper34/40）、Haber &amp; Stornetta 的<strong>文档时间戳链</strong>、Adam Back 的 <strong>Hashcash</strong>（工作量证明防垃圾邮件）、戴维的 <strong>b-money</strong> 设想、Merkle 树。它与 Lamport 的<strong>拜占庭将军问题</strong>（paper38）遥相呼应，却给出了一条全新的路：在<strong>开放、匿名、无准入</strong>的网络里达成容错一致。下启比特币之后的一整个区块链 / 加密货币 / 智能合约（以太坊）/ DeFi 世界。</p>
+<h2 data-tts="64596cb76cb272bc">问题与动机</h2>
 <p>互联网上「钱」的本质是数据，而数据能被无损复制。现实钞票天然防双花（一张纸不能同时在两处），可一枚「电子币」不过是一串比特，我完全能把它<strong>同时签给两个人</strong>。</p>
 <p>此前所有电子支付，归根到底都靠一个<strong>可信第三方</strong>：所有交易过它的中心账本，它说「这枚币刚花过」，第二笔就无效。代价沉重——你必须信任它；它能收费、审查、冻结、回滚；它是单点，一旦被攻破或作恶就全盘皆输；「可回滚」本身还逼着商家索要更多个人信息、增加摩擦。</p>
 <p>于是真问题浮出水面：<strong>能不能在没有任何可信中心、参与者还互相匿名且能随意进出的开放网络里，让所有人对「这枚币花给了谁、哪笔在先」达成唯一且不可反悔的一致？</strong>经典共识在这里全线失灵——拜占庭将军、Paxos 都假设参与者<strong>名单已知且固定</strong>，才能「一人一票」数多数；而在谁都能匿名加入的网络里，一人一票会被<em>女巫攻击</em>瞬间碾碎：伪造一百万个身份就能垄断投票。中本聪要解的，正是「开放匿名下的一致」。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>① 币，就是一串数字签名</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="692f8b15c665a6a6">① 币，就是一串数字签名</h3>
 <p>比特币把「一枚币」定义成<strong>一条签名链</strong>。每次转账，现拥有者用自己的私钥，对「<em>上一笔交易的哈希</em> + <em>下一个拥有者的公钥</em>」做<strong>数字签名</strong>，把它接在币的尾巴上。收款人顺着这条链一路验签，就能确认这枚币的来历与当前归属。</p>
 <figure>
-<svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 620 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
 <g>
-<rect x="24" y="52" width="164" height="104" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="106" y="44" fill="#7c8593" font-size="11" text-anchor="middle">交易 1（→ 拥有者 B）</text>
-<text x="106" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">上一笔哈希</text>
-<text x="106" y="104" fill="#e7ebf1" font-size="11.5" text-anchor="middle">B 的公钥</text>
-<rect x="40" y="118" width="132" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
-<text x="106" y="134" fill="#f5c451" font-size="11" text-anchor="middle">A 私钥签名</text>
+<rect fill="rgba(240,180,41,0.08)" height="104" rx="8" stroke="#f0b429" width="164" x="24" y="52"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="106" y="44">交易 1（→ 拥有者 B）</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="106" y="80">上一笔哈希</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="106" y="104">B 的公钥</text>
+<rect fill="rgba(232,121,75,0.14)" height="24" rx="5" stroke="#e8794b" width="132" x="40" y="118"></rect>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="106" y="134">A 私钥签名</text>
 </g>
 <g>
-<rect x="228" y="52" width="164" height="104" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="310" y="44" fill="#7c8593" font-size="11" text-anchor="middle">交易 2（→ 拥有者 C）</text>
-<text x="310" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">上一笔哈希</text>
-<text x="310" y="104" fill="#e7ebf1" font-size="11.5" text-anchor="middle">C 的公钥</text>
-<rect x="244" y="118" width="132" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
-<text x="310" y="134" fill="#f5c451" font-size="11" text-anchor="middle">B 私钥签名</text>
+<rect fill="rgba(240,180,41,0.08)" height="104" rx="8" stroke="#f0b429" width="164" x="228" y="52"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="310" y="44">交易 2（→ 拥有者 C）</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="310" y="80">上一笔哈希</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="310" y="104">C 的公钥</text>
+<rect fill="rgba(232,121,75,0.14)" height="24" rx="5" stroke="#e8794b" width="132" x="244" y="118"></rect>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="310" y="134">B 私钥签名</text>
 </g>
 <g>
-<rect x="432" y="52" width="164" height="104" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
-<text x="514" y="44" fill="#7c8593" font-size="11" text-anchor="middle">交易 3（→ 拥有者 D）</text>
-<text x="514" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">上一笔哈希</text>
-<text x="514" y="104" fill="#e7ebf1" font-size="11.5" text-anchor="middle">D 的公钥</text>
-<rect x="448" y="118" width="132" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
-<text x="514" y="134" fill="#f5c451" font-size="11" text-anchor="middle">C 私钥签名</text>
+<rect fill="rgba(240,180,41,0.08)" height="104" rx="8" stroke="#f0b429" width="164" x="432" y="52"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="514" y="44">交易 3（→ 拥有者 D）</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="514" y="80">上一笔哈希</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="514" y="104">D 的公钥</text>
+<rect fill="rgba(232,121,75,0.14)" height="24" rx="5" stroke="#e8794b" width="132" x="448" y="118"></rect>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="514" y="134">C 私钥签名</text>
 </g>
-<path d="M188,74 C206,74 210,74 226,74" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#ar)"/>
-<path d="M392,74 C410,74 414,74 430,74" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#ar)"/>
-<text x="310" y="184" fill="#7c8593" font-size="11" text-anchor="middle">每笔都指回上一笔的哈希、并签给下一个公钥 —— 但一条链证明不了「有没有又签给别人」</text>
+<path d="M188,74 C206,74 210,74 226,74" fill="none" marker-end="url(#ar)" stroke="#e8794b" stroke-width="1.6"></path>
+<path d="M392,74 C410,74 414,74 430,74" fill="none" marker-end="url(#ar)" stroke="#e8794b" stroke-width="1.6"></path>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="310" y="184">每笔都指回上一笔的哈希、并签给下一个公钥 —— 但一条链证明不了「有没有又签给别人」</text>
 </svg>
 <figcaption>图 1 · 币 = 一串签名：每次转账签「上一笔哈希 + 收款人公钥」，环环相扣可验来历；可它挡不住拥有者偷偷把同一枚币再签给第二个人（双花）。</figcaption>
 </figure>
 <p>但签名链有个致命缺口：<strong>它证明得了「这枚币归谁」，却证明不了「它没被花过第二次」。</strong>光盯一条链，你看不出拥有者是不是把同一枚币<em>也</em>签给了别人。要堵住双花，收款人必须确信「全网没见过更早的另一笔花费」——这就需要一个<strong>所有人都认可的、唯一的交易顺序</strong>。传统靠中心造币厂裁定；中本聪要在没有中心的前提下造出这个「唯一顺序」。</p>
-
-<h3>② 时间戳链：把交易排成一条谁也改不动的顺序</h3>
-<p>办法是<strong>公开宣布每一笔交易</strong>，让全网就先后顺序达成一致。具体做法：把一批交易打包成一个「<strong>块（block）</strong>」，对整块取哈希公布；而每个块的内容里都<strong>包含上一个块的哈希</strong>——于是块扣着块，串成一条<strong>时间戳链</strong>（这正是 Haber & Stornetta 的思想）。这条链天生有个好性质：<strong>想篡改历史里的某个块，就得连它之后的每一个块一起改</strong>，因为哈希牵一发而动全身。剩下的问题只有一个：<strong>该由谁、按什么规则往链上添块，才能防住女巫攻击？</strong></p>
-
-<h3>③ 工作量证明：让改账贵到不可行，把「一票」绑到算力上</h3>
+<h3 data-tts="415b1951c95809fc">② 时间戳链：把交易排成一条谁也改不动的顺序</h3>
+<p>办法是<strong>公开宣布每一笔交易</strong>，让全网就先后顺序达成一致。具体做法：把一批交易打包成一个「<strong>块（block）</strong>」，对整块取哈希公布；而每个块的内容里都<strong>包含上一个块的哈希</strong>——于是块扣着块，串成一条<strong>时间戳链</strong>（这正是 Haber &amp; Stornetta 的思想）。这条链天生有个好性质：<strong>想篡改历史里的某个块，就得连它之后的每一个块一起改</strong>，因为哈希牵一发而动全身。剩下的问题只有一个：<strong>该由谁、按什么规则往链上添块，才能防住女巫攻击？</strong></p>
+<h3 data-tts="d93082070fedd568">③ 工作量证明：让改账贵到不可行，把「一票」绑到算力上</h3>
 <p>这是全篇的心脏。中本聪把「记账权」和<strong>真实的计算成本</strong>绑定：想往链上加一个块，你必须找到一个叫 <strong>nonce</strong>（随机数）的值，使得整个块的哈希<strong>以规定个数的 0 开头</strong>。用记号写就是找一个 nonce 使 <code>Hash(块内容 + nonce) &lt; 目标值</code>——白话：哈希不可预测也不可反推，你只能<strong>疯狂换 nonce 一个个试</strong>，平均要试极多次（要求的 0 越多、次数指数级越大）才能碰上；可别人<strong>验证你的答案只需算一次哈希</strong>。这就是「工作量证明」：找答案极难、验答案极易。</p>
 <figure>
-<svg viewBox="0 0 620 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 620 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
 <g>
-<rect x="30" y="60" width="168" height="150" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429"/>
-<text x="114" y="52" fill="#7c8593" font-size="11" text-anchor="middle">区块 N−1</text>
-<rect x="46" y="74" width="136" height="26" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<text x="114" y="91" fill="#f5c451" font-size="10.5" text-anchor="middle">上一块哈希</text>
-<rect x="46" y="106" width="136" height="24" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="114" y="122" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Nonce ✔</text>
-<text x="114" y="152" fill="#b9c0ca" font-size="10.5" text-anchor="middle">交易 交易 交易</text>
-<text x="114" y="170" fill="#7c8593" font-size="9.5" text-anchor="middle">(Merkle 根)</text>
-<text x="114" y="196" fill="#f0b429" font-size="10" text-anchor="middle">哈希 00…0xa3</text>
+<rect fill="rgba(240,180,41,0.07)" height="150" rx="8" stroke="#f0b429" width="168" x="30" y="60"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="114" y="52">区块 N−1</text>
+<rect fill="rgba(232,121,75,0.12)" height="26" rx="5" stroke="#e8794b" width="136" x="46" y="74"></rect>
+<text fill="#f5c451" font-size="10.5" text-anchor="middle" x="114" y="91">上一块哈希</text>
+<rect fill="rgba(255,255,255,0.03)" height="24" rx="5" stroke="#7c8593" width="136" x="46" y="106"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="114" y="122">Nonce ✔</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="114" y="152">交易 交易 交易</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="114" y="170">(Merkle 根)</text>
+<text fill="#f0b429" font-size="10" text-anchor="middle" x="114" y="196">哈希 00…0xa3</text>
 </g>
 <g>
-<rect x="226" y="60" width="168" height="150" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429"/>
-<text x="310" y="52" fill="#7c8593" font-size="11" text-anchor="middle">区块 N</text>
-<rect x="242" y="74" width="136" height="26" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<text x="310" y="91" fill="#f5c451" font-size="10.5" text-anchor="middle">上一块哈希</text>
-<rect x="242" y="106" width="136" height="24" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<text x="310" y="122" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Nonce ✔</text>
-<text x="310" y="152" fill="#b9c0ca" font-size="10.5" text-anchor="middle">交易 交易 交易</text>
-<text x="310" y="170" fill="#7c8593" font-size="9.5" text-anchor="middle">(Merkle 根)</text>
-<text x="310" y="196" fill="#f0b429" font-size="10" text-anchor="middle">哈希 00…0f7c</text>
+<rect fill="rgba(240,180,41,0.07)" height="150" rx="8" stroke="#f0b429" width="168" x="226" y="60"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="310" y="52">区块 N</text>
+<rect fill="rgba(232,121,75,0.12)" height="26" rx="5" stroke="#e8794b" width="136" x="242" y="74"></rect>
+<text fill="#f5c451" font-size="10.5" text-anchor="middle" x="310" y="91">上一块哈希</text>
+<rect fill="rgba(255,255,255,0.03)" height="24" rx="5" stroke="#7c8593" width="136" x="242" y="106"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="310" y="122">Nonce ✔</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="310" y="152">交易 交易 交易</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="310" y="170">(Merkle 根)</text>
+<text fill="#f0b429" font-size="10" text-anchor="middle" x="310" y="196">哈希 00…0f7c</text>
 </g>
 <g>
-<rect x="422" y="60" width="168" height="150" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429"/>
-<text x="506" y="52" fill="#7c8593" font-size="11" text-anchor="middle">区块 N+1（挖矿中）</text>
-<rect x="438" y="74" width="136" height="26" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<text x="506" y="91" fill="#f5c451" font-size="10.5" text-anchor="middle">上一块哈希</text>
-<rect x="438" y="106" width="136" height="24" rx="5" fill="rgba(255,255,255,0.03)" stroke="#f0b429"/>
-<text x="506" y="122" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Nonce ？试…</text>
-<text x="506" y="152" fill="#b9c0ca" font-size="10.5" text-anchor="middle">交易 交易 交易</text>
-<text x="506" y="170" fill="#7c8593" font-size="9.5" text-anchor="middle">(Merkle 根)</text>
-<text x="506" y="196" fill="#7c8593" font-size="10" text-anchor="middle">要凑出 00…开头</text>
+<rect fill="rgba(240,180,41,0.07)" height="150" rx="8" stroke="#f0b429" width="168" x="422" y="60"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="506" y="52">区块 N+1（挖矿中）</text>
+<rect fill="rgba(232,121,75,0.12)" height="26" rx="5" stroke="#e8794b" width="136" x="438" y="74"></rect>
+<text fill="#f5c451" font-size="10.5" text-anchor="middle" x="506" y="91">上一块哈希</text>
+<rect fill="rgba(255,255,255,0.03)" height="24" rx="5" stroke="#f0b429" width="136" x="438" y="106"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="506" y="122">Nonce ？试…</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="506" y="152">交易 交易 交易</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="506" y="170">(Merkle 根)</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="506" y="196">要凑出 00…开头</text>
 </g>
-<path d="M198,120 L224,120" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#ar2)"/>
-<path d="M394,120 L420,120" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#ar2)"/>
-<text x="310" y="234" fill="#7c8593" font-size="11" text-anchor="middle">每块含上一块哈希 → 改一块要重解其后每一块的谜题；诚实算力占多数时，攻击者永远追不上</text>
+<path d="M198,120 L224,120" fill="none" marker-end="url(#ar2)" stroke="#7c8593" stroke-width="1.6"></path>
+<path d="M394,120 L420,120" fill="none" marker-end="url(#ar2)" stroke="#7c8593" stroke-width="1.6"></path>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="310" y="234">每块含上一块哈希 → 改一块要重解其后每一块的谜题；诚实算力占多数时，攻击者永远追不上</text>
 </svg>
 <figcaption>图 2 · 区块链 + 工作量证明：块扣着块的哈希；加一块须暴力试 nonce 找出「哈希以若干 0 开头」的解，费真算力、别人一算即验。</figcaption>
 </figure>
 <p>这一招同时解决两件事。其一，<strong>投票权从「身份」换成「算力」</strong>：链的分量不看谁喊得响、有多少假账号，而看谁砸进了多少真实计算与电力——女巫攻击失效，因为算力伪造不出。其二，<strong>改历史贵到不可行</strong>：要篡改早先某块，攻击者得从那里起把后面每块的谜题<strong>全部重解一遍</strong>，还要抢在诚实矿工继续加新块之前追上并反超；只要诚实节点掌握<strong>多数算力</strong>，反超概率就随「落后块数」<strong>指数衰减</strong>。于是全网只需一条朴素约定：<strong>最长（累计工作量最大）的链，就是公认的真历史。</strong></p>
-
-<h3>④ 网络怎么跑，以及用奖励把人心拉向诚实</h3>
+<h3 data-tts="2c4e3c6d728329f3">④ 网络怎么跑，以及用奖励把人心拉向诚实</h3>
 <p>整个网络就 6 步循环：① 新交易向全网广播；② 每个节点把交易收进正在挖的块；③ 各节点抢着为自己的块解工作量证明；④ 谁先解出就广播出去；⑤ 别的节点验证块里交易合法、没双花后接受；⑥ <strong>用这个块的哈希当「上一块」，开始挖下一块</strong>——「接着往它后面挖」本身就是投票表示接受。万一两人几乎同时解出、链<em>分叉</em>，节点先都留着，等下一个块砸下来、哪条更长就归到哪条，短的作废。</p>
 <figure>
-<svg viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
-<marker id="ar3d" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5a6069"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 620 190" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="ar3d" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#5a6069"></path></marker></defs>
 <g fill="rgba(240,180,41,0.1)" stroke="#f0b429">
-<rect x="20" y="70" width="70" height="40" rx="6"/><rect x="120" y="70" width="70" height="40" rx="6"/><rect x="220" y="70" width="70" height="40" rx="6"/><rect x="320" y="70" width="70" height="40" rx="6"/><rect x="420" y="70" width="70" height="40" rx="6"/></g>
+<rect height="40" rx="6" width="70" x="20" y="70"></rect><rect height="40" rx="6" width="70" x="120" y="70"></rect><rect height="40" rx="6" width="70" x="220" y="70"></rect><rect height="40" rx="6" width="70" x="320" y="70"></rect><rect height="40" rx="6" width="70" x="420" y="70"></rect></g>
 <g fill="#e7ebf1" font-size="12" text-anchor="middle"><text x="55" y="95">块</text><text x="155" y="95">块</text><text x="255" y="95">块</text><text x="355" y="95">块</text><text x="455" y="95">块</text></g>
-<g stroke="#f0b429" stroke-width="1.8" fill="none">
-<path d="M90,90 L118,90" marker-end="url(#ar3)"/><path d="M190,90 L218,90" marker-end="url(#ar3)"/><path d="M290,90 L318,90" marker-end="url(#ar3)"/><path d="M390,90 L418,90" marker-end="url(#ar3)"/></g>
-<text x="530" y="94" fill="#f0b429" font-size="12" font-weight="700">最长链 ✓</text>
-<rect x="320" y="140" width="70" height="34" rx="6" fill="rgba(90,96,105,0.12)" stroke="#5a6069"/>
-<text x="355" y="162" fill="#7c8593" font-size="11" text-anchor="middle">孤块</text>
-<path d="M290,100 C300,120 300,128 322,150" fill="none" stroke="#5a6069" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar3d)"/>
-<text x="470" y="160" fill="#7c8593" font-size="11">分叉的短链作废</text>
+<g fill="none" stroke="#f0b429" stroke-width="1.8">
+<path d="M90,90 L118,90" marker-end="url(#ar3)"></path><path d="M190,90 L218,90" marker-end="url(#ar3)"></path><path d="M290,90 L318,90" marker-end="url(#ar3)"></path><path d="M390,90 L418,90" marker-end="url(#ar3)"></path></g>
+<text fill="#f0b429" font-size="12" font-weight="700" x="530" y="94">最长链 ✓</text>
+<rect fill="rgba(90,96,105,0.12)" height="34" rx="6" stroke="#5a6069" width="70" x="320" y="140"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="355" y="162">孤块</text>
+<path d="M290,100 C300,120 300,128 322,150" fill="none" marker-end="url(#ar3d)" stroke="#5a6069" stroke-dasharray="4 3" stroke-width="1.5"></path>
+<text fill="#7c8593" font-size="11" x="470" y="160">分叉的短链作废</text>
 </svg>
 <figcaption>图 3 · 最长链规则：节点总在最长链后面接着挖；分叉时短链被抛弃，全网自动收敛到同一条「累计工作量最大」的历史。</figcaption>
 </figure>
 <p>但谁愿意干这烧钱烧电的苦力？中本聪安排了<strong>激励</strong>：每个块的第一笔是特殊交易，<strong>凭空产生一笔崭新的比特币</strong>奖给挖到它的人（另加块内手续费）。这一箭双雕——既是新币<strong>公平发行进流通</strong>的方式（类比金矿：投入算力换出金子），又给了节点持续挖矿、保护网络的动机。更关键的是一个博弈论论证：<strong>握有多数算力的人，与其费力造假、砸掉自己手里那堆币的价值，不如老实挖矿领奖——诚实才是更赚的选择。</strong>安全性最终不只压在密码学上，也压在「作恶不划算」上。</p>
 <p>白皮书还顺手给了两个工程补丁：用 <strong>Merkle 树</strong>把块里交易归拢成一个根哈希，老交易可剪枝省磁盘；<strong>轻节点（SPV）</strong>只存块头就能验证收款。隐私上是<strong>伪匿名</strong>：公钥即地址、不绑真名，建议每笔换新地址以斩断关联。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="7551a060353d3e9a">关键结果</h2>
 <p>这是一篇<strong>设计 + 分析</strong>的论文，不是跑分实验，没有数据集与基线。关键定量论证在最后一节：把「攻击者追赶诚实链」建模成<strong>赌徒破产 / 泊松过程</strong>，算出——只要诚实节点占多数算力，攻击者反超的概率随收款人所等的<strong>确认块数 z</strong> 指数下降。文中给了具体表：若攻击者占 10% 算力，多等约 <strong>6 个确认</strong>，被翻盘的概率已低到千分之一量级；算力越接近半数，要等的确认越多。真正的「实验」是它上线后的运行：2009 年 1 月 3 日挖出创世块，此后十余年，这套核心共识在<strong>有真金白银动机去攻击</strong>的开放对抗环境里持续出块、从未被攻破——这比任何离线跑分都更有说服力。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="cde9447848b7ca90">为什么重要 / 影响</h2>
 <p>它第一次在<strong>完全开放、匿名、无准入</strong>的网络里实现了拜占庭容错式的一致——学界称之为<strong>「中本聪共识」</strong>，突破了经典共识「参与者必须已知且固定」的前提，是分布式系统理论的一次真正拓展。它定义并普及了<strong>区块链</strong>这一数据结构，直接催生了整个加密货币、智能合约（以太坊）、DeFi、NFT 产业。更深远的是，它提供了<strong>「不靠可信第三方也能达成全局一致」</strong>的工程范式，波及数字身份、供应链存证、去中心化治理。「<strong>工作量证明 + 最长链 + 经济激励</strong>」三合一，成了此后一代协议的设计模板。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="ba22ccef2bba334e">局限与批评</h2>
 <ul>
 <li><strong>能耗巨大</strong>：工作量证明靠「拼命烧电」来竞争记账权，全网电力消耗堪比一个中小国家，是它最受诟病的一点（这一环境代价在 2008 年尚未凸显）。</li>
 <li><strong>吞吐极低、并未成为「日常现金」</strong>：约 10 分钟才出一个块、每秒仅个位数笔交易，远不及 Visa 的每秒数千笔。它设想的「点对点电子现金」在实践中基本没实现，反而更多沦为投机与「价值存储」资产；加上价格剧烈波动、通缩设计，作为货币并不好用。</li>
 <li><strong>「一 CPU 一票」的理想落空</strong>：专用矿机（ASIC）与矿池让算力高度集中，少数几个矿池就可能逼近多数算力——去中心化被重新中心化侵蚀。</li>
-<li><strong>51% 攻击 & 只有概率性最终性</strong>：掌握多数算力者可回滚近期交易、实施双花（但改不了别人的签名、偷不走别人的币）；任何交易都只是「越等越安全」，永远没有绝对确认。</li>
-<li><strong>「诚实占多数就安全」并不严格</strong>：Eyal & Sirer（2014）提出的<em>自私挖矿</em>表明，策略性地藏块可让掌握 1/3 强算力的矿工获得超额收益，动摇了白皮书的原始安全假设。</li>
+<li><strong>51% 攻击 &amp; 只有概率性最终性</strong>：掌握多数算力者可回滚近期交易、实施双花（但改不了别人的签名、偷不走别人的币）；任何交易都只是「越等越安全」，永远没有绝对确认。</li>
+<li><strong>「诚实占多数就安全」并不严格</strong>：Eyal &amp; Sirer（2014）提出的<em>自私挖矿</em>表明，策略性地藏块可让掌握 1/3 强算力的矿工获得超额收益，动摇了白皮书的原始安全假设。</li>
 <li><strong>隐私是伪匿名</strong>：全账本永久公开，链上分析（结合交易所等出入金点）常能把地址与真实身份关联起来。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="7660db22d14a979e">要点</h2>
 <div class="tl">
 <p>① 一句话：比特币用「工作量证明 + 最长链」，让匿名陌生人不靠任何中心也能对交易顺序达成一致，解决数字货币的双花问题。</p>
 <p>② 痛点：数字的钱能复制，双花只能靠可信第三方（银行中心账本）防住；去掉中心后，开放匿名网络「一人一票」会被女巫攻击碾碎。</p>
