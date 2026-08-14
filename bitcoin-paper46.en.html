@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Bitcoin (The Bitcoin Whitepaper) — CS Papers Deep-Read Paper 46</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 46</p>
+<h1>Bitcoin (The Bitcoin Whitepaper)</h1>
+<p class="sub">Satoshi Nakamoto · pseudonymous · 2008</p>
+<p class="langbar"><a href="bitcoin-paper46.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2008 someone using the pseudonym <strong>Satoshi Nakamoto</strong> (whose real identity is still unknown) posted a 9-page note proposing <strong>Bitcoin</strong>. It set out to solve one thing: <strong>let two strangers who don't know or trust each other send "money" directly — no bank, no middleman — with no way for anyone to renege or forge it.</strong> That short paper grew into "the blockchain" and the entire cryptocurrency industry.</p>
+
+<h2>First, a hard problem: digital money can be copied</h2>
+<p>A physical banknote is spent once and it's gone — nobody else can get a second copy. But money online is just data, and <strong>data copies endlessly</strong>. I could send the very same "electronic coin" to both Alice and Bob at once, and each thinks they were paid. This is <strong>"double-spending."</strong> How did we prevent it before? Simple: every payment passes through a <strong>central bank</strong> that keeps one ledger and declares "this coin is already spent," voiding the second attempt. But then you must fully trust that center — it can charge fees, freeze you, reverse transactions, and it's a single point that, once broken, takes everything down.</p>
+
+<h2>What's new: hand the bookkeeping to the whole world</h2>
+<p>Nakamoto's ambition was to <strong>delete the central bank entirely</strong> and instead have <strong>everyone on the network keep the same ledger together</strong>. Every transfer is broadcast in the open; anyone can watch and record it. Immediately a problem appears: with nobody in charge, <strong>whose version do you believe?</strong> A cheat could just forge a million fake identities to "vote" and hijack the ledger.</p>
+
+<h2>How it works: make cheating too expensive to bother</h2>
+<p>Nakamoto's masterstroke: <strong>to add a page to the ledger, you must first pay a real cost — solve a fiendishly hard computing puzzle (nicknamed "mining").</strong> There's no shortcut; you can only make your computer try answers frantically, burning lots of electricity until it stumbles on one — yet anyone can check your answer in an instant. So "whose version wins" no longer depends on how many fake identities you have, but on <strong>how much real computing power you spent</strong> — fakes are useless, because power costs money and electricity and can't be faked.</p>
+<p>Better still, the ledger's pages are locked to one another like a chain (that's the "blockchain"). <strong>To alter an earlier page, you'd have to re-solve the puzzle for every page after it</strong> and then catch up to the whole honest world still racing ahead with new pages — and as long as the honest side holds the majority of the computing power, the cheat <strong>can never catch up</strong>. Everyone then follows one rule: <strong>the longest chain is the accepted, true ledger.</strong></p>
+<p>So who volunteers for this power-hungry drudgery? The system <strong>mints a brand-new bitcoin as a reward with every page added</strong>. This is both how new coins are issued and a clever bit of game theory: someone holding vast computing power is better off mining honestly for the reward than forging the ledger and torching the value of their own coins — <strong>honesty pays best.</strong></p>
+
+<h2>What it gave us</h2>
+<p>Bitcoin proved for the first time that <strong>a crowd of mutually distrusting strangers, with no central authority, can still agree on one shared ledger of "who paid whom, and when."</strong> This "agreement without a trusted third party" spawned blockchains, Ethereum, smart contracts, and decentralized finance — a whole industry.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Bitcoin replaces the central bank with one ledger everyone keeps together, and uses "solve a hard puzzle to add a page + longest chain wins + reward the recorder in coin" to make cheating too costly — so it stops "spending the same money twice" with no middleman at all. The honest cost: the scheme burns enormous amounts of electricity, and the "everyday electronic cash" it imagined never really arrived — it became more a speculative asset than money.</p>
+</div>
+<p class="switch-hint">Want the "coin = chain of signatures" and "blockchain + proof-of-work" diagrams, and the math on attack success? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+
+<h2>In one sentence</h2>
+<p class="lead">Nakamoto proposes <strong>Bitcoin</strong> — an electronic-cash system that runs purely over a peer-to-peer network with no bank or trusted third party. Using <strong>proof-of-work plus a longest-chain rule</strong>, it lets mutually anonymous, come-and-go strangers agree on the <em>order</em> in which transactions happened, forming one ledger everyone accepts — and thereby solves digital money's hardest problem, <strong>double-spending</strong>. It is the origin of the <strong>blockchain</strong> and the entire cryptocurrency field.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Double-spending</strong>: digital money is just data and can be copied, so an owner spends the same coin to two people at once, each believing they were paid — the hardest attack to stop without a central ledger.</li>
+<li><strong>Trusted third party</strong>: a bank or payment company — a central authority everyone must trust to keep the books and rule which transactions are valid. Bitcoin's goal is to remove it.</li>
+<li><strong>Hash function</strong>: a function that crushes any data into a fixed-length "fingerprint"; change one bit and the fingerprint changes completely, and you can't work backward from it. Bitcoin uses SHA-256.</li>
+<li><strong>Public/private key, digital signature</strong>: everyone holds a key pair — private key kept secret, public key shared as an address; "signing" a transaction with the private key lets anyone verify with your public key that the true key-holder signed it and nothing was altered. (See paper34 / paper40.)</li>
+<li><strong>Peer-to-peer network</strong>: no central server; all machines (nodes) are equals that connect and relay directly.</li>
+<li><strong>Node / miner</strong>: a machine running the Bitcoin software, verifying transactions and competing in the "bookkeeping" race.</li>
+<li><strong>Sybil attack</strong>: one person forges many fake identities to impersonate a crowd and hijack a "one-person-one-vote" system. Any open, anonymous network that votes by identity falls to it.</li>
+<li><strong>Consensus</strong>: getting all honest nodes in a distributed system to agree on something (here, the one true order of transactions). Classic algorithms (Byzantine Generals, Paxos) assume the participant list is known — Bitcoin does not.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>In October 2008 the pseudonymous <strong>Satoshi Nakamoto</strong> posted this 9-page whitepaper to a cryptography mailing list; in January 2009 the open-source software launched and mined the "genesis block." It stands on decades of cryptography and distributed systems — public-key cryptography and digital signatures (Diffie-Hellman, RSA; see paper34/40), Haber &amp; Stornetta's <strong>document timestamp chain</strong>, Adam Back's <strong>Hashcash</strong> (proof-of-work against email spam), Wei Dai's <strong>b-money</strong> proposal, and Merkle trees. It echoes Lamport's <strong>Byzantine Generals problem</strong> (paper38) but charts a wholly new route: fault-tolerant agreement in an <strong>open, anonymous, permissionless</strong> network. It launched the entire blockchain / cryptocurrency / smart-contract (Ethereum) / DeFi world that followed.</p>
+
+<h2>The problem and the motivation</h2>
+<p>Online, "money" is data, and data copies losslessly. A physical note is naturally double-spend-proof (one piece of paper can't be in two places), but an "electronic coin" is just a string of bits I could <strong>sign to two people at once</strong>.</p>
+<p>Every prior electronic payment ultimately leaned on a <strong>trusted third party</strong>: all transactions pass through its central ledger, it declares "this coin was just spent," and the second attempt is void. The costs are heavy — you must trust that center; it can charge fees, censor, freeze accounts, reverse transactions; it's a single point whose breach or misbehavior sinks everyone; and reversibility itself pushes merchants to demand more personal data and adds friction.</p>
+<p>So the real question surfaces: <strong>in an open network with no trusted center, whose participants are anonymous and free to come and go, can everyone still reach a unique, irreversible agreement on "who this coin was spent to, and which transaction came first"?</strong> Classic consensus fails here — Byzantine Generals and Paxos assume a <strong>known, fixed participant list</strong> so they can count a majority "one vote each"; but in a network anyone can join anonymously, one-vote-each is instantly crushed by a <em>Sybil attack</em>: forge a million identities and you own the vote. That "agreement under open anonymity" is exactly what Nakamoto set out to solve.</p>
+
+<h2>The core idea</h2>
+
+<h3>① A coin is a chain of digital signatures</h3>
+<p>Bitcoin defines "a coin" as a <strong>chain of signatures</strong>. To transfer it, the current owner uses their private key to <strong>digitally sign</strong> "<em>the hash of the previous transaction</em> + <em>the next owner's public key</em>," appending that to the coin's tail. The recipient can verify the signatures down the chain to confirm the coin's history and current ownership.</p>
+<figure>
+<svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<g>
+<rect x="24" y="52" width="164" height="104" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="106" y="44" fill="#7c8593" font-size="11" text-anchor="middle">Tx 1 (→ Owner B)</text>
+<text x="106" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Prev-tx hash</text>
+<text x="106" y="104" fill="#e7ebf1" font-size="11.5" text-anchor="middle">B's public key</text>
+<rect x="40" y="118" width="132" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="106" y="134" fill="#f5c451" font-size="11" text-anchor="middle">Signed by A</text>
+</g>
+<g>
+<rect x="228" y="52" width="164" height="104" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="310" y="44" fill="#7c8593" font-size="11" text-anchor="middle">Tx 2 (→ Owner C)</text>
+<text x="310" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Prev-tx hash</text>
+<text x="310" y="104" fill="#e7ebf1" font-size="11.5" text-anchor="middle">C's public key</text>
+<rect x="244" y="118" width="132" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="310" y="134" fill="#f5c451" font-size="11" text-anchor="middle">Signed by B</text>
+</g>
+<g>
+<rect x="432" y="52" width="164" height="104" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<text x="514" y="44" fill="#7c8593" font-size="11" text-anchor="middle">Tx 3 (→ Owner D)</text>
+<text x="514" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Prev-tx hash</text>
+<text x="514" y="104" fill="#e7ebf1" font-size="11.5" text-anchor="middle">D's public key</text>
+<rect x="448" y="118" width="132" height="24" rx="5" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="514" y="134" fill="#f5c451" font-size="11" text-anchor="middle">Signed by C</text>
+</g>
+<path d="M188,74 C206,74 210,74 226,74" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#ar)"/>
+<path d="M392,74 C410,74 414,74 430,74" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="310" y="184" fill="#7c8593" font-size="11" text-anchor="middle">each points back to the prior hash and signs to the next key — but one chain can't prove it wasn't also signed to someone else</text>
+</svg>
+<figcaption>Fig 1 · Coin = chain of signatures: each transfer signs "prev-tx hash + payee's public key," locking the history; yet it can't stop an owner from quietly signing the same coin to a second person (double-spend).</figcaption>
+</figure>
+<p>But the signature chain has a fatal gap: <strong>it can prove who the coin belongs to, but not that it wasn't spent a second time.</strong> Staring at one chain, you can't tell whether the owner <em>also</em> signed the same coin to someone else. To close the door on double-spending, the recipient must be sure "no earlier competing spend exists anywhere on the network" — which requires <strong>a unique ordering of transactions that everyone agrees on</strong>. The traditional fix is a central mint that adjudicates; Nakamoto must manufacture that "unique order" with no center at all.</p>
+
+<h3>② A timestamp chain: put transactions in an order no one can rewrite</h3>
+<p>The approach is to <strong>publicly announce every transaction</strong> and have the whole network agree on their order. Concretely: batch transactions into a <strong>block</strong>, publish the hash of the whole block; and each block's contents <strong>include the hash of the previous block</strong> — so blocks lock onto blocks, forming a <strong>timestamp chain</strong> (exactly Haber &amp; Stornetta's idea). This chain has a built-in property: <strong>to tamper with one historical block, you must alter every block after it too</strong>, because a hash changes if anything under it changes. That leaves one question: <strong>who gets to add blocks, and by what rule, so that Sybil attacks fail?</strong></p>
+
+<h3>③ Proof-of-work: make rewriting infeasible, and bind "one vote" to computing power</h3>
+<p>This is the heart of the paper. Nakamoto ties the right to record to <strong>real computational cost</strong>: to add a block, you must find a value called a <strong>nonce</strong> such that the whole block's hash <strong>begins with a required number of zero bits</strong>. In notation, find a nonce with <code>Hash(block + nonce) &lt; target</code> — in plain terms: the hash is unpredictable and can't be reversed, so you can only <strong>try nonces frantically one by one</strong>, needing on average an enormous number of tries (exponential in the number of required zeros) to hit one; yet <strong>anyone verifies your answer with a single hash</strong>. That's proof-of-work: extremely hard to find, trivial to check.</p>
+<figure>
+<svg viewBox="0 0 620 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<g>
+<rect x="30" y="60" width="168" height="150" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429"/>
+<text x="114" y="52" fill="#7c8593" font-size="11" text-anchor="middle">Block N−1</text>
+<rect x="46" y="74" width="136" height="26" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text x="114" y="91" fill="#f5c451" font-size="10.5" text-anchor="middle">Prev block hash</text>
+<rect x="46" y="106" width="136" height="24" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="114" y="122" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Nonce ✔</text>
+<text x="114" y="152" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Tx  Tx  Tx</text>
+<text x="114" y="170" fill="#7c8593" font-size="9.5" text-anchor="middle">(Merkle root)</text>
+<text x="114" y="196" fill="#f0b429" font-size="10" text-anchor="middle">hash 00…0xa3</text>
+</g>
+<g>
+<rect x="226" y="60" width="168" height="150" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429"/>
+<text x="310" y="52" fill="#7c8593" font-size="11" text-anchor="middle">Block N</text>
+<rect x="242" y="74" width="136" height="26" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text x="310" y="91" fill="#f5c451" font-size="10.5" text-anchor="middle">Prev block hash</text>
+<rect x="242" y="106" width="136" height="24" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="310" y="122" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Nonce ✔</text>
+<text x="310" y="152" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Tx  Tx  Tx</text>
+<text x="310" y="170" fill="#7c8593" font-size="9.5" text-anchor="middle">(Merkle root)</text>
+<text x="310" y="196" fill="#f0b429" font-size="10" text-anchor="middle">hash 00…0f7c</text>
+</g>
+<g>
+<rect x="422" y="60" width="168" height="150" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429"/>
+<text x="506" y="52" fill="#7c8593" font-size="11" text-anchor="middle">Block N+1 (mining)</text>
+<rect x="438" y="74" width="136" height="26" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text x="506" y="91" fill="#f5c451" font-size="10.5" text-anchor="middle">Prev block hash</text>
+<rect x="438" y="106" width="136" height="24" rx="5" fill="rgba(255,255,255,0.03)" stroke="#f0b429"/>
+<text x="506" y="122" fill="#e7ebf1" font-size="10.5" text-anchor="middle">Nonce ? try…</text>
+<text x="506" y="152" fill="#b9c0ca" font-size="10.5" text-anchor="middle">Tx  Tx  Tx</text>
+<text x="506" y="170" fill="#7c8593" font-size="9.5" text-anchor="middle">(Merkle root)</text>
+<text x="506" y="196" fill="#7c8593" font-size="10" text-anchor="middle">need 00… prefix</text>
+</g>
+<path d="M198,120 L224,120" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#ar2)"/>
+<path d="M394,120 L420,120" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#ar2)"/>
+<text x="310" y="234" fill="#7c8593" font-size="11" text-anchor="middle">each block holds the prev hash → changing one forces re-solving every later puzzle; with honest majority, an attacker never catches up</text>
+</svg>
+<figcaption>Fig 2 · Blockchain + proof-of-work: blocks locked by each other's hash; adding one means brute-forcing a nonce so the hash starts with N zeros — costly to find, instant to verify.</figcaption>
+</figure>
+<p>This one trick settles two things at once. First, <strong>the vote shifts from "identity" to "computing power"</strong>: a chain's weight depends not on who shouts loudest or how many fake accounts they have, but on how much real computation and electricity was poured in — Sybil attacks fail, because power is bought with money and energy and can't be forged. Second, <strong>rewriting history becomes infeasible</strong>: to change an earlier block, an attacker must <strong>re-solve every puzzle after it</strong> and then catch up to and overtake the whole honest world still adding new blocks. As long as honest nodes hold the <strong>majority of computing power</strong>, the attacker's odds of overtaking fall <strong>exponentially</strong> in "how many blocks behind" they are. So the network needs just one plain convention: <strong>the longest chain (the most cumulative work) is the accepted history.</strong></p>
+
+<h3>④ How the network runs, and using rewards to pull people toward honesty</h3>
+<p>The whole network is a 6-step loop: ① new transactions are broadcast to all; ② each node collects incoming transactions into the block it's mining; ③ nodes race to solve the proof-of-work for their block; ④ whoever solves first broadcasts the block; ⑤ other nodes accept it after checking its transactions are valid and unspent; ⑥ they <strong>use that block's hash as the "previous block" and start mining the next</strong> — "building on top of it" <em>is</em> the vote of acceptance. If two miners solve nearly at once and the chain <em>forks</em>, nodes keep both until the next block lands; whichever branch is longer wins, and the shorter is discarded.</p>
+<figure>
+<svg viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
+<marker id="ar3d" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5a6069"/></marker></defs>
+<g fill="rgba(240,180,41,0.1)" stroke="#f0b429">
+<rect x="20" y="70" width="70" height="40" rx="6"/><rect x="120" y="70" width="70" height="40" rx="6"/><rect x="220" y="70" width="70" height="40" rx="6"/><rect x="320" y="70" width="70" height="40" rx="6"/><rect x="420" y="70" width="70" height="40" rx="6"/></g>
+<g fill="#e7ebf1" font-size="12" text-anchor="middle"><text x="55" y="95">blk</text><text x="155" y="95">blk</text><text x="255" y="95">blk</text><text x="355" y="95">blk</text><text x="455" y="95">blk</text></g>
+<g stroke="#f0b429" stroke-width="1.8" fill="none">
+<path d="M90,90 L118,90" marker-end="url(#ar3)"/><path d="M190,90 L218,90" marker-end="url(#ar3)"/><path d="M290,90 L318,90" marker-end="url(#ar3)"/><path d="M390,90 L418,90" marker-end="url(#ar3)"/></g>
+<text x="533" y="94" fill="#f0b429" font-size="12" font-weight="700">longest ✓</text>
+<rect x="320" y="140" width="70" height="34" rx="6" fill="rgba(90,96,105,0.12)" stroke="#5a6069"/>
+<text x="355" y="162" fill="#7c8593" font-size="11" text-anchor="middle">orphan</text>
+<path d="M290,100 C300,120 300,128 322,150" fill="none" stroke="#5a6069" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar3d)"/>
+<text x="470" y="160" fill="#7c8593" font-size="11">shorter fork discarded</text>
+</svg>
+<figcaption>Fig 3 · Longest-chain rule: nodes always mine on the longest chain; on a fork the shorter branch is dropped, and the network self-converges to one "most-work" history.</figcaption>
+</figure>
+<p>But who volunteers for this money-and-power-burning labor? Nakamoto builds in an <strong>incentive</strong>: the first transaction of each block is special and <strong>mints a brand-new bitcoin</strong> to whoever mined the block (plus the fees of the block's transactions). This does double duty — it's how new coins are <strong>fairly issued into circulation</strong> (like gold mining: spend work, get gold out), and it's the economic motive for nodes to keep mining and thereby protect the network. Crucially, there's a game-theory argument: <strong>someone with majority power is better off mining honestly for the reward than laboring to forge the ledger and destroying the value of the very coins they hold — honesty is the rationally more profitable choice.</strong> Security ultimately rests not only on cryptography but on "cheating doesn't pay."</p>
+<p>The whitepaper also offers two engineering patches in passing: a <strong>Merkle tree</strong> folds a block's transactions into one root hash so old ones can be pruned to save disk; and <strong>lightweight clients (SPV)</strong> can verify a payment holding only block headers, without downloading the whole chain. On privacy it is <strong>pseudonymous</strong>: public keys are addresses not tied to real names, and it advises a fresh address per transaction to break the linkage.</p>
+
+<h2>Key results</h2>
+<p>This is a <strong>design-and-analysis</strong> paper, not a benchmark study, so there are no datasets or baselines. Its key quantitative argument is in the final section: modeling "an attacker racing to catch the honest chain" as a <strong>gambler's ruin / Poisson process</strong>, it shows that as long as honest nodes hold the majority of power, an attacker's probability of overtaking falls exponentially in the number of <strong>confirmation blocks z</strong> the recipient waits for. The paper gives a concrete table: if the attacker holds 10% of the power, waiting about <strong>6 confirmations</strong> drops the odds of a reversal to the sub-0.1% range; the closer the attacker's power gets to half, the more confirmations are needed. The real "experiment" is its operation after launch: the genesis block was mined on January 3, 2009, and over a decade-plus this core consensus has kept producing blocks — in an open, adversarial setting with real money motivating attacks — without being broken. That is more convincing than any offline benchmark.</p>
+
+<h2>Why it mattered</h2>
+<p>For the first time it achieved Byzantine-fault-tolerant agreement in a <strong>fully open, anonymous, permissionless</strong> network — what the field calls <strong>"Nakamoto consensus"</strong> — breaking the classic assumption that participants must be known and fixed, a genuine extension of distributed-systems theory. It defined and popularized the <strong>blockchain</strong> data structure and directly spawned the entire cryptocurrency, smart-contract (Ethereum), DeFi, and NFT industry. More profoundly, it offered an engineering paradigm of <strong>"reaching global agreement without a trusted third party,"</strong> reaching into digital identity, supply-chain provenance, and decentralized governance. The <strong>"proof-of-work + longest chain + economic incentive"</strong> trio became the design template for a generation of protocols.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Enormous energy use</strong>: proof-of-work competes for the right to record by "burning electricity," and the network's power draw rivals a small-to-mid-sized country — its most criticized aspect (a cost not yet salient in 2008).</li>
+<li><strong>Very low throughput; never became "everyday cash"</strong>: roughly one block every ten minutes, only single-digit transactions per second, far below Visa's thousands. The "peer-to-peer electronic cash" it imagined largely didn't materialize; it became more a speculative "store of value." With wild price volatility and a deflationary design, it works poorly as money.</li>
+<li><strong>The "one-CPU-one-vote" ideal broke down</strong>: specialized mining hardware (ASICs) and mining pools concentrated power, and a few pools can approach a majority — decentralization eroded back toward re-centralization.</li>
+<li><strong>51% attacks &amp; only probabilistic finality</strong>: whoever holds majority power can roll back recent transactions and double-spend (though they can't forge others' signatures or steal others' coins); every transaction is only "safer the longer you wait," never absolutely final.</li>
+<li><strong>"Honest majority is safe" isn't strict</strong>: <em>selfish mining</em> (Eyal &amp; Sirer, 2014) showed a miner with more than about a third of the power can gain outsized rewards by strategically withholding blocks — undermining the whitepaper's original safety assumption.</li>
+<li><strong>Privacy is only pseudonymity</strong>: the whole ledger is permanently public, and chain analysis (combined with on/off-ramps like exchanges) can often link addresses to real identities.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: Bitcoin uses "proof-of-work + longest chain" so anonymous strangers can agree on transaction order with no center, solving digital money's double-spend problem.</p>
+<p>② The pain: digital money copies, so double-spending could only be stopped by a trusted third party (a bank's central ledger); remove the center and "one-vote-each" in an open, anonymous network is crushed by Sybil attacks.</p>
+<p>③ Coin definition: a chain of digital signatures (signing "prev-tx hash + payee's public key") — proves ownership but can't stop double-spends, so a network-wide unique order is needed.</p>
+<p>④ Ordering: transactions batched into blocks; each block holds the prior block's hash, forming a timestamp chain where changing one forces changing all after it.</p>
+<p>⑤ Core mechanism: adding a block requires solving <code>Hash(block+nonce) &lt; target</code> proof-of-work — hard to find, easy to verify; votes bind to power (defeats Sybil), rewriting history means re-solving all later puzzles (defeats tampering), and the longest chain is truth.</p>
+<p>⑥ Operation &amp; incentive: a 6-step broadcast-collect-mine-verify loop; the block reward (new coins) + fees both issue the currency and make "honest mining pays more than forging."</p>
+<p>⑦ Analysis &amp; results: a gambler's-ruin model proves attack success decays exponentially in confirmations; a decade-plus of unbroken core consensus in the wild is the strongest evidence.</p>
+<p>⑧ Impact: Byzantine fault tolerance under open anonymity (Nakamoto consensus); the origin of blockchains and the whole cryptocurrency / smart-contract industry.</p>
+<p>⑨ Limits: huge energy use, low throughput, re-centralization into ASICs and pools, 51% attacks and only probabilistic finality, selfish mining, and mere pseudonymity.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full script system and network protocol details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
