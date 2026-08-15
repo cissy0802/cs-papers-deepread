@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Computing Machinery and Intelligence（图灵测试）— IT 论文精读 Paper 47</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 47</p>
+<h1>Computing Machinery and Intelligence（图灵测试）</h1>
+<p class="sub">Alan Turing · Mind 期刊 · 1950</p>
+<p class="langbar"><a href="computing-machinery-and-intelligence-paper47.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1950 年，阿兰·图灵（Alan Turing）——那个提出「图灵机」、破解二战密码的数学家——写了一篇发在<strong>哲学</strong>杂志上的文章，开头就问：<strong>「机器能思考吗？」</strong>但他没有去争「思考」到底是什么，而是把这个吵不出结果的问题，换成了一个能真刀真枪做的<strong>游戏</strong>——今天所有人都叫它<strong>图灵测试</strong>。ChatGPT 出来后大家天天问「它到底懂不懂」，其实还在用图灵七十多年前定下的问法。</p>
+<h2>他为什么要「换题」</h2>
+<p>「机器能思考吗」听着清楚，其实答不了：因为「思考」谁也说不明白，争到最后都是各说各的定义。图灵的绝招是<strong>绕过定义、只看表现</strong>：别问它「心里」有没有在想，就看它<strong>做出来的事</strong>你能不能跟人区分开。分不出，就没理由说它不会思考。</p>
+<h2>那个游戏怎么玩</h2>
+<p>三方参赛：一个<strong>裁判</strong>、一台<strong>机器</strong>、一个<strong>真人</strong>。机器和真人都藏起来，只能<strong>隔着屏幕打字</strong>跟裁判聊（这样声音、长相都不算数，只比「谈吐」）。裁判随便问什么，拼命想揪出哪个是机器；机器则拼命把自己装成人。<strong>如果裁判经常分不出来，我们就说这机器通过了测试。</strong>图灵还大胆预言：到 2000 年，机器能骗过普通裁判、让他五分钟里有三成时候认错人。</p>
+<h2>更超前的第二个点子</h2>
+<p>图灵还想得更远：想直接编出一个「成年人的聪明大脑」太难了。<strong>不如造一个「小孩机器」，再像教孩子一样去教它、用奖励和惩罚让它自己从经验里学。</strong>学到最后，就长成一个成人的心智。这个「先做个能学的、再慢慢教」的思路，正是今天<strong>机器学习</strong>的雏形——七十年前就被他一句点破。</p>
+<h2>带来了什么</h2>
+<p>「图灵测试」从此成了衡量机器智能的<strong>文化标尺</strong>；而「与其硬编、不如让它学」的路线，成了现代 AI 的主干道。一篇没有一行代码的哲学文章，给整个人工智能立了地基。</p>
+<p>一句诚实话：<strong>会聊天不等于真懂。</strong>后来一个只会套模板的小程序（ELIZA）也骗过了不少人，于是有人质疑：图灵测试量的到底是机器的智能，还是人类有多容易被糊弄？</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>图灵把没法回答的「机器能思考吗」换成一场能做的游戏：让机器和人隔屏打字聊天，裁判分不出谁是机器，就算它会思考——把玄学问题变成看得见的行为测试；他还预言「先造小孩、再教育它」才是通往机器智能的路。这两个点子，一个成了 AI 的试金石，一个成了机器学习的先声。</p>
+</div>
+<p class="switch-hint">想看模仿游戏的完整设定、图灵对九种反对意见的回应，和后世的争议？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">图灵把无法验证的形而上问题「<strong>机器能思考吗</strong>」替换成一个可操作的行为测试——<strong>模仿游戏（imitation game）</strong>，即后来的<strong>图灵测试</strong>：若裁判隔着电传打字机与一台机器和一个真人交谈、却无法可靠地把机器认出来，我们就没有理由否认这台机器「会思考」。他进一步逐条驳倒了九种反对意见，并提出一条通往机器智能的具体路线——<strong>不要直接编写成人心智，而是造一台「小孩机器」再教育它</strong>，这被视为机器学习、强化学习与进化计算的思想先声。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>图灵机 / 通用机（universal machine）</strong>：图灵 1936 年提出的抽象计算模型；「通用机」指一台机器读入「说明书」就能模拟任何其他机器。本文里的数字计算机正是这种通用机的实体化，是理解本文的前提。</li>
+<li><strong>离散状态机（discrete-state machine）</strong>：状态只有有限多、且一步步跳变（如开关的开/关）的机器，与连续变化的模拟装置相对。数字计算机就是离散状态机。</li>
+<li><strong>行为主义（behaviourism）</strong>：一种主张「只看可观察的外部行为、不纠缠看不见的内心状态」的立场。图灵测试正是把「思考」改用行为来判定。</li>
+<li><strong>哥德尔不完备定理（Gödel）</strong>：1931 年的数学结果，大意是任何足够强的形式系统里，都有它自己既证不出真、也证不出假的命题。常被用来论证「机器有做不到的事」。</li>
+<li><strong>唯我论（solipsism）</strong>：一种「只能确证自己有意识、无法证明他人有意识」的哲学困境。图灵用它反击「必须先确认机器有内在意识」的要求。</li>
+<li><strong>电传打字机（teleprinter）</strong>：当年的远程打字通信设备，一端打字、另一端打印出来。图灵用它保证裁判只凭文字判断，屏蔽掉声音与外貌。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者阿兰·图灵，文章 1950 年 10 月发表于<strong>哲学</strong>期刊《Mind》（不是技术刊物）。此时距他 1936 年奠定「可计算性」与通用机、以及二战布莱切利园破译密码，已过去十余年；世界上第一批可编程电子计算机刚刚出现。它上承图灵自己的通用机思想，下启 1956 年达特茅斯会议（「人工智能」一词在那里诞生）——本文比那还早六年，是 AI 领域公认的<strong>哲学与目标的起点文献</strong>。</p>
+<h2>问题与动机</h2>
+<p>图灵开篇就说：「我打算考虑一个问题——<strong>机器能思考吗？</strong>」但他立刻指出这个问法有毛病：要回答它，就得先给「机器」和「思考」下定义，而这两个词的含义只能靠<strong>调查普通人怎么用它们</strong>来定，最后必然沦为「统计谁投票认为机器在思考」的口水仗——<strong>荒谬且不可能有定论</strong>。</p>
+<p>当时的争论正卡在这里：一派坚信机器不过是没有灵魂、没有意识的铁疙瘩，谈何思考；另一派则语焉不详。双方都在争「思考」的<strong>本质</strong>，而本质根本无法验证——你甚至没法证明<em>别人</em>真的在思考，凭什么用更高的标准要求机器？图灵要做的，就是<strong>把这个死结从「本质之争」拆成「一个能实际判定的问题」</strong>。</p>
+<h2>核心思想 / 方法</h2>
+<h3>点子一：用「模仿游戏」替换原问题</h3>
+<p>图灵的第一步棋，是<strong>换一个问题</strong>——一个和原问题「密切相关、却能明确表述」的问题。他从一个客厅游戏讲起：一名男子（A）、一名女子（B）藏在另一个房间，裁判（C）通过打字条向两人提问，任务是判断谁是男谁是女；A 想方设法误导裁判、B 则努力帮裁判判断正确。然后图灵抛出关键一问：<strong>「如果让一台机器来充当 A，会怎样？」</strong>裁判认错的频率，会不会和「男女对局」时一样高？</p>
+<p>去掉这层原始的性别外壳，它就成了今天人人皆知的<strong>图灵测试</strong>：裁判隔着电传打字机，同时与一台<em>机器</em>和一个<em>真人</em>交谈，努力分辨哪个是机器；机器则努力伪装成人。<strong>如果裁判无法比「瞎猜」更可靠地把机器揪出来，我们就应当承认这台机器「会思考」。</strong></p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<!-- interrogator -->
+<rect x="24" y="96" width="150" height="108" rx="10" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/>
+<circle cx="99" cy="132" r="15" fill="none" stroke="#f0b429" stroke-width="1.6"/>
+<path d="M80,170 a19,19 0 0 1 38,0" fill="none" stroke="#f0b429" stroke-width="1.6"/>
+<text x="99" y="192" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">裁判 C</text>
+<text x="99" y="82" fill="#7c8593" font-size="11" text-anchor="middle">只凭文字判断</text>
+<!-- wall -->
+<line x1="300" y1="34" x2="300" y2="272" stroke="#7c8593" stroke-width="1.4" stroke-dasharray="5 5"/>
+<text x="300" y="26" fill="#7c8593" font-size="10.5" text-anchor="middle">隔墙 · 看不见听不到</text>
+<!-- machine -->
+<rect x="392" y="52" width="150" height="80" rx="10" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<rect x="446" y="74" width="42" height="30" rx="4" fill="none" stroke="#e8794b" stroke-width="1.6"/>
+<circle cx="459" cy="89" r="3" fill="#e8794b"/><circle cx="475" cy="89" r="3" fill="#e8794b"/>
+<text x="467" y="122" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">机器 A</text>
+<text x="467" y="46" fill="#e8794b" font-size="10.5" text-anchor="middle">努力装成人</text>
+<!-- human -->
+<rect x="392" y="176" width="150" height="80" rx="10" fill="rgba(240,180,41,0.06)" stroke="#7c8593"/>
+<circle cx="467" cy="200" r="12" fill="none" stroke="#b9c0ca" stroke-width="1.6"/>
+<path d="M451,232 a16,16 0 0 1 32,0" fill="none" stroke="#b9c0ca" stroke-width="1.6"/>
+<text x="467" y="250" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">真人 B</text>
+<text x="467" y="272" fill="#7c8593" font-size="10.5" text-anchor="middle">照实回答</text>
+<!-- arrows -->
+<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<path d="M174,120 L392,92" fill="none" stroke="#7c8593" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M174,150 L392,216" fill="none" stroke="#7c8593" stroke-width="1.4" marker-end="url(#ar)"/>
+<text x="286" y="118" fill="#7c8593" font-size="10.5" text-anchor="end">提问 →</text>
+<path d="M392,112 L192,178" fill="none" stroke="#f5c451" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+<text x="250" y="176" fill="#f5c451" font-size="10.5" text-anchor="middle">← 打字作答</text>
+</svg>
+<figcaption>图 1 · 模仿游戏：裁判 C 隔着电传打字机同时盘问机器 A 与真人 B，只凭文字判断哪个是机器；机器伪装成人。裁判分不出，就算机器「会思考」。</figcaption>
+</figure>
+<p>这一步的深意在于<strong>把不可验证的「思考本质」换成了可观测的「谈吐表现」</strong>——一种行为主义的判据。它有三重好处：其一，<strong>只比谈吐、不比外貌与嗓音</strong>，把「思考」与「长得像人」彻底分开；其二，问题的范围<strong>不设上限</strong>——裁判可以问诗歌、算术、下棋、聊天气，几乎无所不包；其三，它<strong>把举证责任翻转</strong>了：你若坚持机器不会思考，就得说清它到底在哪一句话上露了马脚。图灵不是在定义「思考是什么」，而是在给「我们何时该承认它思考」立一个可执行的标准。</p>
+<h3>点子二：对九种反对意见的逐条回击</h3>
+<p>换题之后，图灵预演并反驳了九种「机器不可能思考」的论点，这部分构成全文的说理主体。最有分量的几条是：</p>
+<ul>
+<li><strong>数学反对（哥德尔式）</strong>：不完备定理表明，任何一台确定的机器都有它答不了、或必答错的问题，可见机器有天花板。图灵反问：<strong>凭什么假定人类没有自己的天花板？</strong>人也会答错、也有想不通的事；这条论点偷偷预设了「人类智力无上限」，而这从未被证明。</li>
+<li><strong>意识反对（杰弗逊教授）</strong>：神经外科医生杰弗逊（Geoffrey Jefferson）说，除非机器是<em>因为感受到情感</em>而写出十四行诗、并且<em>知道自己写了</em>，否则不算思考。图灵指出这条路通向<strong>唯我论</strong>：照此逻辑，你要确认机器有意识就得<em>变成</em>那台机器——可你要确认<em>别人</em>有意识，不也得变成别人？我们对人采取「大家都在思考」的<strong>礼貌约定</strong>，凭什么独独苛求机器？他并不否认意识是个谜，只是认为<strong>不必先解开这个谜，才能回答测试里的问题</strong>。</li>
+<li><strong>洛夫莱斯夫人反对</strong>：早在 19 世纪，阿达·洛夫莱斯（Ada Lovelace）评价巴贝奇的分析机时说：「它<strong>不能创造任何新东西</strong>，只能做我们知道怎么命令它做的事。」即机器无法带来惊喜。图灵回应：机器<strong>常常让他吃惊</strong>；「凡惊喜必有心智参与」本身就是错觉——惊喜往往只是我们没算到后果而已。机器完全可以做出连设计者都没预料的行为。</li>
+<li><strong>各种「机器永远不能 X」</strong>：不能幽默、不能犯错、不能享用草莓奶油、不能成为自己思考的对象……图灵说这些多半是<strong>从「见过的那几台丑机器」草率归纳</strong>出来的偏见。仅举「犯错」为例：他区分<em>功能性错误</em>（线路坏了）与<em>结论性错误</em>（算出错答案）——想让机器犯后一种错，编个程序让它偶尔出错即可，毫不困难。</li>
+</ul>
+<p>其余几条——神学反对（思考是灵魂专属）、「鸵鸟」反对（机器会思考太可怕、但愿它不能）、神经系统的连续性、行为的不可形式化、乃至他半认真讨论的<strong>超感官知觉（ESP/心灵感应）</strong>——图灵也一一作答。这一整节的锋芒是一致的：<strong>几乎所有「机器不能思考」的断言，要么建立在对人类自身的过度自信上，要么建立在对机器的狭隘想象上。</strong></p>
+<h3>点子三：与其硬编成人，不如培育「小孩机器」</h3>
+<p>全文最有前瞻性的，是结尾的<strong>学习机器</strong>一节。图灵算了一笔账：直接编写一个成人心智，工程量大得吓人。他转而提议：<strong>「与其编程序去模拟成人的心智，为何不去模拟<em>孩子</em>的？再给它一套合适的教育，不就得到了成人的大脑？」</strong></p>
+<p>他把这个方案拆成三块：<strong>初始状态</strong>（出厂时的「小孩机器」）、<strong>教育过程</strong>（老师用<em>奖励与惩罚</em>去训练它）、以及<strong>其他经验</strong>。他甚至给出了一个近乎<strong>进化算法</strong>的类比：把小孩机器的结构看作<em>遗传物质</em>、对它的改动看作<em>变异</em>、实验者的取舍看作<em>自然选择</em>——让好的变体留下来。他还建议在学习中掺入<strong>随机成分</strong>。</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="26" y="70" width="140" height="72" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429"/>
+<text x="96" y="100" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">小孩机器</text>
+<text x="96" y="120" fill="#7c8593" font-size="10.5" text-anchor="middle">简单初始状态</text>
+<rect x="210" y="70" width="140" height="72" rx="10" fill="rgba(232,121,75,0.1)" stroke="#e8794b"/>
+<text x="280" y="97" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">教育</text>
+<text x="280" y="116" fill="#7c8593" font-size="10.5" text-anchor="middle">奖励 / 惩罚 + 经验</text>
+<text x="280" y="132" fill="#7c8593" font-size="10.5" text-anchor="middle">+ 随机成分</text>
+<rect x="394" y="70" width="140" height="72" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429"/>
+<text x="464" y="100" fill="#e7ebf1" font-size="13" text-anchor="middle" font-weight="700">成人心智</text>
+<text x="464" y="120" fill="#7c8593" font-size="10.5" text-anchor="middle">学出来的、非硬编</text>
+<line x1="166" y1="106" x2="204" y2="106" stroke="#f0b429" stroke-width="1.6" marker-end="url(#a2)"/>
+<line x1="350" y1="106" x2="388" y2="106" stroke="#f0b429" stroke-width="1.6" marker-end="url(#a2)"/>
+<path d="M280,142 C280,196 96,196 96,148" fill="none" stroke="#7c8593" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#a2)"/>
+<text x="188" y="212" fill="#7c8593" font-size="10.5" text-anchor="middle">试错反馈：留下有效改动（结构=遗传 · 改动=变异 · 取舍=自然选择）</text>
+</svg>
+<figcaption>图 2 · 学习机器：不直接编写成人心智，而是造一台简单的「小孩机器」，用奖惩与经验去教育它、并保留有效的随机改动，让它逐步长成成人的智力——现代机器学习、强化学习与进化计算的思想先声。</figcaption>
+</figure>
+<p>这段话在 1950 年近乎科幻，却精准预言了此后 AI 的主干道：<strong>智能不必被完整地手写出来，它可以被「学」出来。</strong>今天从深度学习的梯度训练、到强化学习的奖惩、到进化算法，全都能在这一节里找到影子。</p>
+<h2>关键结果</h2>
+<p>这是一篇<strong>哲学论证文</strong>，没有实验、没有数据集——它的「结果」是一套思想框架与一个大胆预言。图灵预测：约五十年后（即 2000 年前后），可以给存储约 <code>10⁹</code> 比特（约合今天一百多 MB）的计算机编程，让它把模仿游戏玩得足够好，使<strong>普通裁判在五分钟提问后、正确识别的概率不超过 70%</strong>（即被机器骗过约三成）。他还预言，到那时人们对语言与观念的用法会大变，以至于「谈论机器会思考而不会被反驳」。他甚至粗估了工程量：「按我现在的速度每天能写约一千位程序，六十个人稳定干五十年，也许能完成。」这些数字与其说是精确预测，不如说是<strong>把一个哲学立场落到可讨论的量级上</strong>。</p>
+<h2>为什么重要 / 影响</h2>
+<p>它的影响力远超一篇论文：<strong>「图灵测试」成了机器智能的文化图腾</strong>，几乎每一本 AI 教科书、每一次「机器是否真懂」的公共辩论都从它讲起。更深层的贡献有两点：其一，它<strong>为一门尚未诞生的学科定下了可操作的目标与判据</strong>——六年后达特茅斯会议才把这门学科命名为「人工智能」；其二，「学习机器 / 小孩机器」一节<strong>提前半个世纪指出了「让机器自己学」这条正确路线</strong>。它也把「智能」的讨论从神学与形而上学，硬生生拽进了工程与科学可以着手的领域。1966 年的聊天程序 ELIZA、1991 年起的 Loebner 奖竞赛，乃至今天的大语言模型评测，都是它投下的长影。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>「会装」不等于「真懂」——中文房间</strong>：哲学家塞尔（John Searle）1980 年的<em>中文房间</em>思想实验最为致命：一个人关在屋里、按规则手册摆弄中文符号，能骗过外面的中国人，但他<strong>根本不懂中文</strong>。可见通过行为测试，未必代表有真正的理解与语义——这直接动摇了图灵测试的行为主义前提。</li>
+<li><strong>测的是「像人」而非「智能」</strong>：游戏奖励的是<em>伪装成人、乃至骗术</em>——机器可以靠装傻、故意打错字、答非所问来蒙混，而这些和真正的智能无关；反过来，一个远超人类但「不像人」的智能，可能<strong>通不过</strong>测试。这个判据是高度<strong>拟人化</strong>的。</li>
+<li><strong>它量的可能是「人有多好骗」</strong>：仅靠模板匹配的 ELIZA 就骗过了不少人，说明人类倾向于<strong>过度赋予对方心智</strong>（ELIZA 效应）。于是测试的结果，一半取决于机器、一半取决于裁判的轻信。</li>
+<li><strong>范围偏窄</strong>：刻意限定为「隔屏打字对话」，虽然巧妙地剥离了外貌，却也把智能<strong>压缩成了文字聊天</strong>，忽略了感知、运动、具身等大量非语言的智能形态。</li>
+<li><strong>它或许本就不是「定义」</strong>：不少学者认为，图灵从未想把测试当作「智能的定义」，而更像一记<strong>终止形而上争论的修辞</strong>——如今大语言模型能在轻量场景下骗过人，反倒让「通过测试到底证明了什么」重新成为争议，也侧面说明这个判据的边界一直很模糊。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：把无法验证的「机器能思考吗」，替换成可操作的行为测试「模仿游戏 / 图灵测试」——裁判隔屏聊天分不出机器，就算它会思考。</p>
+<p>② 动机：「思考」的本质无法验证，连「别人是否在思考」都证不了，用更高标准苛求机器不公平；图灵把「本质之争」拆成「一个能判定的问题」。</p>
+<p>③ 机制：机器与真人隔电传打字机受裁判盘问，只比谈吐、不比外貌嗓音；机器伪装成人，裁判揪不出即算通过。判据把举证责任翻转给了否定方。</p>
+<p>④ 说理主体：逐条驳倒九种反对——数学（哥德尔）、意识（反唯我论）、洛夫莱斯（机器能带来惊喜）、各种「永不能 X」等，锋芒直指人类对自身的过度自信。</p>
+<p>⑤ 最前瞻的点子：与其硬编成人心智，不如造「小孩机器」再用奖惩与经验教育它，掺入随机、按进化式取舍——机器学习 / 强化学习 / 进化计算的先声。</p>
+<p>⑥ 预言：约 2000 年，10⁹ 比特的机器能让普通裁判五分钟后误判约三成；届时「机器会思考」将不再被反驳。</p>
+<p>⑦ 影响：为尚未命名的 AI 立下目标与判据（早达特茅斯会议六年），成为机器智能的文化图腾。</p>
+<p>⑧ 局限：中文房间指出「会装≠真懂」；测的是「像人」乃至「人多好骗」（ELIZA 效应）而非智能本身；范围窄、拟人化；或许本就是终止争论的修辞而非定义。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的九种反对与原文措辞，再去翻 Turing 1950 原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
