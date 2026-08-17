@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Adam 优化器 — IT 论文精读 Paper 49</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 49</p>
-<h1>Adam：随机优化的默认解</h1>
+<h1 data-tts="757f1f6ca6541917">Adam：随机优化的默认解</h1>
 <p class="sub">Kingma &amp; Ba · University of Amsterdam / University of Toronto · ICLR 2015</p>
 <p class="langbar"><a href="adam-optimizer-paper49.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,28 +44,28 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="673143139cc0c21c">这篇论文干了什么？</h2>
 <p>2014 年底，两位研究者（Kingma 与 Ba）提出了一个叫 <strong>Adam</strong> 的「优化器」。训练一个神经网络（比如 ChatGPT 背后的模型），本质是让它一步步把几十亿个「旋钮」拧到刚好——优化器就是<strong>决定每一步该往哪拧、拧多大</strong>的那套规则。Adam 的贡献是：让这件事<strong>几乎不用手动调</strong>，拿默认设置就能稳稳跑起来。它简单、稳、好用到今天几乎每个深度模型都在用它训练。</p>
-<h2>先说个麻烦事</h2>
+<h2 data-tts="87b8a6c2b406ab4f">先说个麻烦事</h2>
 <p>把训练想成<strong>蒙着眼下山</strong>：你只能用脚感觉脚下的坡度，然后朝下坡迈一步。迈多大，就是「学习率」。麻烦在于——<strong>整座山只让你用一个固定的步幅</strong>。可有的方向是陡崖，步子稍大就冲过头、来回弹；有的方向是平缓的长坡，步子太小就得爬到天荒地老。一个步幅同时伺候陡崖和平原，<strong>怎么都不对</strong>。于是调这个步子成了苦差事，像走钢丝：大一点就震荡发散，小一点就慢得没边。</p>
-<h2>那个点子</h2>
+<h2 data-tts="60a048aeb87b8113">那个点子</h2>
 <p>Adam 把两个朴素的想法合到一起。<strong>第一个是「惯性」</strong>：别只看当下这一步的坡度（它被随机的噪声搞得忽左忽右），而是记住「我最近一直大致朝哪个方向走」，顺着这个平均方向走——就像下坡的球有惯性，不会被每个小坑绊停。<strong>第二个是「给每个方向配自己的步幅」</strong>：不再全山一个步子，而是<strong>每个方向按它自己的脾气自动定步长</strong>——一直剧烈晃动的方向，就小步、谨慎；几乎不动的方向，就大步、大胆。</p>
-<h2>它怎么做到的？</h2>
+<h2 data-tts="26122da45ff26281">它怎么做到的？</h2>
 <p>Adam 给每个旋钮各记<strong>两本小账</strong>。第一本记「<strong>这个方向我平均在往哪走</strong>」（把最近几步的坡度做个带惯性的平均，抹掉抖动）；第二本记「<strong>这个方向的坡有多大、多爱抖</strong>」（把最近几步坡度的大小也平均一下）。走的时候，它朝第一本账的方向迈步，但<strong>用第二本账去缩放步幅</strong>：这个方向一向坡大又抖，就把步子除小一点、走稳；一向平缓，就放开步子。</p>
 <p>妙处在于：<strong>坡度整体是大是小、单位是什么，都被这一「除」自动抵消掉了</strong>——你不用再为每个方向、每个阶段手调步子，每一步大约都走「一个合适的距离」。还有个贴心设计：这两本账刚开局时是空的、会把人往「不敢动」的方向带偏，Adam 用一个小小的<strong>开局校正</strong>把这个偏差抹平，让最初几步也走得对。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="bbaa0bc56b747465">带来了什么</h2>
 <p>结果是：训练一个新模型，<strong>从「先花几天调学习率」变成「用 Adam 默认值先跑起来」</strong>。它对设置不挑、开箱即用、又快又稳，于是成了深度学习十年里的<strong>默认选择</strong>——今天你听过的大模型，绝大多数是用 Adam（或它的改良版）训出来的。</p>
 <p>也说句实在话：它不是万灵药。在某些任务上，<strong>老老实实调好的简单方法反而能得到泛化略好一点的模型</strong>；而且它每个旋钮要多记两本账，<strong>吃掉不少额外内存</strong>——模型越大越肉疼。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="d900d753ae4253ac">一句话记住</h2>
 <div class="tl">
 <p>训练模型就是蒙眼下山、每步决定往哪迈多大。Adam 给每个方向各记两本账——「平均往哪走」（惯性）和「这里坡多大多抖」（幅度）——朝平均方向走、按幅度自动缩放步子，于是几乎不用手调就又快又稳。它是当代几乎所有深度模型的默认优化器。</p>
 </div>
 <p class="switch-hint">想看更新公式、两个「矩」的滑动平均与偏差校正、以及后来发现的收敛漏洞？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="61f921783040b672">一句话</h2>
 <p class="lead">Adam（<strong>Adaptive Moment Estimation</strong>，自适应矩估计）把「<strong>动量（momentum）</strong>」和「<strong>按参数自适应学习率</strong>」两个想法合到一起，再补上一步「<strong>偏差校正（bias correction）</strong>」：它为每个参数各维护梯度的<strong>一阶矩</strong>（均值，可理解为带惯性的方向）与<strong>二阶矩</strong>（未中心化方差，衡量该方向梯度的大小与抖动），用 <code>θ ← θ − α·m̂/(√v̂+ε)</code> 更新——朝平滑后的方向走、步长按各维梯度自身的尺度自动缩放。一套默认超参 <code>α=0.001, β₁=0.9, β₂=0.999</code> 几乎开箱即用，令它成为深度学习十余年里事实上的默认优化器。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="41c78c3370d11fa1">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>梯度下降 / 学习率（gradient descent / learning rate）</strong>：训练模型就是最小化一个「误差函数」；每步朝误差下降最快的反方向（负梯度）走一小步，<strong>学习率</strong>就是这步走多大。</li>
@@ -76,81 +77,81 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>AdaGrad / RMSProp</strong>：Adam 的两位前辈，都按「历史梯度的平方」给每个参数缩放步长；区别在 AdaGrad 累加全部历史、RMSProp 只滑动平均最近的。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="701f1518dbdc16a3">坐标</h2>
 <p>作者 Diederik P. Kingma（时在阿姆斯特丹大学，后为 OpenAI）与 Jimmy Lei Ba（多伦多大学），论文发在 <strong>ICLR 2015</strong>（arXiv 2014 年底放出）。它<strong>上承</strong>动量法、AdaGrad（Duchi 等 2011）、RMSProp（Hinton 课堂未发表）与 AdaDelta（Zeiler 2012）；<strong>下启</strong> AdamW（解耦权重衰减）等改良，几乎所有现代大模型——Transformer、BERT、GPT、扩散模型——都用 Adam 或其变体训练。它是被引最多的机器学习论文之一。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="f8c278b47683305e">问题与动机</h2>
 <p>最朴素的 SGD 用<strong>一个全局学习率</strong>给所有参数、所有阶段一刀切。痛点有三：学习率<strong>太大则震荡甚至发散、太小则慢得离谱</strong>；不同参数需要的步长天差地别——<strong>稀疏特征</strong>（很少出现、对应梯度大多为 0 的参数）需要大步才追得上，而频繁更新的参数需要小步才稳；同一参数在训练前后期需要的步长也不同。手调这一个数、再配个衰减时间表，成了训练里最烦人的一环。</p>
 <p><strong>AdaGrad</strong> 迈出第一步：给每个参数按「历史梯度平方的累加和」的平方根去除步长——不常动的参数分母小、步子大，正好补偿稀疏。可它<strong>累加的是全部历史</strong>，分母只增不减，于是<strong>学习率单调衰减到零</strong>，在长训练或非凸的深度网络里过早「熄火」、还没到底就走不动了。<strong>RMSProp</strong> 把「累加和」换成「指数滑动平均」——只记最近、旧的遗忘，分母不再无限膨胀，熄火问题解决。但 RMSProp <strong>没有动量、也没有对滑动平均起步偏差的校正</strong>。Adam 要做的，就是把 RMSProp 的自适应缩放、动量的方向平滑、以及一个关键的偏差校正，<strong>三者合成一个既快又稳、还几乎不用调的更新规则</strong>。</p>
 <figure>
-<svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<ellipse cx="300" cy="140" rx="230" ry="26" fill="none" stroke="#2b333d"/>
-<ellipse cx="300" cy="140" rx="176" ry="18" fill="none" stroke="#333c47"/>
-<ellipse cx="300" cy="140" rx="120" ry="11" fill="none" stroke="#3c4753"/>
-<ellipse cx="300" cy="140" rx="66" ry="6" fill="none" stroke="#4a5663"/>
-<circle cx="300" cy="140" r="3" fill="#f0b429"/>
-<text x="300" y="128" fill="#7c8593" font-size="10.5" text-anchor="middle">最优点</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="300" cy="140" fill="none" rx="230" ry="26" stroke="#2b333d"></ellipse>
+<ellipse cx="300" cy="140" fill="none" rx="176" ry="18" stroke="#333c47"></ellipse>
+<ellipse cx="300" cy="140" fill="none" rx="120" ry="11" stroke="#3c4753"></ellipse>
+<ellipse cx="300" cy="140" fill="none" rx="66" ry="6" stroke="#4a5663"></ellipse>
+<circle cx="300" cy="140" fill="#f0b429" r="3"></circle>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="300" y="128">最优点</text>
 <!-- SGD zigzag path -->
-<path d="M70,86 L150,180 L210,102 L262,168 L300,120 L322,156 L300,140" fill="none" stroke="#e8794b" stroke-width="2"/>
-<circle cx="70" cy="86" r="3.5" fill="#e8794b"/>
-<text x="60" y="78" fill="#e8794b" font-size="11.5" text-anchor="middle">起点</text>
-<text x="150" y="210" fill="#e8794b" font-size="11.5">SGD：沿陡壁来回震荡、沿缓坡爬得慢</text>
+<path d="M70,86 L150,180 L210,102 L262,168 L300,120 L322,156 L300,140" fill="none" stroke="#e8794b" stroke-width="2"></path>
+<circle cx="70" cy="86" fill="#e8794b" r="3.5"></circle>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="60" y="78">起点</text>
+<text fill="#e8794b" font-size="11.5" x="150" y="210">SGD：沿陡壁来回震荡、沿缓坡爬得慢</text>
 <!-- Adam smooth path -->
-<path d="M70,86 C150,120 240,138 300,140" fill="none" stroke="#f0b429" stroke-width="2.2" stroke-dasharray="1 0"/>
-<text x="150" y="112" fill="#f0b429" font-size="11.5">Adam：方向被惯性抹平、各向步长自适应</text>
+<path d="M70,86 C150,120 240,138 300,140" fill="none" stroke="#f0b429" stroke-dasharray="1 0" stroke-width="2.2"></path>
+<text fill="#f0b429" font-size="11.5" x="150" y="112">Adam：方向被惯性抹平、各向步长自适应</text>
 </svg>
 <figcaption>图 1 · 「峡谷」直觉：单一步长的 SGD 在陡的方向来回弹、在缓的方向爬得慢；动量抹平抖动，逐参数自适应步长让陡向走小步、缓向走大步，路径更直更快。</figcaption>
 </figure>
-<h2>核心思想 / 方法</h2>
-<h3>两个「矩」：一本记方向，一本记幅度</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="c0a005024c0f402b">两个「矩」：一本记方向，一本记幅度</h3>
 <p>Adam 为每个参数各维护两个指数滑动平均。记第 <code>t</code> 步该参数的梯度为 <code>g_t</code>：</p>
 <p><strong>一阶矩 m（方向 / 动量）</strong>：<code>m_t = β₁·m_{t-1} + (1−β₁)·g_t</code>——梯度本身的滑动平均。它是「最近我平均朝哪走」，把 mini-batch 带来的随机抖动<strong>平滑掉</strong>，等价于动量。</p>
 <p><strong>二阶矩 v（幅度 / 抖动）</strong>：<code>v_t = β₂·v_{t-1} + (1−β₂)·g_t²</code>——梯度<em>平方</em>的滑动平均。它衡量「这个方向的梯度一向有多大、多抖」，是给步长做缩放的尺子。</p>
-<h3>更新规则：朝 m 走，用 √v 缩放</h3>
+<h3 data-tts="ede052614d7b4d74">更新规则：朝 m 走，用 √v 缩放</h3>
 <p>核心就一步：<code>θ_t = θ_{t-1} − α · m̂_t /(√v̂_t + ε)</code>。直觉是——<strong>朝平滑后的方向 m 迈步，但把步长除以该方向梯度的典型幅度 √v</strong>：某维梯度一向又大又抖 → √v 大 → 除下来步子小、走得稳；某维一向平缓 → √v 小 → 步子放大、走得快。于是<strong>梯度整体的尺度、乃至各维单位的差异，都被这一除自动约掉</strong>，不用再逐维手调。</p>
 <p>为什么除 <code>√v</code> 而不是 <code>v</code>？为了量纲对齐——<code>√v</code> 与梯度同量纲，比值 <code>m/√v</code> 近似一个「<strong>信噪比</strong>」：方向确定（信号强、噪声小）就大胆走，不确定就走小步。一个附带的好处是<strong>自动退火</strong>：接近最优时平均梯度 m 趋于 0、而抖动 v 仍在，比值自然变小，步子自己收住。作者还证明有效步长大致被 α「封顶」（<code>|Δθ| ≲ α</code>），相当于给每步划了一个<strong>信任域（trust region）</strong>——你大致知道每步最多走多远，且对把整个梯度乘以任意常数<strong>不敏感</strong>。<code>ε</code>（默认 <code>10⁻⁸</code>）只是防止除零的小量。</p>
 <figure>
-<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 330" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
 <!-- gradient input -->
-<rect x="210" y="16" width="140" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<text x="280" y="38" fill="#e7ebf1" font-size="13" text-anchor="middle">梯度 g_t</text>
-<line x1="215" y1="50" x2="130" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="345" y1="50" x2="430" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect fill="rgba(240,180,41,0.12)" height="34" rx="6" stroke="#f0b429" width="140" x="210" y="16"></rect>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="280" y="38">梯度 g_t</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="215" x2="130" y1="50" y2="80"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="345" x2="430" y1="50" y2="80"></line>
 <!-- first moment -->
-<rect x="34" y="82" width="196" height="52" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/>
-<text x="132" y="103" fill="#e7ebf1" font-size="12.5" text-anchor="middle">一阶矩 m（方向/动量）</text>
-<text x="132" y="122" fill="#7c8593" font-size="11" text-anchor="middle">m=β₁m+(1−β₁)g</text>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="8" stroke="#e8794b" width="196" x="34" y="82"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="132" y="103">一阶矩 m（方向/动量）</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="132" y="122">m=β₁m+(1−β₁)g</text>
 <!-- second moment -->
-<rect x="330" y="82" width="196" height="52" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/>
-<text x="428" y="103" fill="#e7ebf1" font-size="12.5" text-anchor="middle">二阶矩 v（幅度/抖动）</text>
-<text x="428" y="122" fill="#7c8593" font-size="11" text-anchor="middle">v=β₂v+(1−β₂)g²</text>
-<line x1="132" y1="134" x2="132" y2="164" stroke="#7c8593" marker-end="url(#a1)"/>
-<line x1="428" y1="134" x2="428" y2="164" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="8" stroke="#e8794b" width="196" x="330" y="82"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="428" y="103">二阶矩 v（幅度/抖动）</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="428" y="122">v=β₂v+(1−β₂)g²</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="132" x2="132" y1="134" y2="164"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="428" x2="428" y1="134" y2="164"></line>
 <!-- bias correction -->
-<rect x="34" y="166" width="196" height="46" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429" stroke-dasharray="4 3"/>
-<text x="132" y="184" fill="#f0b429" font-size="12" text-anchor="middle">偏差校正 m̂=m/(1−β₁ᵗ)</text>
-<text x="132" y="201" fill="#7c8593" font-size="10.5" text-anchor="middle">抹平「从 0 起步」的开局偏差</text>
-<rect x="330" y="166" width="196" height="46" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429" stroke-dasharray="4 3"/>
-<text x="428" y="184" fill="#f0b429" font-size="12" text-anchor="middle">偏差校正 v̂=v/(1−β₂ᵗ)</text>
-<text x="428" y="201" fill="#7c8593" font-size="10.5" text-anchor="middle">同理校正二阶矩</text>
-<line x1="132" y1="212" x2="220" y2="248" stroke="#f0b429" marker-end="url(#a1g)"/>
-<line x1="428" y1="212" x2="340" y2="248" stroke="#f0b429" marker-end="url(#a1g)"/>
+<rect fill="rgba(240,180,41,0.07)" height="46" rx="8" stroke="#f0b429" stroke-dasharray="4 3" width="196" x="34" y="166"></rect>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="132" y="184">偏差校正 m̂=m/(1−β₁ᵗ)</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="132" y="201">抹平「从 0 起步」的开局偏差</text>
+<rect fill="rgba(240,180,41,0.07)" height="46" rx="8" stroke="#f0b429" stroke-dasharray="4 3" width="196" x="330" y="166"></rect>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="428" y="184">偏差校正 v̂=v/(1−β₂ᵗ)</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="428" y="201">同理校正二阶矩</text>
+<line marker-end="url(#a1g)" stroke="#f0b429" x1="132" x2="220" y1="212" y2="248"></line>
+<line marker-end="url(#a1g)" stroke="#f0b429" x1="428" x2="340" y1="212" y2="248"></line>
 <!-- combine -->
-<rect x="176" y="250" width="208" height="42" rx="8" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
-<text x="280" y="276" fill="#e7ebf1" font-size="14" text-anchor="middle">更新 θ ← θ − α·m̂/(√v̂+ε)</text>
-<line x1="280" y1="292" x2="280" y2="312" stroke="#7c8593" marker-end="url(#a1)"/>
-<text x="280" y="326" fill="#7c8593" font-size="11" text-anchor="middle">朝 m 的方向走，步长被 √v 逐维缩放</text>
+<rect fill="rgba(232,121,75,0.14)" height="42" rx="8" stroke="#e8794b" width="208" x="176" y="250"></rect>
+<text fill="#e7ebf1" font-size="14" text-anchor="middle" x="280" y="276">更新 θ ← θ − α·m̂/(√v̂+ε)</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="280" x2="280" y1="292" y2="312"></line>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="326">朝 m 的方向走，步长被 √v 逐维缩放</text>
 </svg>
 <figcaption>图 2 · Adam 一步的数据流：梯度分别喂入两个滑动平均——m 记方向（动量）、v 记幅度（抖动）；各自做偏差校正后合成更新，朝 m 走、按 √v 逐参数缩放步长。</figcaption>
 </figure>
-<h3>偏差校正：让最初几步也走对</h3>
+<h3 data-tts="3017fc232ab67db3">偏差校正：让最初几步也走对</h3>
 <p>还差一块拼图。<code>m</code> 和 <code>v</code> 都从 <strong>0 起步</strong>，滑动平均在前几步会被这个「0」严重拉低——尤其 β 接近 1 时（<code>β₂=0.999</code> 意味着新梯度每步只掺进 0.1%），头几十步的 v 估计得极小、偏向 0。若直接拿它去除，步长会被算错。Adam 用一个精确的<strong>偏差校正</strong>把这个系统性偏差除掉：<code>m̂_t = m_t/(1−β₁ᵗ)</code>、<code>v̂_t = v_t/(1−β₂ᵗ)</code>——随 <code>t</code> 增大，<code>1−βᵗ→1</code>，校正在后期自动淡出，只在开局起作用。<strong>正是这一步，让 Adam 在训练最初就走出正确的步长，也是它相对 RMSProp 的关键补丁。</strong>作者另给了一个变体 <strong>AdaMax</strong>，把二阶矩换成梯度的 L∞ 范数（取历史最大幅度），在某些情形更稳定。默认超参 <code>α=0.001, β₁=0.9, β₂=0.999, ε=10⁻⁸</code> 在大量任务上几乎无需改动。</p>
-<h2>关键结果</h2>
+<h2 data-tts="b446ae7add530de4">关键结果</h2>
 <p>论文在几个（以今天眼光看规模不大的）任务上对比 Adam 与 SGD-Nesterov、AdaGrad、RMSProp、AdaDelta：<strong>MNIST 逻辑回归</strong>、<strong>MNIST 多层神经网络</strong>、<strong>CIFAR-10 卷积网络</strong>、以及带 dropout 的 <strong>IMDB 词袋文本分类</strong>。结论一致：<strong>Adam 收敛更快、更稳</strong>，在带 dropout、目标本身很「吵」的设置下优势尤为明显。作者还给了一个在线凸优化的 <code>O(√T)</code> <strong>regret 界</strong>作为理论支撑（这条证明后来被发现有漏洞，见下）。诚实说：这些实验规模很小，Adam 真正被「证明」是靠后来十年里整个领域的普遍采用——它在无数超出论文实验范围的模型上一次次开箱即用地 work。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="d20bddc5e7362fc3">为什么重要 / 影响</h2>
 <p>Adam 把「训练一个新模型」从一门需要经验的手艺，变成了<strong>一个稳定的默认起点</strong>。它对超参鲁棒、几乎不用调、在异构与稀疏梯度下都稳，于是迅速成为深度学习的<strong>默认优化器</strong>：从 CNN 到 RNN，再到 <strong>Transformer、BERT、GPT、扩散模型</strong>，绝大多数现代大模型都由 Adam 或其改良版 <strong>AdamW</strong> 训练。你今天能「拿来一个新架构、用 Adam 默认值先跑起来看效果」，很大程度就是这篇论文给的底气。作为工程基础设施，它的影响力不亚于任何一个具体的模型结构。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="7a745e968533fb87">局限与批评</h2>
 <ul>
 <li><strong>收敛证明有误</strong>：Reddi 等（<em>On the Convergence of Adam and Beyond</em>, 2018）构造反例，指出二阶矩用滑动平均会让分母 <code>v</code> <strong>可能下降</strong>（不像 AdaGrad 那样单调不减），破坏了原证明的关键假设，某些简单凸问题上 Adam 竟不收敛；他们提出 <strong>AMSGrad</strong>（改用历史 v 的最大值）修补。</li>
 <li><strong>泛化差距</strong>：Wilson 等（2017）发现，在一些任务（尤其计算机视觉）上，自适应方法的<strong>测试精度不如调好的 SGD+动量</strong>——Adam 收敛快，却可能落到泛化略差的解。故不少视觉基准至今仍偏爱 SGD。</li>
@@ -158,7 +159,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>常需学习率预热（warmup）</strong>：训练 Transformer 时若不做预热，早期不可靠的二阶矩估计会导致训练不稳（<strong>RAdam</strong> 等对此有分析与修正）。</li>
 <li><strong>内存开销</strong>：每个参数要额外存 <code>m</code>、<code>v</code> 两份状态，约 <strong>3 倍参数内存</strong>——在千亿参数级别是实打实的负担，也催生了大量省显存的优化器变体。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="35b635a44032c0d2">要点</h2>
 <div class="tl">
 <p>① 一句话：Adam = 动量（一阶矩）+ 逐参数自适应步长（二阶矩）+ 偏差校正，更新 <code>θ ← θ − α·m̂/(√v̂+ε)</code>。</p>
 <p>② 痛点：SGD 单一学习率一刀切——太大震荡、太小奇慢，稀疏与陡缓不同方向需要不同步长，手调很痛。</p>
