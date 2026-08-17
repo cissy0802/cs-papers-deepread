@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Adam Optimizer — CS Papers Deep-Read Paper 49</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 49</p>
+<h1>Adam: The Default Solver for Stochastic Optimization</h1>
+<p class="sub">Kingma &amp; Ba · University of Amsterdam / University of Toronto · ICLR 2015</p>
+<p class="langbar"><a href="adam-optimizer-paper49.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In late 2014, two researchers (Kingma and Ba) proposed an "optimizer" called <strong>Adam</strong>. Training a neural network (say the model behind ChatGPT) is really about turning billions of "knobs" to just the right settings, one step at a time — and the optimizer is the set of rules that <strong>decides which way to turn each knob and by how much</strong> on every step. Adam's contribution: it makes this work <strong>almost tuning-free</strong> — with default settings it just runs, steadily. It is simple, stable, and useful enough that today nearly every deep model is trained with it.</p>
+<h2>First, an annoyance</h2>
+<p>Picture training as <strong>walking downhill blindfolded</strong>: you can only feel the slope under your feet and take a step downhill. How big a step is the "learning rate." The catch — <strong>the whole mountain forces you to use one fixed stride</strong>. But some directions are cliffs where a slightly-too-big step overshoots and bounces you back and forth; others are long gentle slopes where a small step means crawling forever. One stride can't serve both cliffs and plains, <strong>so it's always wrong somewhere</strong>. Tuning that stride becomes a chore, a tightrope walk: a hair too big and you oscillate and diverge, a hair too small and it's hopelessly slow.</p>
+<h2>The idea</h2>
+<p>Adam fuses two plain ideas. <strong>First, "momentum":</strong> don't just look at this one step's slope (jittered left and right by random noise) — remember "which way have I mostly been heading lately" and follow that averaged direction, the way a ball rolling downhill has inertia and isn't stopped by every little bump. <strong>Second, "give every direction its own stride":</strong> instead of one stride for the whole mountain, <strong>let each direction set its own step size automatically</strong> — a direction that keeps swinging wildly takes small, careful steps; a direction that barely moves takes big, bold ones.</p>
+<h2>How does it pull that off?</h2>
+<p>Adam keeps <strong>two little ledgers</strong> for each knob. The first records "<strong>which way am I heading on average in this direction</strong>" (an inertia-smoothed average of the recent slopes, erasing the jitter). The second records "<strong>how big and how jittery has the slope been here</strong>" (an average of the recent slope magnitudes). To take a step, it heads in the direction of the first ledger, but <strong>scales the stride using the second</strong>: a direction that's always steep and jittery gets its step divided down to stay steady; a calm direction gets a bigger stride.</p>
+<p>The beauty: <strong>whether the slopes are large or small overall — and in what units — cancels out in that one division</strong>. You no longer hand-tune a stride per direction or per stage; every step covers roughly "a sensible distance." One thoughtful extra: those two ledgers start out empty, which would bias you toward "afraid to move" early on, so Adam applies a tiny <strong>start-up correction</strong> that erases the bias and gets even the first few steps right.</p>
+<h2>What it brought</h2>
+<p>The result: training a new model went from "spend a few days tuning the learning rate" to "<strong>just run it with Adam's defaults</strong>." It isn't fussy about settings, works out of the box, and is both fast and stable — so it became the <strong>default</strong> of deep learning's last decade. Nearly every big model you've heard of was trained with Adam (or an improved variant).</p>
+<p>One honest note: it's no cure-all. On some tasks, a simpler method tuned carefully actually reaches a model that <strong>generalizes a touch better</strong>; and Adam keeps two extra ledgers per knob, so it <strong>eats a good chunk of extra memory</strong> — which stings more the bigger the model gets.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Training a model is walking downhill blindfolded, deciding each step's direction and size. Adam keeps two ledgers per direction — "which way on average" (momentum) and "how big and jittery is the slope here" (magnitude) — heads in the average direction and scales the stride by the magnitude, so it's fast and stable with almost no hand-tuning. It's the default optimizer behind nearly every modern deep model.</p>
+</div>
+<p class="switch-hint">Want the update formula, the two "moments," bias correction, and the convergence flaw found later? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden>
+<h2>In one sentence</h2>
+<p class="lead">Adam (<strong>Adaptive Moment Estimation</strong>) fuses <strong>momentum</strong> with <strong>per-parameter adaptive learning rates</strong>, plus a <strong>bias-correction</strong> step: for each parameter it maintains the gradient's <strong>first moment</strong> (the mean — an inertia-smoothed direction) and <strong>second moment</strong> (the uncentered variance — how large and jittery that direction's gradient is), and updates via <code>θ ← θ − α·m̂/(√v̂+ε)</code> — heading in the smoothed direction while scaling the step by each dimension's own gradient scale. A single set of defaults <code>α=0.001, β₁=0.9, β₂=0.999</code> works nearly out of the box, which made it the de facto default optimizer for over a decade of deep learning.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Gradient descent / learning rate</strong>: training minimizes an "error function"; each step moves a little in the direction of steepest error decrease (the negative gradient), and the <strong>learning rate</strong> is how big that step is.</li>
+<li><strong>Gradient</strong>: the vector of error derivatives with respect to every parameter — it says "which way to turn each knob to reduce error fastest."</li>
+<li><strong>SGD / mini-batch</strong>: each step estimates the gradient from a small batch of samples — fast, but noisy, so the gradient jitters step to step.</li>
+<li><strong>Momentum</strong>: accumulate a fraction of past gradients, like inertia on a rolling ball — it smooths noise and speeds up across flat regions.</li>
+<li><strong>EMA (exponential moving average)</strong>: <code>a_t = β·a_{t-1} + (1-β)·x_t</code>, a "memory-weighted average" that keeps recent values and forgets old ones at rate β. The closer β is to 1, the longer the memory.</li>
+<li><strong>1st / 2nd moment</strong>: here, the mean of the gradient (direction) and the mean of the gradient squared (magnitude, i.e. uncentered variance). A "moment" is a number summarizing a distribution.</li>
+<li><strong>AdaGrad / RMSProp</strong>: Adam's two ancestors, both scaling each parameter's step by "past squared gradients" — AdaGrad sums all history, RMSProp keeps only a moving average of the recent past.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Diederik P. Kingma (then at the University of Amsterdam, later OpenAI) and Jimmy Lei Ba (University of Toronto); the paper appeared at <strong>ICLR 2015</strong> (released on arXiv in late 2014). It <strong>inherits</strong> momentum, AdaGrad (Duchi et al. 2011), RMSProp (Hinton's unpublished lecture note), and AdaDelta (Zeiler 2012); it <strong>launches</strong> refinements such as AdamW (decoupled weight decay), and nearly every modern large model — Transformer, BERT, GPT, diffusion models — is trained with Adam or a variant. It is one of the most-cited papers in machine learning.</p>
+<h2>The problem and the motivation</h2>
+<p>Plain SGD uses <strong>one global learning rate</strong> for all parameters and all stages. Three pains: too large and it oscillates or diverges, too small and it's absurdly slow; different parameters need wildly different steps — <strong>sparse features</strong> (rarely seen, with mostly-zero gradients) need big steps to keep up, while frequently updated parameters need small steps to stay stable; and the same parameter needs different steps early versus late in training. Hand-tuning that one number, plus a decay schedule, is training's most tedious chore.</p>
+<p><strong>AdaGrad</strong> took the first step: scale each parameter's step by the reciprocal square root of "the accumulated sum of past squared gradients" — rarely-updated parameters get a small denominator and thus big steps, exactly compensating for sparsity. But it <strong>accumulates the entire history</strong>, so the denominator only grows, the <strong>learning rate decays monotonically to zero</strong>, and it "stalls" prematurely in long training runs or non-convex deep nets — grinding to a halt before it reaches the bottom. <strong>RMSProp</strong> swaps the sum for an <strong>exponential moving average</strong> — keep the recent, forget the old — so the denominator stops ballooning and the stall is fixed. But RMSProp has <strong>no momentum and no correction for the moving average's start-up bias</strong>. What Adam does is combine RMSProp's adaptive scaling, momentum's directional smoothing, and one crucial bias correction into a <strong>single update rule that is fast, stable, and nearly tuning-free</strong>.</p>
+<figure>
+<svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<ellipse cx="300" cy="140" rx="230" ry="26" fill="none" stroke="#2b333d"/>
+<ellipse cx="300" cy="140" rx="176" ry="18" fill="none" stroke="#333c47"/>
+<ellipse cx="300" cy="140" rx="120" ry="11" fill="none" stroke="#3c4753"/>
+<ellipse cx="300" cy="140" rx="66" ry="6" fill="none" stroke="#4a5663"/>
+<circle cx="300" cy="140" r="3" fill="#f0b429"/>
+<text x="300" y="128" fill="#7c8593" font-size="10.5" text-anchor="middle">optimum</text>
+<path d="M70,86 L150,180 L210,102 L262,168 L300,120 L322,156 L300,140" fill="none" stroke="#e8794b" stroke-width="2"/>
+<circle cx="70" cy="86" r="3.5" fill="#e8794b"/>
+<text x="60" y="78" fill="#e8794b" font-size="11.5" text-anchor="middle">start</text>
+<text x="150" y="210" fill="#e8794b" font-size="11.5">SGD: bounces across steep walls, crawls down gentle slopes</text>
+<path d="M70,86 C150,120 240,138 300,140" fill="none" stroke="#f0b429" stroke-width="2.2"/>
+<text x="150" y="112" fill="#f0b429" font-size="11.5">Adam: momentum smooths direction, per-axis adaptive step</text>
+</svg>
+<figcaption>Fig 1 · The "ravine" intuition: a single-stride SGD ping-pongs across the steep direction and crawls down the gentle one; momentum smooths the jitter, and per-parameter adaptive steps take small steps on steep axes and big steps on flat ones — a straighter, faster path.</figcaption>
+</figure>
+<h2>The core idea</h2>
+<h3>Two "moments": one ledger for direction, one for magnitude</h3>
+<p>Adam keeps two exponential moving averages per parameter. Writing the parameter's gradient at step <code>t</code> as <code>g_t</code>:</p>
+<p><strong>First moment m (direction / momentum)</strong>: <code>m_t = β₁·m_{t-1} + (1−β₁)·g_t</code> — a moving average of the gradient itself. It's "which way I've been heading on average," <strong>smoothing out</strong> the random jitter of mini-batches; this is momentum.</p>
+<p><strong>Second moment v (magnitude / jitter)</strong>: <code>v_t = β₂·v_{t-1} + (1−β₂)·g_t²</code> — a moving average of the gradient <em>squared</em>. It measures "how large and jittery this direction's gradient has been," the ruler used to scale the step.</p>
+<h3>The update rule: head along m, scale by √v</h3>
+<p>The core is one step: <code>θ_t = θ_{t-1} − α · m̂_t /(√v̂_t + ε)</code>. The intuition — <strong>step in the smoothed direction m, but divide the step by that direction's typical gradient magnitude √v</strong>: a dimension whose gradient is consistently large and jittery → large √v → the step is divided down and stays steady; a consistently gentle dimension → small √v → the step is enlarged and moves fast. So <strong>the overall scale of the gradients, and even differences in units across dimensions, cancel out in that one division</strong> — no more per-dimension hand-tuning.</p>
+<p>Why divide by <code>√v</code> and not <code>v</code>? For dimensional consistency — <code>√v</code> shares the gradient's units, so the ratio <code>m/√v</code> is roughly a <strong>signal-to-noise ratio</strong>: when the direction is certain (strong signal, low noise) step boldly, when uncertain step small. A bonus is <strong>automatic annealing</strong>: near the optimum the average gradient m tends to 0 while the jitter v lingers, so the ratio shrinks and the steps rein themselves in. The authors show the effective step is roughly "capped" by α (<code>|Δθ| ≲ α</code>), a kind of per-step <strong>trust region</strong> — you know roughly how far a step can move, and it's <strong>invariant</strong> to rescaling the whole gradient by any constant. <code>ε</code> (default <code>10⁻⁸</code>) is just a tiny term to avoid dividing by zero.</p>
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="210" y="16" width="140" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="280" y="38" fill="#e7ebf1" font-size="13" text-anchor="middle">gradient g_t</text>
+<line x1="215" y1="50" x2="130" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="345" y1="50" x2="430" y2="80" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="34" y="82" width="196" height="52" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/>
+<text x="132" y="103" fill="#e7ebf1" font-size="12.5" text-anchor="middle">1st moment m (direction)</text>
+<text x="132" y="122" fill="#7c8593" font-size="11" text-anchor="middle">m=β₁m+(1−β₁)g</text>
+<rect x="330" y="82" width="196" height="52" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/>
+<text x="428" y="103" fill="#e7ebf1" font-size="12.5" text-anchor="middle">2nd moment v (magnitude)</text>
+<text x="428" y="122" fill="#7c8593" font-size="11" text-anchor="middle">v=β₂v+(1−β₂)g²</text>
+<line x1="132" y1="134" x2="132" y2="164" stroke="#7c8593" marker-end="url(#a1)"/>
+<line x1="428" y1="134" x2="428" y2="164" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="34" y="166" width="196" height="46" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429" stroke-dasharray="4 3"/>
+<text x="132" y="184" fill="#f0b429" font-size="12" text-anchor="middle">bias-correct m̂=m/(1−β₁ᵗ)</text>
+<text x="132" y="201" fill="#7c8593" font-size="10.5" text-anchor="middle">undo the "start from 0" bias</text>
+<rect x="330" y="166" width="196" height="46" rx="8" fill="rgba(240,180,41,0.07)" stroke="#f0b429" stroke-dasharray="4 3"/>
+<text x="428" y="184" fill="#f0b429" font-size="12" text-anchor="middle">bias-correct v̂=v/(1−β₂ᵗ)</text>
+<text x="428" y="201" fill="#7c8593" font-size="10.5" text-anchor="middle">same fix for the 2nd moment</text>
+<line x1="132" y1="212" x2="220" y2="248" stroke="#f0b429" marker-end="url(#a1g)"/>
+<line x1="428" y1="212" x2="340" y2="248" stroke="#f0b429" marker-end="url(#a1g)"/>
+<rect x="176" y="250" width="208" height="42" rx="8" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="280" y="276" fill="#e7ebf1" font-size="14" text-anchor="middle">update θ ← θ − α·m̂/(√v̂+ε)</text>
+<line x1="280" y1="292" x2="280" y2="312" stroke="#7c8593" marker-end="url(#a1)"/>
+<text x="280" y="326" fill="#7c8593" font-size="11" text-anchor="middle">head along m, step scaled per-parameter by √v</text>
+</svg>
+<figcaption>Fig 2 · The dataflow of one Adam step: the gradient feeds two moving averages — m records direction (momentum), v records magnitude (jitter); each is bias-corrected, then combined into the update that heads along m and scales the step per parameter by √v.</figcaption>
+</figure>
+<h3>Bias correction: getting the first few steps right</h3>
+<p>One piece is still missing. Both <code>m</code> and <code>v</code> <strong>start at 0</strong>, so the moving averages are dragged toward that "0" in the first steps — especially when β is close to 1 (<code>β₂=0.999</code> mixes in only 0.1% of each new gradient), leaving the early v estimate tiny and biased toward 0. Divide by it directly and the step is miscomputed. Adam applies an exact <strong>bias correction</strong> to remove this systematic bias: <code>m̂_t = m_t/(1−β₁ᵗ)</code>, <code>v̂_t = v_t/(1−β₂ᵗ)</code> — as <code>t</code> grows, <code>1−βᵗ→1</code>, so the correction fades out later and only matters at the start. <strong>This is exactly what lets Adam take correctly-sized steps from the very beginning, and it's the key patch over RMSProp.</strong> The authors also give a variant, <strong>AdaMax</strong>, which replaces the second moment with the gradient's L∞ norm (the running max magnitude), more stable in some settings. The defaults <code>α=0.001, β₁=0.9, β₂=0.999, ε=10⁻⁸</code> need almost no change across a wide range of tasks.</p>
+<h2>Key results</h2>
+<p>The paper compares Adam against SGD-Nesterov, AdaGrad, RMSProp, and AdaDelta on several (by today's standards small) tasks: <strong>logistic regression on MNIST</strong>, a <strong>multilayer network on MNIST</strong>, a <strong>convolutional network on CIFAR-10</strong>, and a dropout-regularized <strong>bag-of-words classifier on IMDB</strong>. The verdict is consistent: <strong>Adam converges faster and more stably</strong>, with an especially clear edge under dropout, where the objective itself is very "noisy." The authors also give an <code>O(√T)</code> <strong>regret bound</strong> for online convex optimization as theoretical support (this proof was later found to be flawed — see below). Honestly: the experiments are small; Adam's real "proof" came from a decade of broad adoption — working out of the box on countless models far beyond the paper's own experiments.</p>
+<h2>Why it mattered</h2>
+<p>Adam turned "training a new model" from an experience-dependent craft into a <strong>stable default starting point</strong>. It's robust to hyperparameters, nearly tuning-free, and steady under heterogeneous and sparse gradients — so it quickly became deep learning's <strong>default optimizer</strong>: from CNNs to RNNs, to <strong>Transformers, BERT, GPT, and diffusion models</strong>, the overwhelming majority of modern large models are trained with Adam or its refinement <strong>AdamW</strong>. Your ability today to "grab a new architecture and just run it with Adam's defaults to see if it works" is, in large part, what this paper granted. As a piece of engineering infrastructure, its influence rivals any single model architecture.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The convergence proof was wrong</strong>: Reddi et al. (<em>On the Convergence of Adam and Beyond</em>, 2018) built a counterexample showing the moving-average second moment can make the denominator <code>v</code> <strong>decrease</strong> (unlike AdaGrad's non-decreasing sum), breaking a key assumption of the original proof, so Adam fails to converge on some simple convex problems; they proposed <strong>AMSGrad</strong> (use the running max of past v) to patch it.</li>
+<li><strong>A generalization gap</strong>: Wilson et al. (2017) found that on some tasks (especially computer vision) adaptive methods reach <strong>worse test accuracy than a well-tuned SGD+momentum</strong> — Adam converges fast but may settle into a solution that generalizes slightly worse. Many vision benchmarks still favor SGD.</li>
+<li><strong>Weight-decay coupling</strong>: standard Adam folds L2 regularization into the gradient, where it gets <strong>distorted</strong> by the adaptive scaling; <strong>AdamW</strong> (Loshchilov &amp; Hutter, 2017/2019) decouples weight decay from the gradient update and is now the de facto standard for training large models — a sign the original wasn't the last word.</li>
+<li><strong>It often needs learning-rate warmup</strong>: training Transformers without warmup can be unstable because the early second-moment estimate is unreliable (analyzed and fixed by <strong>RAdam</strong> and others).</li>
+<li><strong>Memory overhead</strong>: each parameter needs two extra state values, <code>m</code> and <code>v</code> — roughly <strong>3× the parameter memory</strong> — a real burden at the hundred-billion-parameter scale, which spawned many memory-thrifty optimizer variants.</li>
+</ul>
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: Adam = momentum (1st moment) + per-parameter adaptive step (2nd moment) + bias correction, updating <code>θ ← θ − α·m̂/(√v̂+ε)</code>.</p>
+<p>② The pain: SGD's single learning rate is one-size-fits-all — too big oscillates, too small crawls, and sparse/steep/flat directions each need a different step; hand-tuning hurts.</p>
+<p>③ The ancestors: AdaGrad scales by past squared gradients but decays the rate to zero and "stalls"; RMSProp's moving average fixes the stall but lacks momentum and bias correction.</p>
+<p>④ Mechanism: m records direction (smoothing noise), v records magnitude (the ruler); head along m, divide by √v — the gradient scale cancels out and each step covers "a sensible distance."</p>
+<p>⑤ Signal-to-noise + auto-annealing: <code>m/√v</code> is roughly an SNR — bold when certain, small when not; near the optimum the ratio shrinks and steps rein themselves in.</p>
+<p>⑥ Bias correction: m and v start biased toward 0, so <code>÷(1−βᵗ)</code> undoes the start-up bias and gets the first steps right — the key patch over RMSProp.</p>
+<p>⑦ Defaults <code>α=.001, β₁=.9, β₂=.999</code> work nearly out of the box; the AdaMax variant uses the L∞ norm.</p>
+<p>⑧ Impact: became deep learning's default optimizer; Transformer/BERT/GPT/diffusion models are largely trained with Adam or AdamW.</p>
+<p>⑨ Limits: the original convergence proof was flawed (AMSGrad patches it); sometimes generalizes worse than SGD; weight decay must be decoupled (AdamW); often needs warmup; stores two extra states, costing memory.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full algorithm pseudocode and convergence proof, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
