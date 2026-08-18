@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Raft: Consensus Built to Be Understood — IT Paper Deep-Read Paper 50</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 50</p>
+<h1>Raft: Consensus Built to Be Understood</h1>
+<p class="sub">Diego Ongaro &amp; John Ousterhout · Stanford · USENIX ATC 2014</p>
+<p class="langbar"><a href="raft-paper50.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2014, two Stanford researchers (Diego Ongaro and John Ousterhout) introduced <strong>Raft</strong>—a set of rules that lets a group of computers "agree on the same thing, and never take it back." Many of the big systems you use every day (Kubernetes, the database CockroachDB, service registries like etcd / Consul) have a small cluster of machines quietly backing each other up and watching one another, so that "even if a few die, the survivors remember exactly the same record and never disagree." Raft is that agreement rulebook. Its most unusual feature isn't being faster or stronger—it was <strong>deliberately designed to be readable and to be implemented correctly</strong>.</p>
+<h2>An analogy first</h2>
+<p>Picture a team where everyone holds an <strong>identical notebook</strong> listing, in order, "the operations we've performed." The rule: every notebook must stay line-for-line identical forever; once a line is "locked in," it can never be changed or dropped—not even if someone dozes off or a passed note gets lost. Getting a group of drowsy members over an unreliable channel to keep their notebooks perfectly matched has a proper name: <strong>consensus</strong>.</p>
+<h2>The old-world pain</h2>
+<p>Consensus already had a canonical answer, called <strong>Paxos</strong>, proposed in 1990 (its author won a Turing Award). The trouble: it's <strong>notoriously hard to understand</strong>. Textbooks couldn't make it click, engineers couldn't fully grasp it, and anyone building a working system on it had to bolt on their own unproven patches. An algorithm where "one small mistake causes disaster," yet almost nobody truly understands it, is itself a serious hazard. Raft's authors simply made "<strong>being understandable</strong>" the number-one design goal and let everything else fall in line behind it.</p>
+<h2>How Raft pulls it off</h2>
+<p>Three moves, all humble.</p>
+<p>First, <strong>elect a single captain (leader)</strong>: at any moment only the captain may write new lines; everyone else just copies the captain's notebook. Information always flows from the captain to the members—unlike the old approach where anyone could propose and things turned to chaos.</p>
+<p>Second, <strong>elect the captain with random timers</strong>: each person holds a little countdown timer set to a <strong>random length</strong>; if they hear nothing from a captain for a while, whoever's timer rings first stands up and asks "vote me captain?" Because the lengths are random, two people rarely stand at once; if they tie, each re-rolls a new random time and the deadlock quickly breaks.</p>
+<p>Third, <strong>only a majority counts</strong>: after the captain writes a line, it counts as "locked in" only once <strong>more than half</strong> the team has copied it. The beauty is that any two "more-than-half" groups must overlap, so the next captain is <strong>guaranteed to carry every locked-in line</strong>—locked-in content can never be lost. One more rule: <strong>only someone whose notebook is current enough is eligible to be elected</strong>, which slams the door on "a member missing pages becoming captain and leading everyone astray."</p>
+<h2>What it brought about</h2>
+<p>Raft turned consensus from black magic only a few experts dared touch into something an ordinary engineer can implement after reading one paper. Countless pieces of infrastructure today—etcd, Consul, TiKV, CockroachDB, Kafka's newer coordination layer—run on Raft or a variant. In a real sense, it made "reliable distributed systems" something anyone can build.</p>
+<p>One honest caveat: every write has to pass through the single captain, so <strong>the captain is a throughput ceiling</strong>; and when the captain drops off, the whole team <strong>pauses briefly</strong> to elect a new one before continuing. It also guards only against "crashing," not "lying"—it assumes no member is malicious.</p>
+<h2>Remember this one line</h2>
+<div class="tl">
+<p>Elect one captain to keep the ledger while everyone copies it, use random timers to pick the captain and "a majority-has-copied-it before it counts" to make locked-in entries un-loseable—Raft rewrote a consensus algorithm no one had understood for thirty years into rules you can actually read and implement correctly, becoming the consistency core of countless modern distributed systems.</p>
+</div>
+<p class="switch-hint">Want the role state machine, the replicated-log diagram, and the numbers? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Raft is a <strong>replicated consensus algorithm</strong>: it lets a group of servers that can crash and communicate only over an unreliable network agree, irrevocably, on the order of a sequence of commands (a <strong>replicated log</strong>). Its fault tolerance and performance match Paxos, but it makes <strong>understandability</strong> the primary design goal—via a "strong leader + randomized elections + decomposition into leader election / log replication / safety"—so that consensus became, for the first time, teachable, graspable, and implementable correctly. Today it is the consensus core of etcd, Consul, TiKV, CockroachDB, and many more.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Consensus</strong>: getting a group of machines to agree on a value / sequence of values even when some fail. The central hard problem behind every fault-tolerant system.</li>
+<li><strong>Replicated state machine</strong>: many machines each hold the same "command sequence" and execute the same commands in the same order, so their states stay identical; as long as a majority survives, the whole keeps serving. A consensus algorithm's job is to keep those command sequences in sync.</li>
+<li><strong>Log / entry</strong>: an ordered, numbered record of commands. Each entry holds three things: command, term number, and index.</li>
+<li><strong>Term</strong>: Raft slices time into successively numbered "terms," each with at most one leader; the term acts as a global <strong>logical clock</strong> used to detect and discard stale information.</li>
+<li><strong>Leader / follower / candidate</strong>: the three roles a server can be in at any instant in Raft.</li>
+<li><strong>Commit</strong>: an entry is "committed" once a majority has replicated it—from then on it can be safely executed and will never be lost.</li>
+<li><strong>Majority / quorum</strong>: more than half the servers (e.g. 3 of 5). <strong>Any two majorities must intersect</strong>—this is the mathematical bedrock of all of Raft's safety.</li>
+<li><strong>RPC (remote procedure call)</strong>: one machine calling a function on another as if it were local. Raft uses just two RPCs throughout: <code>RequestVote</code> and <code>AppendEntries</code> (replication / heartbeat).</li>
+<li><strong>Crash fault vs Byzantine fault</strong>: Raft assumes bad nodes only "stop / slow down / drop messages," never actively lie; tolerating maliciously lying nodes is Byzantine fault tolerance (a separate topic) and out of Raft's scope.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Diego Ongaro and John Ousterhout of Stanford; the paper appeared at <strong>USENIX ATC 2014</strong> (a fuller version is Ongaro's PhD dissertation). It follows Lamport's <strong>Paxos (the 2001 "made simple" version) and Multi-Paxos</strong>—the reigning consensus classics for three decades—and precedes nearly every new-generation coordination system in industry. Less an invention of a new principle than a <strong>re-shaping of existing principles into a form a human head can actually hold</strong>.</p>
+<h2>The problem &amp; motivation</h2>
+<p>The reliability of many critical systems reduces to one thing: <strong>getting multiple machines to agree on "which operations happened, and in what order."</strong> The mechanism is the <em>replicated state machine</em>—each machine stores an identical command log and executes it in order, so states stay identical everywhere; lose a few machines and, as long as a majority lives, service continues. Google's Chubby, Yahoo's ZooKeeper, and GFS's master election all rest on such a "consensus engine."</p>
+<p>And the de facto standard for consensus had long been Lamport's <strong>Paxos</strong>. Correct and classic—but saddled with two flaws that vexed practitioners for years.</p>
+<p>First, <strong>too hard to understand</strong>. The authors say so bluntly: Paxos is famously opaque, and few grasp it without serious effort—they themselves only felt confident after a long struggle and several secondary explanations. An algorithm whose correctness is critical, yet which most of its users understand only half-way, is dangerous.</p>
+<p>Second, <strong>hard to build on</strong>. Paxos originally describes agreeing on <em>one</em> value (single-decree), but real systems need to agree on a whole <em>sequence</em> of values (a log). The step from single-decree to Multi-Paxos is left vague, so <strong>every implementation improvises</strong>, adding its own patches; the results diverge and are hard to prove correct. As the Chubby team famously put it, real systems bear little resemblance to textbook Paxos.</p>
+<p>So Ongaro and Ousterhout changed the starting point: <strong>design a new algorithm with "understandability" as the first-class goal</strong>—whenever a trade-off makes it easier to learn or harder to get wrong, take it. Two techniques carried the day: <strong>problem decomposition</strong> (splitting consensus into a few relatively independent, separately explainable sub-problems) and <strong>shrinking the state space</strong> (minimizing the states the system can be in, and the amount of nondeterminism, so the reader has fewer cases to consider). Raft grew out of that.</p>
+<h2>Core ideas &amp; method</h2>
+<h3>Split one hard problem into three</h3>
+<p>Raft's first design decision is to split consensus into three separately-understandable sub-problems: <strong>① leader election</strong> (how to elect a unique leader and replace one that dies), <strong>② log replication</strong> (how the leader safely lays client commands out across all machines), and <strong>③ safety</strong> (the rules that guarantee "no one ever executes contradictory commands"). Explain each on its own; together they are all of Raft.</p>
+<p>The decision that runs through all three is the <strong>strong leader</strong>: at most one leader per cluster at any time, and <strong>the log flows only one way, from leader to followers</strong>. That single cut removes much of Paxos's complexity—the "anyone can propose, conflicts must be reconciled" mess—because in normal times a client talks only to the leader while the rest passively copy.</p>
+<h3>① Leader election: terms + randomized timeouts</h3>
+<p>Raft slices time into successively numbered <em>terms</em>, each beginning with an election. The term number is a global <strong>logical clock</strong>: every message carries the sender's term, and whoever sees a term larger than its own immediately concedes it is stale, reverts to <strong>follower</strong>, and updates its term; whoever receives a smaller term simply rejects it. This one rule automatically neutralizes "stale leaders" and spares countless special cases.</p>
+<p>A server transitions only among three roles: a <strong>follower</strong> passively answers RPCs from leaders and candidates; a <strong>candidate</strong> is running for office; a <strong>leader</strong> handles all client requests. The leader periodically sends <strong>empty <code>AppendEntries</code> as heartbeats</strong> declaring "I'm still here." If a follower hears no heartbeat within an <em>election timeout</em>, it assumes the leader is gone: it increments its term, becomes a candidate, votes for itself, and sends <code>RequestVote</code> to everyone. <strong>A majority of votes wins</strong>, and the winner starts sending heartbeats to hold the floor.</p>
+<figure>
+<svg viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect x="30" y="98" width="130" height="52" rx="9" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
+<text x="95" y="128" text-anchor="middle" fill="#e7ebf1" font-size="14" font-weight="700">Follower</text>
+<rect x="215" y="98" width="130" height="52" rx="9" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect>
+<text x="280" y="128" text-anchor="middle" fill="#f0b429" font-size="14" font-weight="700">Candidate</text>
+<rect x="400" y="98" width="130" height="52" rx="9" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="465" y="128" text-anchor="middle" fill="#e8794b" font-size="14" font-weight="700">Leader</text>
+<line x1="160" y1="118" x2="211" y2="118" stroke="#7c8593" marker-end="url(#a1)"></line>
+<text x="185" y="88" text-anchor="middle" fill="#b9c0ca" font-size="10.5">times out</text>
+<text x="185" y="102" text-anchor="middle" fill="#7c8593" font-size="10.5">starts election</text>
+<line x1="345" y1="118" x2="396" y2="118" stroke="#7c8593" marker-end="url(#a1)"></line>
+<text x="372" y="88" text-anchor="middle" fill="#b9c0ca" font-size="10.5">wins</text>
+<text x="372" y="102" text-anchor="middle" fill="#7c8593" font-size="10.5">majority</text>
+<path d="M400,138 C320,196 180,196 120,152" fill="none" stroke="#7c8593" marker-end="url(#a1)"></path>
+<text x="260" y="212" text-anchor="middle" fill="#b9c0ca" font-size="10.5">sees higher term → step down to follower</text>
+<path d="M280,150 C250,178 310,178 280,150" fill="none" stroke="#7c8593" marker-end="url(#a1)"></path>
+<text x="280" y="192" text-anchor="middle" fill="#7c8593" font-size="10">split vote → time out, retry</text>
+</svg>
+<figcaption>Fig 1 · The three role transitions: a follower that times out becomes a candidate and campaigns; a majority of votes makes it leader; anyone seeing a higher term steps back to follower; a split vote leads to another randomized-timeout election.</figcaption>
+</figure>
+<p>The catch in elections is the <strong>split vote</strong>: several followers time out at once, all campaign, the votes fracture, no one reaches a majority, and everyone times out to try again—possibly stalling repeatedly. Raft's fix is elegantly simple: <strong>pick each election timeout at random</strong> (say, uniformly in 150–300 ms). Then one server usually times out first and grabs a majority before the rest; if they collide, each one's next timeout is a fresh random value, so they soon spread out. <strong>A single random number turns the old scourge of split votes into a low-probability, fast-healing event.</strong></p>
+<h3>② Log replication: commit on majority, align via a consistency check</h3>
+<p>Client commands go only to the leader. The leader appends the command as a new <em>entry</em> to the end of its own log (each entry holds <strong>command, term, index</strong>), then replicates it to all followers in parallel with <code>AppendEntries</code>. <strong>Once the entry is stored on a majority, the leader marks it "committed,"</strong> executes it, returns the result to the client, and later piggybacks "how far we've committed" on heartbeats so followers execute it too.</p>
+<figure>
+<svg viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text x="52" y="26" text-anchor="middle" fill="#e7ebf1" font-size="11.5">client command</text>
+<line x1="52" y1="32" x2="52" y2="50" stroke="#7c8593" marker-end="url(#a2)"></line>
+<text x="70" y="70" text-anchor="end" fill="#e8794b" font-size="11.5" font-weight="700">Leader</text>
+<text x="70" y="108" text-anchor="end" fill="#7c8593" font-size="11.5">Follower</text>
+<text x="70" y="146" text-anchor="end" fill="#7c8593" font-size="11.5">Follower</text>
+<text x="70" y="184" text-anchor="end" fill="#7c8593" font-size="11.5">Follower</text>
+<text x="70" y="222" text-anchor="end" fill="#7c8593" font-size="11.5">Follower</text>
+<text x="98" y="46" fill="#7c8593" font-size="10">1</text>
+<text x="142" y="46" fill="#7c8593" font-size="10">2</text>
+<text x="186" y="46" fill="#7c8593" font-size="10">3</text>
+<text x="230" y="46" fill="#7c8593" font-size="10">4</text>
+<text x="274" y="46" fill="#7c8593" font-size="10">5 = index</text>
+<rect x="90" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
+<rect x="134" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
+<rect x="178" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
+<rect x="222" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
+<rect x="266" y="52" width="40" height="26" rx="4" fill="none" stroke="#e8794b" stroke-dasharray="3 2"></rect>
+<rect x="90" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="134" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="178" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="222" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="266" y="90" width="40" height="26" rx="4" fill="none" stroke="#e8794b" stroke-dasharray="3 2"></rect>
+<rect x="90" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="134" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="178" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="222" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="90" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="134" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="178" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="222" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="90" y="204" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="134" y="204" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect x="178" y="204" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<line x1="264" y1="44" x2="264" y2="240" stroke="#e8794b" stroke-width="1.4" stroke-dasharray="5 3"></line>
+<text x="150" y="262" text-anchor="middle" fill="#f0b429" font-size="11">← committed: replicated on a majority, never lost</text>
+<text x="286" y="262" text-anchor="start" fill="#7c8593" font-size="10.5">uncommitted →</text>
+</svg>
+<figcaption>Fig 2 · Replicated log: the leader lays commands out to followers; indices 1–4 are replicated on a majority (≥3 of 5), so they are committed; index 5 has reached only 2 machines and is not yet committed. Everything left of the dashed line can never change or be lost.</figcaption>
+</figure>
+<p>How is the alignment guaranteed? By a <strong>Log Matching property</strong>: <em>if an entry in two logs has the same index and term, then the two logs are identical in every entry up through that point.</em> The implementation needs just one trick—every <code>AppendEntries</code> carries "the index and term of the preceding entry," and a follower whose slot doesn't match simply <strong>rejects</strong> it. On a rejection the leader steps the position back one and retries, until it finds a point where the two agree, then <strong>overwrites everything after that point in the follower's log</strong> with its own entries. So the leader never modifies its own log; it merely forces followers to look like it.</p>
+<h3>③ Safety: only "sufficiently up-to-date" servers may become leader</h3>
+<p>The above isn't enough on its own: if a follower <strong>missing committed entries</strong> became the new leader, its overwriting could erase content that was already committed and already reported to clients—which must never happen. Raft slams the door with an <strong>election restriction</strong>: when voting, a candidate must include the term and index of its last log entry in <code>RequestVote</code>, and <strong>a follower grants its vote only if the candidate's log is at least as up-to-date as its own</strong> (comparison rule: compare the last entry's term first, higher term wins; on a tie, the longer log wins).</p>
+<p>Combine that with "any two majorities intersect" and you get Raft's key guarantee—<strong>Leader Completeness</strong>: any committed entry is present in the log of every leader thereafter. The reasoning: an entry is committed = it lives on some majority; a new leader is elected = it won the votes of another majority; the two majorities must intersect, and the machine in the intersection <strong>both holds that committed entry and voted for the new leader</strong>—yet it votes only for someone whose log is "no older than its own," so the new leader must also hold that entry. Committed content is thereby never lost.</p>
+<p>There's a famous subtlety here (the paper's Figure 8): a leader <strong>cannot</strong> conclude that an entry from a <em>previous</em> term is committed merely because it now sits on a majority—because a later leader could still overwrite it. Raft's rule is that a leader <strong>advances the commit point only by replicating a new entry from its own <em>current</em> term</strong>; once a current-term entry is committed, the Log Matching property makes those earlier previous-term entries <strong>committed indirectly</strong>. This counterintuitive rule is the easiest place to get a Raft implementation wrong.</p>
+<p>Raft also supplies two engineering necessities: <strong>cluster membership changes</strong> use a two-phase "joint consensus" transition, guaranteeing that during a config switch no two disjoint majorities can arise and elect two leaders; and <strong>log compaction</strong> uses snapshots—each server independently snapshots its committed prefix and discards it, keeping the log from growing without bound.</p>
+<h2>Key results</h2>
+<p>Raft's central claim is "easier to understand," so the paper does something rare—it <strong>measures understandability as a metric</strong>: the authors recruited <strong>43 students</strong> at Stanford and Berkeley, had each watch one lecture video on Paxos and one on Raft, then take a matching quiz. Raft's average quiz score came out <strong>about 4.9 points higher than Paxos (out of 60)</strong>, and <strong>33 of the 43 scored higher on Raft</strong>; in a survey, most participants judged Raft easier to implement and easier to explain to others.</p>
+<p>On correctness, the authors give a <strong>formal specification of Raft and prove its safety</strong> (centered on Leader Completeness above). On performance, they measure <strong>leader election</strong>: with randomized timeouts the cluster elects a new leader in <strong>well under a second—often within a few hundred milliseconds</strong>—across most configurations; shrink the randomization range and split votes stretch election time markedly, which conversely confirms the value of the randomized-timeout trick. For steady-state throughput and latency, Raft is in the same class as Multi-Paxos.</p>
+<h2>Why it matters / impact</h2>
+<p>Raft's influence lies more in <strong>engineering and education</strong> than in theoretical breakthrough. After publication, <strong>dozens of open-source implementations</strong> quickly appeared, and it rapidly became the industry's de facto standard: Kubernetes's metadata store <strong>etcd</strong>, HashiCorp's <strong>Consul</strong>, TiDB's <strong>TiKV</strong>, <strong>CockroachDB</strong>, RethinkDB, and even Kafka's <strong>KRaft</strong> that <strong>replaced ZooKeeper</strong>—their consensus cores are Raft or a variant. It lowered the bar for "build a strongly consistent distributed system" from "you must be a consensus expert" to "you can read one paper."</p>
+<p>At a deeper level, Raft showed that <strong>"understandability" can itself be a first-class research goal</strong>: the same fault-tolerance guarantees, told a different way with a different abstraction, can benefit an entire industry. It duly became the <strong>go-to teaching material</strong> for consensus in nearly every distributed-systems course.</p>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>The single leader is a bottleneck</strong>: every write must pass through one point, capping throughput and precluding horizontal write scaling; when the leader fails, the cluster goes through a brief <strong>window of unavailability</strong> during election before recovering.</li>
+<li><strong>Fault tolerance and performance don't beat Paxos</strong>: Raft's contribution is being "understandable," not "stronger"—it's in the same class as Multi-Paxos. Some simply see it as "a more tightly-constrained, more fully-specified Multi-Paxos" that adds nothing theoretically new.</li>
+<li><strong>No Byzantine tolerance</strong>: it handles only "honest" faults—crashes, dropped packets, slowness; a single compromised node sending contradictory messages can break it. Trustless, adversarial settings like blockchains need BFT / proof-of-work, where Raft does not apply.</li>
+<li><strong>"Understandable" didn't make it bug-proof</strong>: the simpler "single-server membership change" scheme in Ongaro's dissertation was later found by the community to have a subtle safety defect requiring a fix—even the understandability-first version had a hidden pitfall, and the safer choice remains the more complex joint consensus.</li>
+<li><strong>The Figure-8 "commit only current-term entries" rule is a trap</strong>: miss this counterintuitive detail in an implementation and the system can lose committed data under a specific failure sequence—so Raft, too, is not "correct just by copying the pseudocode."</li>
+<li><strong>Timeouts need tuning</strong>: the randomized-timeout values must match the deployment's network round-trip latency; misconfigured, they cause frequent or sluggish elections—operational experience is still required.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: Raft is a replicated consensus algorithm that lets crashable machines agree irrevocably on "a replicated log"; its headline selling point is being <strong>designed for understandability</strong>.</p>
+<p>② The pain: Paxos is correct but extremely hard to understand, and its path from single-decree to a "log" is vague—everyone improvises and correctness suffers; a correctness-critical algorithm that almost no one truly reads.</p>
+<p>③ Decomposition: split consensus into <strong>leader election / log replication / safety</strong> and explain each; the through-line is the <strong>strong leader</strong>—the log flows only from leader to followers.</p>
+<p>④ Election: use <strong>terms</strong> as a logical clock and step down on any higher term; use <strong>randomized election timeouts</strong> to make split votes rare and fast-healing; a majority of votes wins.</p>
+<p>⑤ Replication: a command is appended by the leader, laid out to all via <code>AppendEntries</code>, and <strong>committed once a majority replicates it</strong>; a "preceding index + term" consistency check forcibly aligns follower logs.</p>
+<p>⑥ Safety: <strong>only a "sufficiently up-to-date" candidate can be elected</strong> (election restriction) + any two majorities intersect ⇒ Leader Completeness: a committed entry lives in every later leader and is never lost.</p>
+<p>⑦ The subtlety: a leader advances commit only by replicating a <strong>current-term</strong> entry; earlier-term entries are committed indirectly (Figure 8)—the single easiest thing to implement wrong.</p>
+<p>⑧ Results &amp; impact: it beat Paxos measurably in an understandability user study; it spawned etcd, Consul, TiKV, CockroachDB, KRaft, and more, becoming the de facto standard and the default teaching choice for consensus.</p>
+<p>⑨ Limits: single-leader bottleneck + an election unavailability window; no gain over Paxos in fault tolerance / performance; no Byzantine tolerance; a membership-change pitfall was found; timeouts need tuning.</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Reading this page ≈ grasping the paper's core; for the full RPC fields, state diagram, and safety proof, go back to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
