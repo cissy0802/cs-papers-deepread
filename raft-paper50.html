@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 50</p>
-<h1>Raft：为「读得懂」而生的共识算法</h1>
+<h1 data-tts="0727df422083dc7a">Raft：为「读得懂」而生的共识算法</h1>
 <p class="sub">Diego Ongaro &amp; John Ousterhout · Stanford · USENIX ATC 2014</p>
 <p class="langbar"><a href="raft-paper50.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,30 +44,30 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="5607586d64149e40">这篇论文干了什么？</h2>
 <p>2014 年，斯坦福的两位研究者（Diego Ongaro 与 John Ousterhout）提出了 <strong>Raft</strong>——一套让一群计算机「就同一件事达成一致、而且永不反悔」的规则。你天天在用的很多大系统（比如 Kubernetes、数据库 CockroachDB、服务注册中心 etcd / Consul）背后，都有一小群机器在偷偷互相备份、彼此盯着，保证「就算死掉几台，剩下的也记得一模一样的账、绝不打架」。Raft 就是这套「达成一致」的规则。它最特别的地方不是更快或更强——而是<strong>故意被设计得让人能读懂、能照着写对</strong>。</p>
-<h2>先打个比方</h2>
+<h2 data-tts="7a1fbefcd3de28b1">先打个比方</h2>
 <p>想象一个小组，每人手里一本<strong>一模一样的记事本</strong>，上面按顺序记着「做过哪些操作」。规矩是：所有人的本子必须永远逐行相同；一旦某一行被「敲定」，就再也不能改、不能丢——哪怕有人打瞌睡、传纸条中途弄丢了也不行。让一群会犯困、通信还不靠谱的成员，把本子记得分毫不差，这件事有个正经名字，叫<strong>共识（consensus）</strong>。</p>
-<h2>旧世界的痛</h2>
+<h2 data-tts="dacc19874e80cbf9">旧世界的痛</h2>
 <p>共识早就有过标准答案，叫 <strong>Paxos</strong>，1990 年提出、作者还拿了图灵奖。问题是：它<strong>出了名地难懂</strong>。教科书讲不清、工程师读不透，真要照着做一个能用的系统，几乎人人都得往里加一堆自己发明、没被验证过的补丁。一个「错一点就出大事」的算法，却几乎没人真正搞懂——这本身就是重大隐患。Raft 的作者干脆把「<strong>让人能懂</strong>」当成头号设计目标，其它都往后排。</p>
-<h2>Raft 怎么做到的</h2>
+<h2 data-tts="1867804131e25d87">Raft 怎么做到的</h2>
 <p>三招，都很朴素。</p>
 <p>一是<strong>只选一个队长（leader）</strong>：任何时候只有队长一人能往本子里写新行，其他人只管照抄队长的本子。信息永远从队长流向组员——不像旧办法人人都能提议、乱成一锅粥。</p>
 <p>二是<strong>用随机闹钟选队长</strong>：每人手里一个<strong>倒计时长短随机</strong>的小闹钟；只要一阵子没听到队长的动静，谁的闹钟先响，谁就站起来喊「选我当队长？」。因为时长随机，两人同时抢的情况很少；万一抢平了，就各自再随机一次，很快能选出来。</p>
 <p>三是<strong>过半数才算数</strong>：队长写下一行后，要等<strong>超过一半的人</strong>都抄好了，这行才算「敲定」。妙处在于——任意两拨「过半数」的人一定有重叠，所以下一任队长手里<strong>必然带着全部敲定过的行</strong>，敲定的内容永远不会丢。再补一条：<strong>只有本子记得够新的人才有资格当选</strong>，这就堵死了「本子缺页的人当上队长、把大家带偏」的漏洞。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="f5b36414f308f082">带来了什么</h2>
 <p>Raft 把「共识」从少数专家才敢碰的黑魔法，变成了普通工程师读一篇论文就能实现的东西。今天数不清的基础设施——etcd、Consul、TiKV、CockroachDB、Kafka 的新版协调层——都跑在 Raft 或它的变体上。可以说，它让「可靠的分布式系统」变得人人写得出。</p>
 <p>诚实一句：所有写操作都得过队长一个人的手，所以<strong>队长是吞吐的天花板</strong>；而且队长一掉线，全组要<strong>停一小会儿</strong>重新选举才能继续。它也只防「宕机」不防「说谎」——假设成员里没人使坏。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="89414bf3c53f943b">一句话记住</h2>
 <div class="tl">
 <p>选一个队长专门记账、大家照抄，用随机闹钟选队长、用「过半数抄好才算数」保证敲定的内容永不丢失——Raft 把三十年没人读懂的共识算法，重写成一篇能读懂、能照着写对的规则，成了当代无数分布式系统的一致性内核。</p>
 </div>
 <p class="switch-hint">想看角色状态机、复制日志图和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="ae046d19221fd9fd">一句话</h2>
 <p class="lead">Raft 是一套<strong>多副本共识（consensus）算法</strong>：让一组会宕机、只能通过不可靠网络通信的服务器，对「一串命令的先后顺序」（一份<strong>复制日志</strong>）达成永不反悔的一致。它的容错能力与性能和 Paxos 相当，但把<strong>可理解性</strong>当成首要设计目标——靠「强领导者 + 随机化选举 + 把问题拆成领导选举 / 日志复制 / 安全性三块」，让共识第一次变得能教、能懂、能照着写对。如今它是 etcd、Consul、TiKV、CockroachDB 等无数系统的共识内核。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="add82fb3d0a1cb3a">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>共识（consensus）</strong>：让一组机器就某个值 / 一串值达成一致，即使部分机器故障也不出错。是所有容错系统的核心难题。</li>
@@ -81,113 +81,113 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>宕机容错 vs 拜占庭容错</strong>：Raft 假设坏节点只会「停机 / 变慢 / 丢消息」，不会主动撒谎；能容忍恶意撒谎节点的是拜占庭容错（另有专篇），Raft 不管那一档。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="fe9d3e6e1425f101">坐标</h2>
 <p>作者是 Diego Ongaro 与 John Ousterhout，来自斯坦福大学，论文发表于 <strong>USENIX ATC 2014</strong>（更完整的版本是 Ongaro 的博士论文）。它上承 Lamport 的 <strong>Paxos（2001 简化版）与 Multi-Paxos</strong>——统治共识领域三十年的经典；下启工业界几乎所有新一代协调系统。与其说 Raft 发明了新原理，不如说它把已有原理<strong>重新组织成一个人脑能装得下的形状</strong>。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="00ab0891b9a7c1ac">问题与动机</h2>
 <p>很多关键系统的可靠性，最后都归结到同一件事上：<strong>让多台机器就「发生过哪些操作、按什么顺序」达成一致</strong>。做法是<em>复制状态机</em>——每台机器存一份相同的命令日志，逐条按序执行，状态自然处处相同；坏掉几台，只要多数还活着，服务照常。Google 的 Chubby、雅虎的 ZooKeeper、GFS 选主，底下都是这样一台「共识引擎」在撑着。</p>
 <p>而共识的事实标准，长期是 Lamport 的 <strong>Paxos</strong>。它正确、经典，却带着两个让工程界头疼多年的毛病。</p>
 <p>第一，<strong>太难懂</strong>。作者直言不讳：Paxos 出了名地晦涩，少有人不下大功夫就能读通——他们自己也是啃了很久、参考了若干二次解读才敢说搞明白。一个正确性攸关的算法，绝大多数使用者却理解得半懂不懂，这是危险的。</p>
 <p>第二，<strong>难落地</strong>。Paxos 原始描述的是「就<em>一个</em>值达成一致」（单决议），可真实系统要的是就<em>一长串</em>值（一份日志）连续达成一致。从单决议拼成 Multi-Paxos 的那部分，论文讲得含糊，于是<strong>每个实现都在自行发挥</strong>、各加各的补丁，做出来的系统彼此不同、也难证明正确。用 Chubby 团队的话说，实际系统与教科书里的 Paxos 相去甚远。</p>
 <p>Ongaro 与 Ousterhout 于是换了个出发点：<strong>把「可理解性」当成第一目标</strong>去设计一个新算法——凡是能让人更容易学懂、更不容易写错的取舍，就优先采纳。手段有二：一是<strong>问题分解</strong>（把共识切成几块相对独立、可分别讲清的子问题）；二是<strong>压缩状态空间</strong>（尽量减少系统可能处于的状态、减少「不确定性」，让读者要考虑的情况更少）。Raft 就是这么长出来的。</p>
-<h2>核心思想 / 方法</h2>
-<h3>把一个大难题，拆成三块</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="694115c444159a8f">把一个大难题，拆成三块</h3>
 <p>Raft 的第一个设计决定，是把共识拆成三个能分开理解的子问题：<strong>① 领导选举</strong>（怎样选出唯一的领导者、原领导挂了怎么补选）、<strong>② 日志复制</strong>（领导者如何把客户端命令安全地铺到所有机器上）、<strong>③ 安全性</strong>（用什么规则保证「谁都不会执行到互相矛盾的命令」）。三块各讲各的，合起来就是完整的 Raft。</p>
 <p>贯穿三块的核心决定，是<strong>强领导者（strong leader）</strong>：任一时刻集群里最多一个领导者，<strong>日志只从领导者单向流向跟随者</strong>。这一刀砍掉了 Paxos 里「人人可提议、冲突要协调」的大量复杂度——普通时候，客户端只跟领导者打交道，其余机器被动照抄。</p>
-<h3>① 领导选举：任期 + 随机超时</h3>
+<h3 data-tts="8fb30bbb09739fb1">① 领导选举：任期 + 随机超时</h3>
 <p>Raft 把时间切成一段段编号递增的<em>任期（term）</em>，每个任期以一次选举开始。任期号是全局的<strong>逻辑时钟</strong>：每条消息都带上发送者的任期，谁看到比自己大的任期，就立刻承认自己过期、退回<strong>跟随者</strong>并更新任期；谁收到比自己小的任期，就直接拒绝。这一条规则，让「过期的领导者」自动失效，省去大量特判。</p>
 <p>服务器只在三种角色间转换：<strong>跟随者（follower）</strong>被动响应领导者与候选人的 RPC；<strong>候选人（candidate）</strong>正在竞选；<strong>领导者（leader）</strong>负责处理所有客户端请求。领导者定期向所有人发<strong>空的 <code>AppendEntries</code> 作心跳</strong>，宣示「我还在」。跟随者若在一个<em>选举超时</em>内没听到任何心跳，就认为领导者挂了：它把任期号加一、变成候选人、先投自己一票，再向所有人发 <code>RequestVote</code> 拉票。<strong>拿到多数票即当选</strong>，随即开始发心跳压住场面。</p>
 <figure>
-<svg viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
-<rect x="30" y="98" width="130" height="52" rx="9" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
-<text x="95" y="122" text-anchor="middle" fill="#e7ebf1" font-size="14" font-weight="700">跟随者</text>
-<text x="95" y="140" text-anchor="middle" fill="#7c8593" font-size="11">Follower</text>
-<rect x="215" y="98" width="130" height="52" rx="9" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect>
-<text x="280" y="122" text-anchor="middle" fill="#f0b429" font-size="14" font-weight="700">候选人</text>
-<text x="280" y="140" text-anchor="middle" fill="#7c8593" font-size="11">Candidate</text>
-<rect x="400" y="98" width="130" height="52" rx="9" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
-<text x="465" y="122" text-anchor="middle" fill="#e8794b" font-size="14" font-weight="700">领导者</text>
-<text x="465" y="140" text-anchor="middle" fill="#7c8593" font-size="11">Leader</text>
-<line x1="160" y1="118" x2="211" y2="118" stroke="#7c8593" marker-end="url(#a1)"></line>
-<text x="185" y="88" text-anchor="middle" fill="#b9c0ca" font-size="10.5">选举超时</text>
-<text x="185" y="102" text-anchor="middle" fill="#7c8593" font-size="10.5">发起选举</text>
-<line x1="345" y1="118" x2="396" y2="118" stroke="#7c8593" marker-end="url(#a1)"></line>
-<text x="372" y="88" text-anchor="middle" fill="#b9c0ca" font-size="10.5">赢得</text>
-<text x="372" y="102" text-anchor="middle" fill="#7c8593" font-size="10.5">多数票</text>
-<path d="M400,138 C320,196 180,196 120,152" fill="none" stroke="#7c8593" marker-end="url(#a1)"></path>
-<text x="260" y="212" text-anchor="middle" fill="#b9c0ca" font-size="10.5">发现更高任期 → 退回跟随者</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="9" stroke="#7c8593" width="130" x="30" y="98"></rect>
+<text fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle" x="95" y="122">跟随者</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="95" y="140">Follower</text>
+<rect fill="rgba(240,180,41,0.08)" height="52" rx="9" stroke="#f0b429" width="130" x="215" y="98"></rect>
+<text fill="#f0b429" font-size="14" font-weight="700" text-anchor="middle" x="280" y="122">候选人</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="140">Candidate</text>
+<rect fill="rgba(232,121,75,0.12)" height="52" rx="9" stroke="#e8794b" width="130" x="400" y="98"></rect>
+<text fill="#e8794b" font-size="14" font-weight="700" text-anchor="middle" x="465" y="122">领导者</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="465" y="140">Leader</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="160" x2="211" y1="118" y2="118"></line>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="185" y="88">选举超时</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="185" y="102">发起选举</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="345" x2="396" y1="118" y2="118"></line>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="372" y="88">赢得</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="372" y="102">多数票</text>
+<path d="M400,138 C320,196 180,196 120,152" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="260" y="212">发现更高任期 → 退回跟随者</text>
 <path d="M262,150 C240,182 240,182 262,150" fill="none" stroke="#7c8593"></path>
-<path d="M280,150 C250,178 310,178 280,150" fill="none" stroke="#7c8593" marker-end="url(#a1)"></path>
-<text x="280" y="192" text-anchor="middle" fill="#7c8593" font-size="10">选票分裂→超时重选</text>
+<path d="M280,150 C250,178 310,178 280,150" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="192">选票分裂→超时重选</text>
 </svg>
 <figcaption>图 1 · 三种角色的转换：跟随者选举超时→变候选人拉票；拿到多数票→当领导者；任何人一发现更高任期就退回跟随者；选票分裂就随机超时后重选。</figcaption>
 </figure>
 <p>选举的麻烦在于<strong>选票分裂</strong>：几个跟随者同时超时、同时竞选，票被瓜分，谁都不过半，只能超时重来，可能反复卡住。Raft 的解法简单得漂亮——<strong>选举超时时间随机取</strong>（如在 150–300 毫秒间随机）。这样大概率只有一个人最先超时、抢先拉到多数票；万一撞车，各自的下次超时又是新的随机值，很快错开。<strong>一个随机数，就把「选票分裂」这个老大难压成了小概率、且能快速自愈。</strong></p>
-<h3>② 日志复制：过半即提交，靠一致性检查对齐</h3>
+<h3 data-tts="b305dad327aadf4a">② 日志复制：过半即提交，靠一致性检查对齐</h3>
 <p>客户端命令只发给领导者。领导者把命令作为新<em>条目</em>追加到自己日志末尾（每条含<strong>命令、任期号、索引</strong>），然后并行地用 <code>AppendEntries</code> 把它复制给所有跟随者。<strong>当这条目被多数派存下，领导者就把它标记为「已提交（committed）」</strong>，执行它、把结果回给客户端，并在后续心跳里捎带告诉大家「已经提交到哪儿了」，跟随者随之执行。</p>
 <figure>
-<svg viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a2" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
-<text x="52" y="26" text-anchor="middle" fill="#e7ebf1" font-size="11.5">客户端命令</text>
-<line x1="52" y1="32" x2="52" y2="50" stroke="#7c8593" marker-end="url(#a2)"></line>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="52" y="26">客户端命令</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="52" x2="52" y1="32" y2="50"></line>
 <!-- rows -->
-<text x="70" y="60" text-anchor="end" fill="#e8794b" font-size="11.5" font-weight="700">领导者</text>
-<text x="70" y="98" text-anchor="end" fill="#7c8593" font-size="11.5">跟随者</text>
-<text x="70" y="136" text-anchor="end" fill="#7c8593" font-size="11.5">跟随者</text>
-<text x="70" y="174" text-anchor="end" fill="#7c8593" font-size="11.5">跟随者</text>
-<text x="70" y="212" text-anchor="end" fill="#7c8593" font-size="11.5">跟随者</text>
+<text fill="#e8794b" font-size="11.5" font-weight="700" text-anchor="end" x="70" y="60">领导者</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="70" y="98">跟随者</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="70" y="136">跟随者</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="70" y="174">跟随者</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="70" y="212">跟随者</text>
 <!-- index header -->
-<text x="98" y="46" fill="#7c8593" font-size="10">1</text>
-<text x="142" y="46" fill="#7c8593" font-size="10">2</text>
-<text x="186" y="46" fill="#7c8593" font-size="10">3</text>
-<text x="230" y="46" fill="#7c8593" font-size="10">4</text>
-<text x="274" y="46" fill="#7c8593" font-size="10">5 ←索引</text>
+<text fill="#7c8593" font-size="10" x="98" y="46">1</text>
+<text fill="#7c8593" font-size="10" x="142" y="46">2</text>
+<text fill="#7c8593" font-size="10" x="186" y="46">3</text>
+<text fill="#7c8593" font-size="10" x="230" y="46">4</text>
+<text fill="#7c8593" font-size="10" x="274" y="46">5 ←索引</text>
 <!-- Leader row y=52..78 : 5 cells, 1-4 committed, 5 pending -->
-<rect x="90" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
-<rect x="134" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
-<rect x="178" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
-<rect x="222" y="52" width="40" height="26" rx="4" fill="rgba(240,180,41,0.22)" stroke="#f0b429"></rect>
-<rect x="266" y="52" width="40" height="26" rx="4" fill="none" stroke="#e8794b" stroke-dasharray="3 2"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="26" rx="4" stroke="#f0b429" width="40" x="90" y="52"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="26" rx="4" stroke="#f0b429" width="40" x="134" y="52"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="26" rx="4" stroke="#f0b429" width="40" x="178" y="52"></rect>
+<rect fill="rgba(240,180,41,0.22)" height="26" rx="4" stroke="#f0b429" width="40" x="222" y="52"></rect>
+<rect fill="none" height="26" rx="4" stroke="#e8794b" stroke-dasharray="3 2" width="40" x="266" y="52"></rect>
 <!-- F1 y=90 : 5 cells same -->
-<rect x="90" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="134" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="178" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="222" y="90" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="266" y="90" width="40" height="26" rx="4" fill="none" stroke="#e8794b" stroke-dasharray="3 2"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="90" y="90"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="134" y="90"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="178" y="90"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="222" y="90"></rect>
+<rect fill="none" height="26" rx="4" stroke="#e8794b" stroke-dasharray="3 2" width="40" x="266" y="90"></rect>
 <!-- F2 y=128 : 4 cells -->
-<rect x="90" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="134" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="178" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="222" y="128" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="90" y="128"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="134" y="128"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="178" y="128"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="222" y="128"></rect>
 <!-- F3 y=166 : 4 cells -->
-<rect x="90" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="134" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="178" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="222" y="166" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="90" y="166"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="134" y="166"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="178" y="166"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="222" y="166"></rect>
 <!-- F4 y=204 : 3 cells -->
-<rect x="90" y="204" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="134" y="204" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
-<rect x="178" y="204" width="40" height="26" rx="4" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="90" y="204"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="134" y="204"></rect>
+<rect fill="rgba(240,180,41,0.16)" height="26" rx="4" stroke="#f0b429" width="40" x="178" y="204"></rect>
 <!-- commit line between idx4 and idx5 : x=264 -->
-<line x1="264" y1="44" x2="264" y2="240" stroke="#e8794b" stroke-width="1.4" stroke-dasharray="5 3"></line>
-<text x="150" y="262" text-anchor="middle" fill="#f0b429" font-size="11">← 已提交：多数派已复制，永不丢失</text>
-<text x="286" y="262" text-anchor="start" fill="#7c8593" font-size="10.5">未提交 →</text>
+<line stroke="#e8794b" stroke-dasharray="5 3" stroke-width="1.4" x1="264" x2="264" y1="44" y2="240"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="150" y="262">← 已提交：多数派已复制，永不丢失</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="start" x="286" y="262">未提交 →</text>
 </svg>
 <figcaption>图 2 · 复制日志：领导者把命令铺给跟随者；索引 1–4 已被多数派（5 台里 ≥3 台）复制，故已提交；索引 5 只到 2 台，尚未提交。虚线左侧的内容再也不会改变或丢失。</figcaption>
 </figure>
 <p>怎么保证大家日志真的对齐？靠一条<strong>日志匹配性质</strong>：<em>若两份日志里某条目的「索引 + 任期」相同，则它俩从头到这一条为止完全一致。</em>实现只用一个小技巧——每次 <code>AppendEntries</code> 都带上「前一条的索引与任期」，跟随者若发现自己那一格对不上，就<strong>拒绝</strong>。领导者收到拒绝，就把要发的位置往前挪一格重试，直到找到双方一致的分叉点，再用自己的条目<strong>覆盖跟随者从那里往后的所有内容</strong>。于是领导者从不修改自己的日志，只是强行把跟随者「掰」得和自己一样。</p>
-<h3>③ 安全性：只有「日志够新」的人能当领导者</h3>
+<h3 data-tts="1ae3a20a43eda4fc">③ 安全性：只有「日志够新」的人能当领导者</h3>
 <p>光有上面这些还不够：万一一个<strong>缺了已提交条目</strong>的跟随者当上新领导者，它一覆盖，就可能把已经提交、已经告诉过客户端的内容抹掉——这是绝不能发生的。Raft 用一条<strong>选举限制</strong>堵死它：投票时，候选人要在 <code>RequestVote</code> 里带上自己最后一条日志的「任期 + 索引」；<strong>只有当候选人的日志「至少和自己一样新」，跟随者才投它</strong>（比较规则：先看最后条目的任期，任期大的更新；任期相同则日志更长的更新）。</p>
 <p>把这条和「多数派必相交」拼起来，就得到 Raft 最关键的保证——<strong>领导者完整性</strong>：一条已提交的条目，必然出现在此后每一任领导者的日志里。道理是：条目已提交 = 已在某个多数派上；新领导者当选 = 拿到另一个多数派的票；两个多数派必有交集，交集里那台机器<strong>既有这条已提交条目、又给新领导者投了票</strong>——而它只会投给日志「不比自己旧」的人，所以新领导者也一定有这条。已提交的东西，就此永不丢失。</p>
 <p>还有一处著名的微妙点（论文的 Figure 8）：领导者<strong>不能</strong>仅凭「一条<em>旧任期</em>的条目已被多数派复制」就判定它已提交——因为后来的领导者仍可能把它覆盖掉。Raft 的规矩是：领导者<strong>只通过复制自己<em>当前任期</em>的新条目来推进提交</strong>；一旦当前任期的条目被提交，靠日志匹配性质，它前面那些旧任期条目也就<strong>顺带被间接提交</strong>了。这条反直觉的细则，是正确实现 Raft 时最容易踩坑的地方。</p>
 <p>此外，Raft 还给出了两块工程必需件：<strong>集群成员变更</strong>用「联合共识（joint consensus）」两阶段过渡，保证切换配置时不会冒出两个互不重叠的多数派、选出两个领导者；<strong>日志压缩</strong>用快照，各服务器独立地把已提交的旧日志存成快照、丢掉，避免日志无限膨胀。</p>
-<h2>关键结果</h2>
+<h2 data-tts="33c8d95e3e5647eb">关键结果</h2>
 <p>Raft 的核心主张是「更好懂」，所以论文罕见地<strong>把「可理解性」当指标来量</strong>：他们在斯坦福和伯克利找了 <strong>43 名学生</strong>，各看一段 Paxos 和一段 Raft 的讲解视频、再做配套测验。结果 Raft 的测验平均分比 Paxos <strong>高约 4.9 分（满分 60）</strong>，<strong>43 人里有 33 人 Raft 得分更高</strong>；问卷中，大多数人认为 Raft 更容易实现、也更容易向别人讲清楚。</p>
 <p>正确性上，作者给出了 Raft 的<strong>形式化规范并证明了其安全性</strong>（核心是上面的领导者完整性）。性能上，他们实测<strong>领导选举</strong>：采用随机化超时后，集群在多数配置下能在<strong>不到一秒、常在数百毫秒内</strong>选出新领导者；而一旦缩小随机范围，选票分裂就让选举时间显著拉长——反过来印证了「随机超时」这一招的价值。至于日常吞吐与延迟，Raft 与 Multi-Paxos 属于同一量级。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="f2e4a7b1ae002d44">为什么重要 / 影响</h2>
 <p>Raft 的影响力，更多在<strong>工程与教育</strong>而非理论突破。论文发表后很快涌现出<strong>数十个开源实现</strong>，并迅速成为工业界事实标准：Kubernetes 的元数据存储 <strong>etcd</strong>、HashiCorp 的 <strong>Consul</strong>、TiDB 的 <strong>TiKV</strong>、<strong>CockroachDB</strong>、RethinkDB，乃至 Kafka 用来<strong>取代 ZooKeeper</strong> 的 KRaft，共识内核都是 Raft 或其变体。它把「搭一个强一致的分布式系统」的门槛，从「必须是共识专家」降到「读懂一篇论文」。</p>
 <p>更深一层，Raft 证明了<strong>「可理解性」本身可以是一流的研究目标</strong>：同样的容错保证，换一种讲法、换一套抽象，就能让整个行业受益。它也顺势成了几乎所有分布式系统课程里讲共识的<strong>首选教材</strong>。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="9538ef2ff566764f">局限与批评</h2>
 <ul>
 <li><strong>单领导者是瓶颈</strong>：所有写请求都要过领导者一个点，吞吐有天花板、不能靠加机器横向扩写；领导者故障时，集群要经历一小段选举<strong>不可用窗口</strong>才恢复。</li>
 <li><strong>容错与性能并未超过 Paxos</strong>：Raft 的贡献是「好懂」，不是「更强」——它与 Multi-Paxos 同级。有人干脆视其为「一个约束更强、规定更死的 Multi-Paxos」，理论上没带来新东西。</li>
@@ -196,7 +196,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Figure 8 的「只提交本任期条目」是易错点</strong>：这条反直觉细则若实现时漏掉，系统会在特定故障序列下丢失已提交数据——说明 Raft 也并非「照抄伪代码就一定对」。</li>
 <li><strong>超时需要调参</strong>：随机超时的取值要与部署环境的网络往返时延匹配，配错了会导致选举频繁或迟缓，运维上仍需经验。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="2614414ff2cbaca6">要点</h2>
 <div class="tl">
 <p>① 一句话：Raft 是一套多副本共识算法，让一组会宕机的机器就「一份复制日志」达成永不反悔的一致；核心卖点是<strong>为可理解性而设计</strong>。</p>
 <p>② 痛点：Paxos 正确却极难懂、且从单决议到「日志」的落地含糊，人人自行发挥、难保正确——一个正确性攸关的算法几乎没人真读通。</p>
