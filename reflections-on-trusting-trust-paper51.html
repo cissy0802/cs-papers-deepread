@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 51</p>
-<h1>Reflections on Trusting Trust（信任的信任）</h1>
+<h1 data-tts="bf60cfa1c385dc36">Reflections on Trusting Trust（信任的信任）</h1>
 <p class="sub">Ken Thompson · 贝尔实验室 · 1983 图灵奖演讲 / CACM 1984</p>
 <p class="langbar"><a href="reflections-on-trusting-trust-paper51.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,28 +44,28 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="9dede9eaaba46d5d">这篇论文干了什么？</h2>
 <p>1983 年，Unix 与 C 语言的共同缔造者 <strong>Ken Thompson</strong> 上台领图灵奖（计算机界的最高奖），只讲了一件让全场后背发凉的事：<strong>哪怕一个程序的源代码你逐行读干净了，它跑起来仍可能藏着后门</strong>。因为你读的是给人看的「菜谱」，机器真正吃的是「编译器」把菜谱翻译出来的「菜」——而<strong>那个翻译器本身，可能早被人动了手脚</strong>。</p>
-<h2>打个比方</h2>
+<h2 data-tts="81a77c6aa95e4e9c">打个比方</h2>
 <p>你想信任一家餐馆，于是把它的菜谱从头到尾读了一遍，一味毒都没有，干净。可你忘了：<strong>照菜谱做菜的是厨师</strong>。如果这个厨师被人收买过，他会照着菜谱做，却在你看不见的地方<strong>偷偷多加一味毒</strong>——你把菜谱翻烂也查不出来，因为毒不在菜谱里，在厨师的手上。程序的世界里，这个「厨师」就是编译器。</p>
-<h2>新在哪？</h2>
+<h2 data-tts="84ec3d8f12cfd2ce">新在哪？</h2>
 <p>在这之前，安全界有个默认信条：<strong>「开源 = 能逐行审 = 可信」</strong>。Thompson 一句话戳穿它：你审的只是菜谱，从没审过厨师；<strong>而厨师也是别人「做」出来的</strong>，你信得过做厨师的那个厨师吗？做厨师的厨师又是谁做的？<strong>信任是一层套一层、往下没有底的</strong>。这是一个关于「信任到底能扎根在哪」的哲学炸弹。</p>
-<h2>他是怎么做到的？</h2>
+<h2 data-tts="4e0069426a62c2bc">他是怎么做到的？</h2>
 <p>他真造了这么个「坏厨师」，诀窍是两步套娃：</p>
 <p>① <strong>先让编译器留一手</strong>：每当它翻译「登录程序」时，就偷偷多塞一把<strong>万能钥匙</strong>——除了正常密码，还认 Thompson 自己的暗号。可这段坏心思写在编译器的菜谱里，审查者一眼能看见。</p>
 <p>② <strong>再让它学会隐身</strong>：更狠的一步——让编译器在<strong>翻译它自己</strong>的时候，把上面这套坏心思悄悄复制进新编译器里。然后 Thompson <strong>把坏代码从编译器菜谱里全部删掉</strong>。从此菜谱干干净净，可用旧编译器编出的新编译器<strong>依然带毒</strong>，编出的登录程序<strong>依然有后门</strong>。毒只活在「翻译好的成品」里，任何一份源码里都<strong>找不到一个字</strong>。（这里藏着一个巧妙前提：程序可以「产出自己」——就像一句「请照抄本句」的话，能一遍遍把自己复制下去。）</p>
-<h2>它带来了什么？</h2>
+<h2 data-tts="cfbcc753f17752e3">它带来了什么？</h2>
 <p>这就是今天所说的<strong>「供应链攻击」的祖师爷</strong>——不去攻击你，而是攻击<strong>造你工具的工具</strong>。近年 SolarWinds、XZ Utils 后门这些真实大事件，思路的根都在这里。它逼所有人接受一个不舒服的事实：<strong>可信不能只靠读代码，最终得落到「你信不信造它的那个人」</strong>。好在这不是绝对无解——后来有人证明，用另一个独立来源的编译器重新编一遍、比对结果，能把这种毒揪出来；但前提是，<strong>你得先有一个信得过的「第二个厨师」</strong>。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="303acb5b0717be33">一句话记住</h2>
 <div class="tl">
 <p>你无法真正信任任何不是你亲手从头造出来的代码——因为翻译它的工具，可能早已被人教会撒谎，还教会了把自己的谎言藏进每一次翻译里、连源码都不留痕。</p>
 </div>
 <p class="switch-hint">想看后门「自我繁殖」的机制图、三步构造和它如何绕过一切源码审查？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="def4163439199b5a">一句话</h2>
 <p class="lead">Ken Thompson 在 1983 年图灵奖演讲里，构造了一个<strong>可自我繁殖、却在任何源代码里都查不到一个字</strong>的编译器（compiler）后门，用它论证了一条冷峻的结论：<strong>「你无法信任任何不是你自己完全亲手造出来的代码」</strong>——信任最终无法扎根于源码审查，只能落到「人」身上。这篇不到三页的短文，成了供应链安全（supply chain security）与「信任根（root of trust）」讨论的思想原点。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="5d29e962bc054038">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>源代码 vs 二进制（source vs binary）</strong>：人写的是<em>源代码</em>（文字，如 C 语言），机器真正执行的是<em>二进制</em>（一串 0/1 指令）。两者不是同一样东西。</li>
@@ -78,19 +78,19 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>图灵奖（Turing Award）</strong>：计算机界最高荣誉。Thompson 与 Dennis Ritchie 因 Unix 共获 1983 年图灵奖，本文即获奖演讲。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="a19d5b07711c1765">坐标</h2>
 <p>作者 Ken Thompson，Unix 操作系统与 B/C 语言谱系的共同缔造者（与 Dennis Ritchie），供职于贝尔实验室（Bell Labs）。本文是他 1983 年图灵奖获奖演讲，1984 年 8 月刊于 <em>Communications of the ACM</em>，题为 "Reflections on Trusting Trust"。他自陈这个攻击构想最早见于 1974 年 <strong>Karger 与 Schell</strong> 对 Multics 的一份空军安全评估报告；而它下启的，是整个<strong>供应链安全</strong>、<strong>可复现构建（reproducible builds）</strong>与「可信计算基」的现代讨论。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="7afae33da3989c0b">问题与动机</h2>
 <p>那时（以及很大程度上今天），安全界有一条几乎不假思索的信条：<strong>只要能拿到源代码、把它逐行审查干净，就能信任这个程序</strong>。开源之所以被认为更安全，逻辑正在于此——「众目睽睽，无处藏奸」。</p>
 <p>Thompson 要做的，是<strong>正面击穿这条信条</strong>。他要展示一种攻击：<strong>你把相关的源码全部读到烂穿、一个字都挑不出毛病，后门却真真切切地存在于正在运行的二进制里，而且你永远清除不掉。</strong>如果这种攻击存在，那么「读源码 = 可信」就是一个幻觉——问题不在你审得够不够仔细，而在<strong>你审的东西（源码）和你运行的东西（二进制）之间，隔着一个你并没有审过的翻译器</strong>。</p>
-<h2>核心思想 / 方法</h2>
+<h2 data-tts="0b7d5866936f7779">核心思想 / 方法</h2>
 <p>整个论证分三步搭起来，一步比一步致命。</p>
-<h3>第 0 步（热身）：程序可以「产出自己」</h3>
+<h3 data-tts="cc3920111daa8262">第 0 步（热身）：程序可以「产出自己」</h3>
 <p>先建立一个关键事实：存在一种程序，运行后<strong>打印出的正好是它自己的完整源代码</strong>，一字不差。这叫<em>自我繁殖程序（self-reproducing program，即 quine）</em>。它乍看是悖论——要打印字符串、还要打印「打印这个字符串的代码」、还要打印「打印那段代码的代码」……但可以做到：诀窍是让同一份数据<strong>同时扮演两个角色</strong>——既当「要打印的内容」，又当「照着打印的指令」。这一步是全篇的钥匙：<strong>代码有能力凭空复制出自己，而不必依赖外部的源码。</strong></p>
-<h3>第 1 步：编译器会「学习」，知识能只活在二进制里</h3>
+<h3 data-tts="89de93bd49e50e96">第 1 步：编译器会「学习」，知识能只活在二进制里</h3>
 <p>C 编译器用 C 写成，它要处理转义符。设想给它<strong>新增</strong>一个转义符 <code>\v</code>（垂直制表符）。这里有个鸡生蛋的怪圈：一开始编译器还不认识 <code>\v</code>，所以你<strong>不能</strong>在编译器源码里直接写 <code>\v</code>——它会编译报错。</p>
 <p>正确做法分两拍：<strong>先</strong>用 <code>\v</code> 对应的数字（它的字符编码值）把这个知识「教」给编译器，编译、装上这个新编译器；<strong>此后</strong>新编译器已经「认识」<code>\v</code> 了，你就能把源码里那个数字改回优雅的 <code>\v</code>，并<strong>把当初那段「教学代码」删掉</strong>。关键在于：删掉之后一切照常工作——因为<strong>这个知识已经烙进了编译器的二进制，不再需要出现在任何源码里</strong>。Thompson 把这叫编译器的「学习」：<strong>一段能力可以只存活于二进制中，而在源码里完全隐形。</strong></p>
-<h3>第 2 步：把「学习」变成一个自我繁殖、源码无痕的后门</h3>
+<h3 data-tts="8aa64f86afa1f07c">第 2 步：把「学习」变成一个自我繁殖、源码无痕的后门</h3>
 <p>现在把第 0 步的「自我繁殖」和第 1 步的「知识藏进二进制」合起来，就是致命一击。分两枪：</p>
 <p><strong>第一枪——可见的木马。</strong>修改编译器，让它在<strong>发现自己正在编译 login 程序</strong>时，偷偷往结果里多注入一段后门：除了正常密码，也放行 Thompson 预设的<strong>万能密码</strong>。这时后门虽已生效，但那段恶意代码<strong>明晃晃写在编译器源码里</strong>，任何审查者一读就能发现——还不够。</p>
 <p><strong>第二枪——让它隐形并自我繁殖。</strong>再加一段：让编译器在<strong>发现自己正在编译「C 编译器本身」</strong>时，自动把<strong>上面两段逻辑（login 后门 + 这段自我识别）一起注入</strong>到它编出的新编译器二进制里。然后关键操作来了——用这份恶意源码把编译器编译一次、装上这个<strong>已中毒的二进制</strong>；接着<strong>把全部恶意代码从编译器源码里删得干干净净</strong>。</p>
@@ -130,7 +130,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </figure>
 <p>此后世界变成这样：<strong>干净的编译器源码</strong>，被<strong>中毒的二进制</strong>一编译，又生出一个<strong>中毒的二进制</strong>（第 0 步的自我繁殖）；<strong>干净的 login 源码</strong>，被这个中毒编译器一编译，就带上<strong>后门</strong>。后门<strong>永远存活于二进制里，却在编译器源码、login 源码里都找不到一个字</strong>。你把整套系统的源码审到天荒地老，全是干净的；你重新编译整个系统想「洗干净」它，也没用——因为<strong>传染发生在「编译」这个动作本身，而执行编译的正是那个已中毒的二进制</strong>。</p>
 <p><strong>为什么这样设计</strong>：借 quine 的自我繁殖，让后门脱离源码也能存活；借「编译器编译自己」这个自举环节，找到一个每次构建都必经的<strong>寄生宿主</strong>。一旦源码痕迹被抹去，后门就获得了近乎永生的隐蔽性。</p>
-<h2>关键结果</h2>
+<h2 data-tts="4f3516a652c9b9de">关键结果</h2>
 <p>这不是一篇拿数据集和指标说话的论文，而是一个<strong>思想实验 + 真实演示</strong>。Thompson 明确表示：他<strong>确实</strong>在贝尔实验室内部造出过这样一个 C 编译器（尽管从未放到外面去）。它的「证明」是逻辑上的不可反驳——<strong>无论你把源码读得多仔细，都无法排除这类攻击的存在</strong>。由此他给出那句被反复引用的结论：</p>
 <p><em>"You can't trust code that you did not totally create yourself."</em>（你无法信任任何不是你自己完全亲手造出来的代码。）</p>
 <p>更彻底的是，攻击层级可以<strong>无限向下平移</strong>：就算你有本事验明编译器是干净的，它下面还有汇编器（assembler）、加载器（loader）、操作系统、CPU 微码（microcode）、乃至硬件电路——<strong>任何一层被做了手脚，上层的一切审查都可能被蒙蔽</strong>。你必须在某一层「选择信任」，而那个选择无法靠读代码得到保证。</p>
@@ -155,21 +155,21 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 2 · 信任的层层下探：你审的只是源代码，但你运行它，就默认信任了编译器、汇编器、操作系统、微码直到硬件——后门可以藏在任何一层，源码审查一层都管不到。</figcaption>
 </figure>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="660a7d1ba515b3bf">为什么重要 / 影响</h2>
 <p>这篇短文的影响远超它的篇幅：</p>
 <ul>
 <li><strong>供应链攻击的思想原型</strong>：它第一次清晰地指出——高明的攻击不必碰你的目标，只需<strong>污染造你的工具链</strong>。现代对 SolarWinds（2020，构建系统被植入后门）、XZ Utils 后门（2024）等真实事件的理解，本质上都是「信任的信任」的现实回声。</li>
 <li><strong>催生可复现构建与交叉验证</strong>：为对抗这种攻击，社区发展出<em>可复现构建（reproducible builds）</em>——同一份源码在任何人机器上都编出逐字节相同的二进制，从而可比对。David A. Wheeler 在其博士工作中提出的<strong>多编译器交叉编译（Diverse Double-Compiling, DDC）</strong>更进一步，给出了在特定假设下<strong>能够检测</strong>这类后门的方法：用一个独立来源的编译器重新编译，比对结果是否一致。</li>
 <li><strong>「信任根 / 可信计算基」的常引起点</strong>：它把「我们的信任究竟扎根在哪一层」这个问题永久地摆上了桌面，成为可信计算、安全启动（secure boot）、硬件信任根等讨论绕不开的原典。</li>
 </ul>
-<h2>局限与批评</h2>
+<h2 data-tts="0d0efe1a7d7076b2">局限与批评</h2>
 <ul>
 <li><strong>并非「绝对不可防御」</strong>：Thompson 的「你无法信任」是修辞上的极端。Wheeler 的 DDC 已证明，在「存在一个可信的独立编译器」等合理假设下，这种后门是<strong>可被检测</strong>的——绝望并不是唯一结论。</li>
 <li><strong>攻击有相当前提</strong>：它要求攻击者能一次性污染你的可信二进制、并让你此后一直沿用它。一旦你能从一个<strong>可信的第三方</strong>获得一个干净编译器，传染链就能被打断。</li>
 <li><strong>现实攻击多走更省事的路</strong>：野外真正高发的供应链攻击是依赖库投毒、构建服务器入侵等，Thompson 式的编译器自繁殖后门至今罕见于实战——它的价值主要在<strong>思想层面</strong>：给「可审计 = 可信」这个默认信念永久打上问号。</li>
 <li><strong>演讲的道德尾声较松散</strong>：文末 Thompson 转而批评媒体美化「入侵者」、主张「闯入计算机系统应与闯入邻居家一样可耻」——这段道德呼吁与前面的技术主体关系较松，属个人立场，常被后世单独讨论。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="235461e80a81d3af">要点</h2>
 <div class="tl">
 <p>① 一句话：用一个自我繁殖、源码里查不到的编译器后门，证明「你无法信任任何不是你亲手从头造出来的代码」。</p>
 <p>② 痛点：安全界默认「读源码干净 = 可信」；但你审的是源码，运行的是二进制，中间隔着一个没被审过的编译器。</p>
