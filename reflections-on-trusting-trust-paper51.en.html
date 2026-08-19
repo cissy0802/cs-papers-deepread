@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Reflections on Trusting Trust — IT Paper Deep-Read Paper 51</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 51</p>
+<h1>Reflections on Trusting Trust</h1>
+<p class="sub">Ken Thompson · Bell Labs · 1983 Turing Award Lecture / CACM 1984</p>
+<p class="langbar"><a href="reflections-on-trusting-trust-paper51.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1983, <strong>Ken Thompson</strong>—co-creator of Unix and the C language—stepped up to accept the Turing Award (computing's highest honor) and used the stage to make one point that put a chill down everyone's spine: <strong>even if you read a program's source code line by line and find it clean, the running program can still hide a backdoor</strong>. Because what you read is the "recipe" written for humans, while the machine actually eats the "dish" that the <strong>compiler</strong> cooks from that recipe—and <strong>the cook itself may have been tampered with long ago</strong>.</p>
+<h2>An analogy</h2>
+<p>Say you want to trust a restaurant, so you read its recipe cover to cover—not a drop of poison, spotless. But you forgot one thing: <strong>the chef is the one who actually cooks from the recipe</strong>. If that chef was bribed, they'll follow the recipe faithfully while <strong>slipping in a little poison where you can't see</strong>—and you can read the recipe until it falls apart without ever finding it, because the poison isn't in the recipe, it's in the chef's hands. In software, that "chef" is the compiler.</p>
+<h2>What's new here?</h2>
+<p>Before this, security folk held an unspoken creed: <strong>"open source = auditable = trustworthy."</strong> Thompson punctured it in one line: you only audited the recipe, never the chef; <strong>and the chef too was "made" by someone else</strong>—do you trust whoever made the chef? And who made <em>that</em> chef? <strong>Trust nests layer inside layer, with no bottom.</strong> It's a philosophical bomb about where trust can possibly take root at all.</p>
+<h2>How did he actually do it?</h2>
+<p>He really built such a "poisoned chef," and the trick is a two-step nesting doll:</p>
+<p>① <strong>First, make the compiler keep a card up its sleeve</strong>: whenever it compiles the "login program," it quietly slips in a <strong>master key</strong>—besides the normal password, it also accepts Thompson's own secret one. But this dirty logic sits <strong>in plain sight in the compiler's recipe</strong>; any reviewer would spot it.</p>
+<p>② <strong>Then teach it to vanish</strong>: the nastier step—make the compiler, <strong>when it compiles its own self</strong>, quietly copy that whole dirty scheme into the new compiler. Then Thompson <strong>deletes all the dirty code from the compiler's recipe</strong>. From then on the recipe is spotless, yet the new compiler built by the old one <strong>is still poisoned</strong>, and the login program it builds <strong>still has the backdoor</strong>. The poison lives only in the "cooked dish"; in any source file you'll find <strong>not a single word of it</strong>. (One clever premise hides here: a program can "produce itself"—like a sentence that says "please copy this sentence," able to reproduce itself over and over.)</p>
+<h2>What did it bring about?</h2>
+<p>This is the <strong>grandfather of what we now call the "supply-chain attack"</strong>—don't attack you, attack <strong>the tools that build you</strong>. Real modern disasters like SolarWinds and the XZ Utils backdoor trace their DNA right back here. It forces everyone to accept an uncomfortable fact: <strong>trust can't rest on reading code alone; in the end it comes down to "do you trust the people who built it."</strong> The one consolation: it isn't hopeless—someone later proved that recompiling with a second, independently sourced compiler and comparing the results can flush the poison out; but only if you already have a <strong>trustworthy "second chef"</strong> to begin with.</p>
+<h2>Remember this one line</h2>
+<div class="tl">
+<p>You can't truly trust any code you didn't build entirely yourself—because the tool that translates it may have been taught, long ago, to lie, and to hide its lie inside every translation, leaving not even a trace in the source.</p>
+</div>
+<p class="switch-hint">Want the mechanism diagram of how the backdoor "self-reproduces," the three-step construction, and how it slips past every source review? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">In his 1983 Turing Award lecture, Ken Thompson constructed a compiler backdoor that <strong>reproduces itself yet leaves not a single word in any source code</strong>, and used it to argue a chilling conclusion: <strong>"You can't trust code that you did not totally create yourself."</strong> Trust cannot be rooted in source-code review; ultimately it rests on people. This three-page note became the intellectual origin of supply-chain security and the "root of trust" debate.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Source vs. binary</strong>: humans write <em>source code</em> (text, e.g. C); the machine actually executes a <em>binary</em> (a stream of 0/1 instructions). They are not the same thing.</li>
+<li><strong>Compiler</strong>: a program that translates source code into an executable binary. It is itself a program, and it too is built by compiling source.</li>
+<li><strong>Self-hosting / bootstrapping</strong>: the C compiler is written in C, so a new version is obtained by compiling it with the old version—"the compiler compiles itself." This is the parasitic hook the attack exploits.</li>
+<li><strong>login program</strong>: Unix's login program, responsible for checking a user's password and deciding whether to let them in.</li>
+<li><strong>Trojan horse / backdoor</strong>: a Trojan is a program that looks normal but hides malicious logic; a backdoor is a secret channel that bypasses normal authentication.</li>
+<li><strong>Escape sequence</strong>: a way of writing a special character in source using a backslash, e.g. <code>\n</code> for newline. The compiler must "know" each escape sequence.</li>
+<li><strong>Code review</strong>: reading source line by line to find bugs or backdoors. What this paper sets out to prove is precisely that this is <em>not</em> enough to earn trust.</li>
+<li><strong>Turing Award</strong>: computing's highest honor. Thompson and Dennis Ritchie shared the 1983 award for Unix; this paper is that acceptance lecture.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The author is Ken Thompson, co-creator (with Dennis Ritchie) of the Unix operating system and the B/C language lineage, at Bell Labs. This is his 1983 Turing Award acceptance lecture, published in <em>Communications of the ACM</em> in August 1984 as "Reflections on Trusting Trust." He notes the attack idea first appeared in a 1974 <strong>Karger &amp; Schell</strong> Air Force security evaluation of Multics; what it opened up is the whole modern conversation around <strong>supply-chain security</strong>, <strong>reproducible builds</strong>, and the "trusted computing base."</p>
+<h2>The problem &amp; motivation</h2>
+<p>Back then (and largely still today) the security world held an almost reflexive creed: <strong>if you can get the source code and review it clean line by line, you can trust the program</strong>. The case for open source rests on exactly this logic—"many eyes, nowhere for evil to hide."</p>
+<p>Thompson set out to <strong>puncture that creed head-on</strong>. He would exhibit an attack in which <strong>you can read all the relevant source until it falls apart, unable to fault a single character, and yet a backdoor genuinely lives in the running binary—one you can never remove.</strong> If such an attack exists, then "read the source = trustworthy" is an illusion: the problem is not whether you reviewed carefully enough, but that <strong>between what you audit (source) and what you run (binary) sits a translator you never audited.</strong></p>
+<h2>Core idea / method</h2>
+<p>The argument is built in three steps, each more lethal than the last.</p>
+<h3>Step 0 (warm-up): a program can "produce itself"</h3>
+<p>First establish a key fact: there exist programs that, when run, <strong>print out exactly their own complete source code</strong>, character for character. This is a <em>self-reproducing program</em> (a <em>quine</em>). At first it looks paradoxical—you must print the string, and the code that prints the string, and the code that prints <em>that</em> code… But it can be done: the trick is to let one piece of data <strong>play two roles at once</strong>—both the "content to print" and the "instructions for printing it." This step is the key to the whole essay: <strong>code has the ability to conjure a copy of itself out of nothing, without relying on any external source.</strong></p>
+<h3>Step 1: the compiler "learns"—knowledge can live in the binary alone</h3>
+<p>The C compiler is written in C, and it must handle escape sequences. Imagine <strong>adding a new</strong> escape sequence <code>\v</code> (vertical tab). Here lies a chicken-and-egg loop: at first the compiler doesn't know <code>\v</code>, so you <strong>can't</strong> just write <code>\v</code> in the compiler's own source—it would fail to compile.</p>
+<p>The right move takes two beats: <strong>first</strong>, teach it the knowledge using <code>\v</code>'s numeric value (its character code), compile, and install this new compiler; <strong>after that</strong>, the new compiler already "knows" <code>\v</code>, so you can change the number in the source back to the elegant <code>\v</code> and <strong>delete that "teaching code."</strong> The crucial part: once deleted, everything still works—because <strong>the knowledge is now baked into the compiler's binary and no longer needs to appear in any source.</strong> Thompson calls this the compiler "learning": <strong>a capability can live only in the binary, completely invisible in the source.</strong></p>
+<h3>Step 2: turn "learning" into a self-reproducing, source-invisible backdoor</h3>
+<p>Now combine Step 0's self-reproduction with Step 1's "knowledge hidden in the binary," and you get the lethal blow. Two shots:</p>
+<p><strong>Shot one—the visible Trojan.</strong> Modify the compiler so that, <strong>when it notices it is compiling the login program</strong>, it quietly injects a backdoor into the result: besides the normal password, it also admits a <strong>master password</strong> Thompson chose in advance. The backdoor now works, but that malicious code sits <strong>in plain sight in the compiler's source</strong>—any reviewer reading it would find it. Not enough yet.</p>
+<p><strong>Shot two—make it invisible and self-reproducing.</strong> Add one more piece: make the compiler, <strong>when it notices it is compiling "the C compiler itself,"</strong> automatically inject <strong>both pieces of logic (the login backdoor + this self-recognition code)</strong> into the new compiler binary it produces. Then the key operation: compile the compiler once with this malicious source, install the <strong>now-poisoned binary</strong>—and then <strong>delete all the malicious code from the compiler's source, spotlessly clean.</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="tt1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="tt1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker>
+</defs>
+<rect fill="rgba(255,255,255,0.03)" height="46" rx="7" stroke="#7c8593" width="150" x="24" y="40"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="99" y="60">clean compiler source</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="99" y="77">(backdoor deleted, no trace)</text>
+<rect fill="rgba(232,121,75,0.14)" height="56" rx="8" stroke="#e8794b" stroke-width="1.6" width="150" x="205" y="35"></rect>
+<text fill="#f5c451" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="57">poisoned</text>
+<text fill="#f5c451" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="74">compiler binary</text>
+<line marker-end="url(#tt1)" stroke="#7c8593" x1="176" x2="203" y1="63" y2="63"></line>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="190" y="30">compiles</text>
+<rect fill="rgba(232,121,75,0.14)" height="46" rx="7" stroke="#e8794b" width="150" x="386" y="40"></rect>
+<text fill="#f5c451" font-size="12" text-anchor="middle" x="461" y="60">another poisoned</text>
+<text fill="#f5c451" font-size="12" text-anchor="middle" x="461" y="77">compiler binary</text>
+<line marker-end="url(#tt1g)" stroke="#e8794b" x1="357" x2="384" y1="63" y2="63"></line>
+<path d="M461,86 C461,150 280,150 280,96" fill="none" marker-end="url(#tt1g)" stroke="#e8794b" stroke-dasharray="5,4" stroke-width="1.5"></path>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="371" y="140">backdoor self-copies → passed on forever</text>
+<rect fill="rgba(255,255,255,0.03)" height="46" rx="7" stroke="#7c8593" width="150" x="24" y="210"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="99" y="230">clean login source</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="99" y="247">(review finds nothing)</text>
+<line marker-end="url(#tt1)" stroke="#7c8593" x1="176" x2="216" y1="233" y2="233"></line>
+<path d="M280,91 L280,233 L216,233" fill="none" stroke="#7c8593" stroke-width="1"></path>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="248" y="225">same poisoned compiler</text>
+<rect fill="rgba(232,121,75,0.14)" height="56" rx="8" stroke="#e8794b" stroke-width="1.6" width="180" x="360" y="205"></rect>
+<text fill="#f5c451" font-size="12.5" font-weight="700" text-anchor="middle" x="450" y="227">login with backdoor</text>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="450" y="245">(accepts master password)</text>
+<line marker-end="url(#tt1g)" stroke="#e8794b" x1="322" x2="358" y1="233" y2="233"></line>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="315">backdoor lives forever in the binary · not one word in any source</text>
+</svg>
+<figcaption>Fig 1 · The self-reproducing backdoor: clean compiler source, compiled by the poisoned binary, births another poisoned binary (top loop); the same poisoned compiler injects the master-password backdoor when it builds login (bottom row). Deleting the source is useless—the infection happens inside the act of compiling.</figcaption>
+</figure>
+<p>From then on the world looks like this: <strong>clean compiler source</strong>, compiled by the <strong>poisoned binary</strong>, births another <strong>poisoned binary</strong> (Step 0's self-reproduction); <strong>clean login source</strong>, compiled by that poisoned compiler, comes out with a <strong>backdoor</strong>. The backdoor <strong>lives forever in the binary, yet cannot be found—not one word—in the compiler source or the login source</strong>. You can audit the entire system's source till the end of time and it's all clean; you can recompile the whole system hoping to "wash it clean," and it won't help—because <strong>the infection happens inside the act of compiling, and the thing performing that act is the already-poisoned binary.</strong></p>
+<p><strong>Why designed this way</strong>: quine-style self-reproduction lets the backdoor survive without any source; the "compiler compiles itself" bootstrap step provides a <strong>parasitic host</strong> that every build must pass through. Once the source traces are erased, the backdoor gains near-immortal stealth.</p>
+<h2>Key results</h2>
+<p>This is not a paper that argues with datasets and metrics; it is a <strong>thought experiment plus a real demonstration</strong>. Thompson states plainly that he <strong>did</strong> build such a C compiler inside Bell Labs (though he never released it into the wild). Its "proof" is logically irrefutable—<strong>no matter how carefully you read the source, you cannot rule out this class of attack.</strong> Hence his oft-quoted conclusion:</p>
+<p><em>"You can't trust code that you did not totally create yourself."</em></p>
+<p>More radically, the attack can be <strong>slid down without limit</strong>: even if you could verify the compiler is clean, below it sit the assembler, the loader, the operating system, the CPU microcode, and finally the hardware circuits—<strong>tamper with any one layer and all the auditing above it can be fooled.</strong> You must "choose to trust" at some layer, and that choice cannot be guaranteed by reading code.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="130" y="24">what you audit</text>
+<rect fill="rgba(240,180,41,0.14)" height="30" rx="6" stroke="#f0b429" width="212" x="24" y="34"></rect>
+<text fill="#f5c451" font-size="12" text-anchor="middle" x="130" y="54">source code (read clean)</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="410" y="24">what you still trust</text>
+<rect fill="rgba(232,121,75,0.1)" height="24" rx="5" stroke="#e8794b" width="212" x="304" y="34"></rect>
+<text fill="#d9dee5" font-size="11.5" text-anchor="middle" x="410" y="50">compiler</text>
+<rect fill="rgba(232,121,75,0.1)" height="24" rx="5" stroke="#e8794b" width="212" x="304" y="66"></rect>
+<text fill="#d9dee5" font-size="11.5" text-anchor="middle" x="410" y="82">assembler / loader</text>
+<rect fill="rgba(232,121,75,0.1)" height="24" rx="5" stroke="#e8794b" width="212" x="304" y="98"></rect>
+<text fill="#d9dee5" font-size="11.5" text-anchor="middle" x="410" y="114">operating system</text>
+<rect fill="rgba(232,121,75,0.1)" height="24" rx="5" stroke="#e8794b" width="212" x="304" y="130"></rect>
+<text fill="#d9dee5" font-size="11.5" text-anchor="middle" x="410" y="146">CPU microcode</text>
+<rect fill="rgba(232,121,75,0.1)" height="24" rx="5" stroke="#e8794b" width="212" x="304" y="162"></rect>
+<text fill="#d9dee5" font-size="11.5" text-anchor="middle" x="410" y="178">hardware circuits</text>
+<path d="M236,49 C270,49 270,46 302,46" fill="none" stroke="#7c8593" stroke-width="1"></path>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="230">the audit covers only the top layer · trust runs all the way down, with no floor</text>
+</svg>
+<figcaption>Fig 2 · Trust descending layer by layer: you audit only the source, but by running it you implicitly trust the compiler, assembler, OS, microcode, down to the hardware—a backdoor can hide in any layer, and source review reaches none of them.</figcaption>
+</figure>
+<h2>Why it matters / impact</h2>
+<p>The essay's influence dwarfs its length:</p>
+<ul>
+<li><strong>The prototype of the supply-chain attack</strong>: it was the first to state clearly that the cleverest attack need not touch your target at all—it only has to <strong>poison the toolchain that builds you</strong>. Modern understanding of real events like SolarWinds (2020, a build system seeded with a backdoor) and the XZ Utils backdoor (2024) is, at bottom, a real-world echo of "trusting trust."</li>
+<li><strong>It spurred reproducible builds and cross-verification</strong>: to counter this attack, the community developed <em>reproducible builds</em>—the same source compiling to a byte-for-byte identical binary on anyone's machine, so results can be compared. David A. Wheeler's <strong>Diverse Double-Compiling (DDC)</strong> went further, giving a method that, under specific assumptions, <strong>can detect</strong> such a backdoor: recompile with an independently sourced compiler and check that the results agree.</li>
+<li><strong>A go-to origin for "root of trust / trusted computing base"</strong>: it put the question "on which layer does our trust actually rest?" permanently on the table, becoming an unavoidable source text for trusted computing, secure boot, and hardware roots of trust.</li>
+</ul>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>Not "absolutely undefendable"</strong>: Thompson's "you can't trust" is rhetorically extreme. Wheeler's DDC proved that under reasonable assumptions—such as "a trustworthy independent compiler exists"—this backdoor is <strong>detectable</strong>; despair is not the only conclusion.</li>
+<li><strong>The attack has substantial preconditions</strong>: it requires the attacker to poison your trusted binary once and to have you keep using it forever after. The moment you can obtain a clean compiler from a <strong>trusted third party</strong>, the chain of infection can be broken.</li>
+<li><strong>Real attacks take easier routes</strong>: the supply-chain attacks that actually proliferate in the wild are dependency poisoning, build-server intrusions, and the like; a Thompson-style self-reproducing compiler backdoor remains rare in practice—its value lies mainly at the <strong>conceptual level</strong>: it permanently placed a question mark over the default belief that "auditable = trustworthy."</li>
+<li><strong>The lecture's moral coda is loosely attached</strong>: at the end Thompson pivots to criticize the press for glamorizing "intruders" and argues that "breaking into a computer system should carry the same stigma as breaking into a neighbor's house"—a moral appeal only loosely connected to the technical body, and a personal stance often discussed on its own.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: a self-reproducing, source-invisible compiler backdoor proves that "you can't trust code you did not totally create yourself."</p>
+<p>② The pain: security assumes "clean source = trustworthy"; but you audit source and run a binary, with an un-audited compiler in between.</p>
+<p>③ Step 0: a program can "produce itself" (a quine)—so a backdoor can survive without any source.</p>
+<p>④ Step 1: the compiler "learns"; a capability can live in the binary alone, invisible in source (illustrated by adding the escape sequence <code>\v</code>).</p>
+<p>⑤ Step 2: inject a master-password backdoor when compiling login; when compiling "the compiler itself," copy this logic into the new binary; then delete the malicious code from source—backdoor immortal in the binary, all source clean.</p>
+<p>⑥ Key: infection happens inside the act of compiling; recompiling the whole system won't wash it out.</p>
+<p>⑦ Conclusion: <code>You can't trust code that you did not totally create yourself</code>; and the attack slides down to assembler, microcode, hardware—trust can't be capped by reading code.</p>
+<p>⑧ Impact: the prototype of the supply-chain attack; spurred reproducible builds and Diverse Double-Compiling (DDC); the intellectual echo behind SolarWinds, XZ, and more.</p>
+<p>⑨ Limits: DDC can detect it under reasonable assumptions; requires a one-time poisoning of a trusted binary; real attacks take easier routes; the value is mainly conceptual.</p>
+</div>
+</div>
+<footer>IT Paper Deep-Read · Finish this page ≈ grasp the paper's core; for Thompson's original lecture and the details of that self-reproducing code, go read the source.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
