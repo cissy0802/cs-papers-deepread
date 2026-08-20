@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>The Complexity of Theorem-Proving Procedures（Cook · NP 完全性）— IT 论文精读 Paper 52</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 52</p>
+<h1>The Complexity of Theorem-Proving Procedures（NP 完全性）</h1>
+<p class="sub">Stephen Cook · University of Toronto · STOC 1971</p>
+<p class="langbar"><a href="complexity-of-theorem-proving-paper52.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1971 年，Stephen Cook 证明了一件让计算机科学至今头疼的事：有一大类问题，「<strong>验证一个答案对不对</strong>」很容易，但「<strong>从头找出答案</strong>」却可能难到天荒地老——而且它们本质上是「<strong>同一道题</strong>」，攻破任何一个就等于攻破全部。这就是那道著名悬案 <strong>P 对 NP</strong> 的起点。</p>
+<h2>先说个怪事</h2>
+<p>有些事，别人把答案摆你面前，你一眼能核对；可要你自己找出来，却难上天。一盒散拼图，拼好了你一秒看出对不对，可从散片拼起来能耗一整天。给一大桌人排座位、满足一堆「谁不能挨着谁」的要求——给你一张排好的表你立刻能检查合不合规，但从零排出来，人一多就没头绪。<strong>Cook 注意到：这种「验证容易、求解看起来极难」的问题多得数不清，而且它们全都「连在一起」。</strong></p>
+<h2>那个点子</h2>
+<p>Cook 干了两步。第一步，他把「验证容易」的这一大类问题圈成一个家族（后来叫 <strong>NP</strong>）。第二步——也最惊人——他证明这家族里有一道题（判断一串逻辑条件能不能同时被满足，叫「<strong>可满足性</strong>」）是「<strong>最难的那个代表</strong>」：家族里任何一道题，都能被<strong>快速改写</strong>成这道题的样子。</p>
+<h2>它是怎么做到的？</h2>
+<p>关键工具叫「<strong>改写</strong>」（专业叫归约）。如果我能把问题 A 快速翻译成问题 B——A 的答案就藏在 B 的答案里——那么「<strong>B 好解</strong>」就意味着「<strong>A 也好解</strong>」。Cook 证明了：NP 这一大家族里的<strong>每一道题</strong>，都能这样翻译成那道「可满足性」题。于是它成了一把「<strong>总钥匙</strong>」：谁要是找到一个又快又通用的办法解开它，那一整个家族——几千个看似八竿子打不着的难题——就会<strong>同时被解开</strong>。反过来，几十年没人做到，也让大家越来越相信：也许根本就没有这样的快办法。</p>
+<h2>它带来了什么？</h2>
+<p>「P 到底等不等于 NP」成了计算机科学最大的悬案，悬赏<strong>一百万美元</strong>至今没人领走。实际用处也极大：当你发现手上的难题和那把「总钥匙」是「同一家的」，基本就等于收到一封通知——<strong>别再指望找到又完美又飞快的算法了</strong>，老老实实用近似、用巧办法凑合。诚实说一句：「最难」指的是最坏情况——现实里很多这类问题的具体例子，用今天的求解器照样又快又好地解出来，「同一家」不等于「这道具体题永远解不动」。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>Cook 证明了：在「验证容易」的一大类问题里，存在一个「最难代表」，攻破它就攻破全部；而至今没人知道这样的攻破到底存不存在——这就是 P 对 NP。</p>
+</div>
+<p class="switch-hint">想看 P / NP 的准确定义、Cook 定理怎么证的、以及那张「把计算写成逻辑题」的图？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Cook 1971 定义了「答案能在多项式时间内被验证」的问题类（后称 <strong>NP</strong>），提出用<strong>多项式时间归约</strong>比较问题的难度，并证明了历史上第一个「<strong>NP 完全</strong>」问题——命题公式的<strong>可满足性（SAT）</strong>：NP 中任何问题都能在多项式时间内归约到它。于是 SAT 成了整个 NP 的「最难代表」，「<strong>P 是否等于 NP</strong>」从一句模糊的直觉，变成了一个精确的数学问题。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>判定问题（decision problem）</strong>：答案只有「是 / 否」的问题，如「这张地图能用三种颜色染色而相邻不同色吗」。复杂度理论主要研究这一类。</li>
+<li><strong>输入规模与时间复杂度</strong>：一个算法要跑多少步，写成「输入规模 n 的函数」；n 是输入的长度（数字的位数、图的节点数……）。</li>
+<li><strong>多项式时间（polynomial time，P）</strong>：步数不超过 n 的某个固定次幂（n、n²、n³……）就算「高效 / 可行」；对照的是指数时间（约 2ⁿ），n 稍大就成天文数字。<strong>P</strong> 就是「存在多项式时间算法的判定问题」这一类。</li>
+<li><strong>图灵机（Turing machine）</strong>：一台抽象的「最朴素计算机」——一条纸带、一个读写头、一张规则表，是「什么叫算法 / 可计算」的数学定义（见本站《图灵机》一篇）；复杂度就按它跑多少步来数。</li>
+<li><strong>确定性 vs 非确定性（deterministic / nondeterministic）</strong>：确定性机器每一步动作唯一；非确定性机器允许「同时分叉去试所有可能」，只要有一条分支走到「接受」就算成功——它是理论工具，不是真机器。</li>
+<li><strong>命题公式 / 可满足性（SAT）</strong>：由变量和「与、或、非」搭起来的逻辑式子；SAT 问：能不能给这些变量各赋 true/false，让整个式子为真。</li>
+<li><strong>归约（reduction）</strong>：把问题 A「翻译」成问题 B 的办法，使 A 的答案能从 B 的答案读出来；若翻译本身很快，则「B 好解 ⇒ A 好解」。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者 <strong>Stephen Cook</strong>，1971 年发表于第三届 ACM 计算理论年会（STOC）。它站在图灵（1936，可计算性）与 1960 年代复杂度理论（Hartmanis–Stearns 等把「要花多少资源」本身作为研究对象）的肩上，第一次给「难解」一个精确、可操作的刻画；一年后 <strong>Karp（1972）</strong>用它证明 21 个经典问题皆 NP 完全，把这套理论推向整个算法界。苏联的 <strong>Levin</strong> 几乎同时独立得到等价结果，故又称 <strong>Cook–Levin 定理</strong>。Cook 因此获 1982 年图灵奖。</p>
+<h2>问题与动机</h2>
+<p>到 1960 年代，人们已能区分「有算法」和「没算法」（可计算性，图灵划下的那条线）。但「有算法」之内还藏着天壤之别：判断一个数是不是质数、给图找最短路，都有快算法；可另一些问题——「这张地图能不能三色染色」「一批货能不能刚好塞进若干箱子」——已知的唯一通用办法几乎都是<strong>把所有可能挨个试一遍</strong>，可能性随规模<strong>指数爆炸</strong>。人们模糊地感到这些问题「本质上更难」，却<strong>说不清「难」到底是什么</strong>，更无法证明它们真的没有快算法。缺的是一把统一的尺子：怎样精确地说「问题 A 至少和问题 B 一样难」？Cook 这篇，就是把这把尺子造了出来。</p>
+<h2>核心思想 / 方法</h2>
+<h3>两个类：P 与 NP</h3>
+<p><strong>P</strong>：存在确定性多项式时间算法的判定问题——「<strong>能高效求解</strong>」。<strong>NP</strong>：对一个「是」的实例，若存在一份长度不超过多项式的「<strong>证据 / 答案</strong>」，能在多项式时间内被验证为真，则该问题属于 NP——「<strong>答案能高效验证</strong>」。等价地，NP 是<em>非确定性</em>图灵机多项式时间可判定的问题（机器先「猜」出证据、再验证）。例：SAT 属于 NP——给一组变量赋值当证据，代进公式一算就知真假。显然 <code>P ⊆ NP</code>（能解就能验证）。核心悬念是反过来：<strong>P = NP 吗？</strong>能高效验证的，是否都能高效求解？</p>
+<figure>
+<svg viewbox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="255" cy="150" rx="205" ry="120" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-width="1.6"></ellipse>
+<text fill="#f0b429" font-size="15" font-weight="700" x="66" y="58">NP</text>
+<text fill="#7c8593" font-size="10.5" x="66" y="74">答案能高效验证</text>
+<ellipse cx="180" cy="158" rx="92" ry="76" fill="rgba(232,121,75,0.10)" stroke="#e8794b" stroke-width="1.6"></ellipse>
+<text fill="#e8794b" font-size="15" font-weight="700" text-anchor="middle" x="180" y="150">P</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="180" y="168">能高效求解</text>
+<ellipse cx="392" cy="150" rx="52" ry="104" fill="rgba(245,196,81,0.12)" stroke="#f5c451" stroke-width="1.6" stroke-dasharray="4 3"></ellipse>
+<text fill="#f5c451" font-size="13" font-weight="700" text-anchor="middle" x="392" y="146">NP 完全</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="392" y="164">最难代表</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="292">SAT 落在「NP 完全」这一带 · 若它进了 P，整个 NP 塌进 P</text>
+</svg>
+<figcaption>图 1 · 假设 P≠NP 时的版图：P（能求解）在 NP（能验证）之内，NP 完全问题位于 NP「最难的边缘」；若 P=NP，三块塌成一块。</figcaption>
+</figure>
+<h3>归约：一把比较难度的尺子</h3>
+<p>Cook 定义<strong>多项式时间归约</strong>：若能用一个多项式时间的过程，把 A 的每个实例转成 B 的一个实例、并保持答案（A 为「是」当且仅当转出的 B 为「是」），就记 <code>A ≤ B</code>，直觉是「<strong>A 不比 B 难</strong>」——因为一旦有了解 B 的快办法，就能先翻译再解 B，顺带快速解掉 A。归约可<strong>传递、可组合</strong>。有了这把尺，「谁最难」才第一次有了确切含义。</p>
+<figure>
+<svg viewbox="0 0 560 200" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" markerwidth="10" markerheight="10" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="46" y="60" width="150" height="60" rx="8" fill="rgba(232,121,75,0.10)" stroke="#e8794b" stroke-width="1.5"></rect>
+<text fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle" x="121" y="86">问题 A 的实例</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="121" y="106">（想解的题）</text>
+<rect x="364" y="60" width="150" height="60" rx="8" fill="rgba(240,180,41,0.10)" stroke="#f0b429" stroke-width="1.5"></rect>
+<text fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle" x="439" y="86">问题 B 的实例</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="439" y="106">（会解的题）</text>
+<line x1="200" x2="358" y1="90" y2="90" stroke="#f0b429" stroke-width="1.8" marker-end="url(#ar)"></line>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="280" y="80">多项式时间翻译</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="106">保持答案</text>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="162">解 B 的快办法 ⇒ 也能快速解 A，记作 A ≤ B（「A 不比 B 难」）</text>
+</svg>
+<figcaption>图 2 · 归约：把 A 快速翻译成 B 且答案不变，于是「B 好解」自动带来「A 好解」——这就是比较难度的标尺。</figcaption>
+</figure>
+<h3>NP 完全与 Cook 定理</h3>
+<p>若 NP 中<strong>每一个</strong>问题都能归约到 <code>L</code>，且 <code>L</code> 自己也在 NP 里，就称 <code>L</code> 为 <strong>NP 完全</strong>——它是 NP 里「<strong>最难的代表</strong>」：只要解开任何<em>一个</em> NP 完全问题（把它放进 P），整个 NP 就随之塌进 P，<code>P = NP</code> 立刻成立。Cook 的定理是：<strong>SAT 是 NP 完全的</strong>。（Cook 原文用命题公式的「重言式 / 恒真式」判定来表述，它与 SAT 互为补问题、等价可换。）这句话背后是一个惊人的事实——<strong>一道具体的逻辑判定题，浓缩了整个 NP 的全部难度</strong>。</p>
+<h3>证明直觉：把「计算」写成一道逻辑题</h3>
+<p>怎么证明 NP 里五花八门的问题<em>都</em>能变成 SAT？Cook 的招不是逐个问题去凑，而是针对「<strong>验证它的那台机器</strong>」。任何 NP 问题背后，都有一台非确定性图灵机 <code>M</code> 在多项式步数内判定它。把 <code>M</code> 在输入 <code>x</code> 上的整个运行过程摊成一张<strong>表格（tableau）</strong>：行是时间步、列是纸带格子，每格记那一刻的符号，外加读写头位置与机器状态。</p>
+<p>然后用<strong>布尔变量</strong>描述表格里每一格的内容，再用一组子句把「游戏规则」钉死：<strong>①</strong> 第一行必须正好是输入 <code>x</code>；<strong>②</strong> 相邻两行必须符合 <code>M</code> 的转移规则（每一步都合法）；<strong>③</strong> 某一行出现「接受」状态。这样拼出的公式 <code>φ</code>，<strong>可满足 ⟺ M 存在一条走到接受的运行</strong>。而表格只有多项式那么大，<code>φ</code> 也只有多项式那么大、还能在多项式时间内造出来。于是「<code>M</code> 接受 <code>x</code> 吗」被翻译成了「<code>φ</code> 可满足吗」——<strong>任意 NP 问题 ≤ SAT，定理得证</strong>。关键洞察是：可满足性足够「万能」，能编码「计算的每一步是否合法」这件事本身。</p>
+<figure>
+<svg viewbox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar2" markerwidth="10" markerheight="10" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="120" y="26">运行表格（时间 × 纸带）</text>
+<text fill="#7c8593" font-size="10.5" x="8" y="60">时间 ↓</text>
+<!-- grid 4 rows x 6 cols -->
+<g stroke="#3a4048" stroke-width="1">
+<rect x="40" y="40" width="180" height="140" fill="none"></rect>
+<line x1="70" y1="40" x2="70" y2="180"></line><line x1="100" y1="40" x2="100" y2="180"></line><line x1="130" y1="40" x2="130" y2="180"></line><line x1="160" y1="40" x2="160" y2="180"></line><line x1="190" y1="40" x2="190" y2="180"></line>
+<line x1="40" y1="75" x2="220" y2="75"></line><line x1="40" y1="110" x2="220" y2="110"></line><line x1="40" y1="145" x2="220" y2="145"></line>
+</g>
+<text fill="#e8794b" font-size="12" text-anchor="middle" x="55" y="62">x</text><text fill="#e8794b" font-size="12" text-anchor="middle" x="85" y="62">1</text><text fill="#e8794b" font-size="12" text-anchor="middle" x="115" y="62">0</text>
+<rect x="72" y="78" width="26" height="30" fill="rgba(240,180,41,0.18)"></rect>
+<text fill="#f5c451" font-size="11" text-anchor="middle" x="85" y="98">头</text>
+<rect x="132" y="148" width="26" height="30" fill="rgba(245,196,81,0.22)"></rect>
+<text fill="#f5c451" font-size="10" text-anchor="middle" x="145" y="167">接受</text>
+<line x1="228" x2="300" y1="110" y2="110" stroke="#f0b429" stroke-width="1.8" marker-end="url(#ar2)"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="264" y="102">编码</text>
+<rect x="308" y="72" width="200" height="76" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429" stroke-width="1.5"></rect>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="408" y="100">布尔公式 φ</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="408" y="120">起始正确 ∧ 每步合法</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="408" y="136">∧ 出现接受态</text>
+<text fill="#f5c451" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="212">φ 可满足　⟺　机器 M 接受输入 x</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="238">表格是多项式大 → φ 也是多项式大、多项式时间可造出</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="262">⇒ 任意 NP 问题都 ≤ SAT，故 SAT 为 NP 完全</text>
+</svg>
+<figcaption>图 3 · Cook 定理证明骨架：把非确定图灵机的运行摊成表格，用布尔子句钉死「起始正确、每步合法、终于接受」，公式可满足当且仅当机器接受——于是一切 NP 问题都归约到 SAT。</figcaption>
+</figure>
+<h2>关键结果</h2>
+<p>这是一篇<strong>理论论文</strong>，没有 benchmark 数字，但它给出的是可检验的硬结论：</p>
+<ul>
+<li><strong>第一个 NP 完全问题</strong>：SAT（及重言式判定）对 NP 完全——NP 中每个问题都多项式归约到它。</li>
+<li>Cook 还指出另一个组合问题（子图相关）的完全性，示范这把工具能<strong>复用</strong>、不是一次性技巧。</li>
+<li>真正的「引爆」来自 <strong>Karp 1972</strong>：用同样的归约手法，证明 21 个来自逻辑、图论、调度、集合的经典问题（可满足性、团、顶点覆盖、哈密顿回路、划分、背包类……）<strong>统统 NP 完全</strong>——它们表面天差地别，实为「同一道题」的不同外衣。至今已知的 NP 完全问题<strong>数以千计</strong>。</li>
+</ul>
+<h2>为什么重要 / 影响</h2>
+<p>它给「难解」下了<strong>精确、可操作</strong>的定义，奠定了计算复杂度理论的中心结构：<strong>P、NP、归约、完全性</strong>。由此：</p>
+<ul>
+<li><strong>算法设计的路标</strong>：证明你的问题 NP 完全，等于（在普遍相信的 P≠NP 前提下）宣告「别再找又快又精确的通用算法」——转而求近似算法、启发式、参数化或专用求解器。这省下了无数徒劳的攻坚。</li>
+<li><strong>催生 SAT 求解器工业</strong>：既然万物可归约到 SAT，把实际问题（硬件验证、规划调度、程序分析）编码成 SAT、再交给高度优化的求解器，成了一件通用武器。</li>
+<li><strong>P vs NP 成头号开放问题</strong>：2000 年入选克雷数学所七个「千禧年难题」之一，百万美元悬赏至今空置。Cook 本人获 1982 年图灵奖。</li>
+</ul>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>没有解决 P vs NP</strong>：定理告诉你这些问题「同生共死」，却没说它们到底难不难；至今悬而未决，学界普遍相信 P≠NP 但拿不出证明。</li>
+<li><strong>只刻画最坏情况</strong>：NP 完全是就<em>最坏实例</em>而言的；现实里大量 NP 完全问题的<strong>典型实例</strong>被现代求解器又快又好地解决（百万变量的 SAT 例子并不稀奇）——「NP 完全」≠「实践中不可解」。</li>
+<li><strong>渐进 ≠ 实用</strong>：多项式时间被当作「高效」的代名词，但 <code>n¹⁰⁰</code> 也是多项式；反过来某些指数算法在小规模上很好用。这是理论上方便的约定，不总对应现实效率。</li>
+<li><strong>归约口径之别</strong>：Cook 用的是较宽的多项式时间图灵归约；Karp 之后，学界多改用较严格的<em>多对一归约</em>，两种「完全性」定义在细节上不同。</li>
+<li><strong>独立发现与署名</strong>：Levin 在苏联几乎同时（甚至更早）得到「通用搜索问题」的等价结果，长期被西方忽视，故正名为 <strong>Cook–Levin 定理</strong>。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：Cook 定义 NP、用多项式归约比较难度，并证明 SAT 是第一个 NP 完全问题。</p>
+<p>② 痛点：可计算之内仍有天壤——有些问题只会「穷举试遍」，却无法精确说清「更难」到底是什么。</p>
+<p>③ 两个类：P＝能高效求解；NP＝答案能高效验证（等价于非确定多项式时间）；显然 P⊆NP，问 P=NP？</p>
+<p>④ 尺子：多项式时间归约 <code>A ≤ B</code>——「B 好解则 A 好解」，让「最难」第一次有定义。</p>
+<p>⑤ 完全性：NP 完全＝NP 中最难代表；解开任一个，整个 NP 就塌进 P。</p>
+<p>⑥ Cook 定理：SAT 是 NP 完全；证明靠把「某台非确定机是否接受」编码成一个可满足性公式（运行表格 → 布尔子句）。</p>
+<p>⑦ 影响：Karp 随即找出 21 个、如今数以千计；成算法设计路标、催生 SAT 求解器；P vs NP 列千禧难题，Cook 获图灵奖。</p>
+<p>⑧ 局限：P vs NP 仍未解；NP 完全是最坏情况、不等于实际难解；多项式≠总实用；Levin 独立发现（Cook–Levin）。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式定义与证明细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

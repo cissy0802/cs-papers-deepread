@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>The Complexity of Theorem-Proving Procedures (Cook · NP-completeness) — IT Papers Deep-Read Paper 52</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPERS DEEP-READ · PAPER 52</p>
+<h1>The Complexity of Theorem-Proving Procedures (NP-completeness)</h1>
+<p class="sub">Stephen Cook · University of Toronto · STOC 1971</p>
+<p class="langbar"><a href="complexity-of-theorem-proving-paper52.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1971, Stephen Cook proved something that has vexed computer science ever since: there is a huge family of problems where <strong>checking whether an answer is correct</strong> is easy, but <strong>finding the answer from scratch</strong> may be hopelessly hard — and they are, in essence, <strong>all the same problem</strong>, so cracking any one of them cracks the lot. This is the origin of the famous open question <strong>P versus NP</strong>.</p>
+<h2>First, a strange fact</h2>
+<p>Some things you can check in a glance once the answer is handed to you, yet finding that answer yourself is brutal. A box of jigsaw pieces: once it's assembled you see in a second whether it's right — but building it from loose pieces can eat a whole day. Seating a big dinner table under a pile of "these two can't sit together" rules: hand me a finished chart and I can check it instantly, but producing one from nothing gets hopeless as the crowd grows. <strong>Cook noticed that such "easy to check, seemingly brutal to solve" problems are countless — and that they are all wired together.</strong></p>
+<h2>The idea</h2>
+<p>Cook did two things. First, he fenced off this whole family of "easy-to-check" problems (later named <strong>NP</strong>). Second — and this is the stunning part — he proved that one problem in the family (deciding whether a string of logical conditions can all be satisfied at once, called <strong>satisfiability</strong>) is the <strong>hardest representative</strong>: <em>any</em> problem in the family can be <strong>quickly rewritten</strong> into that one problem.</p>
+<h2>How did he pull it off?</h2>
+<p>The key tool is <strong>rewriting</strong> (the technical name is a reduction). If I can quickly translate problem A into problem B — so A's answer is hidden inside B's answer — then "<strong>B is easy</strong>" implies "<strong>A is easy</strong>" too. Cook proved that <strong>every</strong> problem in the vast NP family can be translated this way into that one satisfiability problem. So it becomes a <strong>master key</strong>: if anyone finds a fast, general method to crack it, the entire family — thousands of seemingly unrelated hard problems — falls open <strong>all at once</strong>. Conversely, decades of nobody managing it have made people increasingly suspect that no such fast method exists.</p>
+<h2>What did it lead to?</h2>
+<p>"Does P actually equal NP?" became the single biggest open question in computer science, with a <strong>million-dollar</strong> prize still unclaimed. The practical payoff is large too: the moment you discover your hard problem belongs to the same family as that master key, you've essentially received a notice — <strong>stop hoping for a perfect-and-lightning-fast algorithm</strong>, and make do with approximations and clever shortcuts. One honest caveat: "hardest" means the worst case — in practice, many concrete instances of these problems are still solved quickly and well by today's solvers, so "same family" doesn't mean "this particular instance is forever unsolvable."</p>
+<h2>Remember this one line</h2>
+<div class="tl">
+<p>Cook proved that within the big family of "easy-to-check" problems there is a hardest representative — crack it and you crack them all — and to this day nobody knows whether such a crack even exists. That is P versus NP.</p>
+</div>
+<p class="switch-hint">Want the precise definitions of P and NP, how Cook's theorem is proved, and the diagram that "writes a computation as a logic puzzle"? <a data-mode="deep">→ Switch to the Deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Cook's 1971 paper defined the class of problems whose answers can be <strong>verified in polynomial time</strong> (later called <strong>NP</strong>), introduced <strong>polynomial-time reductions</strong> for comparing the difficulty of problems, and proved the first <strong>NP-complete</strong> problem — the <strong>satisfiability (SAT)</strong> of propositional formulas: every problem in NP reduces to it in polynomial time. SAT thus became the "hardest representative" of all of NP, turning "<strong>does P equal NP?</strong>" from a vague intuition into a precise mathematical question.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Decision problem</strong>: a problem whose answer is only "yes / no," e.g. "can this map be colored with three colors so no two neighbors match?" Complexity theory studies mainly this kind.</li>
+<li><strong>Input size &amp; time complexity</strong>: how many steps an algorithm takes, written as a function of the "input size" n — the length of the input (digits of a number, nodes of a graph, …).</li>
+<li><strong>Polynomial time (P)</strong>: a step count bounded by some fixed power of n (n, n², n³…) counts as "efficient / feasible"; the contrast is exponential time (roughly 2ⁿ), astronomical for even modest n. <strong>P</strong> is the class of decision problems that have a polynomial-time algorithm.</li>
+<li><strong>Turing machine</strong>: an abstract "barest-bones computer" — one tape, a read/write head, a table of rules — the mathematical definition of "algorithm / computable" (see the Turing Machine piece on this site); complexity is counted by how many steps it runs.</li>
+<li><strong>Deterministic vs nondeterministic</strong>: a deterministic machine has one action per step; a nondeterministic one may "fork and try all possibilities at once," succeeding if any branch reaches "accept" — a theoretical tool, not a real machine.</li>
+<li><strong>Propositional formula / satisfiability (SAT)</strong>: a logical expression built from variables and "AND, OR, NOT"; SAT asks whether the variables can each be set true/false to make the whole expression true.</li>
+<li><strong>Reduction</strong>: a way to "translate" problem A into problem B so that A's answer can be read off from B's answer; if the translation itself is fast, then "B is easy ⇒ A is easy."</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>By <strong>Stephen Cook</strong>, presented at the third annual ACM Symposium on Theory of Computing (STOC) in 1971. It stands on Turing (1936, computability) and 1960s complexity theory (Hartmanis–Stearns and others making "how much resource does it take" itself the object of study), giving "hard to solve" its first precise, workable characterization. A year later <strong>Karp (1972)</strong> used it to prove 21 classic problems NP-complete, carrying the theory into the whole of algorithm design. The Soviet mathematician <strong>Levin</strong> obtained an equivalent result independently and almost simultaneously, so it is also called the <strong>Cook–Levin theorem</strong>. Cook received the 1982 Turing Award for it.</p>
+<h2>The problem &amp; the motivation</h2>
+<p>By the 1960s, people could already separate "has an algorithm" from "has none" (computability, the line Turing drew). But within "has an algorithm" lay a vast gulf: testing whether a number is prime, or finding a shortest path in a graph, have fast algorithms; yet other problems — "can this map be 3-colored?", "can this batch of goods be packed exactly into a few bins?" — had only one known general method: <strong>try every possibility one by one</strong>, with the count <strong>exploding exponentially</strong> as the input grows. People sensed vaguely that such problems were "intrinsically harder," but <strong>couldn't say what "hard" even meant</strong>, let alone prove they truly had no fast algorithm. What was missing was a common yardstick: how do you say precisely that "problem A is at least as hard as problem B"? Cook's paper built that yardstick.</p>
+<h2>Core ideas / method</h2>
+<h3>Two classes: P and NP</h3>
+<p><strong>P</strong>: decision problems with a deterministic polynomial-time algorithm — "<strong>efficiently solvable</strong>." <strong>NP</strong>: for a "yes" instance, if there exists a <strong>certificate / answer</strong> of polynomial length that can be <strong>verified</strong> as valid in polynomial time, the problem is in NP — "<strong>answers can be efficiently verified</strong>." Equivalently, NP is the class decidable by a <em>nondeterministic</em> Turing machine in polynomial time (the machine "guesses" the certificate, then verifies). Example: SAT is in NP — hand over an assignment of the variables as a certificate, plug it into the formula, and you know at once whether it's true. Clearly <code>P ⊆ NP</code> (if you can solve it you can verify it). The suspense is the converse: <strong>does P = NP?</strong> Is everything efficiently verifiable also efficiently solvable?</p>
+<figure>
+<svg viewbox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="255" cy="150" rx="205" ry="120" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-width="1.6"></ellipse>
+<text fill="#f0b429" font-size="15" font-weight="700" x="66" y="58">NP</text>
+<text fill="#7c8593" font-size="10.5" x="66" y="74">answers verifiable fast</text>
+<ellipse cx="180" cy="158" rx="92" ry="76" fill="rgba(232,121,75,0.10)" stroke="#e8794b" stroke-width="1.6"></ellipse>
+<text fill="#e8794b" font-size="15" font-weight="700" text-anchor="middle" x="180" y="150">P</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="180" y="168">solvable fast</text>
+<ellipse cx="392" cy="150" rx="52" ry="104" fill="rgba(245,196,81,0.12)" stroke="#f5c451" stroke-width="1.6" stroke-dasharray="4 3"></ellipse>
+<text fill="#f5c451" font-size="13" font-weight="700" text-anchor="middle" x="392" y="146">NP-complete</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="392" y="164">hardest reps</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="292">SAT sits in the NP-complete band · if it enters P, all of NP collapses into P</text>
+</svg>
+<figcaption>Fig 1 · The landscape assuming P≠NP: P (solvable) sits inside NP (verifiable), NP-complete problems lie at NP's "hardest edge"; if P=NP, the three collapse into one.</figcaption>
+</figure>
+<h3>Reduction: a yardstick for difficulty</h3>
+<p>Cook defined the <strong>polynomial-time reduction</strong>: if a polynomial-time procedure can turn every instance of A into an instance of B while preserving the answer (A is "yes" iff the produced B is "yes"), write <code>A ≤ B</code>, meaning "<strong>A is no harder than B</strong>" — because once you have a fast method for B, you can translate then solve B, incidentally solving A fast. Reductions are <strong>transitive and composable</strong>. With this yardstick, "which is hardest" acquires an exact meaning for the first time.</p>
+<figure>
+<svg viewbox="0 0 560 200" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" markerwidth="10" markerheight="10" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="46" y="60" width="150" height="60" rx="8" fill="rgba(232,121,75,0.10)" stroke="#e8794b" stroke-width="1.5"></rect>
+<text fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle" x="121" y="86">instance of A</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="121" y="106">(want to solve)</text>
+<rect x="364" y="60" width="150" height="60" rx="8" fill="rgba(240,180,41,0.10)" stroke="#f0b429" stroke-width="1.5"></rect>
+<text fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle" x="439" y="86">instance of B</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="439" y="106">(know how to solve)</text>
+<line x1="200" x2="358" y1="90" y2="90" stroke="#f0b429" stroke-width="1.8" marker-end="url(#ar)"></line>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="280" y="80">poly-time translate</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="106">answer preserved</text>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="162">a fast method for B ⇒ also solve A fast, written A ≤ B ("A no harder than B")</text>
+</svg>
+<figcaption>Fig 2 · Reduction: translate A into B quickly with the answer unchanged, so "B is easy" automatically yields "A is easy" — the ruler for comparing difficulty.</figcaption>
+</figure>
+<h3>NP-completeness and Cook's theorem</h3>
+<p>If <strong>every</strong> problem in NP reduces to <code>L</code>, and <code>L</code> is itself in NP, then <code>L</code> is <strong>NP-complete</strong> — the "<strong>hardest representative</strong>" of NP: solve any <em>one</em> NP-complete problem (put it in P) and all of NP collapses into P, so <code>P = NP</code> at once. Cook's theorem: <strong>SAT is NP-complete</strong>. (Cook's original text phrased it via the "tautology" — always-true — decision, which is the complementary, equivalent form of SAT.) Behind this line is a startling fact: <strong>one concrete logical decision problem concentrates the entire difficulty of NP</strong>.</p>
+<h3>Proof intuition: writing a "computation" as a logic puzzle</h3>
+<p>How do you prove that the wildly assorted problems in NP <em>all</em> turn into SAT? Cook's trick is not to match problems one by one, but to target "<strong>the machine that verifies it</strong>." Behind any NP problem sits a nondeterministic Turing machine <code>M</code> that decides it within a polynomial number of steps. Spread <code>M</code>'s entire run on input <code>x</code> into a <strong>tableau</strong>: rows are time steps, columns are tape cells, each cell recording the symbol at that moment, plus the head position and machine state.</p>
+<p>Then describe every cell of the tableau with <strong>boolean variables</strong>, and nail down the "rules of the game" with a set of clauses: <strong>①</strong> the first row must be exactly the input <code>x</code>; <strong>②</strong> each pair of adjacent rows must obey <code>M</code>'s transition rules (every step legal); <strong>③</strong> an accepting state appears in some row. The formula <code>φ</code> so assembled is <strong>satisfiable ⟺ M has a run that reaches accept</strong>. And since the tableau is only polynomially large, so is <code>φ</code> — and it can be built in polynomial time. Thus "does <code>M</code> accept <code>x</code>?" is translated into "is <code>φ</code> satisfiable?" — <strong>every NP problem ≤ SAT, and the theorem is proved</strong>. The key insight: satisfiability is "universal" enough to encode the very fact of whether each step of a computation is legal.</p>
+<figure>
+<svg viewbox="0 0 560 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar2" markerwidth="10" markerheight="10" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="120" y="26">run tableau (time × tape)</text>
+<text fill="#7c8593" font-size="10.5" x="8" y="60">time ↓</text>
+<g stroke="#3a4048" stroke-width="1">
+<rect x="40" y="40" width="180" height="140" fill="none"></rect>
+<line x1="70" y1="40" x2="70" y2="180"></line><line x1="100" y1="40" x2="100" y2="180"></line><line x1="130" y1="40" x2="130" y2="180"></line><line x1="160" y1="40" x2="160" y2="180"></line><line x1="190" y1="40" x2="190" y2="180"></line>
+<line x1="40" y1="75" x2="220" y2="75"></line><line x1="40" y1="110" x2="220" y2="110"></line><line x1="40" y1="145" x2="220" y2="145"></line>
+</g>
+<text fill="#e8794b" font-size="12" text-anchor="middle" x="55" y="62">x</text><text fill="#e8794b" font-size="12" text-anchor="middle" x="85" y="62">1</text><text fill="#e8794b" font-size="12" text-anchor="middle" x="115" y="62">0</text>
+<rect x="72" y="78" width="26" height="30" fill="rgba(240,180,41,0.18)"></rect>
+<text fill="#f5c451" font-size="10" text-anchor="middle" x="85" y="98">head</text>
+<rect x="132" y="148" width="26" height="30" fill="rgba(245,196,81,0.22)"></rect>
+<text fill="#f5c451" font-size="9.5" text-anchor="middle" x="145" y="167">accept</text>
+<line x1="228" x2="300" y1="110" y2="110" stroke="#f0b429" stroke-width="1.8" marker-end="url(#ar2)"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="264" y="102">encode</text>
+<rect x="308" y="72" width="200" height="76" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429" stroke-width="1.5"></rect>
+<text fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle" x="408" y="100">boolean formula φ</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="408" y="120">start correct ∧ each step legal</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="408" y="136">∧ accepting state appears</text>
+<text fill="#f5c451" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="212">φ satisfiable　⟺　machine M accepts input x</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="238">tableau is poly-size → φ is poly-size, built in poly time</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="262">⇒ every NP problem ≤ SAT, so SAT is NP-complete</text>
+</svg>
+<figcaption>Fig 3 · Skeleton of Cook's proof: spread a nondeterministic machine's run into a tableau, pin down "start correct, every step legal, ends accepting" with boolean clauses; the formula is satisfiable iff the machine accepts — so every NP problem reduces to SAT.</figcaption>
+</figure>
+<h2>Key results</h2>
+<p>This is a <strong>theory paper</strong> — no benchmarks, but the conclusions it delivers are checkable and hard:</p>
+<ul>
+<li><strong>The first NP-complete problem</strong>: SAT (and tautology decision) is NP-complete — every problem in NP reduces to it in polynomial time.</li>
+<li>Cook also showed the completeness of another combinatorial problem (a subgraph problem), demonstrating that the tool is <strong>reusable</strong>, not a one-off trick.</li>
+<li>The real detonation came with <strong>Karp 1972</strong>: using the same reduction technique, he proved 21 classic problems from logic, graph theory, scheduling, and set theory (satisfiability, clique, vertex cover, Hamiltonian cycle, partition, knapsack-type, …) <strong>all NP-complete</strong> — outwardly worlds apart, in fact the same problem in different clothes. Thousands of NP-complete problems are now known.</li>
+</ul>
+<h2>Why it matters / impact</h2>
+<p>It gave "hard to solve" a <strong>precise, operational</strong> definition and laid down the central structure of computational complexity theory: <strong>P, NP, reduction, completeness</strong>. From it:</p>
+<ul>
+<li><strong>A signpost for algorithm design</strong>: proving your problem NP-complete amounts (under the widely believed assumption P≠NP) to declaring "stop looking for a fast-and-exact general algorithm" — turn instead to approximation, heuristics, parameterized methods, or specialized solvers. This has saved countless doomed campaigns.</li>
+<li><strong>It spawned the SAT-solver industry</strong>: since everything reduces to SAT, encoding a real problem (hardware verification, planning and scheduling, program analysis) into SAT and handing it to a highly optimized solver became a universal weapon.</li>
+<li><strong>P vs NP became the top open problem</strong>: in 2000 it was named one of the Clay Mathematics Institute's seven "Millennium Prize Problems," its million-dollar prize still unclaimed. Cook himself received the 1982 Turing Award.</li>
+</ul>
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>It does not settle P vs NP</strong>: the theorem tells you these problems live and die together, but not whether they are actually hard; it remains open, and the field broadly believes P≠NP without a proof.</li>
+<li><strong>It characterizes only the worst case</strong>: NP-completeness is about the <em>worst</em> instance; in reality vast numbers of NP-complete problems have <strong>typical instances</strong> solved quickly and well by modern solvers (million-variable SAT is unremarkable) — "NP-complete" ≠ "unsolvable in practice."</li>
+<li><strong>Asymptotic ≠ practical</strong>: polynomial time is used as a synonym for "efficient," but <code>n¹⁰⁰</code> is also polynomial; conversely, some exponential algorithms are fine at small scale. It's a convenient theoretical convention, not always matching real-world efficiency.</li>
+<li><strong>A difference in the kind of reduction</strong>: Cook used the broader polynomial-time Turing reduction; after Karp the field mostly switched to the stricter <em>many-one reduction</em>, so the two notions of "completeness" differ in detail.</li>
+<li><strong>Independent discovery and credit</strong>: Levin in the Soviet Union obtained an equivalent result on "universal search problems" almost simultaneously (arguably earlier), long overlooked in the West — hence the proper name <strong>Cook–Levin theorem</strong>.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① One line: Cook defined NP, used polynomial reductions to compare difficulty, and proved SAT is the first NP-complete problem.</p>
+<p>② Pain point: even within the computable lies a vast gulf — some problems admit only "try every possibility," yet there was no precise notion of "harder."</p>
+<p>③ Two classes: P = efficiently solvable; NP = answers efficiently verifiable (equivalently, nondeterministic polynomial time); clearly P⊆NP — is P=NP?</p>
+<p>④ Yardstick: polynomial-time reduction <code>A ≤ B</code> — "if B is easy so is A" — giving "hardest" its first definition.</p>
+<p>⑤ Completeness: NP-complete = the hardest representative of NP; solve any one and all of NP collapses into P.</p>
+<p>⑥ Cook's theorem: SAT is NP-complete; proved by encoding "does a given nondeterministic machine accept?" as a satisfiability formula (run tableau → boolean clauses).</p>
+<p>⑦ Impact: Karp promptly found 21, now thousands; a signpost for algorithm design, birth of SAT solvers; P vs NP a Millennium Problem, Cook a Turing laureate.</p>
+<p>⑧ Limits: P vs NP still open; NP-completeness is worst-case, not always hard in practice; polynomial ≠ always practical; Levin discovered it independently (Cook–Levin).</p>
+</div>
+</div>
+<footer>IT Papers Deep-Read · Finish this page ≈ grasp the paper's core; for the full formal definitions and proof details, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
