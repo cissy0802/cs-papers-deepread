@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Playing Atari with Deep Reinforcement Learning（DQN）— IT 论文精读 Paper 53</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 53</p>
-<h1>Playing Atari with Deep Reinforcement Learning（DQN）</h1>
+<h1 data-tts="59e255743cb4b7ac">Playing Atari with Deep Reinforcement Learning（DQN）</h1>
 <p class="sub">Mnih 等 · DeepMind · NIPS 2013 深度学习 Workshop</p>
 <p class="langbar"><a href="dqn-atari-paper53.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,26 +44,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="48186412b969cc7a">这篇论文干了什么？</h2>
 <p>2013 年，DeepMind 一队人（Mnih 等）做出了 <strong>DQN</strong>：一个程序，只盯着雅达利（Atari）老游戏机的<strong>屏幕像素</strong>和<strong>当前得分</strong>，没人告诉它任何规则，就自己摸索着学会了打游戏——而且<strong>同一套程序、一个字不改</strong>，学会了打砖块、乒乓、太空侵略者等 7 款风格迥异的游戏，好几款还打得比人类高手好。这是<strong>深度学习</strong>第一次和<strong>强化学习</strong>（靠奖励试错来学）成功合体，后来下围棋的 AlphaGo、乃至把 ChatGPT 调教得体贴的那套训练法，都发源于这条路。</p>
-<h2>先说个怪事</h2>
+<h2 data-tts="f1f87e9328149cd0">先说个怪事</h2>
 <p>在这之前，想让电脑玩游戏，得由人类工程师<strong>手把手告诉它该看什么</strong>：球在哪、板子在哪、敌人有几个……换个游戏就得重写一遍。DQN 反过来：<strong>什么都不告诉它</strong>，只把原始画面和当前分数丢过去，剩下的自己悟。更反直觉的是，同一套程序不改任何设置，喂给它 7 个完全不同的游戏，它<strong>一个个都学会了</strong>。</p>
-<h2>它怎么学？先练一个"打分员"</h2>
+<h2 data-tts="0c22cfaa4f83c84d">它怎么学？先练一个"打分员"</h2>
 <p>DQN 的核心，是训练出一个<strong>"打分员"</strong>：看着当前这一屏画面，给每个能按的按钮打个分——这个分不是"按下去马上得几分"，而是<strong>"从现在这么按下去、一路玩到底，大概总共能攒多少分"</strong>。有了这张分数表，玩法就简单了：每一步都挑分最高的按钮按。真正的难点全在于把这个"打分员"练准——它得学会<strong>为了以后的大分、忍住眼前的小利</strong>（比如先躲子弹，而不是急着开火）。</p>
-<h2>那个关键窍门：记日记、反复翻</h2>
+<h2 data-tts="089a3b7c8446b857">那个关键窍门：记日记、反复翻</h2>
 <p>把深度网络硬塞进强化学习，一开始<strong>根本训不稳、动不动就崩</strong>。DQN 的救命窍门叫<strong>经验回放（experience replay）</strong>：它随身带一个<strong>"日记本"</strong>，把每一个瞬间都记下来——（当时的画面、按了哪个键、得了多少分、下一屏画面）。训练时<strong>不只盯着刚发生的这一下</strong>，而是<strong>随手翻回过去的旧页、打乱了一起复习</strong>。为什么要打乱？因为连着几帧画面太像了（都在同一个角落打转），只学眼前会让它钻进死胡同；翻旧账、混着学，学得又稳又省——一段经历还能反复复习好多遍，不浪费。</p>
-<h2>它带来了什么</h2>
+<h2 data-tts="b959837786433416">它带来了什么</h2>
 <p>DQN 证明了一件从前做不到的事：<strong>一个统一的程序，能从最原始的画面里、自己学会多种任务</strong>——不用人喂特征、不用为每个游戏定制。它点燃了<strong>深度强化学习</strong>这整个领域：两年后的升级版在 49 款游戏上达到人类水平，再往后就有了 AlphaGo。代价也实打实：它要<strong>没日没夜地玩上百万局</strong>，才学得会人类几分钟就上手的东西；碰到"先找钥匙、很久之后再开门"这种需要长远谋划的游戏，它还是抓瞎。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="972a5e2a9735ebe7">一句话记住</h2>
 <div class="tl">
 <p>用一个卷积网络当"打分员"，看着屏幕像素给每个动作估一个"未来总分"，再靠"经验回放"这本反复翻的日记把训练稳住——同一套程序不改一字，从零学会打 7 款雅达利游戏、好几款超过人类。这是深度学习和强化学习第一次成功牵手，深度强化学习的开山之作。</p>
 </div>
 <p class="switch-hint">想看网络结构图、Q 值公式和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="432fb2d473a1118d">一句话</h2>
 <p class="lead">DQN（Deep Q-Network）第一次让一个深度神经网络<strong>只从原始屏幕像素和游戏分数</strong>、用<strong>强化学习（reinforcement learning）</strong>学会打雅达利游戏：它用一个卷积网络（CNN）去近似 Q-learning 里的<strong>动作价值函数（action-value function）</strong> <code>Q(s,a)</code>——即"在画面 s 下按动作 a、之后能拿到的未来总回报"，再用<strong>经验回放（experience replay）</strong>治好了"深度网络 + 强化学习一训就发散"的老大难。同一套网络与超参数、不为任何游戏定制，在 7 款 Atari 游戏上有 6 款超过此前最好方法、3 款超过人类高手，开启了深度强化学习。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="e9b4b346903fe9a8">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>强化学习（reinforcement learning, RL）</strong>：一种"试错式"学习。一个<strong>智能体（agent）</strong>在<strong>环境（environment）</strong>里观察当前<strong>状态（state）</strong>、做一个<strong>动作（action）</strong>、拿到一个<strong>奖励（reward）</strong>（分数），环境随之变到下一状态；目标是学一套<strong>策略（policy，即"什么局面该做什么"）</strong>，让累计奖励最大。</li>
@@ -73,46 +74,46 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Atari 2600 / ALE</strong>：Atari 2600 是 1970 年代的家用游戏机；ALE（Arcade Learning Environment）是把它封装成标准测试台的框架，让 AI 能统一地在几十款游戏上比拼。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="a34f7d5b29e40283">坐标</h2>
 <p>作者是 Volodymyr Mnih、Koray Kavukcuoglu、David Silver、Alex Graves 等，来自伦敦的 DeepMind，2013 年底发在 NIPS 深度学习 workshop。它上承两条线：一是 Q-learning（Watkins 1989）这套经典强化学习算法，二是刚在图像上证明威力的深度卷积网络（AlexNet，2012）——DQN 把两者<strong>第一次稳定地拼到了一起</strong>。下启 2015 年的《Nature》升级版（加了目标网络、在 49 款游戏上达到人类水平）、AlphaGo（2016），以及之后整整一个深度强化学习浪潮。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="a06b59b4f98db3e2">问题与动机</h2>
 <p>强化学习的旧世界里，真正的成功大多依赖<strong>人类手工设计的特征</strong>。经典案例 TD-Gammon（1990 年代下西洋双陆棋到大师级）之所以能成，很大程度靠的是低维、被人整理好的棋盘状态。可一旦想让智能体<strong>直接从原始像素学起</strong>，麻烦就来了。</p>
 <p>深度学习之所以好用，靠的是海量<strong>有标注、且样本相互独立</strong>的数据。强化学习偏偏三条都不满足：奖励往往<strong>稀疏、有噪声、还严重滞后</strong>（今天这一按的好坏，可能几百帧后才见分晓）；数据不是独立的，<strong>连续几帧高度相关</strong>；更糟的是，<strong>数据分布会随策略一起变</strong>——网络学好一点、行为就变、看到的画面也跟着变，像追着自己影子跑。而理论早就警告：把<strong>非线性函数近似（神经网络）+ Q-learning + 自举（拿自己的估计当学习目标）</strong>三者凑一起，很容易<strong>发散</strong>（后人称"致命三角"）。所以当时的主流只敢用线性模型配手工特征。DQN 要回答的就是：<strong>怎么让"从像素端到端学"这件事真的稳下来。</strong></p>
-<h2>核心思想 / 方法</h2>
-<h3>第一步：把玩游戏化成"最大化未来回报"</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="b9bffa6a12ea5be8">第一步：把玩游戏化成"最大化未来回报"</h3>
 <p>先把游戏写成强化学习的语言：每一帧，智能体看到画面（状态 <code>s</code>），选一个手柄动作 <code>a</code>，拿到分数变化（奖励 <code>r</code>），画面转到 <code>s'</code>。目标不是最大化眼前这一分，而是最大化<strong>打折后的未来总回报</strong>。Q-learning 用一个<strong>动作价值函数</strong> <code>Q*(s,a)</code> 来刻画"在 s 下做 a、之后一直玩到最好，能期望拿多少总回报"。它满足一条自洽的<strong>贝尔曼方程（Bellman equation）</strong>：<code>Q*(s,a) = E[ r + γ·max<sub>a'</sub> Q*(s',a') ]</code>。</p>
 <p>白话讲：<strong>"现在这步的长期价值 = 眼前拿到的奖励 r ＋ 到了下一屏、再挑最好动作能拿到的价值（打个折 γ）。"</strong> 学习时就把右边这一坨当成"正确答案"（叫<em>目标值</em>），逼着 Q 去逼近它——这正是"自举"：拿自己对未来的估计，来教自己现在。</p>
-<h3>第二步：用卷积网络当这个 Q 函数（Q-network）</h3>
+<h3 data-tts="e936d098cd1d2cc5">第二步：用卷积网络当这个 Q 函数（Q-network）</h3>
 <p>游戏画面成千上万种，不可能真列一张表，于是 DQN 用一个<strong>卷积网络</strong> <code>Q(s,a;θ)</code>（θ 是网络参数）来近似它。输入不是单帧，而是<strong>最近 4 帧叠在一起</strong>的画面（每帧缩成 84×84 灰度）——因为单看一帧分不清球是往上还是往下飞，<strong>叠几帧才带上了"运动方向和速度"</strong>。网络吐出的是一排数：<strong>每个可选动作对应一个 Q 值，一次前向就把所有动作都打了分。</strong></p>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="52" y="34" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">最近 4 帧</text>
-<rect x="18" y="52" width="52" height="52" rx="4" fill="rgba(255,255,255,0.05)" stroke="#7c8593"/>
-<rect x="24" y="46" width="52" height="52" rx="4" fill="rgba(255,255,255,0.05)" stroke="#7c8593"/>
-<rect x="30" y="40" width="52" height="52" rx="4" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<text x="56" y="70" fill="#b9c0ca" font-size="10" text-anchor="middle">84×84</text>
-<text x="56" y="118" fill="#7c8593" font-size="10" text-anchor="middle">像素</text>
-<line x1="86" y1="66" x2="118" y2="66" stroke="#7c8593" marker-end="url(#da)"/>
-<rect x="120" y="42" width="46" height="88" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="143" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 143 90)">卷积层</text>
-<line x1="168" y1="86" x2="196" y2="86" stroke="#7c8593" marker-end="url(#da)"/>
-<rect x="198" y="54" width="46" height="64" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="221" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 221 90)">卷积层</text>
-<line x1="246" y1="86" x2="274" y2="86" stroke="#7c8593" marker-end="url(#da)"/>
-<rect x="276" y="60" width="42" height="52" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
-<text x="297" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 297 90)">全连接</text>
-<line x1="320" y1="86" x2="352" y2="86" stroke="#7c8593" marker-end="url(#da)"/>
-<text x="452" y="34" fill="#f0b429" font-size="12.5" text-anchor="middle" font-weight="700">每个动作一个 Q 值</text>
-<rect x="356" y="46" width="150" height="22" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="431" y="61" fill="#b9c0ca" font-size="11" text-anchor="middle">Q(s, 上) = 12.4</text>
-<rect x="356" y="72" width="150" height="22" rx="4" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="431" y="87" fill="#e7ebf1" font-size="11" text-anchor="middle">Q(s, 开火) = 31.7 ★</text>
-<rect x="356" y="98" width="150" height="22" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="431" y="113" fill="#b9c0ca" font-size="11" text-anchor="middle">Q(s, 下) = 8.1</text>
-<text x="431" y="140" fill="#7c8593" font-size="10.5" text-anchor="middle">每步挑 Q 最大的动作 ★</text>
-<defs><marker id="da" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="52" y="34">最近 4 帧</text>
+<rect fill="rgba(255,255,255,0.05)" height="52" rx="4" stroke="#7c8593" width="52" x="18" y="52"></rect>
+<rect fill="rgba(255,255,255,0.05)" height="52" rx="4" stroke="#7c8593" width="52" x="24" y="46"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="52" rx="4" stroke="#f0b429" width="52" x="30" y="40"></rect>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="56" y="70">84×84</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="56" y="118">像素</text>
+<line marker-end="url(#da)" stroke="#7c8593" x1="86" x2="118" y1="66" y2="66"></line>
+<rect fill="rgba(240,180,41,0.1)" height="88" rx="6" stroke="#f0b429" width="46" x="120" y="42"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 143 90)" x="143" y="90">卷积层</text>
+<line marker-end="url(#da)" stroke="#7c8593" x1="168" x2="196" y1="86" y2="86"></line>
+<rect fill="rgba(240,180,41,0.1)" height="64" rx="6" stroke="#f0b429" width="46" x="198" y="54"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 221 90)" x="221" y="90">卷积层</text>
+<line marker-end="url(#da)" stroke="#7c8593" x1="246" x2="274" y1="86" y2="86"></line>
+<rect fill="rgba(232,121,75,0.14)" height="52" rx="6" stroke="#e8794b" width="42" x="276" y="60"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 297 90)" x="297" y="90">全连接</text>
+<line marker-end="url(#da)" stroke="#7c8593" x1="320" x2="352" y1="86" y2="86"></line>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="452" y="34">每个动作一个 Q 值</text>
+<rect fill="rgba(255,255,255,0.03)" height="22" rx="4" stroke="#7c8593" width="150" x="356" y="46"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="431" y="61">Q(s, 上) = 12.4</text>
+<rect fill="rgba(240,180,41,0.14)" height="22" rx="4" stroke="#f0b429" width="150" x="356" y="72"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="431" y="87">Q(s, 开火) = 31.7 ★</text>
+<rect fill="rgba(255,255,255,0.03)" height="22" rx="4" stroke="#7c8593" width="150" x="356" y="98"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="431" y="113">Q(s, 下) = 8.1</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="431" y="140">每步挑 Q 最大的动作 ★</text>
+<defs><marker id="da" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
 </svg>
 <figcaption>图 1 · Q 网络：把最近 4 帧画面喂进卷积网络，一次前向就为每个手柄动作输出一个"未来总分"Q 值；每步挑最高的那个动作执行。</figcaption>
 </figure>
 <p>怎么训练它？把上面的目标值 <code>y = r + γ·max<sub>a'</sub> Q(s',a';θ)</code> 当"答案"，最小化<strong>预测与答案之差的平方</strong> <code>L = ( y − Q(s,a;θ) )²</code>，再用梯度下降（论文用 RMSProp、小批量各 32 条）一点点调 θ。说白了，这就是把强化学习变成了一个<strong>不断朝"自己算出的未来目标"回归</strong>的监督学习问题。</p>
-<h3>第三步（关键）：经验回放，把训练稳住</h3>
+<h3 data-tts="f02d385fa6e6bc2d">第三步（关键）：经验回放，把训练稳住</h3>
 <p>光有上面两步还不够——直接拿"刚玩出来的连续帧"去训，网络很快就崩。原因就是前面说的：<strong>连续样本高度相关</strong>，梯度下降却假设样本独立；而且当前策略决定了下一批数据，一旦网络偏向某个动作，接下来看到的全是那类画面，<strong>正反馈一放大就发散</strong>。</p>
 <p>DQN 的解法朴素得惊人——<strong>经验回放</strong>：把智能体每一步的经历 <code>(s, a, r, s')</code> 存进一个能装百万条的<strong>回放池（replay memory）</strong>；训练时<strong>不用最新那条，而是从池子里随机抽一小批</strong>来更新网络。这一下带来三个好处：</p>
 <ul>
@@ -121,39 +122,39 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>抹平分布抖动</strong>：训练用的是过去许多种行为混合出来的分布，而不是当下策略的"一时之见"，避免了参数来回震荡甚至发散。</li>
 </ul>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="db" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="dbg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="22" y="30" width="120" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="82" y="50" fill="#e7ebf1" font-size="12" text-anchor="middle">玩游戏</text>
-<text x="82" y="66" fill="#7c8593" font-size="10" text-anchor="middle">ε-贪心 选动作</text>
-<path d="M142,53 L200,53" stroke="#7c8593" stroke-width="1.4" marker-end="url(#db)"/>
-<text x="171" y="44" fill="#7c8593" font-size="9.5" text-anchor="middle">存入</text>
-<rect x="202" y="18" width="156" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/>
-<text x="280" y="34" fill="#e8794b" font-size="11.5" text-anchor="middle" font-weight="700">回放池（~百万条）</text>
-<text x="280" y="52" fill="#b9c0ca" font-size="9.5" text-anchor="middle">(s,a,r,s') (s,a,r,s')</text>
-<text x="280" y="66" fill="#b9c0ca" font-size="9.5" text-anchor="middle">(s,a,r,s') (s,a,r,s')</text>
-<text x="280" y="80" fill="#b9c0ca" font-size="9.5" text-anchor="middle">(s,a,r,s') …</text>
-<path d="M358,60 C420,60 430,110 400,140" stroke="#f0b429" stroke-width="1.6" fill="none" marker-end="url(#dbg)"/>
-<text x="440" y="96" fill="#f0b429" font-size="9.5" text-anchor="middle">随机抽一小批</text>
-<rect x="286" y="150" width="150" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
-<text x="361" y="170" fill="#e7ebf1" font-size="12" text-anchor="middle">更新 Q 网络</text>
-<text x="361" y="186" fill="#7c8593" font-size="9.5" text-anchor="middle">朝 r+γ·max Q(s',·) 回归</text>
-<path d="M286,173 L150,173 L110,120" stroke="#7c8593" stroke-width="1.4" fill="none" marker-end="url(#db)"/>
-<text x="150" y="205" fill="#7c8593" font-size="9.5" text-anchor="middle">网络变好 → 玩得更好</text>
-<rect x="22" y="150" width="120" height="46" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
-<text x="82" y="177" fill="#b9c0ca" font-size="11" text-anchor="middle">更强的策略</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="db" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="dbg" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="46" rx="8" stroke="#f0b429" width="120" x="22" y="30"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="82" y="50">玩游戏</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="82" y="66">ε-贪心 选动作</text>
+<path d="M142,53 L200,53" marker-end="url(#db)" stroke="#7c8593" stroke-width="1.4"></path>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="171" y="44">存入</text>
+<rect fill="rgba(255,255,255,0.03)" height="70" rx="8" stroke="#e8794b" width="156" x="202" y="18"></rect>
+<text fill="#e8794b" font-size="11.5" font-weight="700" text-anchor="middle" x="280" y="34">回放池（~百万条）</text>
+<text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="280" y="52">(s,a,r,s') (s,a,r,s')</text>
+<text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="280" y="66">(s,a,r,s') (s,a,r,s')</text>
+<text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="280" y="80">(s,a,r,s') …</text>
+<path d="M358,60 C420,60 430,110 400,140" fill="none" marker-end="url(#dbg)" stroke="#f0b429" stroke-width="1.6"></path>
+<text fill="#f0b429" font-size="9.5" text-anchor="middle" x="440" y="96">随机抽一小批</text>
+<rect fill="rgba(240,180,41,0.1)" height="46" rx="8" stroke="#f0b429" width="150" x="286" y="150"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="361" y="170">更新 Q 网络</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="361" y="186">朝 r+γ·max Q(s',·) 回归</text>
+<path d="M286,173 L150,173 L110,120" fill="none" marker-end="url(#db)" stroke="#7c8593" stroke-width="1.4"></path>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="150" y="205">网络变好 → 玩得更好</text>
+<rect fill="rgba(255,255,255,0.02)" height="46" rx="8" stroke="#7c8593" width="120" x="22" y="150"></rect>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="82" y="177">更强的策略</text>
 </svg>
 <figcaption>图 2 · 经验回放闭环：一边玩一边把每条经历 (s,a,r,s') 存进回放池；训练时从池里随机抽小批来更新网络——打散相关性、复用数据、稳住训练。</figcaption>
 </figure>
-<h3>还有几个让它 work 的工程细节</h3>
+<h3 data-tts="5ca86978143cf183">还有几个让它 work 的工程细节</h3>
 <p>探索用 <strong>ε-贪心（ε-greedy）</strong>：以概率 ε 随机乱按、其余时候挑 Q 最大，ε 从 1 逐步退火到 0.1，先广撒网再收敛。<strong>奖励裁剪</strong>：把每步奖励统一压到 <code>{−1, 0, +1}</code>，这样同一套学习率能通吃计分差异极大的不同游戏。还有跳帧（每 4 帧才决策一次）。最关键的是——<strong>7 款游戏用完全相同的网络结构与超参数</strong>，不为任何一款调参，这才凸显了方法的通用。</p>
 <p>诚实补一句：2013 这一版算目标 <code>y</code> 时用的还是<strong>正在被更新的同一个网络</strong>，其实仍不够稳；两年后的《Nature》版加了一个<strong>目标网络（target network，隔一段才同步一次的 Q 副本）</strong>专门算 <code>y</code>，训练才真正稳定，并扩到 49 款游戏、达到人类水平。</p>
-<h2>关键结果</h2>
+<h2 data-tts="e4fecdad211377a6">关键结果</h2>
 <p>论文在 ALE 的 <strong>7 款 Atari 游戏</strong>上评测：Beam Rider、Breakout（打砖块）、Enduro（赛车）、Pong（乒乓）、Q*bert、Seaquest、Space Invaders（太空侵略者）。<strong>同一套网络与超参数、只吃像素和分数</strong>，结果在其中 <strong>6 款超过此前所有方法</strong>（包括那些用了手工特征的），并在 <strong>Breakout、Enduro、Pong 3 款上超过人类高手</strong>。一个通用架构、零游戏定制就能横跨这么多风格迥异的游戏，这在当时前所未见。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="373cc7fe904537de">为什么重要 / 影响</h2>
 <p>DQN 是<strong>深度学习与强化学习第一次令人信服的联姻</strong>，直接奠基了<strong>深度强化学习</strong>这一整个领域。它证明了一个此前做不到的命题：<strong>单一架构能从最原始的感知输入里、靠一个奖励信号学会多种任务</strong>。此后的谱系一路展开：2015 年《Nature》版（目标网络 + 49 款游戏达到人类水平），Double DQN、Dueling DQN、优先经验回放、Rainbow 等一串改进；再到 AlphaGo / AlphaZero / MuZero，以及机器人控制。经验回放本身也成了深度 RL 的标准零件。可以说，今天从游戏 AI 到用奖励信号对齐大模型的思路，都能追溯到这一篇"深度 RL 能行"的证明。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="9a2d4b1972569741">局限与批评</h2>
 <ul>
 <li><strong>极其耗样本</strong>：要玩上千万帧、相当于连续玩好多天，才学得会人类几分钟就上手的东西——离人的学习效率差得远。</li>
 <li><strong>2013 版本不够稳</strong>：没有目标网络，加上 <code>max</code> 操作会<strong>系统性高估</strong> Q 值；这些在《Nature》版和后来的 Double DQN 才被补上。</li>
@@ -161,7 +162,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只适合离散动作的反应式游戏</strong>：连续控制（如机械臂力矩）需要另一套方法（DDPG 等）。</li>
 <li><strong>没有收敛保证、对超参敏感</strong>：能 work 更多是工程与经验的胜利，而非理论上被证明稳定。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="1f8ac2dcb067f065">要点</h2>
 <div class="tl">
 <p>① 一句话：用卷积网络近似 Q-learning 的动作价值函数 <code>Q(s,a)</code>，只从像素和分数、端到端学会打雅达利游戏。</p>
 <p>② 痛点：RL 数据稀疏、滞后、强相关且分布随策略漂移；"神经网络 + Q-learning + 自举"易发散（致命三角）。</p>
