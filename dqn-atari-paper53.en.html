@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Playing Atari with Deep Reinforcement Learning (DQN) — CS Papers Deep-Read Paper 53</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 53</p>
+<h1>Playing Atari with Deep Reinforcement Learning (DQN)</h1>
+<p class="sub">Mnih et al. · DeepMind · NIPS 2013 Deep Learning Workshop</p>
+<p class="langbar"><a href="dqn-atari-paper53.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2013 a team at DeepMind (Mnih and colleagues) built <strong>DQN</strong>: a program that, staring only at an Atari console's <strong>screen pixels</strong> and <strong>current score</strong> — told none of the rules — figured out how to play by itself. And <strong>the same program, not a line changed</strong>, learned to play seven wildly different games (Breakout, Pong, Space Invaders, and more), beating human experts at several. This was the first successful marriage of <strong>deep learning</strong> and <strong>reinforcement learning</strong> (learning by reward and trial-and-error). AlphaGo, and even the training recipe that makes ChatGPT helpful, trace back to this road.</p>
+<h2>First, a puzzle</h2>
+<p>Before this, getting a computer to play a game meant human engineers <strong>hand-telling it what to look at</strong>: where's the ball, where's the paddle, how many enemies… and switching games meant rewriting all of it. DQN flips this: <strong>tell it nothing</strong>, just hand over the raw picture and the score, and let it figure out the rest. More counterintuitive still: the same program, no settings touched, was fed seven completely different games — and it <strong>learned each one</strong>.</p>
+<h2>How does it learn? First, train a "scorer"</h2>
+<p>DQN's core is training a <strong>"scorer"</strong>: looking at the current screen, it gives every pressable button a score — not "how many points do I get right now," but <strong>"if I press this and play on to the end, roughly how many points can I rack up in total?"</strong> With that score sheet, play is simple: at every step, press the highest-scoring button. The whole difficulty is training that scorer to be accurate — it has to learn to <strong>forgo a small gain now for a bigger payoff later</strong> (dodge the bullet first, don't rush to fire).</p>
+<h2>The key trick: keep a diary, and re-read it</h2>
+<p>Cramming a deep network into reinforcement learning was, at first, <strong>hopelessly unstable — it kept blowing up</strong>. DQN's lifesaver is called <strong>experience replay</strong>: it carries a <strong>"diary"</strong>, jotting down every moment — (the screen back then, which key was pressed, points gained, the next screen). During training it <strong>doesn't just stare at the moment that just happened</strong>; it <strong>flips back to random old pages and reviews them shuffled together</strong>. Why shuffle? Because consecutive frames look almost identical (all circling the same corner), and learning only from the here-and-now walks it into a dead end; re-reading old entries, mixed up, makes learning both stable and thrifty — one experience can even be reviewed many times over.</p>
+<h2>What did it bring?</h2>
+<p>DQN proved something previously impossible: <strong>a single unified program can learn many tasks straight from raw pixels</strong> — no human-fed features, no per-game customization. It ignited the whole field of <strong>deep reinforcement learning</strong>: two years later an upgraded version reached human-level play on 49 games, and AlphaGo followed. The cost is real, too: it has to <strong>play millions of rounds, day and night</strong>, to learn what a human picks up in minutes; and on games that need long-range planning — "grab the key now, use it on a door much later" — it's still stumped.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Use a convolutional network as a "scorer" that, from screen pixels, estimates a "total future score" for each action, and stabilize training with "experience replay," a diary re-read over and over — so the same program, not a word changed, learned seven Atari games from scratch and beat humans at several. This was deep learning and reinforcement learning's first successful handshake, and the founding work of deep RL.</p>
+</div>
+<p class="switch-hint">Want the network diagram, the Q-value formula, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">DQN (Deep Q-Network) was the first time a deep neural network learned to play Atari games <strong>from raw screen pixels and the game score alone</strong>, via <strong>reinforcement learning</strong>: it uses a convolutional network (CNN) to approximate Q-learning's <strong>action-value function</strong> <code>Q(s,a)</code> — "the total future return of taking action a at screen s" — and cures the old headache of "deep network + reinforcement learning diverges the moment you train it" with <strong>experience replay</strong>. The same network and hyperparameters, customized for no game, beat all prior methods on 6 of 7 Atari games and surpassed human experts on 3, launching deep reinforcement learning.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Reinforcement learning (RL)</strong>: a "trial-and-error" style of learning. An <strong>agent</strong> in an <strong>environment</strong> observes the current <strong>state</strong>, takes an <strong>action</strong>, gets a <strong>reward</strong> (score), and the environment moves to the next state; the goal is to learn a <strong>policy</strong> ("what to do in each situation") that maximizes cumulative reward.</li>
+<li><strong>Q-learning</strong>: a classic RL algorithm from 1989 (Watkins). It learns an "action-value table" <code>Q(s,a)</code>: the long-term value of taking action a in state s; once learned, just pick the highest-Q action each step. DQN uses a neural network to "remember" this table.</li>
+<li><strong>Discount factor (γ)</strong>: a number in 0–1 that discounts "future rewards" before summing them, so the agent weighs nearby payoffs more without ignoring distant ones (the paper uses 0.99).</li>
+<li><strong>CNN (convolutional neural network)</strong>: a network great at images, sliding small windows over the picture to extract features layer by layer, from edges to objects. DQN uses it to "see" the game screen.</li>
+<li><strong>Gradient descent / backpropagation</strong>: the general way to train a neural network — compute "where the current prediction is wrong and which way to adjust," then nudge the parameters in the direction that shrinks the error.</li>
+<li><strong>Atari 2600 / ALE</strong>: the Atari 2600 is a 1970s home console; the ALE (Arcade Learning Environment) wraps it into a standard test bench so AI can be compared uniformly across dozens of games.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, and others at DeepMind in London; the paper appeared at the NIPS 2013 Deep Learning workshop. It inherits two lines: Q-learning (Watkins 1989), the classic RL algorithm, and the deep convolutional networks that had just proved their power on images (AlexNet, 2012) — DQN <strong>stitched the two together stably for the first time</strong>. It launches the 2015 <em>Nature</em> version (which added a target network and reached human-level play on 49 games), AlphaGo (2016), and an entire wave of deep reinforcement learning that followed.</p>
+<h2>The problem and the motivation</h2>
+<p>In RL's old world, the real successes mostly leaned on <strong>hand-designed features</strong>. The classic case, TD-Gammon (mastering backgammon in the 1990s), worked largely thanks to a low-dimensional, human-curated board state. But the moment you want an agent to <strong>learn straight from raw pixels</strong>, trouble arrives.</p>
+<p>Deep learning is powerful because it feeds on massive amounts of <strong>labeled, mutually independent</strong> data. Reinforcement learning satisfies none of those three: rewards are often <strong>sparse, noisy, and badly delayed</strong> (whether this button press was good may only show hundreds of frames later); the data isn't independent — <strong>consecutive frames are highly correlated</strong>; and worse, <strong>the data distribution shifts along with the policy</strong> — the network improves a bit, behavior changes, and the frames it sees change too, like chasing your own shadow. Theory had long warned that combining <strong>nonlinear function approximation (a neural network) + Q-learning + bootstrapping (using your own estimate as the learning target)</strong> can easily <strong>diverge</strong> (later dubbed the "deadly triad"). So the mainstream dared only use linear models with hand-built features. DQN's question was precisely: <strong>how do you make "learn end-to-end from pixels" actually stable?</strong></p>
+<h2>The core idea</h2>
+<h3>Step 1: cast game-playing as "maximize future return"</h3>
+<p>First, write the game in RL's language: each frame, the agent sees the screen (state <code>s</code>), picks a joystick action <code>a</code>, gets a score change (reward <code>r</code>), and the screen moves to <code>s'</code>. The goal isn't to maximize this one point but the <strong>discounted total future return</strong>. Q-learning captures this with an <strong>action-value function</strong> <code>Q*(s,a)</code>: "the total return you can expect by taking a in s and then playing optimally." It obeys a self-consistent <strong>Bellman equation</strong>: <code>Q*(s,a) = E[ r + γ·max<sub>a'</sub> Q*(s',a') ]</code>.</p>
+<p>In plain terms: <strong>"the long-term value of this step = the reward r you get now + the value of picking the best action at the next screen (discounted by γ)."</strong> During learning, the right-hand side is treated as the "correct answer" (the <em>target</em>), and Q is pushed to match it — which is exactly bootstrapping: using your own estimate of the future to teach your present.</p>
+<h3>Step 2: use a convolutional network as this Q function (the Q-network)</h3>
+<p>There are countless possible screens, so you can't literally tabulate them; DQN approximates Q with a <strong>convolutional network</strong> <code>Q(s,a;θ)</code> (θ are the parameters). The input isn't a single frame but the <strong>last 4 frames stacked together</strong> (each shrunk to 84×84 grayscale) — because a single frame can't tell whether the ball is flying up or down, and <strong>stacking a few frames carries direction and speed</strong>. The network outputs a row of numbers: <strong>one Q value per possible action, scoring all actions in a single forward pass.</strong></p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="52" y="34" fill="#e7ebf1" font-size="12.5" text-anchor="middle" font-weight="700">last 4 frames</text>
+<rect x="18" y="52" width="52" height="52" rx="4" fill="rgba(255,255,255,0.05)" stroke="#7c8593"/>
+<rect x="24" y="46" width="52" height="52" rx="4" fill="rgba(255,255,255,0.05)" stroke="#7c8593"/>
+<rect x="30" y="40" width="52" height="52" rx="4" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text x="56" y="70" fill="#b9c0ca" font-size="10" text-anchor="middle">84×84</text>
+<text x="56" y="118" fill="#7c8593" font-size="10" text-anchor="middle">pixels</text>
+<line x1="86" y1="66" x2="118" y2="66" stroke="#7c8593" marker-end="url(#da)"/>
+<rect x="120" y="42" width="46" height="88" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="143" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 143 90)">conv</text>
+<line x1="168" y1="86" x2="196" y2="86" stroke="#7c8593" marker-end="url(#da)"/>
+<rect x="198" y="54" width="46" height="64" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="221" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 221 90)">conv</text>
+<line x1="246" y1="86" x2="274" y2="86" stroke="#7c8593" marker-end="url(#da)"/>
+<rect x="276" y="60" width="42" height="52" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="297" y="90" fill="#e7ebf1" font-size="11" text-anchor="middle" transform="rotate(-90 297 90)">dense</text>
+<line x1="320" y1="86" x2="352" y2="86" stroke="#7c8593" marker-end="url(#da)"/>
+<text x="452" y="34" fill="#f0b429" font-size="12.5" text-anchor="middle" font-weight="700">one Q per action</text>
+<rect x="356" y="46" width="150" height="22" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="431" y="61" fill="#b9c0ca" font-size="11" text-anchor="middle">Q(s, up) = 12.4</text>
+<rect x="356" y="72" width="150" height="22" rx="4" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/><text x="431" y="87" fill="#e7ebf1" font-size="11" text-anchor="middle">Q(s, fire) = 31.7 ★</text>
+<rect x="356" y="98" width="150" height="22" rx="4" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="431" y="113" fill="#b9c0ca" font-size="11" text-anchor="middle">Q(s, down) = 8.1</text>
+<text x="431" y="140" fill="#7c8593" font-size="10.5" text-anchor="middle">each step pick the max-Q action ★</text>
+<defs><marker id="da" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+</svg>
+<figcaption>Fig 1 · The Q-network: feed the last 4 frames into a convolutional network; one forward pass outputs a "total future score" Q value for each joystick action; each step, take the highest.</figcaption>
+</figure>
+<p>How is it trained? Take the target above, <code>y = r + γ·max<sub>a'</sub> Q(s',a';θ)</code>, as the "answer," and minimize the <strong>squared difference between prediction and answer</strong>, <code>L = ( y − Q(s,a;θ) )²</code>, nudging θ with gradient descent (the paper uses RMSProp, minibatches of 32). Put plainly, this turns reinforcement learning into a supervised-learning problem that <strong>keeps regressing toward "the future target it computed itself."</strong></p>
+<h3>Step 3 (the key): experience replay, to stabilize training</h3>
+<p>Those two steps alone aren't enough — train directly on the "consecutive frames just played" and the network quickly collapses. The reason is exactly as above: <strong>consecutive samples are highly correlated</strong>, yet gradient descent assumes independence; and the current policy determines the next batch of data, so once the network favors some action, it only sees frames of that kind, and <strong>the positive feedback amplifies into divergence</strong>.</p>
+<p>DQN's fix is startlingly plain — <strong>experience replay</strong>: store every step's experience <code>(s, a, r, s')</code> in a <strong>replay memory</strong> holding up to a million entries; during training, <strong>don't use the latest one, sample a random minibatch</strong> from the pool to update the network. This buys three things at once:</p>
+<ul>
+<li><strong>Breaks correlation</strong>: random sampling pulls apart the "consecutive, look-alike" samples, so each update is closer to independent and identically distributed — lower variance, and no more walking into dead ends.</li>
+<li><strong>Data efficiency</strong>: an experience gets sampled and reviewed many times, so sample utilization is far higher.</li>
+<li><strong>Smooths distribution shift</strong>: training draws on a mix of many past behaviors, not the current policy's "momentary view," avoiding oscillation and divergence of the parameters.</li>
+</ul>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="db" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="dbg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="22" y="30" width="120" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="82" y="50" fill="#e7ebf1" font-size="12" text-anchor="middle">play</text>
+<text x="82" y="66" fill="#7c8593" font-size="10" text-anchor="middle">ε-greedy action</text>
+<path d="M142,53 L200,53" stroke="#7c8593" stroke-width="1.4" marker-end="url(#db)"/>
+<text x="171" y="44" fill="#7c8593" font-size="9.5" text-anchor="middle">store</text>
+<rect x="202" y="18" width="156" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"/>
+<text x="280" y="34" fill="#e8794b" font-size="11.5" text-anchor="middle" font-weight="700">replay memory (~1M)</text>
+<text x="280" y="52" fill="#b9c0ca" font-size="9.5" text-anchor="middle">(s,a,r,s') (s,a,r,s')</text>
+<text x="280" y="66" fill="#b9c0ca" font-size="9.5" text-anchor="middle">(s,a,r,s') (s,a,r,s')</text>
+<text x="280" y="80" fill="#b9c0ca" font-size="9.5" text-anchor="middle">(s,a,r,s') …</text>
+<path d="M358,60 C420,60 430,110 400,140" stroke="#f0b429" stroke-width="1.6" fill="none" marker-end="url(#dbg)"/>
+<text x="440" y="96" fill="#f0b429" font-size="9.5" text-anchor="middle">random minibatch</text>
+<rect x="286" y="150" width="150" height="46" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="361" y="170" fill="#e7ebf1" font-size="12" text-anchor="middle">update Q-network</text>
+<text x="361" y="186" fill="#7c8593" font-size="9.5" text-anchor="middle">regress to r+γ·max Q(s',·)</text>
+<path d="M286,173 L150,173 L110,120" stroke="#7c8593" stroke-width="1.4" fill="none" marker-end="url(#db)"/>
+<text x="150" y="205" fill="#7c8593" font-size="9.5" text-anchor="middle">better net → better play</text>
+<rect x="22" y="150" width="120" height="46" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593"/>
+<text x="82" y="177" fill="#b9c0ca" font-size="11" text-anchor="middle">stronger policy</text>
+</svg>
+<figcaption>Fig 2 · The experience-replay loop: while playing, store each experience (s,a,r,s') in the replay memory; to train, draw a random minibatch from the pool — breaking correlation, reusing data, and stabilizing training.</figcaption>
+</figure>
+<h3>A few more engineering details that make it work</h3>
+<p>Exploration uses <strong>ε-greedy</strong>: with probability ε act randomly, otherwise take the max-Q action, with ε annealed from 1 down to 0.1 — cast a wide net first, then converge. <strong>Reward clipping</strong>: squash every step's reward to <code>{−1, 0, +1}</code>, so one learning rate works across games with wildly different scoring scales. Plus frame-skipping (decide once every 4 frames). Most tellingly — <strong>all 7 games use the exact same architecture and hyperparameters</strong>, tuned for none in particular, which is what makes the method's generality stand out.</p>
+<p>One honest note: this 2013 version computes the target <code>y</code> using <strong>the very same network being updated</strong>, which is still not quite stable; the 2015 <em>Nature</em> version added a <strong>target network (a copy of Q synced only occasionally)</strong> dedicated to computing <code>y</code>, which finally made training truly stable and scaled it to 49 games at human level.</p>
+<h2>Key results</h2>
+<p>The paper evaluates on <strong>7 Atari games</strong> in the ALE: Beam Rider, Breakout, Enduro, Pong, Q*bert, Seaquest, and Space Invaders. With <strong>the same network and hyperparameters, consuming only pixels and score</strong>, it <strong>beat all prior methods on 6 of them</strong> (including ones that used hand-crafted features), and <strong>surpassed a human expert on 3 — Breakout, Enduro, and Pong</strong>. One general architecture, zero per-game customization, spanning such stylistically different games was unprecedented at the time.</p>
+<h2>Why it mattered</h2>
+<p>DQN was the <strong>first convincing marriage of deep learning and reinforcement learning</strong>, founding the whole field of <strong>deep reinforcement learning</strong> outright. It proved a previously impossible claim: <strong>a single architecture can learn many tasks from the rawest perceptual input, guided by one reward signal</strong>. The lineage unfolds from there: the 2015 <em>Nature</em> version (target network + human-level on 49 games), a string of improvements (Double DQN, Dueling DQN, prioritized replay, Rainbow), then AlphaGo / AlphaZero / MuZero and robotic control. Experience replay itself became a standard component of deep RL. You could say that today's thinking — from game AI to aligning large models with a reward signal — traces back to this "deep RL can work" proof.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Extremely sample-hungry</strong>: it needs tens of millions of frames — the equivalent of playing nonstop for many days — to learn what a human picks up in minutes; far from human learning efficiency.</li>
+<li><strong>The 2013 version isn't stable enough</strong>: no target network, and the <code>max</code> operator <strong>systematically overestimates</strong> Q values; these were only patched in the <em>Nature</em> version and later Double DQN.</li>
+<li><strong>Can't handle sparse rewards or long-horizon planning</strong>: on games like <em>Montezuma's Revenge</em> ("grab the key now, use it much later"), DQN scores near zero — random exploration never stumbles onto a reward that far away.</li>
+<li><strong>Only for discrete-action, reactive games</strong>: continuous control (e.g., a robot arm's torque) needs other methods (DDPG and the like).</li>
+<li><strong>No convergence guarantee, sensitive to hyperparameters</strong>: that it works is more a triumph of engineering and empirics than of proven stability.</li>
+</ul>
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: use a convolutional network to approximate Q-learning's action-value function <code>Q(s,a)</code>, learning to play Atari end-to-end from pixels and score alone.</p>
+<p>② The pain: RL data is sparse, delayed, strongly correlated, and shifts with the policy; "neural network + Q-learning + bootstrapping" easily diverges (the deadly triad).</p>
+<p>③ The target: the Bellman form <code>y = r + γ·max Q(s',a')</code> as the "answer," minimizing <code>(y−Q(s,a))²</code> — turning RL into supervised regression toward a self-computed target.</p>
+<p>④ The Q-network: input the last 4 frames (carrying motion), one forward pass outputs a Q value per action, take the max.</p>
+<p>⑤ Key stabilizer: experience replay — store (s,a,r,s') in a replay pool, train on random minibatches, breaking correlation, reusing data, smoothing distribution shift.</p>
+<p>⑥ Engineering: ε-greedy exploration, reward clipping to {−1,0,+1}, the same hyperparameters across all 7 games; the 2015 <em>Nature</em> version added a target network for true stability.</p>
+<p>⑦ Results: 6 of 7 games beat all prior methods, 3 surpassed human experts, all with one architecture and zero customization.</p>
+<p>⑧ Impact: founded deep reinforcement learning, leading straight to the Nature human-level version, AlphaGo, and a whole subsequent wave of methods.</p>
+<p>⑨ Limits: extremely sample-hungry, overestimates values, fails on sparse rewards / long-horizon planning, discrete actions only, no convergence guarantee.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full network configs and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
