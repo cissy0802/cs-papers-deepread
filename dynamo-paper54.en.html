@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Dynamo — CS Papers Deep-Read Paper 54</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 54</p>
+<h1>Dynamo: Amazon's Highly Available Key-value Store</h1>
+<p class="sub">DeCandia et al. · Amazon · SOSP 2007</p>
+<p class="langbar"><a href="dynamo-paper54.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2007, Amazon published the design of its internal storage system, <strong>Dynamo</strong>. It powers things like the shopping cart: during a Black Friday rush, with machines failing in the datacenter and the network occasionally hiccupping, when you add an item to your cart, <strong>that write must never fail</strong>. The whole paper answers one question: <strong>how do you build storage that is "always writeable"?</strong></p>
+<h2>It made a trade nobody else dared to</h2>
+<p>Traditional databases live by one rule: <strong>data must be consistent at all times</strong>—everyone always sees the same latest value. To hold that line, when a failure or network split hits, they would rather <strong>refuse service</strong> than let the data diverge. Dynamo bets the other way: <strong>it would rather let data diverge briefly than turn a user away.</strong> For a shopping cart, "add-to-cart failed" is far worse than "the cart briefly holds an extra item we'll reconcile later."</p>
+<h2>Which machine holds the data? — a round table</h2>
+<p>With thousands of machines, which one stores a given key (say, a user's cart)? Dynamo imagines all machines <strong>seated around a round table</strong>, each holding a seat number. It hashes the key to a number, and <strong>the first machine you reach walking around the table</strong> is responsible for it—plus the next two, for three copies. The beauty: <strong>adding or removing one machine only affects its two neighbors</strong>; almost all other data stays put. Scaling up or down needs no big migration.</p>
+<h2>What if a machine dies? — let a neighbor sign for it</h2>
+<p>What if the machine you meant to write to is down? Dynamo doesn't wait—<strong>it hands the data to the next live neighbor around the table to "sign for it,"</strong> attached with a note saying "this really belongs to Machine X." When the original recovers, the neighbor delivers the held data plus the note back. So writes almost <strong>always land somewhere.</strong></p>
+<h2>And if versions diverge?</h2>
+<p>If the same cart got edited on two machines, you now have <strong>two versions</strong>. Dynamo won't silently pick a winner for you—it <strong>keeps both</strong>, and hands them over together the next time someone reads, letting <strong>the application merge them</strong>. The cart's merge rule is simple: <strong>take the union—keep everything either side added</strong> (an extra item is better than a lost one). <strong>The cost is honest</strong>: the app must write this "what to do with two versions" logic itself, rather than leaving it all to the database.</p>
+<h2>Remember it in one line</h2>
+<div class="tl">
+<p>To stay "always writeable," Dynamo deliberately gives up "always consistent": a round-table scheme decides where data lives so scaling needs no big migration, a dead machine's writes are signed for by a neighbor, and divergent versions coexist and get merged by the app at read time. This "eventual consistency" playbook ignited a whole generation of NoSQL databases—Cassandra, Riak, DynamoDB, and more.</p>
+</div>
+<p class="switch-hint">Want the consistent-hashing ring, vector clocks, and the R+W quorum mechanics? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Dynamo is Amazon's <strong>highly available key-value store</strong> for core services like the shopping cart: it places "<strong>always-writeable</strong>" above strong consistency, using <strong>consistent hashing</strong> for data placement, a tunable <strong>N/R/W quorum</strong> for replicated reads and writes, <strong>vector clocks</strong> to track version causality and hand conflicts to the application, and <strong>sloppy quorum + hinted handoff</strong> to ride out transient failures—putting the CAP trade-off squarely in the operator's hands and becoming the founding work of "eventually consistent" NoSQL.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Key-value store</strong>: the simplest database shape—store/fetch a blob of "value" under a "key" via <code>put(key,value)</code> and <code>get(key)</code>, with no SQL-style complex queries or cross-table joins.</li>
+<li><strong>Replica / replication</strong>: keeping the same data on several machines so that if one dies, another can take over—the foundation of fault tolerance.</li>
+<li><strong>Consistency</strong>: here, "all replicas and all readers see the same latest value." Strong consistency means any read returns the result of the most recent write.</li>
+<li><strong>Availability</strong>: the system responds to every request at all times and never refuses service.</li>
+<li><strong>Network partition</strong>: machines are alive but the network between them is broken; the cluster is split into groups that can't talk to each other.</li>
+<li><strong>CAP theorem</strong>: under a network partition, a distributed system can guarantee only two of consistency (C), availability (A), and partition tolerance (P). Dynamo explicitly chooses A, giving up immediate C.</li>
+<li><strong>Hash</strong>: a function turning any input (like a key) into a number in a fixed range; a good hash scatters different inputs evenly.</li>
+<li><strong>Quorum</strong>: for an operation over several replicas, requiring "at least some number out of N" to succeed, using overlap to keep reads and writes from missing each other.</li>
+<li><strong>SLA (service-level agreement)</strong>: an externally promised performance target, e.g. "99.9% of requests return within 300 ms"; Dynamo specifically targets high-percentile latency.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The authors are Amazon's Giuseppe DeCandia, Deniz Hastorun, Werner Vogels (then Amazon's CTO), and others, published at <strong>SOSP 2007</strong>. It stands on distributed-systems classics like <strong>Chord</strong> (2001, consistent hashing and DHTs) and <strong>Lamport's vector/logical clocks</strong> (1978), and <strong>assembles those academic building blocks into a system that actually runs in production</strong>. It, in turn, gave rise to <strong>Cassandra, Riak, Voldemort</strong>, and eventually <strong>DynamoDB</strong>—the ancestral blueprint for the whole "eventually consistent NoSQL" line.</p>
+<h2>Problem and motivation</h2>
+<p>Amazon's e-commerce platform is stitched from hundreds of services, runs at enormous scale, and always has machines and networks failing—<strong>"failure is the normal case, not the exception."</strong> In that world, many core services (cart, sessions, seller rankings) place one near-brutal demand on storage: <strong>never turn me away.</strong> "Add to cart," in particular, <strong>must not fail</strong> even if the datacenter is half-crippled or the network is partitioned—one failed add is a lost order.</p>
+<p>But relational databases and most strongly consistent stores take the opposite philosophy: to guarantee "every read returns the one latest value," they will <strong>block or even reject writes</strong> under failure or partition. By CAP, once the network partitions, you can keep only one of consistency (C) and availability (A). <strong>Amazon's business judgment: here, availability far outweighs immediate consistency.</strong> A cart briefly showing two versions and reconciled afterward is nearly invisible to the user; a failed add loses them instantly. Dynamo is the product of taking that trade the <strong>other way</strong>: sacrifice immediate strong consistency to buy "always writeable."</p>
+<h2>Core ideas / method</h2>
+<p>Dynamo is not a single new algorithm but a set of known techniques <strong>assembled around the goal of high availability</strong>—each piece serving "don't turn users away, self-heal after failures, scale without downtime." Piece by piece.</p>
+
+<h3>① Consistent hashing: data placement that needs no big migration</h3>
+<p>With thousands of machines, which one does a key land on? The naive approach is "hash mod machine-count," but then <strong>adding or removing one machine reassigns almost every key</strong>—a full migration. Dynamo uses <em>consistent hashing</em>: it joins the ends of the hash range into a <strong>ring</strong>; each machine hashes to a position on it. A key belongs to <strong>the first machine you reach walking clockwise</strong> from its hash point—called that key's <strong>coordinator</strong>.</p>
+<figure>
+<svg viewbox="0 0 560 340" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="d1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<circle cx="185" cy="175" r="120" fill="none" stroke="#3a424d" stroke-width="1.4" stroke-dasharray="4 5"></circle>
+<circle cx="185" cy="295" r="13" fill="rgba(124,133,147,0.18)" stroke="#7c8593"></circle><text x="185" y="299" font-size="12" fill="#b9c0ca" text-anchor="middle">D</text>
+<circle cx="81" cy="235" r="13" fill="rgba(124,133,147,0.18)" stroke="#7c8593"></circle><text x="81" y="239" font-size="12" fill="#b9c0ca" text-anchor="middle">E</text>
+<circle cx="81" cy="115" r="13" fill="rgba(124,133,147,0.18)" stroke="#7c8593"></circle><text x="81" y="119" font-size="12" fill="#b9c0ca" text-anchor="middle">F</text>
+<circle cx="185" cy="55" r="14" fill="rgba(240,180,41,0.16)" stroke="#f0b429" stroke-width="2"></circle><text x="185" y="59" font-size="12.5" fill="#f0b429" text-anchor="middle" font-weight="700">A</text>
+<circle cx="289" cy="115" r="14" fill="rgba(240,180,41,0.16)" stroke="#f0b429" stroke-width="2"></circle><text x="289" y="119" font-size="12.5" fill="#f0b429" text-anchor="middle" font-weight="700">B</text>
+<circle cx="289" cy="235" r="14" fill="rgba(240,180,41,0.16)" stroke="#f0b429" stroke-width="2"></circle><text x="289" y="239" font-size="12.5" fill="#f0b429" text-anchor="middle" font-weight="700">C</text>
+<path d="M125,60 l10,11 l-10,11 l-10,-11 z" fill="#e8794b"></path>
+<text x="102" y="46" font-size="11.5" fill="#e8794b">key = hash(key)</text>
+<path d="M137,64 Q166,44 172,52" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#d1)"></path>
+<text x="360" y="90" font-size="12.5" fill="#e7ebf1">first machine clockwise</text>
+<text x="360" y="110" font-size="12.5" fill="#f0b429">= coordinator A</text>
+<text x="360" y="146" font-size="12.5" fill="#e7ebf1">plus next N−1 machines</text>
+<text x="360" y="166" font-size="12.5" fill="#f0b429">= preference list</text>
+<text x="360" y="186" font-size="12.5" fill="#7c8593">here N=3 → A · B · C</text>
+<text x="360" y="222" font-size="11.5" fill="#7c8593">add/remove a machine and</text>
+<text x="360" y="240" font-size="11.5" fill="#7c8593">only a neighboring arc moves</text>
+</svg>
+<figcaption>Fig 1 · Consistent-hashing ring: a key hashes to a point, the first machine clockwise is its coordinator, and together with the next N−1 machines forms the key's preference list. Adding/removing a machine only disturbs a neighboring arc.</figcaption>
+</figure>
+<p>For load balancing, Dynamo gives each physical machine <strong>multiple positions</strong> on the ring (called <em>virtual nodes</em>), spreading data more evenly and letting heterogeneous machines carry load in proportion to their capacity.</p>
+
+<h3>② Replication + preference list: N copies, anyone can step in</h3>
+<p>The coordinator doesn't hoard the data—it plus <strong>the next N−1 machines on the ring</strong> each keep a copy, for <code>N</code> replicas (typically N=3). Those N machines form the key's <strong>preference list</strong>. If any one dies, others on the list keep serving.</p>
+
+<h3>③ R + W &gt; N: a tunable "consistency knob"</h3>
+<p>With N replicas, how many must a write reach and a read touch to count as success? Dynamo exposes two tunable parameters: a write needs at least <code>W</code> replicas to acknowledge, a read needs at least <code>R</code> replicas to respond. The key design is to keep <strong><code>R + W &gt; N</code></strong>: because "the W that were written" and "the R that were read" must <strong>overlap in at least one replica</strong> out of N, any read <strong>touches at least one replica holding the latest write</strong>—overlap in numbers buys "reads won't entirely miss the latest write."</p>
+<p>The knob is tunable: <code>(N,R,W)=(3,2,2)</code> is a common balance; lowering <code>W=1</code> means a write returns after just one ack—extremely fast and nearly impossible to fail (more available); raising <code>R</code> makes reads more likely to catch the latest. <strong>Each service can turn it to fit "read-heavy vs write-heavy, and how stale it can tolerate."</strong></p>
+
+<h3>④ Sloppy quorum + hinted handoff: don't refuse writes under failure</h3>
+<p>But what if the top few machines on the preference list happen to be down and you can't gather W acks? A strict quorum would reject the write—exactly what Dynamo can't accept. It uses a <strong>sloppy quorum</strong>: the write <strong>walks further down the ring to the next live machines</strong> to reach W copies, and a machine "standing in for another" records a <em>hint</em> saying "this data really belongs to the down machine." When the original recovers, the stand-in <strong>hands off</strong> the data plus hint back, then deletes its local copy. This <strong>hinted handoff</strong> makes writes almost never fail and lets data return to its home automatically after the failure passes.</p>
+
+<h3>⑤ Vector clocks: allow divergence, but record "who descends from whom"</h3>
+<p>The price of giving up immediate strong consistency is that one key may hold <strong>multiple versions</strong> at once (e.g. two writes on either side of a partition). The trouble: reading two versions, how do you tell "one is a newer version of the other (just overwrite)" from "they truly conflict (each edited independently, need merging)"? Dynamo solves this with <em>vector clocks</em>—each version carries a list of <code>(node, counter)</code> marks recording <strong>which nodes edited it, in what order, how many times</strong>. Compare two versions' vector clocks: if every entry of A is ≥ B and at least one is larger, then <strong>A is a descendant of B—just use A</strong> (this is syntactic reconciliation); if neither dominates (each has updates the other lacks), they <strong>truly conflict</strong>.</p>
+<figure>
+<svg viewbox="0 0 560 280" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="d2" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect x="220" y="18" width="120" height="34" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="280" y="34" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D1</text>
+<text x="280" y="47" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,1]</text>
+<line x1="280" x2="280" y1="52" y2="74" stroke="#7c8593" marker-end="url(#d2)"></line>
+<text x="292" y="68" font-size="10.5" fill="#7c8593">Sx writes</text>
+<rect x="220" y="76" width="120" height="34" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="280" y="92" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D2</text>
+<text x="280" y="105" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,2]</text>
+<line x1="255" x2="150" y1="110" y2="150" stroke="#7c8593" marker-end="url(#d2)"></line>
+<text x="150" y="138" font-size="10.5" fill="#7c8593">Sy writes</text>
+<line x1="305" x2="410" y1="110" y2="150" stroke="#7c8593" marker-end="url(#d2)"></line>
+<text x="372" y="138" font-size="10.5" fill="#7c8593">Sz writes</text>
+<rect x="70" y="152" width="150" height="40" rx="7" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="145" y="168" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D3</text>
+<text x="145" y="183" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,2][Sy,1]</text>
+<rect x="340" y="152" width="150" height="40" rx="7" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="415" y="168" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D4</text>
+<text x="415" y="183" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,2][Sz,1]</text>
+<text x="280" y="150" font-size="11" fill="#e8794b" text-anchor="middle">↯ neither dominates = true conflict</text>
+<line x1="150" x2="255" y1="192" y2="228" stroke="#7c8593" marker-end="url(#d2)"></line>
+<line x1="410" x2="305" y1="192" y2="228" stroke="#7c8593" marker-end="url(#d2)"></line>
+<rect x="185" y="230" width="190" height="40" rx="7" fill="rgba(240,180,41,0.14)" stroke="#f0b429"></rect>
+<text x="280" y="246" font-size="12" fill="#e7ebf1" text-anchor="middle" font-weight="700">D5 app merges, writes back</text>
+<text x="280" y="261" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,3][Sy,1][Sz,1]</text>
+</svg>
+<figcaption>Fig 2 · Vector clocks: after D2, Sy and Sz each write once, producing D3 and D4 that neither dominates—flagged as a true conflict; on read both versions are returned, and the app merges them by business semantics (e.g. cart union) into D5, written back.</figcaption>
+</figure>
+<p>Dynamo <strong>does not resolve true conflicts on its own</strong>—it <strong>returns the conflicting versions together to the application</strong>, which performs <strong>semantic reconciliation</strong> by business meaning. The cart's rule is remarkably simple: <strong>take the union of the two versions</strong>, keeping every item either side added. The worst case is a deleted item "resurrecting," but versus losing an order, that's a good trade.</p>
+
+<h3>⑥ Anti-entropy and gossip: replicas self-heal, membership self-governs</h3>
+<p>Hinted handoff only cures transient failures; when a machine dies for good, replicas drift apart for the long term. Dynamo uses <strong>Merkle trees</strong> for <em>anti-entropy</em>: each replica hashes its data into a tree, then the two <strong>compare hashes level by level, descending only into subtrees that differ</strong>—pinpointing differences and repairing just the divergent part with minimal data transfer. Membership uses a <strong>gossip protocol</strong>: with no central node, <strong>each machine periodically exchanges "who I know is alive and what the ring looks like" with random peers</strong>, so failure detection and membership changes spread through the cluster this way—fully decentralized, every node a peer.</p>
+
+<h2>Key results</h2>
+<p>Dynamo is <strong>an engineering systems paper, not a benchmark paper</strong>—its "result" is that it <strong>actually ran Amazon's core services in production</strong>: cart, session management, seller rankings, parts of S3, and dozens more. The paper centers on <strong>99.9th-percentile latency</strong> (not the average), reports measured behavior under strict SLAs (e.g. high-percentile latency within hundreds of milliseconds), and shows how different <code>(N,R,W)</code> settings shift the trade-off point among <strong>latency, durability, and consistency</strong>: set W to 1 and writes almost never fail; raise R and W and reads are more consistent but slower. It also quantifies how partitioning/placement strategies affect load balance. <strong>The most persuasive conclusion is that a system deliberately sacrificing immediate consistency can, at real large scale in production, come close to never refusing a write.</strong></p>
+
+<h2>Why it matters / impact</h2>
+<p>Dynamo turned the abstract "<strong>availability vs consistency</strong>" trade-off into a <strong>concrete, tunable, self-healing</strong> engineering pattern for the first time, and put the CAP choice explicitly in the operator's hands. Almost single-handedly it <strong>ignited the NoSQL and "eventual consistency" movement</strong>: <strong>Cassandra</strong> (Facebook—directly inheriting Dynamo's consistent hashing + tunable quorum), <strong>Riak</strong>, and <strong>Voldemort</strong> are its direct descendants; many of its mechanisms—consistent hashing, preference lists, R+W quorums, vector clocks/version conflicts, hinted handoff, Merkle anti-entropy, gossip membership—are now the <strong>common vocabulary</strong> of distributed storage. Years later Amazon's managed service <strong>DynamoDB</strong> borrowed the name (though it is a ground-up rewrite). It's fair to say that any discussion of "highly available distributed databases" today runs through this paper.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>It offloads complexity to the application</strong>: eventual consistency means the app must handle "read returns multiple versions." The cart merges trivially by union, but many workloads lack such a clean merge rule, and the logic is hard and error-prone to write.</li>
+<li><strong>Vector clocks can bloat</strong>: with many nodes participating in writes, the vector-clock list grows; Dynamo compresses by "truncating the oldest entries," but truncation can <strong>misjudge causality</strong> and cause rare anomalies.</li>
+<li><strong>A sloppy quorum isn't a true quorum</strong>: under some failure-and-recovery timings, a sloppy quorum can still <strong>briefly read stale values or even lose writes</strong>—it guarantees availability, with consistency only "eventual." Later systems like Riak added stricter modes as a complement.</li>
+<li><strong>Operational and tuning burden</strong>: N/R/W, virtual-node count, anti-entropy frequency, and more must be tuned per workload, and getting them wrong bites; decentralized gossip's convergence and stability at very large scale also take experience.</li>
+<li><strong>Amazon itself later changed course</strong>: the customer-facing DynamoDB is a rewrite offering strongly consistent read options and full management—a hint that "pure eventual consistency + app-side merge" isn't the friendliest choice for every scenario.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① One line: Dynamo is Amazon's highly available key-value store built so the "cart never refuses a write," trading immediate consistency for perpetual availability.</p>
+<p>② Trade-off: under CAP it explicitly picks A (availability) over immediate C—a failed add is far worse than briefly divergent data.</p>
+<p>③ Placement: consistent hashing arranges machines on a ring; a key finds its first clockwise machine as coordinator, and adding/removing a machine only moves a neighboring arc (virtual nodes for load balance).</p>
+<p>④ Replication: the coordinator plus the next N−1 machines hold N copies, forming the preference list.</p>
+<p>⑤ Knob: write W copies, read R copies, with <code>R+W&gt;N</code> so read and write sets must overlap—consistency tunable per workload.</p>
+<p>⑥ Fault tolerance: sloppy quorum + hinted handoff—if a home machine is down, a neighbor signs for the write with a hint and hands it back on recovery, so writes almost never fail.</p>
+<p>⑦ Conflicts: vector clocks record version causality; dominated versions auto-resolve, true conflicts coexist and are merged by the app's semantics (cart union).</p>
+<p>⑧ Self-healing: Merkle-tree anti-entropy repairs long-term drift, gossip spreads membership and failures with no center—fully peer-to-peer.</p>
+<p>⑨ Impact: ignited NoSQL and eventual consistency, the ancestor of Cassandra / Riak / Voldemort, its mechanisms now standard distributed-storage vocabulary.</p>
+<p>⑩ Limits: merge logic offloaded to the app, vector clocks bloat, sloppy quorums allow occasional stale reads/lost writes, tuning and ops have a learning curve; DynamoDB is a ground-up rewrite.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Finish this page ≈ grasp the paper's core; for full system configuration and measurements, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
