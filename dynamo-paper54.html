@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 54</p>
-<h1>Dynamo：亚马逊的高可用键值存储</h1>
+<h1 data-tts="e9bb94f8292cdfcb">Dynamo：亚马逊的高可用键值存储</h1>
 <p class="sub">DeCandia 等 · Amazon · SOSP 2007</p>
 <p class="langbar"><a href="dynamo-paper54.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,26 +44,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="e7c9ef4159f32555">这篇论文干了什么？</h2>
 <p>2007 年，亚马逊（Amazon）公开了自家内部存储系统 <strong>Dynamo</strong> 的设计。它撑着的是购物车这类场景：黑五大促、机房里总有机器在坏、网络时不时抽风，可你往购物车里加一件商品，<strong>这一下永远不能失败</strong>。Dynamo 的整篇论文，就是在回答一个问题：<strong>怎么造一个「永远能写进去」的存储？</strong></p>
-<h2>它做了个别人不敢做的取舍</h2>
+<h2 data-tts="7c91c8b76816dc54">它做了个别人不敢做的取舍</h2>
 <p>传统数据库信奉一条铁律：<strong>数据必须时刻一致</strong>——所有人看到的永远是同一份最新值。为守住这条，遇到故障或网络分裂时，它宁可<strong>拒绝服务</strong>也不肯让数据出现分歧。Dynamo 反过来赌：<strong>宁可让数据暂时有点分歧，也绝不拒绝用户。</strong>对购物车来说，「加购物失败」比「购物车里短暂多出一件、待会儿再对账合并」糟糕得多。</p>
-<h2>数据放在哪台机器？——一张圆桌</h2>
+<h2 data-tts="6f686bec7a71f8a5">数据放在哪台机器？——一张圆桌</h2>
 <p>成千上万台机器，一个键（比如某用户的购物车）该存哪台？Dynamo 把所有机器想象成<strong>围坐一张圆桌</strong>，每台占一个座位号。给键算个号，<strong>顺着圆桌往下找到的第一台机器</strong>就负责它，再连同后面两台一起存三份备份。妙处在于：<strong>加一台或走一台机器，只影响它两个邻座</strong>，绝大多数数据纹丝不动——扩容缩容都不用大搬家。</p>
-<h2>机器坏了呢？——先让邻居代收</h2>
+<h2 data-tts="5ae028a4d405aeae">机器坏了呢？——先让邻居代收</h2>
 <p>要写的那台机器正好宕机了怎么办？Dynamo 不等它——<strong>先把数据交给圆桌上下一个还活着的邻居「代收」</strong>，并附一张便条写清「这本来是张三的」。等原主机恢复，邻居再把代收的东西连同便条一并送还。于是<strong>写入几乎永远能落地</strong>。</p>
-<h2>那分歧了怎么收场？</h2>
+<h2 data-tts="37158743e4821163">那分歧了怎么收场？</h2>
 <p>如果同一个购物车在两台机器上各被改了一下，就出现了<strong>两个版本</strong>。Dynamo 不擅自替你决定谁对——它把两个版本<strong>都留着</strong>，等下次有人来读时一起交出去，让<strong>应用自己合并</strong>：购物车的合并规则很简单——<strong>取并集，两边加的东西都留下</strong>（大不了多留一件，总好过丢东西）。<strong>代价是诚实的</strong>：应用得自己写这套「遇到两个版本怎么合」的逻辑，不像传统数据库那样甩手不管。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="5359b352546437fa">一句话记住</h2>
 <div class="tl">
 <p>Dynamo 为了「永远能写进去」，主动放弃「时刻一致」：用圆桌轮值决定数据存哪、加减机器不用大搬家，机器坏了先让邻居代收，数据出现分歧就多版本并存、读时交给应用合并。这套「最终一致（eventual consistency）」的打法，点燃了后来 Cassandra、DynamoDB 等一整代 NoSQL 数据库。</p>
 </div>
 <p class="switch-hint">想看一致性哈希环、向量时钟和 R+W 读写法定人数的机制？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="452ed20365e4ff11">一句话</h2>
 <p class="lead">Dynamo 是亚马逊为购物车等核心业务打造的<strong>高可用键值存储</strong>：它把「<strong>永远可写（always-writeable）</strong>」置于「强一致」之上，用<strong>一致性哈希（consistent hashing）</strong>决定数据分布、用<strong>可调的 N/R/W 法定人数</strong>做多副本读写、用<strong>向量时钟（vector clock）</strong>追踪版本因果并把冲突交给应用合并、用<strong>宽松法定人数 + 暗示移交（hinted handoff）</strong>扛住临时故障——由此把 CAP 三选二里的取舍明明白白摆到台面上，成了「最终一致」NoSQL 的开山之作。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="4c3de4911d27ca68">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>键值存储（key-value store）</strong>：最简单的数据库形态——给一个「键」存/取一坨「值」，只支持 <code>put(键,值)</code> 和 <code>get(键)</code>，不支持 SQL 那样的复杂查询与跨表关联。</li>
@@ -77,106 +77,97 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>SLA（服务等级协定）</strong>：对外承诺的性能指标，如「99.9% 的请求在 300 毫秒内返回」；Dynamo 特别以高分位延迟为目标。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="6af1d60d428f362e">坐标</h2>
 <p>作者是亚马逊的 Giuseppe DeCandia、Deniz Hastorun、Werner Vogels（时任 Amazon CTO）等，论文发在 <strong>SOSP 2007</strong>。它站在 <strong>Chord</strong>（2001，一致性哈希与 DHT）、<strong>Lamport 的向量/逻辑时钟</strong>（1978）等分布式经典的肩上，把这些学术构件<strong>拼装成一个真在生产环境跑的系统</strong>；下启 <strong>Cassandra、Riak、Voldemort</strong> 乃至日后的 <strong>DynamoDB</strong>，是「最终一致 NoSQL」这一整条路线的思想母本。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="5aca9dc8d2f01694">问题与动机</h2>
 <p>亚马逊的电商平台由数百个服务拼成，规模巨大、常年有机器和网络在出故障——<strong>「故障是常态，不是意外」</strong>。在这种环境里，很多核心服务（购物车、会话、卖家榜单）对存储只有一个近乎苛刻的要求：<strong>永远别拒绝我。</strong>尤其是「加入购物车」这类写操作，哪怕机房半瘫、网络分区，也<strong>绝不能失败</strong>——一次加购失败就是一笔流失的订单。</p>
 <p>可传统关系数据库和多数强一致存储，走的是相反的哲学：为了保证「任何时候读到的都是唯一最新值」，它们在故障或分区时宁可<strong>阻塞甚至拒绝写入</strong>。按 CAP 定理，网络一旦分区，一致性 C 和可用性 A 只能保一个。<strong>亚马逊的业务判断是：这里可用性远比即时一致重要。</strong>购物车短暂出现两个版本、事后合并，用户几乎无感；而加购失败，用户立刻就走了。Dynamo 就是把这个取舍<strong>反过来做</strong>的产物：牺牲即时强一致，换「永远可写」。</p>
-<h2>核心思想 / 方法</h2>
+<h2 data-tts="2b092f7310385d1a">核心思想 / 方法</h2>
 <p>Dynamo 不是单一新算法，而是把几件已知技术<strong>围绕「高可用」这个目标</strong>组装起来，每一件都服务于「别拒绝用户、故障能自愈、扩容不停机」。逐个拆开。</p>
-
-<h3>① 一致性哈希：数据放哪，加减机器不用大搬家</h3>
+<h3 data-tts="87fd7810453dfdce">① 一致性哈希：数据放哪，加减机器不用大搬家</h3>
 <p>成千上万台机器，一个键该落到哪台？最朴素的办法是「机器数取模」，但那样<strong>一加一减机器，几乎所有键的归属都变</strong>，得全体大搬家。Dynamo 用<em>一致性哈希</em>：把哈希值的整个取值范围首尾相接，想象成一个<strong>环</strong>；每台机器也哈希到环上一个位置。一个键的归属，就是从它的哈希点<strong>顺时针走，遇到的第一台机器</strong>——称为该键的<strong>协调者（coordinator）</strong>。</p>
 <figure>
-<svg viewbox="0 0 560 340" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
 <defs><marker id="d1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
-<circle cx="185" cy="175" r="120" fill="none" stroke="#3a424d" stroke-width="1.4" stroke-dasharray="4 5"></circle>
+<circle cx="185" cy="175" fill="none" r="120" stroke="#3a424d" stroke-dasharray="4 5" stroke-width="1.4"></circle>
 <!-- muted nodes -->
-<circle cx="185" cy="295" r="13" fill="rgba(124,133,147,0.18)" stroke="#7c8593"></circle><text x="185" y="299" font-size="12" fill="#b9c0ca" text-anchor="middle">D</text>
-<circle cx="81" cy="235" r="13" fill="rgba(124,133,147,0.18)" stroke="#7c8593"></circle><text x="81" y="239" font-size="12" fill="#b9c0ca" text-anchor="middle">E</text>
-<circle cx="81" cy="115" r="13" fill="rgba(124,133,147,0.18)" stroke="#7c8593"></circle><text x="81" y="119" font-size="12" fill="#b9c0ca" text-anchor="middle">F</text>
+<circle cx="185" cy="295" fill="rgba(124,133,147,0.18)" r="13" stroke="#7c8593"></circle><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="185" y="299">D</text>
+<circle cx="81" cy="235" fill="rgba(124,133,147,0.18)" r="13" stroke="#7c8593"></circle><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="81" y="239">E</text>
+<circle cx="81" cy="115" fill="rgba(124,133,147,0.18)" r="13" stroke="#7c8593"></circle><text fill="#b9c0ca" font-size="12" text-anchor="middle" x="81" y="119">F</text>
 <!-- preference list nodes (gold) -->
-<circle cx="185" cy="55" r="14" fill="rgba(240,180,41,0.16)" stroke="#f0b429" stroke-width="2"></circle><text x="185" y="59" font-size="12.5" fill="#f0b429" text-anchor="middle" font-weight="700">A</text>
-<circle cx="289" cy="115" r="14" fill="rgba(240,180,41,0.16)" stroke="#f0b429" stroke-width="2"></circle><text x="289" y="119" font-size="12.5" fill="#f0b429" text-anchor="middle" font-weight="700">B</text>
-<circle cx="289" cy="235" r="14" fill="rgba(240,180,41,0.16)" stroke="#f0b429" stroke-width="2"></circle><text x="289" y="239" font-size="12.5" fill="#f0b429" text-anchor="middle" font-weight="700">C</text>
+<circle cx="185" cy="55" fill="rgba(240,180,41,0.16)" r="14" stroke="#f0b429" stroke-width="2"></circle><text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="185" y="59">A</text>
+<circle cx="289" cy="115" fill="rgba(240,180,41,0.16)" r="14" stroke="#f0b429" stroke-width="2"></circle><text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="289" y="119">B</text>
+<circle cx="289" cy="235" fill="rgba(240,180,41,0.16)" r="14" stroke="#f0b429" stroke-width="2"></circle><text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="289" y="239">C</text>
 <!-- key -->
 <path d="M125,60 l10,11 l-10,11 l-10,-11 z" fill="#e8794b"></path>
-<text x="108" y="46" font-size="11.5" fill="#e8794b">key = hash(键)</text>
+<text fill="#e8794b" font-size="11.5" x="108" y="46">key = hash(键)</text>
 <!-- clockwise arrow key -> A -->
-<path d="M137,64 Q166,44 172,52" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#d1)"></path>
+<path d="M137,64 Q166,44 172,52" fill="none" marker-end="url(#d1)" stroke="#f0b429" stroke-width="1.8"></path>
 <!-- annotations -->
-<text x="360" y="90" font-size="12.5" fill="#e7ebf1">顺时针遇到的第一台</text>
-<text x="360" y="110" font-size="12.5" fill="#f0b429">= 协调者 A</text>
-<text x="360" y="146" font-size="12.5" fill="#e7ebf1">连同其后 N−1 台</text>
-<text x="360" y="166" font-size="12.5" fill="#f0b429">= 副本 preference list</text>
-<text x="360" y="186" font-size="12.5" fill="#7c8593">此处 N=3 → A · B · C</text>
-<text x="360" y="222" font-size="11.5" fill="#7c8593">加/减一台机器，只</text>
-<text x="360" y="240" font-size="11.5" fill="#7c8593">影响相邻一段，余者不动</text>
+<text fill="#e7ebf1" font-size="12.5" x="360" y="90">顺时针遇到的第一台</text>
+<text fill="#f0b429" font-size="12.5" x="360" y="110">= 协调者 A</text>
+<text fill="#e7ebf1" font-size="12.5" x="360" y="146">连同其后 N−1 台</text>
+<text fill="#f0b429" font-size="12.5" x="360" y="166">= 副本 preference list</text>
+<text fill="#7c8593" font-size="12.5" x="360" y="186">此处 N=3 → A · B · C</text>
+<text fill="#7c8593" font-size="11.5" x="360" y="222">加/减一台机器，只</text>
+<text fill="#7c8593" font-size="11.5" x="360" y="240">影响相邻一段，余者不动</text>
 </svg>
 <figcaption>图 1 · 一致性哈希环：键哈希到环上一点，顺时针第一台机器当协调者，连同其后 N−1 台构成该键的副本清单（preference list）。加减机器只搅动相邻一小段。</figcaption>
 </figure>
 <p>为了负载均衡，Dynamo 让每台物理机在环上占<strong>多个位置</strong>（称<em>虚拟节点</em>，virtual node），这样数据摊得更匀，机器性能不一（异构）时也好按能力分配。</p>
-
-<h3>② 多副本 + preference list：存 N 份，谁都能顶上</h3>
+<h3 data-tts="d51d5c21a5ff9ca5">② 多副本 + preference list：存 N 份，谁都能顶上</h3>
 <p>协调者不独吞数据——它连同<strong>环上其后 N−1 台机器</strong>各存一份，共 <code>N</code> 份（典型 N=3）。这 N 台构成该键的<strong>preference list（副本清单）</strong>。任何一台坏了，清单里别的机器都能顶上继续服务。</p>
-
-<h3>③ R + W &gt; N：一把可调的「一致性旋钮」</h3>
+<h3 data-tts="cfe25afe9edd3d3a">③ R + W &gt; N：一把可调的「一致性旋钮」</h3>
 <p>N 份副本，写要写几份、读要读几份才算成功？Dynamo 给出两个可调参数：写操作要至少 <code>W</code> 份副本确认、读操作要至少收 <code>R</code> 份副本回应。关键的设计是让 <strong><code>R + W &gt; N</code></strong>：因为「写过的那 W 份」和「读到的那 R 份」在 N 份里<strong>必定至少重叠一份</strong>，于是任何一次读<strong>至少能碰到一份含最新写的副本</strong>——用数量上的重叠，换来「读不会完全错过最新写」。</p>
 <p>这把旋钮是可调的：<code>(N,R,W)=(3,2,2)</code> 是常用均衡；把 <code>W=1</code> 调低，写只要一份确认就返回、写极快且极难失败（更偏可用）；把 <code>R</code> 调高则读更可能拿到最新。<strong>业务可按「读多写多、能容忍多旧」自行拧。</strong></p>
-
-<h3>④ 宽松法定人数 + 暗示移交：故障时也别拒绝写</h3>
+<h3 data-tts="36d0afa099474ae2">④ 宽松法定人数 + 暗示移交：故障时也别拒绝写</h3>
 <p>可万一 preference list 前几台正好宕机，凑不齐 W 份怎么办？严格法定人数此时会拒绝写——这正是 Dynamo 不能接受的。它改用<strong>宽松法定人数（sloppy quorum）</strong>：写请求<strong>顺着环往下找到接下来还活着的机器</strong>凑够 W 份，其中「替别人代收」的那台会额外记一张<em>暗示（hint）</em>，写明「这份数据本属于宕机的那台」。等原主机恢复，代收方就把数据连同暗示<strong>移交（handoff）</strong>回去，然后删掉本地副本。这套<strong>暗示移交（hinted handoff）</strong>让写入几乎永不失败，故障过后又能自动把数据归位。</p>
-
-<h3>⑤ 向量时钟：允许分歧，但记清「谁源自谁」</h3>
+<h3 data-tts="d07bd578fe1c90ce">⑤ 向量时钟：允许分歧，但记清「谁源自谁」</h3>
 <p>放弃即时强一致的代价，是同一个键可能同时存在<strong>多个版本</strong>（比如网络分区时两边各写了一次）。麻烦在于：读到两个版本，怎么判断是「一个是另一个的更新版（覆盖即可）」还是「两个真冲突（各自独立改过，需合并）」？Dynamo 用<em>向量时钟</em>解决——每个版本带一串 <code>(节点, 计数)</code> 记号，记录它<strong>先后被哪些节点改过、各改了几次</strong>。比较两个版本的向量时钟：若 A 的每一项都 ≥ B 且至少一项更大，说明 <strong>A 是 B 的后代，直接用 A</strong>（这叫语法级调和 syntactic reconciliation）；若互不覆盖（各有对方没有的更新），说明二者<strong>真冲突</strong>。</p>
 <figure>
-<svg viewbox="0 0 560 280" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
 <defs><marker id="d2" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
 <!-- D1 -->
-<rect x="220" y="18" width="120" height="34" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
-<text x="280" y="34" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D1</text>
-<text x="280" y="47" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,1]</text>
-<line x1="280" x2="280" y1="52" y2="74" stroke="#7c8593" marker-end="url(#d2)"></line>
-<text x="292" y="68" font-size="10.5" fill="#7c8593">Sx 再写</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="7" stroke="#f0b429" width="120" x="220" y="18"></rect>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="34">D1</text>
+<text fill="#f5c451" font-family="monospace" font-size="10.5" text-anchor="middle" x="280" y="47">[Sx,1]</text>
+<line marker-end="url(#d2)" stroke="#7c8593" x1="280" x2="280" y1="52" y2="74"></line>
+<text fill="#7c8593" font-size="10.5" x="292" y="68">Sx 再写</text>
 <!-- D2 -->
-<rect x="220" y="76" width="120" height="34" rx="7" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
-<text x="280" y="92" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D2</text>
-<text x="280" y="105" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,2]</text>
+<rect fill="rgba(240,180,41,0.1)" height="34" rx="7" stroke="#f0b429" width="120" x="220" y="76"></rect>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="92">D2</text>
+<text fill="#f5c451" font-family="monospace" font-size="10.5" text-anchor="middle" x="280" y="105">[Sx,2]</text>
 <!-- branch to D3 (Sy) and D4 (Sz) -->
-<line x1="255" x2="150" y1="110" y2="150" stroke="#7c8593" marker-end="url(#d2)"></line>
-<text x="150" y="138" font-size="10.5" fill="#7c8593">Sy 写</text>
-<line x1="305" x2="410" y1="110" y2="150" stroke="#7c8593" marker-end="url(#d2)"></line>
-<text x="378" y="138" font-size="10.5" fill="#7c8593">Sz 写</text>
+<line marker-end="url(#d2)" stroke="#7c8593" x1="255" x2="150" y1="110" y2="150"></line>
+<text fill="#7c8593" font-size="10.5" x="150" y="138">Sy 写</text>
+<line marker-end="url(#d2)" stroke="#7c8593" x1="305" x2="410" y1="110" y2="150"></line>
+<text fill="#7c8593" font-size="10.5" x="378" y="138">Sz 写</text>
 <!-- D3 -->
-<rect x="70" y="152" width="150" height="40" rx="7" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
-<text x="145" y="168" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D3</text>
-<text x="145" y="183" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,2][Sy,1]</text>
+<rect fill="rgba(232,121,75,0.12)" height="40" rx="7" stroke="#e8794b" width="150" x="70" y="152"></rect>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="145" y="168">D3</text>
+<text fill="#f5c451" font-family="monospace" font-size="10.5" text-anchor="middle" x="145" y="183">[Sx,2][Sy,1]</text>
 <!-- D4 -->
-<rect x="340" y="152" width="150" height="40" rx="7" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
-<text x="415" y="168" font-size="12.5" fill="#e7ebf1" text-anchor="middle" font-weight="700">D4</text>
-<text x="415" y="183" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,2][Sz,1]</text>
-<text x="280" y="150" font-size="11" fill="#e8794b" text-anchor="middle">↯ 两分支互不覆盖 = 真冲突</text>
+<rect fill="rgba(232,121,75,0.12)" height="40" rx="7" stroke="#e8794b" width="150" x="340" y="152"></rect>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="415" y="168">D4</text>
+<text fill="#f5c451" font-family="monospace" font-size="10.5" text-anchor="middle" x="415" y="183">[Sx,2][Sz,1]</text>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="280" y="150">↯ 两分支互不覆盖 = 真冲突</text>
 <!-- merge to D5 -->
-<line x1="150" x2="255" y1="192" y2="228" stroke="#7c8593" marker-end="url(#d2)"></line>
-<line x1="410" x2="305" y1="192" y2="228" stroke="#7c8593" marker-end="url(#d2)"></line>
-<rect x="185" y="230" width="190" height="40" rx="7" fill="rgba(240,180,41,0.14)" stroke="#f0b429"></rect>
-<text x="280" y="246" font-size="12" fill="#e7ebf1" text-anchor="middle" font-weight="700">D5 应用合并后写回</text>
-<text x="280" y="261" font-size="10.5" fill="#f5c451" text-anchor="middle" font-family="monospace">[Sx,3][Sy,1][Sz,1]</text>
+<line marker-end="url(#d2)" stroke="#7c8593" x1="150" x2="255" y1="192" y2="228"></line>
+<line marker-end="url(#d2)" stroke="#7c8593" x1="410" x2="305" y1="192" y2="228"></line>
+<rect fill="rgba(240,180,41,0.14)" height="40" rx="7" stroke="#f0b429" width="190" x="185" y="230"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="280" y="246">D5 应用合并后写回</text>
+<text fill="#f5c451" font-family="monospace" font-size="10.5" text-anchor="middle" x="280" y="261">[Sx,3][Sy,1][Sz,1]</text>
 </svg>
 <figcaption>图 2 · 向量时钟：D2 之后 Sy、Sz 各写一次，产生互不覆盖的 D3、D4——判定为真冲突；读到冲突时把两版本一起返回，应用按业务语义（如购物车取并集）合并成 D5 写回。</figcaption>
 </figure>
 <p>Dynamo 自己<strong>不擅自解决真冲突</strong>——它把冲突的多个版本<strong>一并返回给应用</strong>，让应用按业务语义做<strong>语义级调和（semantic reconciliation）</strong>。购物车的规则出奇简单：<strong>两个版本取并集</strong>，两边加过的商品都保留。最坏情况是一件已删的商品「复活」，但相比丢失订单，这是划算的取舍。</p>
-
-<h3>⑥ 反熵与 gossip：让副本悄悄自愈、成员自治</h3>
+<h3 data-tts="c48eb877b780eebe">⑥ 反熵与 gossip：让副本悄悄自愈、成员自治</h3>
 <p>暗示移交只治临时故障；机器彻底损坏时，副本会长期不同步。Dynamo 用 <strong>Merkle 树（默克尔树）</strong>做<em>反熵（anti-entropy）</em>：两个副本各把自己的数据算成一棵哈希树，<strong>逐层比对哈希、只在不一致的子树里下钻</strong>，从而用极少的数据传输就定位出差异、只补该补的那部分。成员管理则用 <strong>gossip 协议</strong>：没有中心节点，<strong>每台机器周期性和随机的同伴交换「我知道谁在、环长啥样」</strong>，故障检测和成员变更就这样在集群里扩散开——彻底去中心、人人对等。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="44af28e9150e4acc">关键结果</h2>
 <p>Dynamo 是一篇<strong>工程系统论文而非跑分论文</strong>——它的「结果」是它<strong>真在亚马逊生产环境撑起了核心业务</strong>：购物车、会话管理、卖家榜单、S3 的部分等数十个服务。论文以 <strong>99.9 分位延迟</strong>为核心指标（而非平均值），报告了在严苛 SLA（如高分位数百毫秒内）下的实测表现，并展示 <code>(N,R,W)</code> 不同取值如何在<strong>延迟、持久性与一致性</strong>之间移动权衡点：把 W 调到 1 写几乎从不失败，把 R/W 都调高则更一致但更慢。<strong>最有说服力的结论是：一个明确牺牲即时一致的系统，可以在真实大规模生产中做到近乎永不拒绝写入。</strong></p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="6dbeb085ccdf41fc">为什么重要 / 影响</h2>
 <p>Dynamo 把「<strong>可用性 vs 一致性</strong>」这个抽象取舍，第一次做成了<strong>一整套可落地、可调、能自愈</strong>的工程范式，并把 CAP 的选择权明确交到业务手里。它几乎以一己之力<strong>点燃了 NoSQL 与「最终一致性」运动</strong>：<strong>Cassandra</strong>（Facebook，直接承袭 Dynamo 的一致性哈希 + 可调法定人数）、<strong>Riak</strong>、<strong>Voldemort</strong> 都是它的直系后代；它的许多机制——一致性哈希、preference list、R+W 法定人数、向量时钟/版本冲突、hinted handoff、Merkle 反熵、gossip 成员——如今是分布式存储的<strong>通用词汇表</strong>。多年后亚马逊推出的托管服务 <strong>DynamoDB</strong> 借了它的名字（虽是另起炉灶的重写）。可以说，今天谈「高可用分布式数据库」，绕不开这篇。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="29e000ec248a85e8">局限与批评</h2>
 <ul>
 <li><strong>把复杂度甩给了应用</strong>：最终一致意味着应用必须自己处理「读到多个版本」的合并逻辑。购物车能靠取并集轻松搞定，但很多业务没有这么干净的合并规则，写起来既难又易错。</li>
 <li><strong>向量时钟会膨胀</strong>：参与写的节点一多，向量时钟串就变长；Dynamo 用「截断最老项」压缩，但截断可能<strong>误判因果</strong>、带来罕见的异常。</li>
@@ -184,8 +175,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>运维与调参有门槛</strong>：N/R/W、虚拟节点数、反熵频率等都要按业务细调，用不好会踩坑。</li>
 <li><strong>亚马逊自己后来换了路</strong>：面向外部客户的 DynamoDB 是重写，提供了强一致读选项与托管化——侧面说明「纯最终一致 + 应用自合并」并非对所有场景都最友好。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="39d5587574ac0330">要点</h2>
 <div class="tl">
 <p>① 一句话：Dynamo 是亚马逊为「购物车永不拒绝写入」造的高可用键值存储，主动用即时一致换永远可用。</p>
 <p>② 取舍：CAP 里明确选 A（可用）弃即时 C——加购失败远比数据短暂分歧糟糕。</p>
