@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>AlphaGo — IT 论文精读 Paper 55</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,43 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 55</p>
-<h1>AlphaGo：深度网络 + 树搜索攻克围棋</h1>
+<h1 data-tts="0f05162766f3fb1e">AlphaGo：深度网络 + 树搜索攻克围棋</h1>
 <p class="sub">Silver 等 · DeepMind · Nature 2016</p>
 <p class="langbar"><a href="alphago-paper55.en.html">EN →</a></p>
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="4fcbbd16ede7fce0">这篇论文干了什么？</h2>
 <p>2016 年初，谷歌旗下 DeepMind 的一支团队公布了 <strong>AlphaGo</strong>——第一个在正式对局里、不让子、在整张 19 路棋盘上<strong>击败职业围棋棋手</strong>的程序。围棋一直被看作人工智能最难啃的棋类堡垒，很多人以为机器还要再等十几年。AlphaGo 把这个时间表一下子提前了。</p>
-
-<h2>为什么围棋这么难？</h2>
+<h2 data-tts="45649990414a0a31">为什么围棋这么难？</h2>
 <p>国际象棋早在 1997 年就被「深蓝」拿下了，围棋却又拖了近二十年。两个原因。一是<strong>选择太多</strong>：棋盘上每一步都有两三百个能下的点，一局又要下一百多手，可能的棋局比宇宙里的原子还多得多——想像下棋机器那样「把每种走法往后全部算清楚」，根本算不完。二是<strong>好坏说不清</strong>：国际象棋能大致数子力算优劣，围棋一块棋是死是活、这片地算谁的，常常要到很久以后才见分晓，<strong>连「现在谁占优」都很难量化</strong>。没法穷举，又没法打分，传统办法就卡住了。</p>
-
-<h2>它的点子：两种「棋感」加一次推演</h2>
+<h2 data-tts="ad9be1dc22a23d16">它的点子：两种「棋感」加一次推演</h2>
 <p>AlphaGo 不去穷举，而是学人类高手那样<strong>靠棋感缩小范围、再往下推演几步</strong>。它训练了两个神经网络（都把棋盘当一张图来看）：一个是<strong>「直觉网络」</strong>——扫一眼盘面，就点出「值得考虑的也就这么几手」，把两三百个选项砍到少数几个；另一个是<strong>「大局观网络」</strong>——看一眼盘面，直接估「这局大概谁会赢」，不必真的下到终局。有了这两样，机器只在少数好棋上、往下推演有限几步，就能做出判断。</p>
-
-<h2>它是怎么练出这份棋感的？</h2>
+<h2 data-tts="3d7aa43a60cdabbc">它是怎么练出这份棋感的？</h2>
 <p>分三步，很像一个人从入门到高手。<strong>第一步，看棋谱学直觉</strong>：喂进几千万个人类高手的落子，让「直觉网络」学会「换成人类高手，这里多半会下哪」。<strong>第二步，左右手互搏</strong>：让它拿自己跟自己成千上万盘地对弈，赢的走法就多鼓励、输的就少用——于是它不再只会模仿人，而是靠自己打出来的经验越下越强。<strong>第三步，练大局观</strong>：用这些自我对弈的胜负结果，训练「大局观网络」学会一眼估形势。三步下来，机器既有直觉、又有判断力。</p>
-
-<h2>带来了什么？</h2>
+<h2 data-tts="eca3be6662965116">带来了什么？</h2>
 <p>AlphaGo 先在 2015 年 10 月 5:0 横扫欧洲冠军樊麾，2016 年 3 月又 4:1 战胜世界顶尖高手李世石，成了 AI 史上的标志时刻。更深远的是它证明了一条路子：<strong>用神经网络提供「直觉与判断」、再配上有取舍的搜索</strong>，能攻下人类以为需要「灵感」的难题。它的后代 AlphaGo Zero 干脆连人类棋谱都不看、纯靠自己对弈，反而更强；再往后 AlphaZero 用同一套办法通吃了国际象棋、将棋和围棋。</p>
 <p>诚实说一句代价：AlphaGo 赢得并不「轻巧」——它动用了上千颗 CPU、上百块 GPU 的庞大算力，还先啃了几千万局人类棋谱当拐杖（而后来那个不用棋谱的版本更强，反倒说明这根拐杖并非必需）。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="c55731cc3710a3b6">一句话记住</h2>
 <div class="tl">
 <p>围棋难在「选择太多、又没法给盘面打分」。AlphaGo 用一个「直觉网络」砍掉大部分坏棋、一个「大局观网络」免去算到终局，再配上有取舍的推演——先看人类棋谱、再自我对弈越练越强，第一次在全盘对弈中击败职业棋手，也点亮了「神经网络 + 搜索」这条通用路线。</p>
 </div>
 <p class="switch-hint">想看策略网络 / 价值网络怎么配合搜索、训练流程和实战数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="5b22bb5b2fd1183f">一句话</h2>
 <p class="lead">AlphaGo 用两个深度卷积网络——<strong>策略网络（policy network）</strong>负责「该考虑哪几手」、<strong>价值网络（value network）</strong>负责「这盘谁会赢」——去<strong>指导蒙特卡洛树搜索（MCTS）</strong>，从而在围棋这个搜索空间约 <code>250¹⁵⁰</code>、又难以人工打分的博弈里，把「选择爆炸」和「无从估值」两大难题同时压下去，第一次在无让子的全盘对弈中击败职业棋手（2015 年 5:0 胜欧洲冠军樊麾），成为深度学习 + 搜索路线的里程碑。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="5185489f9df73587">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>围棋</strong>：两人在 19×19（361 个交叉点）棋盘上轮流落黑白子、围地为胜的棋。合法走法多、胜负常要到很后面才明朗，是公认最难的完美信息棋类。</li>
@@ -83,63 +76,57 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Elo 等级分</strong>：衡量棋手 / 程序相对强弱的分数，差 ~400 分约等于强者胜率 90%。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="74563e2887cb097f">坐标</h2>
 <p>作者是 David Silver、Aja Huang、黄士杰等，来自 Google DeepMind，论文《Mastering the Game of Go with Deep Neural Networks and Tree Search》发在 <strong>Nature（2016 年 1 月）</strong>。它上承两条线：Tesauro 的 TD-Gammon（1990s，用神经网络 + 自我对弈玩西洋双陆棋）与 2006 年后统治电脑围棋的 MCTS 程序（Crazy Stone、Zen、Pachi 等，但只到业余高段）；下启 <strong>AlphaGo Zero</strong>（2017，纯自我对弈、不用人类棋谱）、<strong>AlphaZero</strong>（通用于国际象棋 / 将棋 / 围棋）与 <strong>MuZero</strong>（连游戏规则都自己学）。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="c90a4f3e305c263b">问题与动机</h2>
 <p>下棋程序的经典武器是<strong>极小化极大搜索（minimax）</strong>：把博弈树展开、假设双方都走最优，回推出当前最佳一手。它的代价随树的规模爆炸——规模 ≈ 宽度 <code>b</code> 的深度 <code>d</code> 次方。国际象棋 <code>b≈35, d≈80</code> 已经很大，但靠「好的估值函数 + 大幅剪枝」，深蓝在 1997 年就赢了卡斯帕罗夫。</p>
 <p>围棋把两件事同时顶到极限。<strong>其一，宽度爆炸</strong>：<code>b≈250, d≈150</code>，搜索空间约 <code>250¹⁵⁰</code>，合法局面数约 <code>10¹⁷⁰</code>——多过可观测宇宙的原子数，穷举彻底没戏。<strong>其二，无从估值</strong>：围棋一块棋的死活、一片模样最终归谁，往往要到很久之后才定，人类写不出可靠的中间局面评分函数——而这正是剪枝和提前停止搜索的前提。</p>
 <p>此前最强的电脑围棋走的是 <em>MCTS</em> 路线：不打分，改成从当前局面用简单策略随机「走子到底」成千上万次，拿模拟胜率当估值。这让棋力从很弱提到了业余高段，但离职业还差一大截——因为随机走子太粗糙，既选不准该往哪里深挖，也估不准局面。<strong>AlphaGo 的动机就是：用深度网络把 MCTS 缺的两样东西——「往哪走」和「谁会赢」——补上。</strong></p>
-
 <figure>
-<svg viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
 <!-- full tree left -->
 <text fill="#7c8593" font-size="12" text-anchor="middle" x="140" y="24">穷举：宽 × 深 都爆炸</text>
-<circle cx="140" cy="46" r="6" fill="#e8794b"/>
+<circle cx="140" cy="46" fill="#e8794b" r="6"></circle>
 <g stroke="#4a5060" stroke-width="1">
-<line x1="140" y1="52" x2="60" y2="92"/><line x1="140" y1="52" x2="100" y2="92"/><line x1="140" y1="52" x2="140" y2="92"/><line x1="140" y1="52" x2="180" y2="92"/><line x1="140" y1="52" x2="220" y2="92"/>
+<line x1="140" x2="60" y1="52" y2="92"></line><line x1="140" x2="100" y1="52" y2="92"></line><line x1="140" x2="140" y1="52" y2="92"></line><line x1="140" x2="180" y1="52" y2="92"></line><line x1="140" x2="220" y1="52" y2="92"></line>
 </g>
-<g fill="#4a5060"><circle cx="60" cy="96" r="4"/><circle cx="100" cy="96" r="4"/><circle cx="140" cy="96" r="4"/><circle cx="180" cy="96" r="4"/><circle cx="220" cy="96" r="4"/></g>
+<g fill="#4a5060"><circle cx="60" cy="96" r="4"></circle><circle cx="100" cy="96" r="4"></circle><circle cx="140" cy="96" r="4"></circle><circle cx="180" cy="96" r="4"></circle><circle cx="220" cy="96" r="4"></circle></g>
 <g stroke="#3a4050" stroke-width="0.8">
-<line x1="60" y1="100" x2="45" y2="134"/><line x1="60" y1="100" x2="60" y2="134"/><line x1="60" y1="100" x2="75" y2="134"/>
-<line x1="140" y1="100" x2="125" y2="134"/><line x1="140" y1="100" x2="140" y2="134"/><line x1="140" y1="100" x2="155" y2="134"/>
-<line x1="220" y1="100" x2="205" y2="134"/><line x1="220" y1="100" x2="220" y2="134"/><line x1="220" y1="100" x2="235" y2="134"/>
+<line x1="60" x2="45" y1="100" y2="134"></line><line x1="60" x2="60" y1="100" y2="134"></line><line x1="60" x2="75" y1="100" y2="134"></line>
+<line x1="140" x2="125" y1="100" y2="134"></line><line x1="140" x2="140" y1="100" y2="134"></line><line x1="140" x2="155" y1="100" y2="134"></line>
+<line x1="220" x2="205" y1="100" y2="134"></line><line x1="220" x2="220" y1="100" y2="134"></line><line x1="220" x2="235" y1="100" y2="134"></line>
 </g>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="158">每步 ~250 选择 · ~150 步深 …</text>
 <text fill="#e8794b" font-size="11" text-anchor="middle" x="140" y="176">≈ 250¹⁵⁰</text>
 <!-- narrowed tree right -->
 <text fill="#f0b429" font-size="12" text-anchor="middle" x="410" y="24">AlphaGo：砍宽 + 截深</text>
-<circle cx="410" cy="46" r="6" fill="#f0b429"/>
+<circle cx="410" cy="46" fill="#f0b429" r="6"></circle>
 <g stroke="#f0b429" stroke-width="1.4">
-<line x1="410" y1="52" x2="380" y2="92"/><line x1="410" y1="52" x2="440" y2="92"/>
+<line x1="410" x2="380" y1="52" y2="92"></line><line x1="410" x2="440" y1="52" y2="92"></line>
 </g>
-<g stroke="#4a5060" stroke-width="0.8" stroke-dasharray="2 3">
-<line x1="410" y1="52" x2="330" y2="92"/><line x1="410" y1="52" x2="360" y2="92"/><line x1="410" y1="52" x2="490" y2="92"/>
+<g stroke="#4a5060" stroke-dasharray="2 3" stroke-width="0.8">
+<line x1="410" x2="330" y1="52" y2="92"></line><line x1="410" x2="360" y1="52" y2="92"></line><line x1="410" x2="490" y1="52" y2="92"></line>
 </g>
 <text fill="#f0b429" font-size="10" text-anchor="end" x="372" y="86">策略网</text>
-<g fill="#f0b429"><circle cx="380" cy="96" r="4"/><circle cx="440" cy="96" r="4"/></g>
-<g stroke="#f0b429" stroke-width="1.2"><line x1="380" y1="100" x2="380" y2="128"/><line x1="440" y1="100" x2="440" y2="128"/></g>
-<rect x="356" y="130" width="48" height="20" rx="4" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<rect x="416" y="130" width="48" height="20" rx="4" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<g fill="#f0b429"><circle cx="380" cy="96" r="4"></circle><circle cx="440" cy="96" r="4"></circle></g>
+<g stroke="#f0b429" stroke-width="1.2"><line x1="380" x2="380" y1="100" y2="128"></line><line x1="440" x2="440" y1="100" y2="128"></line></g>
+<rect fill="rgba(240,180,41,0.12)" height="20" rx="4" stroke="#f0b429" width="48" x="356" y="130"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="20" rx="4" stroke="#f0b429" width="48" x="416" y="130"></rect>
 <text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="380" y="144">价值网估</text>
 <text fill="#e7ebf1" font-size="9.5" text-anchor="middle" x="440" y="144">价值网估</text>
 <text fill="#f0b429" font-size="10.5" text-anchor="middle" x="410" y="176">只看好棋 · 不必算到终局</text>
-<line x1="280" y1="40" x2="280" y2="185" stroke="#2a3038" stroke-width="1"/>
+<line stroke="#2a3038" stroke-width="1" x1="280" x2="280" y1="40" y2="185"></line>
 </svg>
 <figcaption>图 1 · 两把剪刀：策略网络把「该考虑的走法」从两三百砍到几手（砍宽度），价值网络一眼估出胜负、免去搜到终局（截深度）。</figcaption>
 </figure>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>两个网络：一个管「往哪走」，一个管「谁会赢」</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="c34225caa7b2fb9f">两个网络：一个管「往哪走」，一个管「谁会赢」</h3>
 <p>AlphaGo 把 19×19 棋盘（外加落子历史、气数等特征）当成一张多通道「图片」，喂给两类卷积网络：</p>
 <ul>
 <li><strong>策略网络</strong>：输入盘面，输出一张「概率地图」——每个可下点被走的概率。它把两三百个选择压缩成「值得考虑的少数几手」，直接对付宽度爆炸。</li>
 <li><strong>价值网络</strong>：输入盘面，输出<strong>一个数</strong>——从这里下到底、当前一方获胜的概率。有了它，搜索到某个局面就能直接估好坏，不必真的走到终局，直接对付深度爆炸。</li>
 </ul>
-
-<h3>三步训练：模仿人类 → 自我对弈 → 学会估值</h3>
+<h3 data-tts="e5aee6dc7be5700a">三步训练：模仿人类 → 自我对弈 → 学会估值</h3>
 <p>网络的棋感是分阶段「喂」出来的（见图 2）：</p>
 <ul>
 <li><strong>① 监督策略网络（SL policy）</strong>：拿约 <strong>3000 万</strong>个人类高手对局的局面做监督学习，让网络预测「人类下一手会走哪」。预测准确率约 <strong>57%</strong>（此前最好约 44%）——直觉一下子逼近高手。</li>
@@ -147,26 +134,25 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>③ 价值网络</strong>：用 RL 策略自我对弈的结果做回归，学「给定局面、最终会赢的概率」。关键细节：训练用的 <strong>3000 万</strong>个局面<strong>每个取自一盘不同的对局</strong>——因为同一盘里相邻局面高度相似，全用会让网络「背棋局」而非「懂形势」（过拟合）。</li>
 </ul>
 <p>另外还单独训了一个极简的<strong>快速走子策略（rollout policy）</strong>：准确率只有约 24%，但速度快上千倍（约 2 微秒 vs 策略网络的约 3 毫秒），专供搜索里「快速模拟到终局」用——精度让位给速度。</p>
-
 <figure>
-<svg viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ag" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<rect x="18" y="96" width="120" height="48" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ag" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="48" rx="8" stroke="#7c8593" width="120" x="18" y="96"></rect>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="78" y="116">3000 万</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="78" y="133">人类棋谱局面</text>
-<line x1="138" y1="120" x2="176" y2="120" stroke="#f0b429" stroke-width="1.5" marker-end="url(#ag)"/>
-<rect x="178" y="92" width="120" height="56" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<line marker-end="url(#ag)" stroke="#f0b429" stroke-width="1.5" x1="138" x2="176" y1="120" y2="120"></line>
+<rect fill="rgba(240,180,41,0.1)" height="56" rx="8" stroke="#f0b429" width="120" x="178" y="92"></rect>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="238" y="114">SL 策略网络</text>
 <text fill="#7c8593" font-size="10" text-anchor="middle" x="238" y="130">模仿人类 · 准 57%</text>
-<line x1="298" y1="120" x2="336" y2="120" stroke="#f0b429" stroke-width="1.5" marker-end="url(#ag)"/>
+<line marker-end="url(#ag)" stroke="#f0b429" stroke-width="1.5" x1="298" x2="336" y1="120" y2="120"></line>
 <text fill="#7c8593" font-size="9.5" text-anchor="middle" x="317" y="112">自我</text>
 <text fill="#7c8593" font-size="9.5" text-anchor="middle" x="317" y="136">对弈</text>
-<rect x="338" y="92" width="120" height="56" rx="8" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/>
+<rect fill="rgba(240,180,41,0.14)" height="56" rx="8" stroke="#f0b429" width="120" x="338" y="92"></rect>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="398" y="114">RL 策略网络</text>
 <text fill="#7c8593" font-size="10" text-anchor="middle" x="398" y="130">为赢棋 · 策略梯度</text>
-<path d="M398,148 C398,180 300,190 238,190 L238,204" fill="none" stroke="#e8794b" stroke-width="1.5" marker-end="url(#ag)" stroke-dasharray="4 3"/>
+<path d="M398,148 C398,180 300,190 238,190 L238,204" fill="none" marker-end="url(#ag)" stroke="#e8794b" stroke-dasharray="4 3" stroke-width="1.5"></path>
 <text fill="#e8794b" font-size="9.5" text-anchor="middle" x="318" y="185">自我对弈的胜负</text>
-<rect x="178" y="206" width="120" height="40" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<rect fill="rgba(232,121,75,0.12)" height="40" rx="8" stroke="#e8794b" width="120" x="178" y="206"></rect>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="238" y="223">价值网络</text>
 <text fill="#7c8593" font-size="9.5" text-anchor="middle" x="238" y="238">一眼估「谁会赢」</text>
 <text fill="#7c8593" font-size="10" text-anchor="middle" x="470" y="40">① 模仿</text>
@@ -175,8 +161,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 2 · 训练流程：先用人类棋谱教出「直觉」（SL 策略网络），再自我对弈把它练成「为赢棋」（RL 策略网络），最后用自弈胜负训出「大局观」（价值网络）。</figcaption>
 </figure>
-
-<h3>把网络插进 MCTS：搜索的四步循环</h3>
+<h3 data-tts="ef7c101bb1a66f74">把网络插进 MCTS：搜索的四步循环</h3>
 <p>真正下棋时，AlphaGo 每一手都跑一轮由网络引导的 MCTS。搜索树里每条边（一个「局面→走法」）记三个数：动作价值 <code>Q</code>（这步平均有多好）、访问次数 <code>N</code>（试过多少回）、先验概率 <code>P</code>（策略网络给的「这步有多值得考虑」）。每轮循环四步：</p>
 <ul>
 <li><strong>选择</strong>：从根往下，每步选 <code>Q + u</code> 最大的边，其中探索项 <code>u</code> 正比于 <code>P/(1+N)</code>——<em>好棋（Q 高）</em>和<em>没怎么试过的高潜力棋（P 高、N 小）</em>都被青睐，兼顾利用与探索。</li>
@@ -185,70 +170,65 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>回传</strong>：把这次评估结果沿刚才走过的路径回填，更新每条边的 <code>Q</code> 与 <code>N</code>。</li>
 </ul>
 <p>如此重复成千上万次后，<strong>最终落子选「访问次数 N 最多」的那一手</strong>——不是价值最高的，因为「反复被搜索选中」本身就是稳健性的证明。妙处在于：策略网络让搜索<strong>只在少数好棋上加深</strong>，价值网络让它<strong>不必次次算到终局</strong>，两者把原本天文数字的搜索压进了可算的范围。</p>
-
 <figure>
-<svg viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ag2" markerwidth="8" markerheight="8" refx="5.5" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ag2" markerheight="8" markerwidth="8" orient="auto" refx="5.5" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
 <!-- four panels -->
 <g>
 <text fill="#f0b429" font-size="11" text-anchor="middle" x="70" y="20">① 选择</text>
-<circle cx="70" cy="36" r="5" fill="#f0b429"/>
-<line x1="70" y1="41" x2="52" y2="66" stroke="#4a5060"/><line x1="70" y1="41" x2="88" y2="66" stroke="#f0b429" stroke-width="2"/>
-<circle cx="52" cy="70" r="4" fill="#4a5060"/><circle cx="88" cy="70" r="4.5" fill="#f0b429"/>
-<line x1="88" y1="74" x2="88" y2="96" stroke="#f0b429" stroke-width="2"/>
-<circle cx="88" cy="100" r="4.5" fill="#f0b429"/>
+<circle cx="70" cy="36" fill="#f0b429" r="5"></circle>
+<line stroke="#4a5060" x1="70" x2="52" y1="41" y2="66"></line><line stroke="#f0b429" stroke-width="2" x1="70" x2="88" y1="41" y2="66"></line>
+<circle cx="52" cy="70" fill="#4a5060" r="4"></circle><circle cx="88" cy="70" fill="#f0b429" r="4.5"></circle>
+<line stroke="#f0b429" stroke-width="2" x1="88" x2="88" y1="74" y2="96"></line>
+<circle cx="88" cy="100" fill="#f0b429" r="4.5"></circle>
 <text fill="#7c8593" font-size="9" text-anchor="middle" x="70" y="128">走 Q+u 最大</text>
 </g>
 <g>
 <text fill="#f0b429" font-size="11" text-anchor="middle" x="205" y="20">② 扩展</text>
-<circle cx="205" cy="36" r="5" fill="#f0b429"/>
-<line x1="205" y1="41" x2="205" y2="66" stroke="#7c8593"/>
-<circle cx="205" cy="70" r="4.5" fill="#f0b429"/>
-<line x1="205" y1="74" x2="185" y2="98" stroke="#e8794b" stroke-dasharray="2 2"/><line x1="205" y1="74" x2="205" y2="98" stroke="#e8794b" stroke-dasharray="2 2"/><line x1="205" y1="74" x2="225" y2="98" stroke="#e8794b" stroke-dasharray="2 2"/>
-<circle cx="185" cy="102" r="3.5" fill="none" stroke="#e8794b"/><circle cx="205" cy="102" r="3.5" fill="none" stroke="#e8794b"/><circle cx="225" cy="102" r="3.5" fill="none" stroke="#e8794b"/>
+<circle cx="205" cy="36" fill="#f0b429" r="5"></circle>
+<line stroke="#7c8593" x1="205" x2="205" y1="41" y2="66"></line>
+<circle cx="205" cy="70" fill="#f0b429" r="4.5"></circle>
+<line stroke="#e8794b" stroke-dasharray="2 2" x1="205" x2="185" y1="74" y2="98"></line><line stroke="#e8794b" stroke-dasharray="2 2" x1="205" x2="205" y1="74" y2="98"></line><line stroke="#e8794b" stroke-dasharray="2 2" x1="205" x2="225" y1="74" y2="98"></line>
+<circle cx="185" cy="102" fill="none" r="3.5" stroke="#e8794b"></circle><circle cx="205" cy="102" fill="none" r="3.5" stroke="#e8794b"></circle><circle cx="225" cy="102" fill="none" r="3.5" stroke="#e8794b"></circle>
 <text fill="#7c8593" font-size="9" text-anchor="middle" x="205" y="128">策略网给先验 P</text>
 </g>
 <g>
 <text fill="#f0b429" font-size="11" text-anchor="middle" x="345" y="20">③ 评估</text>
-<circle cx="345" cy="60" r="4.5" fill="#e8794b"/>
-<rect x="300" y="80" width="42" height="18" rx="4" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<circle cx="345" cy="60" fill="#e8794b" r="4.5"></circle>
+<rect fill="rgba(232,121,75,0.12)" height="18" rx="4" stroke="#e8794b" width="42" x="300" y="80"></rect>
 <text fill="#e7ebf1" font-size="8.5" text-anchor="middle" x="321" y="93">价值网 v</text>
-<rect x="348" y="80" width="42" height="18" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<rect fill="rgba(240,180,41,0.1)" height="18" rx="4" stroke="#f0b429" width="42" x="348" y="80"></rect>
 <text fill="#e7ebf1" font-size="8.5" text-anchor="middle" x="369" y="93">走子 z</text>
 <text fill="#7c8593" font-size="9" text-anchor="middle" x="345" y="118">(1−λ)v + λz</text>
 <text fill="#7c8593" font-size="9" text-anchor="middle" x="345" y="130">加权混合</text>
 </g>
 <g>
 <text fill="#f0b429" font-size="11" text-anchor="middle" x="480" y="20">④ 回传</text>
-<circle cx="480" cy="36" r="5" fill="#f0b429"/>
-<circle cx="498" cy="70" r="4.5" fill="#f0b429"/>
-<circle cx="498" cy="100" r="4.5" fill="#e8794b"/>
-<line x1="498" y1="96" x2="498" y2="76" stroke="#7c8593" marker-end="url(#ag2)"/>
-<line x1="494" y1="68" x2="484" y2="42" stroke="#7c8593" marker-end="url(#ag2)"/>
+<circle cx="480" cy="36" fill="#f0b429" r="5"></circle>
+<circle cx="498" cy="70" fill="#f0b429" r="4.5"></circle>
+<circle cx="498" cy="100" fill="#e8794b" r="4.5"></circle>
+<line marker-end="url(#ag2)" stroke="#7c8593" x1="498" x2="498" y1="96" y2="76"></line>
+<line marker-end="url(#ag2)" stroke="#7c8593" x1="494" x2="484" y1="68" y2="42"></line>
 <text fill="#7c8593" font-size="9" text-anchor="middle" x="480" y="128">更新沿途 Q、N</text>
 </g>
-<line x1="140" y1="30" x2="140" y2="120" stroke="#2a3038"/><line x1="275" y1="30" x2="275" y2="120" stroke="#2a3038"/><line x1="415" y1="30" x2="415" y2="120" stroke="#2a3038"/>
+<line stroke="#2a3038" x1="140" x2="140" y1="30" y2="120"></line><line stroke="#2a3038" x1="275" x2="275" y1="30" y2="120"></line><line stroke="#2a3038" x1="415" x2="415" y1="30" y2="120"></line>
 <text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="280" y="160">重复上万次 → 最终落子选「访问次数 N 最多」的一手</text>
 </svg>
 <figcaption>图 3 · 网络引导的蒙特卡洛树搜索：选择（走 Q+u 最大）→ 扩展（策略网给先验 P）→ 评估（价值网 v 与快速走子 z 加权）→ 回传（更新 Q、N），循环上万次。</figcaption>
 </figure>
-
-<h2>关键结果</h2>
+<h2 data-tts="cd48a5cbcf58257c">关键结果</h2>
 <p>战绩极其悬殊。分布式版 AlphaGo 对阵当时最强的其他围棋程序（Crazy Stone、Zen、Pachi、Fuego 等）<strong>495 局胜 494（99.8%）</strong>，即便让对手 4 子仍大比例获胜。真正的分水岭是 2015 年 10 月：AlphaGo 以 <strong>5:0</strong> 击败欧洲围棋冠军<strong>樊麾（职业二段）</strong>——<strong>这是程序第一次在无让子的完整 19 路盘上战胜职业棋手</strong>。其棋力 Elo 约 3140，远高于其他程序（约 1900–2500）。</p>
 <p>拆解实验也说明了每个部件的价值：单靠策略网络（不搜索）就已是业余高段；单靠价值网络评估、或单靠快速走子评估都不弱，但<strong>两者混合（λ=0.5）明显最强</strong>；去掉任一网络棋力都显著下滑。（论文发表后，2016 年 3 月 AlphaGo 又以 <strong>4:1</strong> 战胜世界顶尖高手<strong>李世石</strong>，其中第二局的「第 37 手」因极具创造性而广为流传——但这场对局不在本文范围内。）</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="3b070ffd2f2007d6">为什么重要 / 影响</h2>
 <p>围棋曾是 AI 公认的「登月级」难题，普遍预期还要十几年才可能被攻克，AlphaGo 把它<strong>提前了整整一代人的时间</strong>。它的深远之处不在「赢了围棋」，而在证明了一条通用范式：<strong>用深度网络提供「直觉（策略）」与「判断（价值）」，去引导一个有取舍的搜索</strong>——凡是能自我对弈、有明确胜负信号的问题，都可能这么攻下来。这条路直接催生了 <strong>AlphaGo Zero</strong>（2017：丢掉全部人类棋谱、纯自我对弈从零学起，棋力反超初代）、<strong>AlphaZero</strong>（一套算法通吃国际象棋、将棋、围棋）与 <strong>MuZero</strong>（连规则都自学）；也让「深度强化学习 + 搜索」成为此后一系列突破（蛋白质结构、芯片布线、可控核聚变等）的思想模板，并把 AI 推到了大众视野的中心。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="6a315a658fdf4c6a">局限与批评</h2>
 <ul>
 <li><strong>算力极其昂贵</strong>：击败樊麾的分布式版动用了约 <strong>1202 颗 CPU 与 176 块 GPU</strong>；训练同样耗费巨大。这不是「聪明的小程序」，而是「聪明 + 海量算力」。</li>
 <li><strong>依赖人类棋谱作拐杖</strong>：初代要先啃 3000 万局人类对局才起步。讽刺的是，一年后不看任何人类棋谱的 AlphaGo Zero 反而更强——说明人类数据非但不必需，某种程度上还<strong>限制</strong>了它。</li>
 <li><strong>范式高度受限</strong>：这套方法吃「完美信息、确定性、离散、有明确胜负」的棋类；对不完全信息（如扑克）、连续控制、无清晰奖励的现实任务，不能直接照搬——它需要一个能快速模拟的规则/模型。</li>
 <li><strong>并非无懈可击</strong>：李世石在第四局凭「第 78 手」扳回一城，暴露了它面对意外局面的脆弱；后来（2022）有研究用对抗性下法找到 AlphaGo 式程序的盲区，让业余选手也能取胜——「超人」棋力在鲁棒性上仍有窟窿。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="1d13149d36148252">要点</h2>
 <div class="tl">
 <p>① 一句话：用策略网络（该考虑哪几手）+ 价值网络（谁会赢）引导蒙特卡洛树搜索，第一次在全盘对弈中击败职业围棋棋手。</p>
 <p>② 痛点：围棋搜索空间约 <code>250¹⁵⁰</code>（宽度爆炸）+ 无法人工写出可靠的中间局面估值（无从剪枝/提前停）——穷举与传统估值双双失效。</p>
