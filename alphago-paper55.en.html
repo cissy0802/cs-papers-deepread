@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AlphaGo — CS Papers Deep-Read Paper 55</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 55</p>
+<h1>AlphaGo: Deep Networks + Tree Search Crack Go</h1>
+<p class="sub">Silver et al. · DeepMind · Nature 2016</p>
+<p class="langbar"><a href="alphago-paper55.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In early 2016, a team at Google's DeepMind unveiled <strong>AlphaGo</strong> — the first program to <strong>beat a professional Go player</strong> in formal games, with no handicap, on the full 19×19 board. Go had long been seen as the last great fortress in board-game AI; many expected machines to need another decade-plus. AlphaGo moved that timetable up all at once.</p>
+
+<h2>Why is Go so hard?</h2>
+<p>Chess fell to "Deep Blue" back in 1997, yet Go held out for nearly twenty more years. Two reasons. First, <strong>too many choices</strong>: at each turn there are two to three hundred legal points to play, and a game runs well over a hundred moves — the number of possible games dwarfs the atoms in the universe, so a chess-style "calculate every line to the end" is simply uncomputable. Second, <strong>good and bad are hard to tell apart</strong>: whether a group lives or dies, whose territory a region becomes, is often only settled much later — so <strong>even "who is ahead right now" is hard to quantify</strong>. No way to enumerate, no way to score: the classic methods stall.</p>
+
+<h2>The idea: two kinds of "feel" plus a bit of lookahead</h2>
+<p>Instead of enumerating, AlphaGo does what human masters do: <strong>use feel to narrow the choices, then read a few moves ahead</strong>. It trained two neural networks (both treating the board as an image). One is an <strong>"intuition network"</strong> — one glance at the board and it points out "only these few moves are worth considering," cutting two hundred-plus options down to a handful. The other is a <strong>"big-picture network"</strong> — one glance and it estimates "who's likely to win this game," without having to play it out to the end. With these two, the machine reads a limited number of moves ahead on only the promising options, and can still judge well.</p>
+
+<h2>How did it learn this feel?</h2>
+<p>In three stages, much like a person going from beginner to master. <strong>Step one, learn intuition from game records</strong>: feed in tens of millions of expert human moves so the "intuition network" learns "if a strong human were here, where would they most likely play." <strong>Step two, play itself</strong>: have it play thousands upon thousands of games against itself, encouraging the moves that won and using less the ones that lost — so it stops merely imitating humans and gets stronger from its own experience. <strong>Step three, train the big picture</strong>: use the win/loss outcomes of that self-play to teach the "big-picture network" to size up a position at a glance. Three steps in, the machine has both instinct and judgment.</p>
+
+<h2>What did it lead to?</h2>
+<p>AlphaGo first swept European champion Fan Hui 5–0 in October 2015, then beat top-tier world player Lee Sedol 4–1 in March 2016 — a landmark moment in AI history. More lasting is the recipe it proved: <strong>let neural networks supply "intuition and judgment," pair them with a selective search</strong>, and you can crack problems humans assumed required "inspiration." Its descendant AlphaGo Zero skipped human game records entirely, learned purely from self-play, and became <em>stronger</em>; later AlphaZero used the same recipe to master chess, shogi, and Go alike.</p>
+<p>One honest note on cost: AlphaGo's win was not "cheap" — it drew on a huge amount of compute, over a thousand CPUs and hundreds of GPUs, and leaned on tens of millions of human games as a crutch first (that the later version needed no records and was stronger only shows the crutch wasn't essential).</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Go is hard because there are "too many choices, and no way to score a position." AlphaGo uses an "intuition network" to cut away most bad moves and a "big-picture network" to avoid reading to the end, paired with a selective lookahead — first learning from human records, then getting stronger through self-play. It was the first to beat a professional in full-board play, and it lit up the general path of "neural networks + search."</p>
+</div>
+<p class="switch-hint">Want how the policy/value networks steer the search, the training pipeline, and the numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+<h2>In one sentence</h2>
+<p class="lead">AlphaGo uses two deep convolutional networks — a <strong>policy network</strong> ("which moves to consider") and a <strong>value network</strong> ("who wins this position") — to <strong>guide Monte Carlo Tree Search (MCTS)</strong>. In Go, whose search space is roughly <code>250¹⁵⁰</code> and which resists any hand-built position score, it presses down the twin problems of "choice explosion" and "no way to evaluate" at once, and became the first program to beat a professional in full-board play with no handicap (5–0 over European champion Fan Hui, 2015) — a landmark for the deep-learning-plus-search paradigm.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Go</strong>: two players alternate placing black and white stones on a 19×19 board (361 intersections), enclosing territory to win. Many legal moves, and outcomes often only clear far into the game — the acknowledged hardest perfect-information board game.</li>
+<li><strong>Game tree / exhaustive search</strong>: expand all branches of "I play here, you reply there…" into a tree; in principle, calculate to the end and you find the optimal move. But the branch count = (choices per move, <em>breadth b</em>) to the power of (<em>depth d</em>), about <code>250¹⁵⁰</code> for Go — impossible to enumerate.</li>
+<li><strong>Evaluation function</strong>: a function that scores a mid-game position ("who's ahead") so search need not reach the end. Easy to write for chess, extremely hard for Go.</li>
+<li><strong>Monte Carlo Tree Search (MCTS)</strong>: the pre-AlphaGo state of the art — instead of enumerating, it "plays out to the end" randomly from the current position many times, using the win/loss statistics of those simulations to judge each move: try good moves more, bad ones less.</li>
+<li><strong>Convolutional network (CNN)</strong>: a neural network good at images. AlphaGo treats the 19×19 board as a "picture" and extracts stone-pattern features layer by layer.</li>
+<li><strong>Supervised vs reinforcement learning</strong>: the former learns from "correct answers" (human moves); the latter has no answer key and improves by trial and error from the <em>reward</em> (win/loss) its own actions earn.</li>
+<li><strong>Elo rating</strong>: a score for the relative strength of players/programs; a ~400-point gap means roughly a 90% win rate for the stronger side.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are David Silver, Aja Huang, and colleagues at Google DeepMind; the paper "Mastering the Game of Go with Deep Neural Networks and Tree Search" appeared in <strong>Nature (January 2016)</strong>. It inherits two lines: Tesauro's TD-Gammon (1990s, a neural network plus self-play mastering backgammon) and the MCTS programs that dominated computer Go after 2006 (Crazy Stone, Zen, Pachi — but only to strong-amateur level). It launches <strong>AlphaGo Zero</strong> (2017, pure self-play, no human records), <strong>AlphaZero</strong> (one algorithm for chess/shogi/Go), and <strong>MuZero</strong> (learns the game rules too).</p>
+
+<h2>The problem and the motivation</h2>
+<p>A game program's classic weapon is <strong>minimax search</strong>: expand the game tree, assume both sides play optimally, and back up the best move now. Its cost explodes with tree size — roughly breadth <code>b</code> to the power of depth <code>d</code>. Chess, at <code>b≈35, d≈80</code>, is already large, but with "a good evaluation function plus heavy pruning," Deep Blue beat Kasparov in 1997.</p>
+<p>Go pushes two things to the limit at once. <strong>First, breadth explosion</strong>: <code>b≈250, d≈150</code>, a search space near <code>250¹⁵⁰</code>, with about <code>10¹⁷⁰</code> legal positions — more than the atoms in the observable universe. Enumeration is hopeless. <strong>Second, no way to evaluate</strong>: whether a group lives, whose a framework becomes, is often decided only much later, and humans can't write a reliable mid-game score — which is exactly what pruning and stopping search early depend on.</p>
+<p>The strongest prior computer Go took the <em>MCTS</em> route: no scoring, but "play out to the end" randomly from the current position thousands of times, using simulated win rates as the evaluation. This lifted strength from weak to strong-amateur, but stayed well short of professional — because random rollouts are too crude both to pick where to dig deeper and to estimate the position. <strong>AlphaGo's motivation: use deep networks to supply exactly what MCTS lacked — "where to go" and "who will win."</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text fill="#7c8593" font-size="12" text-anchor="middle" x="140" y="24">Brute force: breadth AND depth explode</text>
+<circle cx="140" cy="46" r="6" fill="#e8794b"/>
+<g stroke="#4a5060" stroke-width="1">
+<line x1="140" y1="52" x2="60" y2="92"/><line x1="140" y1="52" x2="100" y2="92"/><line x1="140" y1="52" x2="140" y2="92"/><line x1="140" y1="52" x2="180" y2="92"/><line x1="140" y1="52" x2="220" y2="92"/>
+</g>
+<g fill="#4a5060"><circle cx="60" cy="96" r="4"/><circle cx="100" cy="96" r="4"/><circle cx="140" cy="96" r="4"/><circle cx="180" cy="96" r="4"/><circle cx="220" cy="96" r="4"/></g>
+<g stroke="#3a4050" stroke-width="0.8">
+<line x1="60" y1="100" x2="45" y2="134"/><line x1="60" y1="100" x2="60" y2="134"/><line x1="60" y1="100" x2="75" y2="134"/>
+<line x1="140" y1="100" x2="125" y2="134"/><line x1="140" y1="100" x2="140" y2="134"/><line x1="140" y1="100" x2="155" y2="134"/>
+<line x1="220" y1="100" x2="205" y2="134"/><line x1="220" y1="100" x2="220" y2="134"/><line x1="220" y1="100" x2="235" y2="134"/>
+</g>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="158">~250 choices/move · ~150 moves deep …</text>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="140" y="176">≈ 250¹⁵⁰</text>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="410" y="24">AlphaGo: cut breadth + cap depth</text>
+<circle cx="410" cy="46" r="6" fill="#f0b429"/>
+<g stroke="#f0b429" stroke-width="1.4">
+<line x1="410" y1="52" x2="380" y2="92"/><line x1="410" y1="52" x2="440" y2="92"/>
+</g>
+<g stroke="#4a5060" stroke-width="0.8" stroke-dasharray="2 3">
+<line x1="410" y1="52" x2="330" y2="92"/><line x1="410" y1="52" x2="360" y2="92"/><line x1="410" y1="52" x2="490" y2="92"/>
+</g>
+<text fill="#f0b429" font-size="10" text-anchor="end" x="372" y="86">policy</text>
+<g fill="#f0b429"><circle cx="380" cy="96" r="4"/><circle cx="440" cy="96" r="4"/></g>
+<g stroke="#f0b429" stroke-width="1.2"><line x1="380" y1="100" x2="380" y2="128"/><line x1="440" y1="100" x2="440" y2="128"/></g>
+<rect x="352" y="130" width="56" height="20" rx="4" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<rect x="412" y="130" width="56" height="20" rx="4" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<text fill="#e7ebf1" font-size="9" text-anchor="middle" x="380" y="144">value est.</text>
+<text fill="#e7ebf1" font-size="9" text-anchor="middle" x="440" y="144">value est.</text>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="410" y="176">only good moves · no need to reach the end</text>
+<line x1="280" y1="40" x2="280" y2="185" stroke="#2a3038" stroke-width="1"/>
+</svg>
+<figcaption>Fig 1 · Two scissors: the policy network cuts "moves worth considering" from ~250 to a handful (breadth), the value network estimates the winner at a glance (depth), so search need not reach the end.</figcaption>
+</figure>
+
+<h2>The core idea</h2>
+
+<h3>Two networks: one for "where to go," one for "who wins"</h3>
+<p>AlphaGo treats the 19×19 board (plus move history, liberties, and other features) as a multi-channel "image" fed to two kinds of convolutional network:</p>
+<ul>
+<li><strong>Policy network</strong>: input a position, output a "probability map" — how likely each legal point is to be played. It compresses two hundred-plus choices into "a handful worth considering," attacking breadth explosion.</li>
+<li><strong>Value network</strong>: input a position, output <strong>a single number</strong> — the probability that the side to move wins, playing from here. With it, search can score any position it reaches without playing to the end, attacking depth explosion.</li>
+</ul>
+
+<h3>Three-stage training: imitate humans → self-play → learn to evaluate</h3>
+<p>The networks' feel is fed in by stages (see Fig 2):</p>
+<ul>
+<li><strong>① SL policy network</strong>: supervised learning on about <strong>30 million</strong> positions from expert human games, predicting "which move a human plays next." Accuracy about <strong>57%</strong> (prior best ~44%) — intuition that nearly matches strong players in one shot.</li>
+<li><strong>② RL policy network</strong>: starting from the SL network, play repeatedly against <em>earlier versions of itself</em>, adjusting weights by <strong>policy gradient</strong> from win/loss — raise the probability of winning moves, lower losing ones. This turns "imitate humans" into "play to win": the improved RL version beats the SL version over <strong>80%</strong> of the time, and <em>with no search at all, on this one network alone</em> it beats the strong open-source program Pachi (~85% win rate).</li>
+<li><strong>③ Value network</strong>: regression on RL self-play outcomes to learn "given a position, the probability of eventually winning." Key detail: the <strong>30 million</strong> training positions are <strong>each taken from a different game</strong> — because adjacent positions within one game are highly similar, using them all would make the network "memorize games" rather than "understand positions" (overfitting).</li>
+</ul>
+<p>A minimal <strong>fast rollout policy</strong> was also trained separately: only ~24% accurate, but about a thousand times faster (~2 microseconds vs the policy network's ~3 milliseconds), used purely for "fast simulation to the end" inside the search — trading accuracy for speed.</p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ag" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="18" y="96" width="120" height="48" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="78" y="116">30 million</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="78" y="133">human positions</text>
+<line x1="138" y1="120" x2="176" y2="120" stroke="#f0b429" stroke-width="1.5" marker-end="url(#ag)"/>
+<rect x="178" y="92" width="120" height="56" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="238" y="114">SL policy net</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="238" y="130">imitate · 57% acc.</text>
+<line x1="298" y1="120" x2="336" y2="120" stroke="#f0b429" stroke-width="1.5" marker-end="url(#ag)"/>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="317" y="112">self-</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="317" y="136">play</text>
+<rect x="338" y="92" width="120" height="56" rx="8" fill="rgba(240,180,41,0.14)" stroke="#f0b429"/>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="398" y="114">RL policy net</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="398" y="130">to win · policy grad.</text>
+<path d="M398,148 C398,180 300,190 238,190 L238,204" fill="none" stroke="#e8794b" stroke-width="1.5" marker-end="url(#ag)" stroke-dasharray="4 3"/>
+<text fill="#e8794b" font-size="9.5" text-anchor="middle" x="318" y="185">self-play outcomes</text>
+<rect x="178" y="206" width="120" height="40" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="238" y="223">value network</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="238" y="238">estimate "who wins"</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="470" y="40">① imitate</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="470" y="56">② self-play</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="470" y="72">③ evaluate</text>
+</svg>
+<figcaption>Fig 2 · Training pipeline: teach "intuition" from human records (SL policy net), sharpen it into "play to win" via self-play (RL policy net), then train "big-picture" judgment from self-play outcomes (value net).</figcaption>
+</figure>
+
+<h3>Plugging the networks into MCTS: the four-step loop</h3>
+<p>When actually playing, AlphaGo runs a round of network-guided MCTS for every move. Each edge in the search tree (a "position → move") stores three numbers: action value <code>Q</code> (how good this move is on average), visit count <code>N</code> (how many times tried), and prior probability <code>P</code> (the policy network's "how worth considering"). Each round has four steps:</p>
+<ul>
+<li><strong>Select</strong>: from the root downward, pick the edge with the largest <code>Q + u</code>, where the exploration term <code>u</code> is proportional to <code>P/(1+N)</code> — favoring both <em>good moves (high Q)</em> and <em>promising, under-tried ones (high P, small N)</em>, balancing exploit and explore.</li>
+<li><strong>Expand</strong>: reaching a new position, use the policy network to compute priors <code>P</code> over its moves and attach it to the tree.</li>
+<li><strong>Evaluate</strong>: estimate the new position's value as a <strong>weighted average of two opinions</strong> — the value network's direct judgment <code>v</code>, and the win/loss <code>z</code> from a fast rollout to the end, mixed as <code>(1−λ)·v + λ·z</code> (λ=0.5 worked best in the paper: one steady, one sharp, complementary).</li>
+<li><strong>Back up</strong>: propagate this evaluation along the path just taken, updating each edge's <code>Q</code> and <code>N</code>.</li>
+</ul>
+<p>After thousands of such rounds, <strong>the final move is the one with the highest visit count N</strong> — not the highest value, because "repeatedly chosen by the search" is itself evidence of robustness. The beauty: the policy network makes search <strong>deepen only on a few good moves</strong>, the value network lets it <strong>skip reaching the end every time</strong>, and together they squeeze an astronomical search into a computable range.</p>
+
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ag2" markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<g>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="70" y="20">① Select</text>
+<circle cx="70" cy="36" r="5" fill="#f0b429"/>
+<line x1="70" y1="41" x2="52" y2="66" stroke="#4a5060"/><line x1="70" y1="41" x2="88" y2="66" stroke="#f0b429" stroke-width="2"/>
+<circle cx="52" cy="70" r="4" fill="#4a5060"/><circle cx="88" cy="70" r="4.5" fill="#f0b429"/>
+<line x1="88" y1="74" x2="88" y2="96" stroke="#f0b429" stroke-width="2"/>
+<circle cx="88" cy="100" r="4.5" fill="#f0b429"/>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="70" y="128">max Q+u</text>
+</g>
+<g>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="205" y="20">② Expand</text>
+<circle cx="205" cy="36" r="5" fill="#f0b429"/>
+<line x1="205" y1="41" x2="205" y2="66" stroke="#7c8593"/>
+<circle cx="205" cy="70" r="4.5" fill="#f0b429"/>
+<line x1="205" y1="74" x2="185" y2="98" stroke="#e8794b" stroke-dasharray="2 2"/><line x1="205" y1="74" x2="205" y2="98" stroke="#e8794b" stroke-dasharray="2 2"/><line x1="205" y1="74" x2="225" y2="98" stroke="#e8794b" stroke-dasharray="2 2"/>
+<circle cx="185" cy="102" r="3.5" fill="none" stroke="#e8794b"/><circle cx="205" cy="102" r="3.5" fill="none" stroke="#e8794b"/><circle cx="225" cy="102" r="3.5" fill="none" stroke="#e8794b"/>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="205" y="128">policy prior P</text>
+</g>
+<g>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="345" y="20">③ Evaluate</text>
+<circle cx="345" cy="60" r="4.5" fill="#e8794b"/>
+<rect x="300" y="80" width="42" height="18" rx="4" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<text fill="#e7ebf1" font-size="8.5" text-anchor="middle" x="321" y="93">value v</text>
+<rect x="348" y="80" width="42" height="18" rx="4" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text fill="#e7ebf1" font-size="8.5" text-anchor="middle" x="369" y="93">rollout z</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="345" y="118">(1−λ)v + λz</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="345" y="130">weighted mix</text>
+</g>
+<g>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="480" y="20">④ Back up</text>
+<circle cx="480" cy="36" r="5" fill="#f0b429"/>
+<circle cx="498" cy="70" r="4.5" fill="#f0b429"/>
+<circle cx="498" cy="100" r="4.5" fill="#e8794b"/>
+<line x1="498" y1="96" x2="498" y2="76" stroke="#7c8593" marker-end="url(#ag2)"/>
+<line x1="494" y1="68" x2="484" y2="42" stroke="#7c8593" marker-end="url(#ag2)"/>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="480" y="128">update Q, N</text>
+</g>
+<line x1="140" y1="30" x2="140" y2="120" stroke="#2a3038"/><line x1="275" y1="30" x2="275" y2="120" stroke="#2a3038"/><line x1="415" y1="30" x2="415" y2="120" stroke="#2a3038"/>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="280" y="160">repeat thousands of times → play the move with the highest visit count N</text>
+</svg>
+<figcaption>Fig 3 · Network-guided MCTS: select (max Q+u) → expand (policy prior P) → evaluate (value v mixed with rollout z) → back up (update Q, N), looped thousands of times.</figcaption>
+</figure>
+
+<h2>Key results</h2>
+<p>The margins were lopsided. Distributed AlphaGo beat the strongest other Go programs of the day (Crazy Stone, Zen, Pachi, Fuego) <strong>494 of 495 games (99.8%)</strong>, and still won a large share even giving 4 handicap stones. The real watershed was October 2015: AlphaGo beat European Go champion <strong>Fan Hui (2-dan professional) 5–0</strong> — <strong>the first time a program beat a professional on a full 19×19 board with no handicap</strong>. Its Elo was around 3140, far above other programs (~1900–2500).</p>
+<p>Ablations showed each part's worth: the policy network alone (no search) was already strong-amateur; evaluation from the value network alone, or from fast rollouts alone, was decent, but <strong>mixing the two (λ=0.5) was clearly strongest</strong>; removing either network cut strength markedly. (After publication, in March 2016 AlphaGo beat top-tier player <strong>Lee Sedol 4–1</strong>, whose game-two "Move 37" became famous for its creativity — but that match is outside this paper.)</p>
+
+<h2>Why it mattered</h2>
+<p>Go had been AI's acknowledged "moonshot," widely expected to hold out for another decade-plus; AlphaGo <strong>brought it forward by a generation</strong>. Its depth isn't "it won at Go" but the general paradigm it proved: <strong>let deep networks supply "intuition (policy)" and "judgment (value)" to guide a selective search</strong> — any problem with self-play and a clear win/loss signal might fall this way. This path led directly to <strong>AlphaGo Zero</strong> (2017: drop all human records, learn from scratch by self-play, and surpass the original), <strong>AlphaZero</strong> (one algorithm across chess, shogi, Go), and <strong>MuZero</strong> (learn the rules too); it also made "deep reinforcement learning + search" a template for later breakthroughs (protein structure, chip floorplanning, plasma control) and pushed AI to the center of public attention.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Extremely expensive compute</strong>: the distributed version that beat Fan Hui used about <strong>1,202 CPUs and 176 GPUs</strong>; training cost was enormous too. This was not a "clever little program" but "clever plus massive compute."</li>
+<li><strong>Reliance on human records as a crutch</strong>: the original needed 30 million human games to get started. Ironically, a year later AlphaGo Zero — using no human records — was stronger, showing human data was not only unnecessary but in a sense a <strong>limitation</strong>.</li>
+<li><strong>A tightly constrained paradigm</strong>: the method thrives on "perfect information, deterministic, discrete, clear win/loss" games; it doesn't transfer directly to imperfect information (e.g. poker), continuous control, or real tasks with no clear reward — it needs a fast-simulatable model/rules.</li>
+<li><strong>Not invulnerable</strong>: Lee Sedol clawed back game four with "Move 78," exposing brittleness against surprise positions; later (2022) research found blind spots in AlphaGo-style programs via adversarial play, letting even amateurs win — "superhuman" strength still has holes in robustness.</li>
+</ul>
+
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: use a policy network (which moves to consider) plus a value network (who wins) to guide Monte Carlo Tree Search — the first program to beat a professional in full-board Go.</p>
+<p>② The pain: Go's search space is ~<code>250¹⁵⁰</code> (breadth explosion) and no reliable hand-built mid-game evaluation exists (no pruning / early stopping) — both enumeration and classic evaluation fail.</p>
+<p>③ Two scissors: the policy network cuts away most bad moves (breadth), the value network estimates the winner at a glance (depth), squeezing an astronomical search into a computable range.</p>
+<p>④ Three-stage training: SL policy (learn from human records, 57% acc.) → RL policy (self-play, policy gradient, play to win) → value network (regress on self-play outcomes, one position per game to avoid overfitting); plus a very fast rollout policy for simulation.</p>
+<p>⑤ Search: each edge stores Q, N, P; select on <code>Q+u</code> (u∝P/(1+N)) → expand → evaluate (value v mixed with rollout z at λ=0.5) → back up; play the most-visited move.</p>
+<p>⑥ Results: 494/495 wins vs other programs; 5–0 over 2-dan pro Fan Hui in 2015 (first full-board win over a professional); 4–1 over Lee Sedol after publication.</p>
+<p>⑦ Impact: cracked Go a generation early; founded the "networks give intuition + judgment to guide search" paradigm, spawning AlphaGo Zero / AlphaZero / MuZero — a deep-RL landmark.</p>
+<p>⑧ Limits: expensive compute (thousands of CPUs / hundreds of GPUs); reliance on human records (later shown a crutch by the Zero version); fits only perfect-information problems; robustness blind spots (Lee Sedol game four, later adversarial attacks).</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full network configs and experiment details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
