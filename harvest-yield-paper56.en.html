@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Harvest, Yield, and Scalable Tolerant Systems — CS Papers Deep-Read Paper 56</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 56</p>
+<h1>Harvest, Yield, and Scalable Tolerant Systems</h1>
+<p class="sub">Fox &amp; Brewer · UC Berkeley · HotOS-VII 1999</p>
+<p class="langbar"><a href="harvest-yield-paper56.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper say?</h2>
+<p>In 1999, two Berkeley researchers, Fox and Brewer (Brewer would state the famous <strong>CAP theorem</strong> a year later), asked a question that still bites today. When a big website runs on thousands of machines and a few of them die, we habitually think it's either "up" or "down" — black and white. But real large services are never like that. Their claim: <strong>don't treat "available" as a switch — treat it as a dial you can turn.</strong></p>
+<h2>First, an everyday scene</h2>
+<p>During a big sale you're trying to check out. The page is slow, or search returns only some of the results, or one small feature won't respond — yet the whole site doesn't crash, and you still buy your thing. That's not luck; it's <strong>"graceful degradation," by design</strong>. This paper is one of the first to turn "how to break down a little, gracefully" into a method.</p>
+<h2>What's new here?</h2>
+<p>People used to have only two black-and-white words: a system is "consistent" or not, "available" or not. This paper splits "available" into two things you can actually score:</p>
+<ul>
+<li><strong>Yield</strong>: of a hundred requests you send, how many got answered successfully.</li>
+<li><strong>Harvest</strong>: for the request that did get answered, what fraction of the full data went into it — how complete the answer is.</li>
+</ul>
+<p>A search that returns a few fewer results is "full yield, slightly discounted harvest." Split this way, "break down a little" suddenly offers <strong>two cheap ways to break</strong>.</p>
+<h2>How is it done?</h2>
+<p>The key insight: the amount of "<strong>data × requests</strong>" a machine can push per second has a physical ceiling. Lose a few machines and that total drops by a chunk. How you absorb the lost chunk is your choice — <strong>either put less data into each answer (lower harvest), or answer fewer requests but answer them fully (lower yield)</strong>. Same failure, two very different experiences, decided by you in advance. One more move: break the system into non-interfering pieces, and pen the "must be exactly right" data into the smallest possible corner, so most of it can be "good enough for now, reconcile later" — and a failure only hits one small piece.</p>
+<h2>What did it lead to?</h2>
+<p>A year later Brewer distilled the trade-off here into <strong>CAP</strong>: consistency, availability, partition tolerance — you can't have all three. Nearly every large service's "degrade," "rate-limit to protect the core," "eventual consistency," and "success-rate SLO" traces its thinking to this. One honest cost: "half an answer is fine" only works for <strong>soft</strong> use cases like search and recommendation; when you check a bank balance, an incomplete or stale answer is simply wrong — better to answer nothing.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Don't treat "available" as a switch. Split it into two dials — "how many got answered" (yield) and "how complete each answer is" (harvest) — so when failure comes, you choose how to break gracefully instead of toppling over whole.</p>
+</div>
+<p class="switch-hint">Want the DQ principle, the replication-vs-partitioning diagram, and how CAP came out of this? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">In 1999 Fox and Brewer argued that a large service's "availability" shouldn't be a black-and-white switch but should split into two measurable, tradeable quantities — <strong>yield (the fraction of requests completed)</strong> and <strong>harvest (the fraction of data reflected in a single answer)</strong>. This turns "what to do under failure" from "hold up or fall over" into an explicit choice: for the same failure, you can lower harvest (answer, but incompletely) or lower yield (answer fewer, but fully), degrading gracefully and staying as available as possible through faults and partitions. This short paper is also the first written statement of the "strong consistency and high availability can't coexist" trade-off — distilled a year later into the <strong>CAP theorem</strong>.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Availability</strong>: a system's ability to respond to requests normally. Traditionally measured as "percent uptime."</li>
+<li><strong>Consistency / strong consistency</strong>: at any moment all replicas see the same data and a read always returns the latest write. Achieving this across many machines is expensive.</li>
+<li><strong>Network partition</strong>: a network fault cuts the cluster into pieces that can't talk to each other — each still running, but blind to the others.</li>
+<li><strong>Replication</strong>: keep a full copy of the same data on several machines, so if one dies the others still have it.</li>
+<li><strong>Partitioning (here: data partitioning)</strong>: split one large dataset across machines, each holding only a slice. (Same word "partition" as a network partition, different meaning.)</li>
+<li><strong>Hard / soft state</strong>: hard state is data that's lost forever if it's gone and must be persistent and consistent; soft state can be rebuilt or tolerates a stale value.</li>
+<li><strong>CAP theorem</strong>: of Consistency, Availability, and Partition tolerance, you can have at most two when a partition occurs — this paper is its precursor.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Armando Fox and Eric Brewer, both at UC Berkeley; the piece is a <strong>position paper</strong> at the 1999 HotOS-VII workshop — short, aimed at proposing a framework rather than running experiments. Brewer had earlier co-founded the search company Inktomi and lived the engineering of large cluster services, and the paper's examples are mostly framed around a search cluster. It inherits the authors' earlier cluster-services work (the 1997 Cluster-Based Scalable Network Services that introduced the BASE idea) and launches Brewer's CAP conjecture at PODC 2000 and the 2002 Gilbert–Lynch formal proof — this is the foundation stone right before CAP.</p>
+<h2>The problem and the motivation</h2>
+<p>By the late 1990s internet services were exploding in scale, stacking hundreds to thousands of machines, and <strong>failure went from "exception" to "constant"</strong> — some fraction is always broken. The old ways of measuring reliability were ill-fitting in two places:</p>
+<ul>
+<li><strong>Treating "available" as binary</strong>: the system is either online or offline. But a service of a thousand machines lives almost permanently in the middle state — "mostly fine, a few broken" — which a binary description can't capture.</li>
+<li><strong>Measuring availability as uptime</strong>: uptime weights all moments equally, yet failures cluster at <strong>peak load</strong> (heaviest load is when things break), and a crash then loses far more requests than one at 3 a.m. Uptime systematically underweights the cost of peak-time failure.</li>
+</ul>
+<p>The deeper wall: the authors point out that <strong>strong consistency (all replicas always in agreement) and high availability cannot both hold when the network may partition</strong>. Once a partition splits the cluster into two halves that can't talk, you either let both halves keep serving (give up consistency, each writing on its own) or stop one half to preserve consistency (give up availability). This isn't sloppy engineering — it's a hard trade-off. Since you can't have both, and failure is constant, the authors argue: <strong>rather than chasing "never fail," design for "how to degrade gracefully when you do."</strong></p>
+<figure>
+<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="140" y="26" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">Yield</text>
+<text x="140" y="45" fill="#7c8593" font-size="11" text-anchor="middle">how many requests got answered</text>
+<circle cx="60" cy="80" r="11" fill="#f0b429"/><circle cx="95" cy="80" r="11" fill="#f0b429"/><circle cx="130" cy="80" r="11" fill="#f0b429"/><circle cx="165" cy="80" r="11" fill="#f0b429"/><circle cx="200" cy="80" r="11" fill="#f0b429"/>
+<circle cx="60" cy="114" r="11" fill="#f0b429"/><circle cx="95" cy="114" r="11" fill="#f0b429"/><circle cx="130" cy="114" r="11" fill="#f0b429"/><circle cx="165" cy="114" r="11" fill="none" stroke="#4a5158" stroke-width="2"/><circle cx="200" cy="114" r="11" fill="none" stroke="#4a5158" stroke-width="2"/>
+<text x="140" y="160" fill="#e7ebf1" font-size="12" text-anchor="middle">10 requests · 8 answered</text>
+<text x="140" y="184" fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle">yield = 80%</text>
+<line x1="280" y1="20" x2="280" y2="196" stroke="rgba(240,180,41,0.2)"/>
+<text x="420" y="26" fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle">Harvest</text>
+<text x="420" y="45" fill="#7c8593" font-size="11" text-anchor="middle">how complete that answer is</text>
+<rect x="322" y="82" width="185" height="30" rx="4" fill="#e8794b"/>
+<rect x="507" y="82" width="10" height="30" rx="2" fill="none" stroke="#4a5158" stroke-width="2"/>
+<text x="420" y="140" fill="#7c8593" font-size="11" text-anchor="middle">↑ data used in one answer / full data</text>
+<text x="420" y="162" fill="#e7ebf1" font-size="12" text-anchor="middle">covers 95% of data</text>
+<text x="420" y="186" fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle">harvest = 95%</text>
+</svg>
+<figcaption>Fig 1 · Splitting "available" into two scoreable dials: yield = fraction of requests answered; harvest = fraction of data covered by a single answer. In between lies a buffer of "answered, but not fully."</figcaption>
+</figure>
+<h2>The core idea</h2>
+<h3>1. Split availability into two quantities: yield and harvest</h3>
+<p><strong>Yield = requests completed ÷ requests received.</strong> Its difference from uptime is that it's <em>weighted by requests</em>: a crash at peak has more requests in the denominator, so yield drops harder — exactly reflecting "peak failure is costlier." Intuition: yield answers "how many did you actually answer."</p>
+<p><strong>Harvest = data reflected in the answer ÷ complete data.</strong> It admits that "an answer can be partial": a search that skipped 5% of the corpus but still returns results from the other 95% has harvest = 95%. Intuition: harvest answers "how complete was your answer."</p>
+<p>The big payoff of splitting them: <strong>failure no longer has only "answer" and "don't answer" as outcomes — a whole buffer of "answer, but less completely" opens up in between</strong>, which you can spend to keep "still answering."</p>
+<h3>2. The DQ principle: capacity is conserved, forcing a choice</h3>
+<p>The authors offer an empirical rule: near saturation, <strong>the product of data-per-request D and requests-per-second Q is roughly constant</strong> — capped by the system's physical capacity (memory bandwidth, disk, network). Written <code>D × Q ≈ constant</code>, in plain terms: "enough data and enough requests are the same cake — one grows only as the other shrinks."</p>
+<p>This rule translates failure into one plain sentence: <strong>a failure that takes x% of capacity is a failure that cuts DQ by x%. Whether you take that cut out of D or out of Q is your choice.</strong></p>
+<ul>
+<li><strong>Cut Q (lower yield)</strong>: accept fewer requests — even actively reject some — and answer the accepted ones fully, preserving harvest. Done e.g. via cost-based admission control.</li>
+<li><strong>Cut D (lower harvest)</strong>: accept every request, but put less data into each answer, returning a partial result and preserving yield.</li>
+</ul>
+<p>The point: <strong>DQ forces you to admit "degradation is unavoidable"; the real design freedom left is "which way to degrade" — and that can be aligned with the business</strong> (do you want completeness, or an answer for everyone?).</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="30" y="130" fill="#7c8593" font-size="10.5" text-anchor="middle" transform="rotate(-90 30 130)">D data/request (harvest)</text>
+<text x="290" y="242" fill="#7c8593" font-size="10.5" text-anchor="middle">Q requests/sec (yield) · rectangle area = DQ capacity</text>
+<line x1="70" y1="60" x2="70" y2="195" stroke="#4a5158"/><line x1="70" y1="195" x2="185" y2="195" stroke="#4a5158"/>
+<rect x="70" y="95" width="105" height="100" fill="rgba(240,180,41,0.28)" stroke="#f0b429"/>
+<text x="122" y="80" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">Normal</text>
+<text x="122" y="215" fill="#f0b429" font-size="11.5" text-anchor="middle">DQ = 100%</text>
+<line x1="230" y1="60" x2="230" y2="195" stroke="#4a5158"/><line x1="230" y1="195" x2="345" y2="195" stroke="#4a5158"/>
+<rect x="230" y="95" width="105" height="100" fill="none" stroke="#4a5158" stroke-dasharray="4 3"/>
+<rect x="230" y="120" width="105" height="75" fill="rgba(232,121,75,0.28)" stroke="#e8794b"/>
+<text x="282" y="80" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">keep Q, cut D</text>
+<text x="282" y="215" fill="#e8794b" font-size="11.5" text-anchor="middle">harvest → 75%</text>
+<line x1="390" y1="60" x2="390" y2="195" stroke="#4a5158"/><line x1="390" y1="195" x2="505" y2="195" stroke="#4a5158"/>
+<rect x="390" y="95" width="105" height="100" fill="none" stroke="#4a5158" stroke-dasharray="4 3"/>
+<rect x="390" y="95" width="79" height="100" fill="rgba(232,121,75,0.28)" stroke="#e8794b"/>
+<text x="442" y="80" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">keep D, cut Q</text>
+<text x="442" y="215" fill="#e8794b" font-size="11.5" text-anchor="middle">yield → 75%</text>
+</svg>
+<figcaption>Fig 2 · The DQ principle: at saturation the rectangle's area (D×Q) is capped by capacity. A failure shaves 25% of the area; you choose to take it from D (left, shallower answers) or from Q (right, fewer answers) — same failure, two ways to break.</figcaption>
+</figure>
+<h3>3. Replication vs partitioning: it decides which quantity you lose</h3>
+<p>For the same "one node dies" failure, <strong>how the data is laid out decides whether you lose yield or harvest</strong>:</p>
+<ul>
+<li><strong>Replication</strong>: every machine holds the full dataset. Lose one, and the rest still have complete data — <strong>harvest doesn't drop</strong>, but you've lost one machine's throughput, so <strong>yield / capacity drops</strong>.</li>
+<li><strong>Partitioning</strong>: the data is split up. Lose one, and that slice is gone — <strong>harvest drops</strong> (the answer is missing that piece), but requests-per-second is nearly unchanged, so <strong>yield doesn't drop</strong>.</li>
+</ul>
+<p>The authors add a counterintuitive observation: <strong>near saturation, replication doesn't conjure extra capacity</strong> — because DQ is capped by a physical ceiling, replication and partitioning have the same total DQ. What replication actually buys isn't "more capacity" but "preserving harvest under failure." So replication vs partitioning isn't "which is faster" — it's "which quantity you'd rather keep."</p>
+<figure>
+<svg viewBox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="140" y="24" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">Replication</text>
+<g>
+<rect x="45" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="51" y="49" width="30" height="9" fill="#f0b429"/><rect x="51" y="61" width="30" height="9" fill="#e8794b"/><rect x="51" y="73" width="30" height="9" fill="#f0b429"/><rect x="51" y="85" width="30" height="9" fill="#e8794b"/>
+<rect x="100" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="106" y="49" width="30" height="9" fill="#f0b429"/><rect x="106" y="61" width="30" height="9" fill="#e8794b"/><rect x="106" y="73" width="30" height="9" fill="#f0b429"/><rect x="106" y="85" width="30" height="9" fill="#e8794b"/>
+<rect x="155" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="161" y="49" width="30" height="9" fill="#f0b429"/><rect x="161" y="61" width="30" height="9" fill="#e8794b"/><rect x="161" y="73" width="30" height="9" fill="#f0b429"/><rect x="161" y="85" width="30" height="9" fill="#e8794b"/>
+<rect x="210" y="42" width="42" height="66" rx="5" fill="rgba(120,60,60,0.18)" stroke="#8a4a4a" stroke-dasharray="4 3"/><line x1="214" y1="46" x2="248" y2="104" stroke="#c0524a" stroke-width="2"/><line x1="248" y1="46" x2="214" y2="104" stroke="#c0524a" stroke-width="2"/>
+</g>
+<text x="140" y="132" fill="#e7ebf1" font-size="11.5" text-anchor="middle">lose 1 node → data still complete</text>
+<text x="140" y="150" fill="#f0b429" font-size="11.5" text-anchor="middle">harvest 100% · capacity (yield) ↓ to 75%</text>
+<line x1="280" y1="34" x2="280" y2="200" stroke="rgba(240,180,41,0.2)"/>
+<text x="420" y="24" fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle">Partitioning</text>
+<g>
+<rect x="325" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="331" y="73" width="30" height="21" fill="#f0b429"/>
+<rect x="380" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="386" y="73" width="30" height="21" fill="#e8794b"/>
+<rect x="435" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="441" y="73" width="30" height="21" fill="#f0b429"/>
+<rect x="490" y="42" width="42" height="66" rx="5" fill="rgba(120,60,60,0.18)" stroke="#8a4a4a" stroke-dasharray="4 3"/><line x1="494" y1="46" x2="528" y2="104" stroke="#c0524a" stroke-width="2"/><line x1="528" y1="46" x2="494" y2="104" stroke="#c0524a" stroke-width="2"/>
+</g>
+<text x="420" y="132" fill="#e7ebf1" font-size="11.5" text-anchor="middle">lose 1 node → ¼ of the data gone</text>
+<text x="420" y="150" fill="#e8794b" font-size="11.5" text-anchor="middle">harvest ↓ to 75% · yield 100%</text>
+<text x="280" y="200" fill="#7c8593" font-size="11" text-anchor="middle">at saturation both have the same total DQ — the difference is "which quantity you keep"</text>
+</svg>
+<figcaption>Fig 3 · Same node failure, different layout, different loss: replication keeps harvest and loses capacity (yield); partitioning keeps yield and loses harvest. Colored blocks are data slices; the crossed-out box is the failed node.</figcaption>
+</figure>
+<h3>4. Decompose into orthogonal subsystems, pen strong consistency into the smallest cage</h3>
+<p>The last move is architectural: split the application into <strong>mutually orthogonal, independently-failing subsystems</strong>, each with its own harvest/yield policy; and pen the "must be strongly consistent, must be persistent" <strong>hard state into the smallest piece possible</strong>, making the rest soft state (rebuildable, tolerant of stale values, eventually consistent). Then one failure hits only a small piece, and most of the system keeps serving with high availability. The authors stress that mechanisms should be <strong>orthogonal and composable</strong> — state and failures both stay local, so nothing pulls the whole system down.</p>
+<h2>Key results</h2>
+<p>This is a HotOS position paper: <strong>there are no benchmark tables — its "result" is a way of thinking that endures, plus corroboration from real systems</strong>, not experimental numbers. The highlights:</p>
+<ul>
+<li>Introduces <strong>harvest / yield</strong> as two measurable dimensions, turning "availability" from a binary switch into a continuum.</li>
+<li>Introduces the <strong>DQ principle</strong>, giving the actionable view "a failure = cutting DQ, and you choose where."</li>
+<li>Uses <strong>replication vs partitioning</strong> to make clear the mapping to "keep harvest or keep yield."</li>
+<li>Argues from large services such as Inktomi's search cluster: when some nodes fail, returning a <strong>partial result (lower harvest) beats being wholly unavailable</strong> — this kind of "graceful degradation" was already running in commercial search of the day.</li>
+</ul>
+<p>(The paper is mainly argument and design principle; no specific percentages or benchmark numbers are invented here.)</p>
+<h2>Why it mattered</h2>
+<ul>
+<li><strong>The direct ancestor of CAP</strong>: the "consistency vs availability can't coexist under partition" laid out here became Brewer's CAP conjecture at PODC 2000, proved a theorem by Gilbert and Lynch in 2002. Nearly every distributed-systems textbook's trade-off chapter starts here.</li>
+<li><strong>It gave "graceful degradation" a theoretical name</strong>: modern large services shed precision under overload/failure, return partial results, rate-limit to protect the core — engineering instincts this paper recast as reasoned design choices.</li>
+<li><strong>A path toward eventual consistency and NoSQL</strong>: penning strong consistency into the smallest range and making the rest soft state is exactly the philosophy of Dynamo-era eventually-consistent NoSQL; the harvest/yield language also foreshadows SRE measuring services by "success-rate SLO" rather than uptime.</li>
+</ul>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Harvest/yield never became common vocabulary</strong>: good as the concepts are, the industry's daily words are CAP, "N nines" of availability, and SLOs — few actually say "harvest/yield." It's more an illuminating lens than an adopted standard.</li>
+<li><strong>DQ is only an approximation</strong>: it assumes near-saturation and homogeneous capacity; it doesn't hold at low load, with heterogeneous requests, or when cache-hit rates vary widely, and D itself is hard to measure precisely.</li>
+<li><strong>CAP was later called too coarse</strong>: Brewer himself, in 2012's "CAP Twelve Years Later," reflected that "two of three" is misleading — partitions are actually rare, and the trade-off you weigh daily is "consistency vs availability during a partition" plus <strong>consistency vs latency in normal operation</strong>; Abadi's PACELC is the completion of it.</li>
+<li><strong>Not every application can lower harvest</strong>: a partial/stale answer is fine for search but wrong for an account balance or an inventory decrement — better to answer nothing. The framework fits "soft" use cases best.</li>
+<li><strong>Informal</strong>: as a position paper it offers intuition and a framework, not proofs; the rigor came later with the CAP formalization.</li>
+</ul>
+<h2>The essentials</h2>
+<div class="tl">
+<p>① In one line: split "availability" into yield (how many answered) and harvest (how complete), two measurable, tradeable quantities, turning failure from "hold up / fall over" into "how to degrade gracefully."</p>
+<p>② The pain: at scale failure is constant; binary availability misses the "mostly fine, a few broken" middle, uptime underweights peak failure, and strong consistency and high availability can't coexist under partition.</p>
+<p>③ yield = completed / received (weighted by requests, so failure costs more at peak); harvest = data covered / full data (admits partial answers).</p>
+<p>④ DQ principle: at saturation <code>D×Q≈constant</code> (capacity conserved); a failure cuts a chunk of DQ, and you choose to take it from D (lower harvest) or Q (lower yield).</p>
+<p>⑤ Replication keeps harvest, loses capacity (yield); partitioning keeps yield, loses harvest; at saturation both have equal total DQ — the difference is which quantity you keep.</p>
+<p>⑥ Architectural move: decompose into orthogonal, independently-failing subsystems, and pen strong-consistency hard state into the smallest range, the rest soft state.</p>
+<p>⑦ Impact: the direct ancestor of the CAP theorem; gave "graceful degradation / eventual consistency / success-rate SLO" a theoretical name.</p>
+<p>⑧ Limits: harvest/yield never became common vocabulary; DQ is only a saturation approximation; CAP was later called too coarse (PACELC completes it); hard use cases can't lower harvest.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full argument and more examples, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
