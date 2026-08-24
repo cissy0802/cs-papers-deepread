@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Harvest、Yield 与可扩展容错系统 — IT 论文精读 Paper 56</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 56</p>
-<h1>Harvest、Yield 与可扩展容错系统</h1>
+<h1 data-tts="e440b0ac311e8e60">Harvest、Yield 与可扩展容错系统</h1>
 <p class="sub">Fox &amp; Brewer · UC Berkeley · HotOS-VII 1999</p>
 <p class="langbar"><a href="harvest-yield-paper56.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,31 +44,31 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文说了什么？</h2>
+<h2 data-tts="67641e584aea749d">这篇论文说了什么？</h2>
 <p>1999 年，两位伯克利研究者 Fox 与 Brewer（Brewer 一年后提出了大名鼎鼎的 <strong>CAP 定理</strong>）问了一个到今天还管用的问题：一个由成千上万台机器撑起来的大网站，坏了几台，我们习惯以为它要么「能用」、要么「挂了」——非黑即白。可真实的大服务从来不是这样。这篇论文主张：<strong>别把「可用」当成一个开关，把它当成一根能调的旋钮。</strong></p>
-<h2>先说个日常</h2>
+<h2 data-tts="26eb0465cb36410e">先说个日常</h2>
 <p>你在大促时抢东西，页面很慢，或者搜索只返回了一部分结果、某个小功能暂时点不动——但整个网站没崩，你还是把东西买到了。这不是运气，是被<strong>设计出来的「优雅降级」</strong>。这篇论文，就是最早把「怎么优雅地坏一点」讲成一套方法的文章之一。</p>
-<h2>新在哪？</h2>
+<h2 data-tts="b70a5d13c8ef5aee">新在哪？</h2>
 <p>过去大家只有两个非黑即白的词：系统「一致」或不一致、「可用」或不可用。这篇把「可用」拆成两个能打分的量：</p>
 <ul>
 <li><strong>产出率</strong>：你发出去一百个请求，成功答上了几个。</li>
 <li><strong>收获度</strong>：答上的那个请求，用到了全部数据的百分之几——答案有多完整。</li>
 </ul>
 <p>一个搜索少返回了几条结果，就是「产出率满分、收获度打了个折」。这么一拆，「坏一点」立刻多出了<strong>两种便宜的坏法可以选</strong>。</p>
-<h2>怎么做到的？</h2>
+<h2 data-tts="14916daeebaa2fd6">怎么做到的？</h2>
 <p>关键洞察：一台机器每秒能吞的「<strong>数据量 × 请求数</strong>」是有物理上限的。坏了几台，这个总量就少一块。少的这一块你可以选择怎么承担——<strong>要么每个答案少用点数据（降收获度），要么少答几个请求、把接下的答全（降产出率）</strong>。同一场故障，两种截然不同的体验，全由你提前设计决定。还有一招：把系统拆成互不牵连的小块，把「必须绝对准确」的那一小撮数据圈在最小的范围里，其余部分尽量做成「可以先凑合、之后补齐」——故障就只砸中一小块。</p>
-<h2>带来了什么？</h2>
+<h2 data-tts="9a89e6dfc06ef66d">带来了什么？</h2>
 <p>一年后，Brewer 把这里的取舍正式提炼成 <strong>CAP</strong>：一致、可用、分区容错，三者不可兼得。今天几乎所有大规模服务的「降级」「限流保核心」「最终一致」「成功率 SLO」，思想都能追到这篇。诚实说一句代价：这套「答一半也行」只对搜索、推荐这类<strong>软性场景</strong>管用；查银行余额时，一个不完整或过时的答案就是错的，宁可不答。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="de9eccba7a232383">一句话记住</h2>
 <div class="tl">
 <p>别把「可用」当开关；把它拆成「答上了几个」（产出率）和「答得多完整」（收获度）两把旋钮——故障来时，选择怎样优雅地坏一点，而不是整个倒下。</p>
 </div>
 <p class="switch-hint">想看 DQ 原则、复制 vs 划分的机制图与 CAP 的来龙去脉？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="a8f56588e33e20a9">一句话</h2>
 <p class="lead">1999 年 Fox 与 Brewer 指出：大规模服务的「可用性」不该是非黑即白的开关，而应拆成两个可度量、可交易的量——<strong>产出率（yield，成功完成的请求占比）</strong>与<strong>收获度（harvest，单个回答里覆盖到的数据占比）</strong>。据此把「故障时怎么办」从「要么撑住、要么倒下」变成一道显式的选择题：同一场故障，可以选择降低收获度（答案不完整但照样答）或降低产出率（答少一点但答全），从而优雅降级、在故障与分区中仍尽量可用。这篇短文也第一次成文地摆出「强一致与高可用不可兼得」的取舍——一年后被 Brewer 提炼为 <strong>CAP 定理</strong>。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="9c7b1b5981e72d9b">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>可用性（availability）</strong>：系统能正常响应请求的能力。传统上按「正常运行时间百分比」（uptime）衡量。</li>
@@ -79,9 +80,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>CAP 定理</strong>：一致（Consistency）、可用（Availability）、分区容错（Partition tolerance）三者在发生分区时最多取其二——本文是它的思想雏形。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="ec0f4d96c88c7cc7">坐标</h2>
 <p>作者 Armando Fox 与 Eric Brewer，均来自加州大学伯克利分校；文章是 1999 年 HotOS-VII 研讨会上的一篇<strong>立场短文（position paper）</strong>，篇幅很小、志在提出框架而非做实验。Brewer 此前联合创办搜索引擎公司 Inktomi、亲历大规模集群服务的工程，本文的例子多以搜索集群为背景。它上承作者们更早的集群服务工作（1997 年提出 BASE 思路的 Cluster-Based Scalable Network Services），下启 2000 年 Brewer 在 PODC 的 CAP 猜想与 2002 年 Gilbert–Lynch 的形式化证明——本文正是 CAP 之前那块奠基石。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="5b9b3cc20a6029fc">问题与动机</h2>
 <p>90 年代末，互联网服务规模暴涨，机器成百上千地堆，<strong>故障从「异常」变成「常态」</strong>——总有那么几台在坏。当时衡量可靠性的老办法有两处不趁手：</p>
 <ul>
 <li><strong>把「可用」当二值</strong>：系统要么在线要么下线。可一个上千台组成的服务，几乎永远处在「大部分好、少数坏」的中间态，二值描述根本抓不住它。</li>
@@ -89,30 +90,30 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>更根本的一堵墙：作者点明，<strong>强一致（所有副本随时一致）与高可用，在网络可能分区时无法兼得</strong>。网络一旦把集群切成互不通信的两半，你要么让两边都继续服务（放弃一致，各写各的），要么为保一致让一边停下（放弃可用）。这不是工程没做到位，而是硬性取舍。既然一致与可用不能全要、故障又是常态，作者主张：<strong>与其追求「永不失败」，不如设计「失败时怎样体面地降级」。</strong></p>
 <figure>
-<svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="140" y="26" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">产出率 Yield</text>
-<text x="140" y="45" fill="#7c8593" font-size="11" text-anchor="middle">答上了几个请求</text>
-<circle cx="60" cy="80" r="11" fill="#f0b429"/><circle cx="95" cy="80" r="11" fill="#f0b429"/><circle cx="130" cy="80" r="11" fill="#f0b429"/><circle cx="165" cy="80" r="11" fill="#f0b429"/><circle cx="200" cy="80" r="11" fill="#f0b429"/>
-<circle cx="60" cy="114" r="11" fill="#f0b429"/><circle cx="95" cy="114" r="11" fill="#f0b429"/><circle cx="130" cy="114" r="11" fill="#f0b429"/><circle cx="165" cy="114" r="11" fill="none" stroke="#4a5158" stroke-width="2"/><circle cx="200" cy="114" r="11" fill="none" stroke="#4a5158" stroke-width="2"/>
-<text x="140" y="160" fill="#e7ebf1" font-size="12" text-anchor="middle">10 个请求 · 答上 8 个</text>
-<text x="140" y="184" fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle">yield = 80%</text>
-<line x1="280" y1="20" x2="280" y2="196" stroke="rgba(240,180,41,0.2)"/>
-<text x="420" y="26" fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle">收获度 Harvest</text>
-<text x="420" y="45" fill="#7c8593" font-size="11" text-anchor="middle">这个答案有多完整</text>
-<rect x="322" y="82" width="185" height="30" rx="4" fill="#e8794b"/>
-<rect x="507" y="82" width="10" height="30" rx="2" fill="none" stroke="#4a5158" stroke-width="2"/>
-<text x="420" y="140" fill="#7c8593" font-size="11" text-anchor="middle">↑ 单个回答里，用到的数据 / 完整数据</text>
-<text x="420" y="162" fill="#e7ebf1" font-size="12" text-anchor="middle">覆盖 95% 数据</text>
-<text x="420" y="186" fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle">harvest = 95%</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 210" xmlns="http://www.w3.org/2000/svg">
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="140" y="26">产出率 Yield</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="140" y="45">答上了几个请求</text>
+<circle cx="60" cy="80" fill="#f0b429" r="11"></circle><circle cx="95" cy="80" fill="#f0b429" r="11"></circle><circle cx="130" cy="80" fill="#f0b429" r="11"></circle><circle cx="165" cy="80" fill="#f0b429" r="11"></circle><circle cx="200" cy="80" fill="#f0b429" r="11"></circle>
+<circle cx="60" cy="114" fill="#f0b429" r="11"></circle><circle cx="95" cy="114" fill="#f0b429" r="11"></circle><circle cx="130" cy="114" fill="#f0b429" r="11"></circle><circle cx="165" cy="114" fill="none" r="11" stroke="#4a5158" stroke-width="2"></circle><circle cx="200" cy="114" fill="none" r="11" stroke="#4a5158" stroke-width="2"></circle>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="140" y="160">10 个请求 · 答上 8 个</text>
+<text fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle" x="140" y="184">yield = 80%</text>
+<line stroke="rgba(240,180,41,0.2)" x1="280" x2="280" y1="20" y2="196"></line>
+<text fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle" x="420" y="26">收获度 Harvest</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="45">这个答案有多完整</text>
+<rect fill="#e8794b" height="30" rx="4" width="185" x="322" y="82"></rect>
+<rect fill="none" height="30" rx="2" stroke="#4a5158" stroke-width="2" width="10" x="507" y="82"></rect>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="140">↑ 单个回答里，用到的数据 / 完整数据</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="420" y="162">覆盖 95% 数据</text>
+<text fill="#e7ebf1" font-size="14" font-weight="700" text-anchor="middle" x="420" y="186">harvest = 95%</text>
 </svg>
 <figcaption>图 1 · 把「可用」拆成两把可打分的旋钮：产出率 = 答上的请求占比；收获度 = 单个答案覆盖数据的占比。中间多出「答得不那么全」的缓冲带。</figcaption>
 </figure>
-<h2>核心思想 / 方法</h2>
-<h3>一、把可用性拆成两个量：产出率与收获度</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="04f4b77fb8737c91">一、把可用性拆成两个量：产出率与收获度</h3>
 <p><strong>产出率 yield = 成功完成的请求数 ÷ 收到的请求数。</strong>它和 uptime 的差别在于<em>按请求加权</em>：高峰期垮掉，分母里请求多，yield 掉得狠，正好反映「高峰故障更贵」。直觉：yield 回答「你到底答上了几个」。</p>
 <p><strong>收获度 harvest = 回答里反映到的数据 ÷ 完整数据。</strong>它承认「回答可以是部分的」：一个搜索少扫了 5% 的库、仍返回 95% 数据里的结果，harvest = 95%。直觉：harvest 回答「你答得有多完整」。</p>
 <p>把这两者拆开，最大的收益是：<strong>故障不再只有「答」与「不答」两种结局，中间多出一整条「答得不那么全」的缓冲带</strong>，可以拿来换取「还能答」。</p>
-<h3>二、DQ 原则：容量守恒，逼你二选一</h3>
+<h3 data-tts="86cbec9bc8f4a90a">二、DQ 原则：容量守恒，逼你二选一</h3>
 <p>作者提出一个经验规律：在系统接近满载时，<strong>每个请求用到的数据量 D 与每秒请求数 Q 的乘积近似是个常数</strong>——它由系统的物理容量（内存带宽、磁盘、网络）封顶。写作 <code>D × Q ≈ 常数</code>，白话就是「数据管够和请求管够是同一块蛋糕，此消彼长」。</p>
 <p>这条规律把故障翻译成一句大白话：<strong>一场故障拿走了系统 x% 的容量，就等于把 DQ 砍掉 x%。这一刀你想砍在 D 上还是 Q 上，自己选。</strong></p>
 <ul>
@@ -121,30 +122,30 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>关键在于：<strong>DQ 逼你承认「降级不可避免」，真正的设计自由只剩「往哪降」——而这恰恰能对准业务</strong>（要完整，还是要每个都有回音）。</p>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="30" y="130" fill="#7c8593" font-size="10.5" text-anchor="middle" transform="rotate(-90 30 130)">D 数据/请求（收获度）</text>
-<text x="290" y="242" fill="#7c8593" font-size="10.5" text-anchor="middle">Q 请求/秒（产出率）· 矩形面积 = DQ 容量</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" transform="rotate(-90 30 130)" x="30" y="130">D 数据/请求（收获度）</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="290" y="242">Q 请求/秒（产出率）· 矩形面积 = DQ 容量</text>
 <!-- panel 1: full -->
-<line x1="70" y1="60" x2="70" y2="195" stroke="#4a5158"/><line x1="70" y1="195" x2="185" y2="195" stroke="#4a5158"/>
-<rect x="70" y="95" width="105" height="100" fill="rgba(240,180,41,0.28)" stroke="#f0b429"/>
-<text x="122" y="80" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">正常</text>
-<text x="122" y="215" fill="#f0b429" font-size="11.5" text-anchor="middle">DQ = 100%</text>
+<line stroke="#4a5158" x1="70" x2="70" y1="60" y2="195"></line><line stroke="#4a5158" x1="70" x2="185" y1="195" y2="195"></line>
+<rect fill="rgba(240,180,41,0.28)" height="100" stroke="#f0b429" width="105" x="70" y="95"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="122" y="80">正常</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="122" y="215">DQ = 100%</text>
 <!-- panel 2: cut D -->
-<line x1="230" y1="60" x2="230" y2="195" stroke="#4a5158"/><line x1="230" y1="195" x2="345" y2="195" stroke="#4a5158"/>
-<rect x="230" y="95" width="105" height="100" fill="none" stroke="#4a5158" stroke-dasharray="4 3"/>
-<rect x="230" y="120" width="105" height="75" fill="rgba(232,121,75,0.28)" stroke="#e8794b"/>
-<text x="282" y="80" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">保 Q，砍 D</text>
-<text x="282" y="215" fill="#e8794b" font-size="11.5" text-anchor="middle">收获度 → 75%</text>
+<line stroke="#4a5158" x1="230" x2="230" y1="60" y2="195"></line><line stroke="#4a5158" x1="230" x2="345" y1="195" y2="195"></line>
+<rect fill="none" height="100" stroke="#4a5158" stroke-dasharray="4 3" width="105" x="230" y="95"></rect>
+<rect fill="rgba(232,121,75,0.28)" height="75" stroke="#e8794b" width="105" x="230" y="120"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="282" y="80">保 Q，砍 D</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="282" y="215">收获度 → 75%</text>
 <!-- panel 3: cut Q -->
-<line x1="390" y1="60" x2="390" y2="195" stroke="#4a5158"/><line x1="390" y1="195" x2="505" y2="195" stroke="#4a5158"/>
-<rect x="390" y="95" width="105" height="100" fill="none" stroke="#4a5158" stroke-dasharray="4 3"/>
-<rect x="390" y="95" width="79" height="100" fill="rgba(232,121,75,0.28)" stroke="#e8794b"/>
-<text x="442" y="80" fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle">保 D，砍 Q</text>
-<text x="442" y="215" fill="#e8794b" font-size="11.5" text-anchor="middle">产出率 → 75%</text>
+<line stroke="#4a5158" x1="390" x2="390" y1="60" y2="195"></line><line stroke="#4a5158" x1="390" x2="505" y1="195" y2="195"></line>
+<rect fill="none" height="100" stroke="#4a5158" stroke-dasharray="4 3" width="105" x="390" y="95"></rect>
+<rect fill="rgba(232,121,75,0.28)" height="100" stroke="#e8794b" width="79" x="390" y="95"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="442" y="80">保 D，砍 Q</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="442" y="215">产出率 → 75%</text>
 </svg>
 <figcaption>图 2 · DQ 原则：满载时矩形面积（D×Q）被容量封死。一场故障削掉 25% 面积，你选择砍在 D（左，答案变浅）还是砍在 Q（右，答的数量变少）——同一场故障，两种坏法。</figcaption>
 </figure>
-<h3>三、用复制还是划分：决定你丢的是哪个量</h3>
+<h3 data-tts="23b2693095b8475c">三、用复制还是划分：决定你丢的是哪个量</h3>
 <p>同一场「坏掉一台节点」的故障，<strong>数据怎么摆，决定了你丢产出率还是丢收获度</strong>：</p>
 <ul>
 <li><strong>复制</strong>：每台都存全量。坏一台，剩下的仍有完整数据——<strong>收获度不降</strong>，但少了一台的处理能力，<strong>产出率 / 容量下降</strong>。</li>
@@ -152,35 +153,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>作者还给了个反直觉的观察：<strong>在接近满载时，复制并不能凭空变出更多容量</strong>——因为 DQ 被物理上限封死，复制和划分的总 DQ 一样。复制真正买到的不是「更大容量」，而是「故障时保住收获度」。所以复制 vs 划分不是「谁更快」，而是「你更想保住哪个量」。</p>
 <figure>
-<svg viewBox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="140" y="24" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">复制 Replication</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 230" xmlns="http://www.w3.org/2000/svg">
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="140" y="24">复制 Replication</text>
 <!-- 4 replicated servers, each full copy (4 bars) -->
 <g>
-<rect x="45" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="51" y="49" width="30" height="9" fill="#f0b429"/><rect x="51" y="61" width="30" height="9" fill="#e8794b"/><rect x="51" y="73" width="30" height="9" fill="#f0b429"/><rect x="51" y="85" width="30" height="9" fill="#e8794b"/>
-<rect x="100" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="106" y="49" width="30" height="9" fill="#f0b429"/><rect x="106" y="61" width="30" height="9" fill="#e8794b"/><rect x="106" y="73" width="30" height="9" fill="#f0b429"/><rect x="106" y="85" width="30" height="9" fill="#e8794b"/>
-<rect x="155" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="161" y="49" width="30" height="9" fill="#f0b429"/><rect x="161" y="61" width="30" height="9" fill="#e8794b"/><rect x="161" y="73" width="30" height="9" fill="#f0b429"/><rect x="161" y="85" width="30" height="9" fill="#e8794b"/>
-<rect x="210" y="42" width="42" height="66" rx="5" fill="rgba(120,60,60,0.18)" stroke="#8a4a4a" stroke-dasharray="4 3"/><line x1="214" y1="46" x2="248" y2="104" stroke="#c0524a" stroke-width="2"/><line x1="248" y1="46" x2="214" y2="104" stroke="#c0524a" stroke-width="2"/>
+<rect fill="rgba(240,180,41,0.08)" height="66" rx="5" stroke="#f0b429" width="42" x="45" y="42"></rect><rect fill="#f0b429" height="9" width="30" x="51" y="49"></rect><rect fill="#e8794b" height="9" width="30" x="51" y="61"></rect><rect fill="#f0b429" height="9" width="30" x="51" y="73"></rect><rect fill="#e8794b" height="9" width="30" x="51" y="85"></rect>
+<rect fill="rgba(240,180,41,0.08)" height="66" rx="5" stroke="#f0b429" width="42" x="100" y="42"></rect><rect fill="#f0b429" height="9" width="30" x="106" y="49"></rect><rect fill="#e8794b" height="9" width="30" x="106" y="61"></rect><rect fill="#f0b429" height="9" width="30" x="106" y="73"></rect><rect fill="#e8794b" height="9" width="30" x="106" y="85"></rect>
+<rect fill="rgba(240,180,41,0.08)" height="66" rx="5" stroke="#f0b429" width="42" x="155" y="42"></rect><rect fill="#f0b429" height="9" width="30" x="161" y="49"></rect><rect fill="#e8794b" height="9" width="30" x="161" y="61"></rect><rect fill="#f0b429" height="9" width="30" x="161" y="73"></rect><rect fill="#e8794b" height="9" width="30" x="161" y="85"></rect>
+<rect fill="rgba(120,60,60,0.18)" height="66" rx="5" stroke="#8a4a4a" stroke-dasharray="4 3" width="42" x="210" y="42"></rect><line stroke="#c0524a" stroke-width="2" x1="214" x2="248" y1="46" y2="104"></line><line stroke="#c0524a" stroke-width="2" x1="248" x2="214" y1="46" y2="104"></line>
 </g>
-<text x="140" y="132" fill="#e7ebf1" font-size="11.5" text-anchor="middle">坏 1 台 → 数据仍完整</text>
-<text x="140" y="150" fill="#f0b429" font-size="11.5" text-anchor="middle">收获度 100% · 容量（产出率）↓ 到 75%</text>
-<line x1="280" y1="34" x2="280" y2="200" stroke="rgba(240,180,41,0.2)"/>
-<text x="420" y="24" fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle">划分 Partitioning</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="140" y="132">坏 1 台 → 数据仍完整</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="140" y="150">收获度 100% · 容量（产出率）↓ 到 75%</text>
+<line stroke="rgba(240,180,41,0.2)" x1="280" x2="280" y1="34" y2="200"></line>
+<text fill="#e8794b" font-size="13" font-weight="700" text-anchor="middle" x="420" y="24">划分 Partitioning</text>
 <!-- 4 partitioned servers, each 1 shard -->
 <g>
-<rect x="325" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="331" y="73" width="30" height="21" fill="#f0b429"/>
-<rect x="380" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="386" y="73" width="30" height="21" fill="#e8794b"/>
-<rect x="435" y="42" width="42" height="66" rx="5" fill="rgba(240,180,41,0.08)" stroke="#f0b429"/><rect x="441" y="73" width="30" height="21" fill="#f0b429"/>
-<rect x="490" y="42" width="42" height="66" rx="5" fill="rgba(120,60,60,0.18)" stroke="#8a4a4a" stroke-dasharray="4 3"/><line x1="494" y1="46" x2="528" y2="104" stroke="#c0524a" stroke-width="2"/><line x1="528" y1="46" x2="494" y2="104" stroke="#c0524a" stroke-width="2"/>
+<rect fill="rgba(240,180,41,0.08)" height="66" rx="5" stroke="#f0b429" width="42" x="325" y="42"></rect><rect fill="#f0b429" height="21" width="30" x="331" y="73"></rect>
+<rect fill="rgba(240,180,41,0.08)" height="66" rx="5" stroke="#f0b429" width="42" x="380" y="42"></rect><rect fill="#e8794b" height="21" width="30" x="386" y="73"></rect>
+<rect fill="rgba(240,180,41,0.08)" height="66" rx="5" stroke="#f0b429" width="42" x="435" y="42"></rect><rect fill="#f0b429" height="21" width="30" x="441" y="73"></rect>
+<rect fill="rgba(120,60,60,0.18)" height="66" rx="5" stroke="#8a4a4a" stroke-dasharray="4 3" width="42" x="490" y="42"></rect><line stroke="#c0524a" stroke-width="2" x1="494" x2="528" y1="46" y2="104"></line><line stroke="#c0524a" stroke-width="2" x1="528" x2="494" y1="46" y2="104"></line>
 </g>
-<text x="420" y="132" fill="#e7ebf1" font-size="11.5" text-anchor="middle">坏 1 台 → 少了 ¼ 数据</text>
-<text x="420" y="150" fill="#e8794b" font-size="11.5" text-anchor="middle">收获度 ↓ 到 75% · 产出率 100%</text>
-<text x="280" y="200" fill="#7c8593" font-size="11" text-anchor="middle">满载时两者总 DQ 相同，差别只在「保哪个量」</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="420" y="132">坏 1 台 → 少了 ¼ 数据</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="420" y="150">收获度 ↓ 到 75% · 产出率 100%</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="200">满载时两者总 DQ 相同，差别只在「保哪个量」</text>
 </svg>
 <figcaption>图 3 · 同一场节点故障，摆放方式决定你丢哪个量：复制保收获度、丢容量（产出率）；划分保产出率、丢收获度。彩色块代表数据分片，打叉的是失效节点。</figcaption>
 </figure>
-<h3>四、拆成正交子系统，把强一致关进最小的笼子</h3>
+<h3 data-tts="7ba1985d5c4cce22">四、拆成正交子系统，把强一致关进最小的笼子</h3>
 <p>最后一招在架构层面：把应用拆成<strong>互相正交、独立失败的子系统</strong>，各自用自己的 harvest / yield 策略；并把「必须强一致、必须持久」的<strong>硬状态圈进尽量小的一块</strong>，其余尽量做成软状态（可重建、容忍旧值、最终一致）。这样一处故障只砸中一小块，大部分系统仍能高可用地服务。作者强调机制要<strong>正交、可组合</strong>——状态与故障都被限制在局部，不会牵一发而动全身。</p>
-<h2>关键结果</h2>
+<h2 data-tts="c1b1aeaf7c9928c2">关键结果</h2>
 <p>这是一篇 HotOS 立场短文，<strong>没有跑分表格，它的「成果」是一套沿用至今的思考框架和真实系统的印证</strong>，而非实验数字。要点：</p>
 <ul>
 <li>提出 <strong>harvest / yield</strong> 两个可度量维度，把「可用性」从二值开关变成连续谱。</li>
@@ -189,13 +190,13 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li>作者以 Inktomi 的搜索集群等大规模服务为背景论证：当部分节点失效，返回<strong>部分结果（降 harvest）好过整体不可用</strong>，这类「优雅降级」在当时的商用搜索里已经在跑。</li>
 </ul>
 <p>（本文以论证与设计原则为主，此处不杜撰具体百分比或基准数字。）</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="fd3eeeb801ddc2ea">为什么重要 / 影响</h2>
 <ul>
 <li><strong>CAP 的直接前身</strong>：本文摆出的「一致 vs 可用在分区下不可兼得」，一年后成了 Brewer 在 PODC 2000 的 CAP 猜想，2002 年由 Gilbert 与 Lynch 证明为定理。今天几乎每本分布式系统教材的取舍章节都从这里讲起。</li>
 <li><strong>给「优雅降级」以理论名分</strong>：现代大服务在过载 / 故障时降精度、给部分结果、限流保核心，这些工程直觉在本文里被讲成了可推理的设计选择。</li>
 <li><strong>通向最终一致与 NoSQL</strong>：把强一致关进最小范围、其余用软状态，正是 Dynamo 一代最终一致 NoSQL 的哲学；harvest / yield 的语言也预示了后来 SRE 用「成功率 SLO」而非「uptime」来度量服务。</li>
 </ul>
-<h2>局限与批评</h2>
+<h2 data-tts="cb508267fc11b843">局限与批评</h2>
 <ul>
 <li><strong>harvest / yield 没成为通用词汇</strong>：概念虽好，业界日常说的是 CAP、可用性「几个 9」、SLO，很少真用「收获度 / 产出率」这两个词——它更像一副有启发的透镜，而非落地标准。</li>
 <li><strong>DQ 只是近似</strong>：它假设系统接近满载、容量同质；低负载、异构请求、缓存命中差异大时并不成立，且 D 本身也难精确度量。</li>
@@ -203,7 +204,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>不是所有应用都能降 harvest</strong>：部分 / 过时的答案对搜索无妨，对账户余额、库存扣减却是错误，宁可不答。框架最适用于「软」场景。</li>
 <li><strong>形式不严格</strong>：作为立场短文，它给的是直觉与框架、没有证明；严谨性由后续 CAP 形式化工作补上。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="079c2ffc58a5fbcf">要点</h2>
 <div class="tl">
 <p>① 一句话：把「可用性」拆成产出率（答上几个）与收获度（答得多全）两个可度量、可交易的量，让故障从「撑住 / 倒下」变成「怎么优雅地降级」。</p>
 <p>② 痛点：大规模下故障是常态；二值可用抓不住「大部分好、少数坏」的中间态，uptime 又低估高峰故障；且强一致与高可用在分区下不可兼得。</p>
