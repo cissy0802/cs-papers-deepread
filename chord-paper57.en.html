@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Chord (Distributed Hash Table) — IT Paper Deep-Read Paper 57</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT PAPER DEEP-READ · PAPER 57</p>
+<h1>Chord (Distributed Hash Table / DHT)</h1>
+<p class="sub">Stoica, Morris, Karger, Kaashoek, Balakrishnan · MIT · SIGCOMM 2001</p>
+<p class="langbar"><a href="chord-paper57.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2001, a team at MIT introduced <strong>Chord</strong> to answer the most brutal question in any P2P (peer-to-peer — no central server, everyone equal) system: <strong>with millions of computers switching on and off at random, who actually holds the file I want?</strong> Chord's answer is startlingly elegant — no central directory of any kind, yet any machine can figure out "who is responsible for this thing" in just a few steps. Today BitTorrent's decentralized network, Amazon's distributed databases, and blockchain peer discovery all rest on this idea.</p>
+
+<h2>The old world's two clumsy tricks</h2>
+<p>Back then there were only two ways to find a file, both bad. One was the <strong>Napster</strong> way: run a central server that tracks "who has what" — fast to search, but shut that machine down and the whole network dies (and it was in fact sued into shutdown). The other was the <strong>Gnutella</strong> way: no center, so just <strong>ask everyone</strong> — shout "who has this file?" to all your neighbors, who shout to theirs, and so on. With many peers the network fills up with this shouting: slow, and no guarantee you ever reach the answer. <strong>Fear the single point of failure, or drown in the crowd — there had to be a third road.</strong></p>
+
+<h2>The idea: arrange everyone in a circle</h2>
+<p>Chord's idea is remarkably clean. Picture a <strong>circular street</strong> whose house numbers run from 0 up to something enormous and then wrap back to 0. Every computer takes a spot on the circle by its number; every file also gets a number and lands somewhere on the circle. There is exactly one rule: <strong>a file is kept by the first computer you meet walking clockwise from its spot.</strong> So "who is responsible for this file" needs no asking — compute the number, walk clockwise to the nearest neighbor, done.</p>
+
+<h2>How do you find it in a few steps? A "doubling address book"</h2>
+<p>A circle alone isn't fast enough: if you only know the very next neighbor, reaching a file across the circle means passing it one seat at a time — far too slow. Chord's trick is to give each computer a <strong>special address book</strong> holding the neighbors that sit <strong>1 step, 2 steps, 4, 8, 16…</strong> (each time doubling) away around the circle. To find something, you jump to whichever of those neighbors is closest to the target without overshooting — and <strong>every jump cuts the remaining distance to the target roughly in half</strong>, like a number-guessing game that always guesses the middle, or flipping to the middle of a dictionary. The upshot: even with <strong>a million machines, only about twenty hops</strong> to arrive — and each machine needs to remember only about twenty neighbors, not everyone.</p>
+
+<h2>Nobody in charge, and it still heals itself</h2>
+<p>The worst part of P2P is the churn: machines join and leave constantly. Chord doesn't "freeze the whole network and re-sort." Instead each machine <strong>periodically asks its clockwise neighbor "who's just ahead of you?"</strong> — and if a newcomer has slipped in between, quietly fixes its pointer. Who comes and goes only touches the little stretch of the circle around them; everyone else carries on. The network has <strong>no command center, yet keeps patching itself into a working map</strong>. One honest cost: during violent turmoil (masses joining and leaving at once), pointers may lag and a lookup can briefly fail or miss — and Chord only does <em>exact</em> lookups by name, not fuzzy search like a search engine.</p>
+
+<h2>Remember it in one line</h2>
+<div class="tl">
+<p>Place every machine and every file by number onto one big ring; a file belongs to "the nearest machine clockwise." Give each machine a "1, 2, 4, 8… doubling" address book, and each lookup halves the distance — so with no central server, a million machines are still reached in about twenty hops, and anyone joining or leaving disturbs only a small local stretch. This "consistent hashing on a ring" is now the bedrock of countless decentralized systems.</p>
+</div>
+<p class="switch-hint">Want the ring diagram, the finger table, and why it's O(log N)? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Chord uses <strong>consistent hashing on a ring</strong> to turn the most basic P2P problem — "given a key, who is responsible for it?" — into a fully decentralized <strong>distributed hash table (DHT)</strong>: every machine stores only <code>O(log N)</code> routing entries, any key is located in <code>O(log N)</code> hops, and as nodes constantly join and leave, a periodic <em>stabilization</em> protocol repairs the structure by itself. It collapses messy P2P lookup into a single provable, scalable, self-organizing primitive.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>P2P (peer-to-peer)</strong>: a network with no central server, where every machine is both client and server, all equal, free to join or leave at any time.</li>
+<li><strong>Hash function</strong>: squeezes any input (a name, a file) into a fixed-length, seemingly random and uniform number. The same input always yields the same number.</li>
+<li><strong>Hash table</strong>: uses the hash value as an "address," turning "find a thing" from "scan everything" into "compute where it is."</li>
+<li><strong>key / value</strong>: the name of the thing you want (key, e.g. a filename) and its content (value). A DHT handles only the "key → which machine" step.</li>
+<li><strong>Consistent hashing</strong>: a special placement so that when the number of machines changes, only a tiny slice of data moves instead of everything being re-shuffled. It is Chord's foundation.</li>
+<li><strong>Node</strong>: a machine in the network. <strong>Successor</strong>: the next node clockwise on the ring; <strong>predecessor</strong>: the node just counter-clockwise.</li>
+<li><strong>mod 2<sup>m</sup> / ring</strong>: numbers that exceed the ceiling wrap back to 0, like a clock passing 12 back to 1. Chord's identifier space is exactly such a closed circle.</li>
+<li><strong>churn</strong>: nodes frequently joining and leaving — the normal state, and biggest headache, of a P2P system.</li>
+<li><strong>DNS</strong>: the internet's "phone book," mapping domain names to IPs via layers of manually maintained servers — precisely the centralized, hierarchical scheme Chord wants to avoid.</li>
+</ul>
+</div>
+
+<h2>Coordinates</h2>
+<p>Authors Ion Stoica, Robert Morris, David Karger, M. Frans Kaashoek, and Hari Balakrishnan, all at MIT; published at SIGCOMM 2001, a landmark of the P2P and distributed-hash-table wave. It builds on the <strong>consistent hashing</strong> Karger et al. proposed in 1997 for web caching, and stands alongside the contemporaneous CAN, Pastry, and Tapestry as the "four great DHTs." It leads on to Amazon Dynamo (paper 54 in this collection), Cassandra, and a generation of eventually consistent stores, as well as later systems like the BitTorrent DHT and IPFS. Among this body of work, Chord is famous for being the <strong>simplest and most provable</strong>.</p>
+
+<h2>Problem &amp; motivation</h2>
+<p>Around 2000 P2P file sharing exploded, but the real technical hurdle was not "how to transfer a file" — it was <strong>lookup</strong>: among millions of peers coming and going, <strong>who holds the key I want?</strong> Two roads both hit walls:</p>
+<ul>
+<li><strong>Central index (Napster)</strong>: one server tracks "who has what" network-wide. Fast to query, but it is a single point of failure — and a single point to attack or shut down. Legally, a fatal handle.</li>
+<li><strong>Flooding (Gnutella)</strong>: fully decentralized, at the cost of <em>forwarding the query to all neighbors</em> and rippling outward. Message volume grows linearly (or worse) with node count (<code>O(N)</code>), with no guarantee of finding anything, and it does not scale.</li>
+</ul>
+<p>DNS-style hierarchy relies on manual administration, unfit for equal, high-churn peers. <strong>What was missing was a lookup primitive that is at once fully decentralized, scalable, and backed by a performance guarantee.</strong> Chord's first insight is to <strong>pare the problem to its essence</strong>: solve just one thing — <code>lookup(key)</code> returns the node responsible for that key. Storage, replication, caching, load balancing are all built on top of this one primitive. Get this right and the systems above become tractable.</p>
+
+<h2>Core idea / method</h2>
+
+<h3>1. Consistent hashing: keys and nodes on one ring</h3>
+<p>Chord uses a single hash function (the paper uses SHA-1, <code>m=160</code> bits) to assign an <code>m</code>-bit identifier (ID) to <strong>every key and every node</strong>, and places them on a <code>0 … 2<sup>m</sup>−1</code> closed <strong>ring</strong> (arithmetic mod <code>2<sup>m</sup></code>). The assignment rule is a single line:</p>
+<p><strong>key <code>k</code> belongs to the first node met walking clockwise from <code>k</code></strong>, called <code>successor(k)</code>.</p>
+<p>Why bother circling like this? Compare plain hashing <code>hash(key) mod N</code> (N = number of machines): the moment one machine joins or leaves, <code>N</code> changes and <strong>almost every key's location changes</strong> — a full re-shuffle. On the ring, a node joining or leaving means <strong>only the small slice of keys adjacent to it needs to move</strong> (on average <code>O(K/N)</code>, K = total keys) — everything else stays put. This is the value of consistent hashing: <em>accommodate ever-changing membership with minimal data migration</em>. The analogy is that circular street: things go to the nearest resident clockwise, and moving in or out disturbs only the next-door stretch.</p>
+
+<figure>
+<svg viewBox="0 0 560 340" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ca" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<circle cx="280" cy="172" r="120" fill="none" stroke="#7c8593" stroke-width="1.4" stroke-dasharray="2 4"></circle>
+<text x="280" y="40" fill="#7c8593" font-size="11" text-anchor="middle">0 / 2ᵐ (ring wraps around)</text>
+<g fill="#f0b429">
+<circle cx="291" cy="53" r="6"></circle>
+<circle cx="365" cy="98" r="6"></circle>
+<circle cx="398" cy="172" r="6"></circle>
+<circle cx="371" cy="238" r="6"></circle>
+<circle cx="280" cy="292" r="6"></circle>
+<circle cx="222" cy="256" r="6"></circle>
+<circle cx="160" cy="172" r="6"></circle>
+<circle cx="206" cy="98" r="6"></circle>
+</g>
+<g fill="#e7ebf1" font-size="12" font-weight="700">
+<text x="291" y="44" text-anchor="middle">N1</text>
+<text x="381" y="94" text-anchor="start">N8</text>
+<text x="412" y="176" text-anchor="start">N14</text>
+<text x="385" y="252" text-anchor="start">N21</text>
+<text x="280" y="312" text-anchor="middle">N32</text>
+<text x="206" y="272" text-anchor="end">N38</text>
+<text x="146" y="176" text-anchor="end">N48</text>
+<text x="196" y="92" text-anchor="end">N56</text>
+</g>
+<circle cx="182" cy="118" r="4.5" fill="#e8794b"></circle>
+<text x="150" y="120" fill="#e8794b" font-size="11.5" text-anchor="end">key 54</text>
+<path d="M186,114 C196,104 200,100 205,99" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#ca)"></path>
+<text x="280" y="172" fill="#7c8593" font-size="11.5" text-anchor="middle">clockwise →</text>
+<text x="280" y="190" fill="#7c8593" font-size="10.5" text-anchor="middle">key goes to "first node clockwise"</text>
+</svg>
+<figcaption>Fig 1 · The Chord ring: nodes and keys placed by the same hash. key 54's first node clockwise is N56, so N56 is responsible for it. A join/leave affects only the adjacent slice.</figcaption>
+</figure>
+
+<h3>2. Successor pointers for correctness, finger table for speed</h3>
+<p>The most naive lookup: each node only needs to know its <strong>successor</strong>, and passes the request forward one seat at a time around the ring — it always reaches the responsible node. <strong>Correct, but slow</strong>: worst case walks the whole ring, <code>O(N)</code> steps.</p>
+<p>The key to speed is to also store, at each node <code>n</code>, an <code>m</code>-entry <strong>finger table</strong>. Entry <code>i</code> points to:</p>
+<p><code>finger[i] = successor(n + 2<sup>i−1</sup>)</code> — the responsible node at distance <strong>1, 2, 4, 8, 16…</strong> around the ring, distances growing <strong>exponentially</strong>. To look up, a node no longer shuffles step by step; it <strong>jumps to the finger that is closest to the target key without overshooting it</strong>, and hands the request there. Each jump <strong>at least halves</strong> the remaining distance to the target — exactly the flavor of binary search. So among <code>N</code> nodes, any lookup takes <strong>an expected <code>O(log N)</code> hops</strong>, while each machine remembers only <code>O(log N)</code> neighbors, never the whole network. This is Chord's core bargain: a ridiculously small routing table bought for logarithmic lookup.</p>
+
+<figure>
+<svg viewBox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="cb" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<line x1="40" x2="520" y1="180" y2="180" stroke="#7c8593" stroke-width="1.4"></line>
+<circle cx="40" cy="180" r="5" fill="#f0b429"></circle>
+<text x="40" y="202" fill="#e7ebf1" font-size="12" text-anchor="middle">query origin n</text>
+<circle cx="500" cy="180" r="5" fill="#e8794b"></circle>
+<text x="500" y="202" fill="#e8794b" font-size="12" text-anchor="middle">target key</text>
+<path d="M40,180 C120,90 240,90 270,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<path d="M270,180 C330,116 400,116 385,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<path d="M385,180 C420,140 460,140 443,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<path d="M443,180 C462,158 486,158 497,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<text x="150" y="70" fill="#f0b429" font-size="11.5" text-anchor="middle">jump ~½ distance</text>
+<text x="330" y="98" fill="#f0b429" font-size="11.5" text-anchor="middle">then ½</text>
+<text x="430" y="128" fill="#f0b429" font-size="11.5" text-anchor="middle">then ½</text>
+<text x="280" y="35" fill="#e7ebf1" font-size="12.5" text-anchor="middle">each hop at least halves the remaining distance → ~log N hops</text>
+<rect x="40" y="216" width="480" height="26" rx="5" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.3)"></rect>
+<text x="280" y="233" fill="#b9c0ca" font-size="11.5" text-anchor="middle">finger[i] = successor(n + 2ⁱ⁻¹): points to nodes +1 +2 +4 +8 +16 … steps away</text>
+</svg>
+<figcaption>Fig 2 · The finger table makes lookup binary-search-like: with "distance-doubling" fingers, each hop halves the remaining distance — O(log N) hops among N nodes, and a routing table only O(log N) in size.</figcaption>
+</figure>
+
+<h3>3. Stabilization: self-repair as nodes come and go</h3>
+<p>In a real network nodes join and leave all the time (churn), so routing state goes stale. Chord's philosophy is <strong>not to chase instantaneous global consistency, but to converge eventually</strong>. The division of labor is clear:</p>
+<ul>
+<li><strong>Successor pointers own correctness and must be fixed promptly.</strong> Each node periodically runs <code>stabilize</code>: it asks its successor "who is your predecessor?" — and if a new node has appeared in between, it updates its successor to this closer newcomer and <code>notify</code>s that node to accept it as predecessor. As long as successor pointers are right, lookups <em>never return a wrong result</em>, at worst a slower one.</li>
+<li><strong>The finger table owns speed; being wrong is fine, fix it lazily.</strong> A separate periodic <code>fix_fingers</code> refreshes the table entry by entry. A momentarily stale finger merely costs a lookup a few extra hops — it never breaks correctness.</li>
+<li><strong>A successor list guards against sudden death.</strong> Each node keeps several successors-of-successors, so if its immediate successor drops offline abruptly, a backup steps in at once and the ring doesn't break.</li>
+</ul>
+<p>This layered design — "correctness rides on one pointer that must be right, performance rides on a batch of pointers that can be fixed lazily" — lets Chord <strong>self-organize and self-heal</strong> with no central coordinator: any join or leave requires only a handful of local machines to update state.</p>
+
+<h2>Key results</h2>
+<p>The paper offers <strong>theoretical guarantees plus simulation</strong>:</p>
+<ul>
+<li><strong>Provable complexity</strong>: in an <code>N</code>-node system, each node's routing table is <code>O(log N)</code>; any lookup, <strong>with high probability</strong>, needs only <code>O(log N)</code> hops; a single join/leave takes <code>O(log²N)</code> messages to bring the relevant state up to date.</li>
+<li><strong>Simulation matches theory</strong>: in simulations up to roughly tens of thousands of nodes, the average lookup path is about <code>½·log₂N</code> hops, consistent with the analysis; hop count grows very slowly (logarithmically) with <code>N</code>.</li>
+<li><strong>Failure resilience</strong>: with the successor list, even when a substantial fraction of nodes <strong>fail simultaneously</strong>, lookups still succeed with high probability and the system recovers.</li>
+<li><strong>Load balance</strong>: consistent hashing gives each node roughly <code>K/N</code> keys; to smooth out the hash's randomness, assign each physical machine <code>O(log N)</code> "virtual nodes," and load evens out.</li>
+</ul>
+<p>To be honest: these conclusions rest on <strong>simulation and probabilistic analysis</strong> at limited scale, and assume nodes behave honestly — not measurements from a large real-world internet deployment.</p>
+
+<h2>Why it matters / impact</h2>
+<p>Chord distilled "<strong>consistent hashing + a ring + <code>O(log N)</code> routing</strong>" into shared vocabulary for distributed systems, and is one of the founding DHT works. Its lineage is plain to see: Amazon <strong>Dynamo</strong> (paper 54 here), <strong>Cassandra</strong>, and Riak — that generation of eventually consistent NoSQL — distribute data using exactly "a consistent-hashing ring plus virtual nodes"; P2P storage and content distribution (IPFS and others) and decentralized peer discovery are all built atop DHTs. Deeper still is the <strong>research paradigm</strong> it demonstrates: take a tangled systems problem, abstract it into a <em>minimal primitive with provable performance</em>, and build the system on top. It is required reading in distributed-systems courses and has been cited tens of thousands of times.</p>
+
+<h2>Limitations &amp; criticism</h2>
+<ul>
+<li><strong>No defense against malicious nodes</strong>: Chord assumes honest participants. Against Sybil attacks (one party forging many identities), malicious routing/dropping, or data poisoning, it offers no protection — it is <strong>not Byzantine-tolerant</strong>. Secure DHTs were a large body of follow-up work.</li>
+<li><strong>Fragile under heavy churn</strong>: stabilization is eventually consistent; during violent churn, before pointers are repaired a lookup may fail or return a stale result. Correctness is guaranteed only once successor pointers are correct.</li>
+<li><strong>Ignores physical network location</strong>: "adjacency" on the ring is by ID only, not real network distance — one hop might jump from Beijing straight to Brazil, piling up latency. Pastry/Tapestry factor network proximity into routing; Chord only added proximity heuristics later.</li>
+<li><strong>Exact-match only</strong>: <code>lookup(key)</code> can pinpoint just one key — it inherently cannot do range queries or prefix/keyword search. That is the built-in cost of hash placement.</li>
+<li><strong>Industry mostly settled on Kademlia</strong>: real large-scale DHT deployments (BitTorrent's Mainline DHT, IPFS, Ethereum peer discovery) mostly chose <strong>Kademlia</strong> — its XOR distance metric is symmetric, its routing table is simpler to maintain, and it tolerates churn more gracefully. Chord reads more as "the clearest classic in the textbook" than the deployed winner.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: Chord is a fully decentralized DHT solving one primitive, <code>lookup(key)→responsible node</code>, with <code>O(log N)</code> routing per machine and <code>O(log N)</code> hops per lookup.</p>
+<p>② Pain: P2P lookup was either a central index (single point of failure / shutdown) or flooding (<code>O(N)</code> messages, no guarantee) — missing a decentralized, scalable, guaranteed primitive.</p>
+<p>③ Consistent hashing + ring: keys and nodes hashed onto a <code>2<sup>m</sup></code> ring; a key goes to "the first node clockwise (successor)"; a join/leave moves only the adjacent slice of keys (<code>O(K/N)</code>).</p>
+<p>④ Correctness via successor: each node knows its successor; forwarding around the ring always finds the target — correct but <code>O(N)</code> slow.</p>
+<p>⑤ Speed via finger table: <code>finger[i]=successor(n+2<sup>i−1</sup>)</code>, distances doubling; a lookup jumps to the nearest finger not past the target, halving the distance each hop → <code>O(log N)</code> hops.</p>
+<p>⑥ Self-healing via stabilization: successor pointers fixed periodically (correctness), finger table fixed lazily (speed), successor list against sudden death; no central coordinator, only local updates.</p>
+<p>⑦ Results: <code>O(log N)</code> lookup / <code>O(log²N)</code> join in theory; simulation agrees; resilient to large simultaneous failures; virtual nodes smooth load.</p>
+<p>⑧ Impact: the consistent-hashing ring became the bedrock of a generation of NoSQL (Dynamo/Cassandra) and P2P systems; a model for "abstract into a provable minimal primitive."</p>
+<p>⑨ Limits: no defense against malicious nodes, fragile under heavy churn, ignores physical proximity, exact-match only; large-scale DHTs mostly use Kademlia.</p>
+</div>
+</div>
+
+<footer>IT Paper Deep-Read · Finish this page ≈ grasp the paper's core; for the full pseudocode and proofs, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Chord（分布式哈希表）— IT 论文精读 Paper 57</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 57</p>
+<h1>Chord（分布式哈希表 / DHT）</h1>
+<p class="sub">Stoica, Morris, Karger, Kaashoek, Balakrishnan · MIT · SIGCOMM 2001</p>
+<p class="langbar"><a href="chord-paper57.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2001 年，MIT 一队人提出了 <strong>Chord</strong>，回答一个 P2P（点对点，就是没有中央服务器、大家平等互联）系统里最要命的问题：<strong>几百万台随时开机关机的电脑，我要的那个文件到底在谁手上？</strong>Chord 给出的答案优雅得出奇——不需要任何中央目录，任意一台机器几步之内就能算出「谁负责这个东西」。今天 BitTorrent 的去中心网络、Amazon 的分布式数据库、区块链的节点发现，用的都是它这一套的思路。</p>
+
+<h2>旧世界的两个笨办法</h2>
+<p>当年找文件只有两条路，都不好走。一条是 <strong>Napster</strong> 式：搞一台中央服务器记着「谁有什么」——查得快，但这台机器一被关，整个网络就瘫了（后来它真被告到关停）。另一条是 <strong>Gnutella</strong> 式：没有中央，那就<strong>挨个问</strong>——把「谁有这文件」喊给所有邻居，邻居再喊给邻居……人一多，网络里全是这种喊话，又慢又不保证能问到。<strong>要么怕单点垮、要么怕人海战术，得有个第三条路。</strong></p>
+
+<h2>那个点子：把所有人排成一个圈</h2>
+<p>Chord 的想法特别干净。想象一条<strong>环形的街道</strong>，门牌号从 0 一直排到很大很大，再绕回 0。每台电脑按自己的编号站到圈上某个位置；每个文件也按它名字算出一个编号、落在圈上某处。规矩只有一条：<strong>一个文件，交给从它那个位置开始、顺时针走遇到的第一台电脑保管。</strong>于是「谁负责这个文件」不用问任何人——算一下编号、顺时针找最近的邻居就是了。</p>
+
+<h2>怎么几步就找到？一本「翻倍地址簿」</h2>
+<p>光有圈还不够快：要是只认识圈上紧挨着的下一位，找个对面的文件得沿圈一位一位地传，太慢。Chord 的妙招是给每台电脑一本<strong>特别的地址簿</strong>：里面记着圈上离自己 <strong>1 步、2 步、4 步、8 步、16 步……</strong>（每次翻倍）远处的那些邻居。找东西时，就朝「不越过目标、又离目标最近」的那位一跳——<strong>每跳都能把到目标的剩余距离砍掉一半</strong>，像猜数字游戏里每次猜中间、或翻字典每次翻一半。这样一来，哪怕圈上有<strong>一百万台机器，也只要二十来跳</strong>就找到；而每台机器只需记住二十来个邻居，不用认识所有人。</p>
+
+<h2>没人指挥，还能自己长好</h2>
+<p>P2P 最烦的是人来人往：随时有机器上线下线。Chord 不搞「全网停下来重排」，而是让每台机器<strong>时不时问一句后邻「你前面那位是谁」</strong>——发现中间新来了一位，就悄悄把指针改对。谁进谁出，只影响圈上它左右那一小段，其余人照常。整个网络<strong>没有指挥中心，却能自己不断修补、长成一张能用的图</strong>。诚实说一句代价：动荡特别剧烈（大量机器同时进出）时，指针一时没修好，可能短暂找不到或找错；而且它只会「精确地找某个名字」，不会像搜索引擎那样模糊搜。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>把所有机器和所有文件按编号摆到一个大圆环上，文件归「顺时针最近的那台机器」；再给每台机器一本「1、2、4、8…翻倍」的地址簿，找东西时一跳砍一半距离——于是没有中央服务器，百万台机器也二十来跳就定位，谁进谁出只惊动身边一小段。这套「一致性哈希 + 环」如今是无数去中心系统的地基。</p>
+</div>
+<p class="switch-hint">想看 Chord 环的结构图、指针表和 O(log N) 的道理？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Chord 用「<strong>一致性哈希（consistent hashing）+ 环</strong>」把 P2P 系统里最基础的问题——「给定一个 key，谁负责它」——做成一个完全去中心的<strong>分布式哈希表（DHT，distributed hash table）</strong>：每台机器只存 <code>O(log N)</code> 条路由，任意 key 都能在 <code>O(log N)</code> 跳内定位；节点不断进出时，靠一个叫 <em>stabilization</em> 的周期性协议自我修补。它把混乱的 P2P 查找收敛成一个可证明、可扩展、能自组织的最小原语。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>P2P（点对点，peer-to-peer）</strong>：没有中央服务器的网络，每台机器既当客户端又当服务器、地位平等，随时可加入或退出。</li>
+<li><strong>哈希函数（hash）</strong>：把任意输入（一个名字、一个文件）压成一个固定长度、看起来随机均匀的数字。相同输入永远得到相同数字。</li>
+<li><strong>哈希表（hash table）</strong>：用哈希值当「地址」，把「找一样东西」从「挨个翻」变成「直接算出它在哪」。</li>
+<li><strong>key / value</strong>：要找的东西的名字（key，如文件名）和它对应的内容（value）。DHT 只负责「key → 哪台机器」这一步。</li>
+<li><strong>一致性哈希（consistent hashing）</strong>：一种特殊摆法，让机器数目变化时只需搬动极少数据，而不是全部重排。是 Chord 的地基。</li>
+<li><strong>节点（node）</strong>：网络里的一台机器。<strong>后继（successor）</strong>：环上顺时针方向紧挨着的下一个节点；<strong>前驱（predecessor）</strong>：逆时针紧挨着的上一个。</li>
+<li><strong>取模 / 环（mod 2<sup>m</sup>）</strong>：数字超过上限就绕回 0，像钟表过了 12 点回到 1。Chord 的编号空间就是这样一个首尾相接的圆环。</li>
+<li><strong>churn（流失）</strong>：节点频繁地上线、下线，是 P2P 系统的常态与最大麻烦。</li>
+<li><strong>DNS</strong>：互联网的「电话簿」，把域名翻成 IP，靠一层层人工维护的服务器——正是 Chord 想避开的中心化、层级式方案。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者 Ion Stoica、Robert Morris、David Karger、M. Frans Kaashoek、Hari Balakrishnan，均来自 MIT，论文发表于 SIGCOMM 2001，是 P2P 与分布式哈希表浪潮的代表作之一。它上承 Karger 等 1997 年为 Web 缓存提出的<strong>一致性哈希</strong>，与同期的 CAN、Pastry、Tapestry 并称「四大 DHT」；下启 Amazon Dynamo（本仓 paper54）、Cassandra 等一代最终一致存储，以及后来的 BitTorrent DHT、IPFS 等去中心系统。Chord 在这批工作里以<strong>最简洁、最可证明</strong>著称。</p>
+
+<h2>问题与动机</h2>
+<p>2000 年前后 P2P 文件分享爆发，但真正的技术难题不是「怎么传文件」，而是<strong>查找（lookup）</strong>：在几百万台随时进出的对等机器里，<strong>谁持有我要的那个 key？</strong>当时两条路都撞墙：</p>
+<ul>
+<li><strong>中央索引（Napster）</strong>：一台服务器记着全网「谁有什么」。查得快，但它是单点故障、也是单点被攻击/被关停的把柄——法律上一击致命。</li>
+<li><strong>洪泛（Gnutella）</strong>：完全去中心，代价是把查询<em>转发给所有邻居</em>、层层扩散。消息量随节点数线性甚至更差地涨（<code>O(N)</code>），既不保证找到、也扩展不了。</li>
+</ul>
+<p>DNS 那种层级式方案又依赖人工管理、不适合平等且高流失的节点。<strong>缺的是一个既完全去中心、又可扩展、还能给出性能保证的查找原语。</strong>Chord 的第一个洞见就是<strong>把问题削到最干净</strong>：只解决一件事——<code>lookup(key)</code> 返回负责该 key 的节点；存储、复制、缓存、负载均衡全都建在这个原语之上。做对这一件事，上面的系统就好办了。</p>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>一、一致性哈希：把 key 和节点摆到同一个环上</h3>
+<p>Chord 用同一个哈希函数（论文用 SHA-1，<code>m=160</code> 位）给<strong>每个 key 和每台节点</strong>都算一个 <code>m</code> 位标识符（ID），摆到一个 <code>0 … 2<sup>m</sup>−1</code> 首尾相接的<strong>环</strong>上（对 <code>2<sup>m</sup></code> 取模）。分配规则只有一条：</p>
+<p><strong>key <code>k</code> 归给从 <code>k</code> 出发、顺时针遇到的第一个节点</strong>，称作 <code>successor(k)</code>。</p>
+<p>为什么非要绕这么一圈？对比普通哈希 <code>hash(key) mod N</code>（N=机器台数）：只要有一台机器进出，<code>N</code> 一变，<strong>几乎所有 key 的落点全变</strong>，得整体大搬家。而在环上，一个节点加入或离开，<strong>只有它环上相邻的那一小段 key 需要转移</strong>（平均 <code>O(K/N)</code>，K 是 key 总数）——其余数据纹丝不动。这正是「一致性哈希」的价值：<em>用最小的数据迁移，容纳不停变化的成员</em>。类比就是那条环形街道：东西交给顺时针最近的住户，搬进搬出只惊动隔壁。</p>
+
+<figure>
+<svg viewBox="0 0 560 340" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ca" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<circle cx="280" cy="172" r="120" fill="none" stroke="#7c8593" stroke-width="1.4" stroke-dasharray="2 4"></circle>
+<text x="280" y="40" fill="#7c8593" font-size="11" text-anchor="middle">0 / 2ᵐ（环首尾相接）</text>
+<!-- nodes -->
+<g fill="#f0b429">
+<circle cx="291" cy="53" r="6"></circle>
+<circle cx="365" cy="98" r="6"></circle>
+<circle cx="398" cy="172" r="6"></circle>
+<circle cx="371" cy="238" r="6"></circle>
+<circle cx="280" cy="292" r="6"></circle>
+<circle cx="222" cy="256" r="6"></circle>
+<circle cx="160" cy="172" r="6"></circle>
+<circle cx="206" cy="98" r="6"></circle>
+</g>
+<g fill="#e7ebf1" font-size="12" font-weight="700">
+<text x="291" y="44" text-anchor="middle">N1</text>
+<text x="381" y="94" text-anchor="start">N8</text>
+<text x="412" y="176" text-anchor="start">N14</text>
+<text x="385" y="252" text-anchor="start">N21</text>
+<text x="280" y="312" text-anchor="middle">N32</text>
+<text x="206" y="272" text-anchor="end">N38</text>
+<text x="146" y="176" text-anchor="end">N48</text>
+<text x="196" y="92" text-anchor="end">N56</text>
+</g>
+<!-- key -->
+<circle cx="182" cy="118" r="4.5" fill="#e8794b"></circle>
+<text x="150" y="120" fill="#e8794b" font-size="11.5" text-anchor="end">key 54</text>
+<path d="M186,114 C196,104 200,100 205,99" fill="none" stroke="#e8794b" stroke-width="1.6" marker-end="url(#ca)"></path>
+<text x="280" y="172" fill="#7c8593" font-size="11.5" text-anchor="middle">顺时针 →</text>
+<text x="280" y="190" fill="#7c8593" font-size="10.5" text-anchor="middle">key 归「顺时针第一个节点」</text>
+</svg>
+<figcaption>图 1 · Chord 环：节点与 key 用同一哈希摆上环。key 54 顺时针遇到的第一个节点是 N56，于是 N56 负责它。节点进出只影响相邻一小段。</figcaption>
+</figure>
+
+<h3>二、后继指针保「对」，指针表保「快」</h3>
+<p>最朴素的查找：每个节点只要知道自己的 <strong>后继（successor）</strong>，把请求沿环一位一位往前传，总能传到负责节点手里——<strong>正确，但慢</strong>，最坏要走遍整圈 <code>O(N)</code> 步。</p>
+<p>加速的关键，是给每个节点 <code>n</code> 再存一张 <code>m</code> 条的<strong>指针表（finger table，直译「手指表」）</strong>。第 <code>i</code> 条指向：</p>
+<p><code>finger[i] = successor(n + 2<sup>i−1</sup>)</code>，即环上离自己 <strong>1、2、4、8、16…</strong> 步远处的那个负责节点——距离<strong>指数增长</strong>。查找时，节点不再一步步挪，而是<strong>跳到指针表里「不越过目标 key、又离它最近」的那根 finger</strong>，把请求交给它继续找。每跳一次，「到目标的剩余距离」至少<strong>减半</strong>——正是二分查找的味道。于是 <code>N</code> 个节点里，任意查找 <strong>期望 <code>O(log N)</code> 跳</strong>；而每台机器只需记住 <code>O(log N)</code> 个邻居，不必认识全网。这就是 Chord 用「小得离谱的路由表」换「对数级查找」的核心账。</p>
+
+<figure>
+<svg viewBox="0 0 560 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="cb" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<line x1="40" x2="520" y1="180" y2="180" stroke="#7c8593" stroke-width="1.4"></line>
+<circle cx="40" cy="180" r="5" fill="#f0b429"></circle>
+<text x="40" y="202" fill="#e7ebf1" font-size="12" text-anchor="middle">查询发起节点 n</text>
+<circle cx="500" cy="180" r="5" fill="#e8794b"></circle>
+<text x="500" y="202" fill="#e8794b" font-size="12" text-anchor="middle">目标 key</text>
+<!-- halving jumps -->
+<path d="M40,180 C120,90 240,90 270,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<path d="M270,180 C330,116 400,116 385,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<path d="M385,180 C420,140 460,140 443,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<path d="M443,180 C462,158 486,158 497,175" fill="none" stroke="#f0b429" stroke-width="1.8" marker-end="url(#cb)"></path>
+<text x="150" y="70" fill="#f0b429" font-size="11.5" text-anchor="middle">跳 ~½ 距离</text>
+<text x="330" y="98" fill="#f0b429" font-size="11.5" text-anchor="middle">再 ½</text>
+<text x="430" y="128" fill="#f0b429" font-size="11.5" text-anchor="middle">再 ½</text>
+<text x="280" y="35" fill="#e7ebf1" font-size="12.5" text-anchor="middle">每跳距离至少减半 → 约 log N 跳到达</text>
+<!-- finger table box -->
+<rect x="40" y="216" width="480" height="26" rx="5" fill="rgba(240,180,41,0.06)" stroke="rgba(240,180,41,0.3)"></rect>
+<text x="280" y="233" fill="#b9c0ca" font-size="11.5" text-anchor="middle">指针表 finger[i] = successor(n + 2ⁱ⁻¹)：指向 +1 +2 +4 +8 +16 … 步远的节点</text>
+</svg>
+<figcaption>图 2 · 指针表让查找像二分：借「距离翻倍」的手指，每一跳把到目标的剩余距离砍半，N 个节点里 O(log N) 跳定位，路由表也只 O(log N) 大。</figcaption>
+</figure>
+
+<h3>三、stabilization：节点进出时自我修补</h3>
+<p>真实网络里节点随时上线下线（churn），路由信息会过时。Chord 的哲学是<strong>不追求瞬间全网一致，而是最终修正</strong>。做法分工明确：</p>
+<ul>
+<li><strong>后继指针管「正确性」，必须尽快修对。</strong>每个节点周期性跑 <code>stabilize</code>：问自己的后继「你的前驱是谁？」——如果发现中间冒出了新节点，就把后继更新成这个更近的新节点，并 <code>notify</code> 对方来认自己作前驱。只要后继指针对，查找就永远<em>不会出错</em>，最多慢一点。</li>
+<li><strong>指针表管「速度」，错了无妨、慢慢修。</strong>另有周期性的 <code>fix_fingers</code> 逐条刷新指针表。某根 finger 一时过时，顶多让某次查找多绕几跳，不影响正确性。</li>
+<li><strong>后继列表（successor list）防猝死。</strong>每个节点多存后继的后继若干个，万一直接后继突然掉线，能立刻顶上、不至于断环。</li>
+</ul>
+<p>这套「正确性靠一根必须修对的指针、性能靠一批可以慢慢修的指针」的分层设计，让 Chord 在没有任何中央协调者的情况下<strong>自组织、自愈</strong>——谁进谁出，只需局部几台机器更新状态。</p>
+
+<h2>关键结果</h2>
+<p>论文给的是<strong>理论保证 + 仿真验证</strong>：</p>
+<ul>
+<li><strong>可证明的复杂度</strong>：<code>N</code> 节点系统中，每节点路由表 <code>O(log N)</code>；任意查找<strong>大概率</strong>只需 <code>O(log N)</code> 跳；一次节点加入/离开只需 <code>O(log²N)</code> 条消息把相关状态更新好。</li>
+<li><strong>仿真吻合理论</strong>：在最多约上万节点的仿真里，平均查找路径长约 <code>½·log₂N</code> 跳，与分析一致；查找跳数随 <code>N</code> 增长得非常慢（对数级）。</li>
+<li><strong>抗失效</strong>：配合后继列表，即便相当比例的节点<strong>同时失效</strong>，查找仍以高概率成功、系统能自我恢复。</li>
+<li><strong>负载均衡</strong>：一致性哈希让每节点约负责 <code>K/N</code> 个 key；为抹平哈希的随机不均，可给每台物理机分配 <code>O(log N)</code> 个「虚拟节点」，负载随之趋匀。</li>
+</ul>
+<p>诚实地说：这些结论建立在<strong>仿真与概率分析</strong>之上，规模有限、且假设节点行为诚实——不是大规模真实互联网部署的实测。</p>
+
+<h2>为什么重要 / 影响</h2>
+<p>Chord 把「<strong>一致性哈希 + 环 + <code>O(log N)</code> 路由</strong>」提炼成分布式系统的通用词汇，是 DHT 的奠基作之一。它的血脉清晰可见：Amazon <strong>Dynamo</strong>（本仓 paper54）、<strong>Cassandra</strong>、Riak 这一代最终一致 NoSQL，数据分布用的正是「一致性哈希环 + 虚拟节点」；P2P 存储与内容分发（IPFS 等）、各类去中心网络的节点发现，都建在 DHT 之上。更深远的是它示范的<strong>研究范式</strong>：把一个纷乱的系统难题，抽象成一个<em>可证明性能的最小原语</em>，再在其上搭系统。它是分布式系统课程的必读、被引用数以万计。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>不设防恶意节点</strong>：Chord 假设节点诚实。面对 Sybil 攻击（一人伪造大量身份）、恶意路由/丢弃、数据投毒，它没有任何保护——<strong>非拜占庭容错</strong>。安全的 DHT 是后续大量工作要补的坑。</li>
+<li><strong>高流失下脆弱</strong>：stabilization 是最终一致的；在剧烈 churn 期间，指针尚未修好时查找可能失败或返回过时结果。正确性只在后继指针都修对后才被保证。</li>
+<li><strong>忽略物理网络位置</strong>：环上「相邻」只看 ID，不看真实网络距离——一跳可能从北京直接跳到巴西，累积延迟高。Pastry/Tapestry 在路由中考虑网络就近性，Chord 是后来才补 proximity 启发式。</li>
+<li><strong>只支持精确匹配</strong>：<code>lookup(key)</code> 只能精确定位一个 key，天然做不了范围查询、前缀/关键词搜索——这是哈希摆放的固有代价。</li>
+<li><strong>工业界最终多用 Kademlia</strong>：真实的大规模 DHT 部署（BitTorrent Mainline DHT、IPFS、以太坊节点发现）大多选了 <strong>Kademlia</strong>——它的 XOR 距离度量对称、路由表维护更简单、对 churn 更宽容。Chord 更像「教科书里最清晰的经典」，而非落地赢家。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：Chord 是一个完全去中心的分布式哈希表，只解决 <code>lookup(key)→负责节点</code> 一个原语，每机存 <code>O(log N)</code> 路由、任意查找 <code>O(log N)</code> 跳。</p>
+<p>② 痛点：P2P 查找要么中央索引（单点故障/被关停），要么洪泛（<code>O(N)</code> 消息、不保证找到）——缺一个去中心又可扩展、有保证的原语。</p>
+<p>③ 一致性哈希 + 环：key 和节点用同一哈希摆到 <code>2<sup>m</sup></code> 环上，key 归「顺时针第一个节点（successor）」；节点进出只搬相邻一小段 key（<code>O(K/N)</code>）。</p>
+<p>④ 正确靠后继：每个节点知道后继，沿环传递必能找到——正确但 <code>O(N)</code> 慢。</p>
+<p>⑤ 快靠指针表：<code>finger[i]=successor(n+2<sup>i−1</sup>)</code>，距离翻倍；查找跳到不越目标的最近 finger，每跳砍半距离 → <code>O(log N)</code> 跳。</p>
+<p>⑥ 自愈靠 stabilization：后继指针周期性修（保正确）、指针表慢慢修（保速度）、后继列表防猝死；无中央协调、局部更新。</p>
+<p>⑦ 结果：理论 <code>O(log N)</code> 查找 / <code>O(log²N)</code> 加入；仿真吻合、抗大比例同时失效；虚拟节点抹平负载。</p>
+<p>⑧ 影响：一致性哈希环成为 Dynamo/Cassandra 等一代 NoSQL 与 P2P 系统的地基；示范「抽象成可证明最小原语」的范式。</p>
+<p>⑨ 局限：不防恶意节点、高 churn 脆弱、忽略物理就近性、只支持精确匹配；工业界大规模 DHT 多用 Kademlia。</p>
+</div>
+</div>
+
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整算法伪码与证明，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
