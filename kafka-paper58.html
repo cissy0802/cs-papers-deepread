@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 58</p>
-<h1>Kafka：为日志处理而生的分布式消息系统</h1>
+<h1 data-tts="6f87202d43f0a92e">Kafka：为日志处理而生的分布式消息系统</h1>
 <p class="sub">Kreps, Narkhede &amp; Rao · LinkedIn · NetDB 2011</p>
 <p class="langbar"><a href="kafka-paper58.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,34 +44,34 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="47baf7d48d9ddb66">这篇论文干了什么？</h2>
 <p>2011 年，LinkedIn 的三位工程师发了一篇只有七页的短论文，介绍他们自造的 <strong>Kafka</strong>。它是公司内部的一条<strong>数据主干道</strong>：所有服务器产生的动静（谁点了什么、谁搜了什么、哪台机器 CPU 高了）都往这条道上扔，需要的人再从道上自取。今天从电商的订单状态到银行的实时风控，背后大多跑着 Kafka 或它的模仿者。</p>
-<h2>旧世界的痛</h2>
+<h2 data-tts="ff48c0cdd6c03876">旧世界的痛</h2>
 <p>稍大的网站每天产生的<strong>行为流水</strong>——每一次点击、刷新、划过——比订单账户这类「正经数据」多好几个数量级。当年处理它只有两条路。</p>
 <p>一条是传统<strong>消息队列</strong>，像个讲究的邮局：每封信挂号、签收、登记谁取走了，取走即销毁。稳妥，可光记这些账就贵得扛不住量。另一条是<strong>日志搬运工</strong>：每台机器把日志攒着，定时打包搬进大仓库集中算——量扛得住，可搬一趟要几小时，等算出「这人可能想看什么」，人早走了。</p>
 <p><strong>要快的没有量，有量的不够快。</strong></p>
-<h2>点子：别当邮局，当合订本</h2>
+<h2 data-tts="38344068b1c3394a">点子：别当邮局，当合订本</h2>
 <p>Kafka 反过来：<strong>服务器不再替任何人记账。</strong></p>
 <p>它把消息写成一本一直往后翻的流水账——来一条就在末尾添一行，从不修改、从不插页。谁想读，<strong>自己记住读到第几行</strong>，下次接着往下读。读过的内容不会消失，本子按时间到期（比如七天）才整段扔掉。</p>
 <p>于是「一条消息只能被取走一次」这条天经地义的规矩没了：搜索的读它、推荐的读它、报表的半夜读它，各拿各的书签、互不打扰。程序出了 bug？书签往回拨几页重读一遍就是。</p>
-<h2>那它凭什么快</h2>
+<h2 data-tts="55f70d9fb4f7e10e">那它凭什么快</h2>
 <p><strong>一是只往末尾添行。</strong>硬盘最怕东一榔头西一棒子地找地方，最擅长一路往下写。</p>
 <p><strong>二是服务器不记账。</strong>「谁读到哪儿」原本是最烦的一本账，每条消息都要记状态、还要建索引翻查。丢给读者自己保管后，服务器只剩两件事：往后添、按行号取。</p>
 <p><strong>三是取的时候不绕路。</strong>读者说「从第几行起给我一段」，服务器就把那段字节直接推进网线，不先搬进自己内存倒一手。</p>
 <p><strong>四是一本拆成多本。</strong>同一话题的账本拆成几本、分放不同机器，就能同时写、同时被读。</p>
 <p>诚实说一句代价：论文里的 Kafka 每条消息<strong>只存一份</strong>，那台机器硬盘彻底坏了，还没被读走的消息就永远没了（多存几份是后来才补的）。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="7a719c7bedf3cf1b">带来了什么</h2>
 <p>「日志」从没人管的副产品变成整家公司数据的主干道：一份流水摆在那儿，谁想用就接上去读，新接一个系统不必再惊动上游。今天但凡讲「实时数据」「事件驱动」的系统，大多照这个样子搭。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="4c00e4377e15bb2f">一句话记住</h2>
 <div class="tl">
 <p>把消息中转站从「替人记账的邮局」改成「一本只往后添、按期作废的流水账」：服务器不管谁读到哪儿、书签由读者自己拿——于是又快、又能多方共读、还能倒带重放。</p>
 </div>
 <p class="switch-hint">想看它的架构图、offset 与零拷贝机制、以及实测数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="b5cbb22ecf25da97">一句话</h2>
 <p class="lead">Kafka 把消息系统重做成一个<strong>只追加的分布式日志（append-only log）</strong>：消息按<em>主题（topic）</em>切成若干<em>分区（partition）</em>，每个分区就是一个不断往末尾追加的日志文件；服务端（<em>broker</em>）<strong>不记录谁消费到哪儿</strong>、也不因消息被读走而删它（只按时间到期整段丢弃），进度由消费者自己保管。这套「无状态 broker + 顺序读写 + 拉取」让普通机器达到每秒几十万条写入，也让同一份数据被多方各按节奏消费、还能倒带重放。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="19f4fef6b9208589">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>消息系统（messaging system）</strong>：程序之间传消息的中间件。<em>生产者（producer）</em>把消息交给它，<em>消费者（consumer）</em>再取走，双方不必同时在线。</li>
@@ -81,123 +81,123 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>ZooKeeper</strong>：高可用的协调服务，界面像一棵文件树；支持「进程一掉线，它建的节点就自动消失」的临时节点与变化通知。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="6d7899eed44346a0">坐标</h2>
 <p>作者是 LinkedIn 的 Jay Kreps、Neha Narkhede、Jun Rao，论文发在 <strong>NetDB'11</strong>（2011 年 6 月与 SIGMOD 同期在雅典举办的小型工作坊），正文只有七页。它明说自己是把两条既有路线的好处合起来：<strong>企业消息系统</strong>（IBM WebSphere MQ、JMS 及其实现 ActiveMQ、RabbitMQ）与<strong>日志聚合器</strong>（Facebook 的 Scribe、Cloudera 的 Flume、Yahoo 的 Data Highway）。Kafka 2011 年开源、次年成为 Apache 顶级项目；三位作者后来创立了 Confluent。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="57ade750ad6714da">问题与动机</h2>
 <p>互联网公司每天产生海量<strong>日志数据</strong>：登录、浏览、点击、搜索，加上调用延迟、CPU 等运维指标。论文点出的关键变化是——它过去只是事后分析的素材，如今<strong>直接进了线上功能</strong>：搜索相关性、推荐、广告定向、反垃圾、信息流。而它比订单账户这类「正经数据」大<strong>几个数量级</strong>：光算点击率，就得为页面上每个<em>没被点</em>的条目也记一条。</p>
 <p>于是需求成了「既要扛得住量、又要几秒内可用」，而两类现成系统各缺一半：<strong>企业消息系统</strong>功能过剩（逐条确认这类强保证，对「偶尔丢几条浏览事件也无妨」的日志是奢侈品），且不以吞吐为首要目标（JMS 没有批量发送接口，每条消息一个完整 TCP 往返）、分布式支持弱、还假设消息被近乎即时取走，一旦积压性能就显著劣化；<strong>日志聚合器</strong>则为离线而生，周期性倒进 HDFS 或数据仓库，天然是小时级的，且多用<strong>推（push）</strong>模型，慢的消费者会被推垮。</p>
-<h2>核心思想 / 方法</h2>
-<h3>一、把消息流摊成分区日志</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="7e07f642297c8ce1">一、把消息流摊成分区日志</h3>
 <p>基本概念只有四个：一类消息的流叫一个<strong>主题</strong>；生产者向主题发布消息；消息存在一组叫 <strong>broker</strong> 的服务器上；消费者订阅主题，靠<strong>拉（pull）</strong>取走消息。为了摊开负载，<strong>一个主题被切成多个分区，每个 broker 存其中一部分分区</strong>。</p>
 <figure>
-<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="ka" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
-<marker id="kg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
-<rect x="40" y="14" width="106" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="93" y="34" font-size="12" fill="#e7ebf1" text-anchor="middle">生产者 A</text>
-<rect x="176" y="14" width="106" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="229" y="34" font-size="12" fill="#e7ebf1" text-anchor="middle">生产者 B</text>
-<line x1="93" y1="46" x2="120" y2="86" stroke="#7c8593" marker-end="url(#ka)"></line>
-<line x1="229" y1="46" x2="270" y2="86" stroke="#7c8593" marker-end="url(#ka)"></line>
-<rect x="34" y="90" width="128" height="76" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect>
-<text x="98" y="108" font-size="11.5" fill="#e8794b" text-anchor="middle">BROKER 1</text>
-<text x="98" y="128" font-size="11" fill="#b9c0ca" text-anchor="middle">主题T / 分区0</text>
-<text x="98" y="147" font-size="11" fill="#b9c0ca" text-anchor="middle">主题T / 分区1</text>
-<rect x="176" y="90" width="128" height="76" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect>
-<text x="240" y="108" font-size="11.5" fill="#e8794b" text-anchor="middle">BROKER 2</text>
-<text x="240" y="128" font-size="11" fill="#b9c0ca" text-anchor="middle">主题T / 分区2</text>
-<text x="240" y="147" font-size="11" fill="#b9c0ca" text-anchor="middle">主题T / 分区3</text>
-<rect x="380" y="90" width="146" height="76" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593" stroke-dasharray="4 3"></rect>
-<text x="453" y="112" font-size="11.5" fill="#7c8593" text-anchor="middle">ZooKeeper</text>
-<text x="453" y="131" font-size="10.5" fill="#7c8593" text-anchor="middle">谁在线 · 谁占哪个分区</text>
-<text x="453" y="149" font-size="10.5" fill="#7c8593" text-anchor="middle">各分区消费到哪个 offset</text>
-<line x1="304" y1="128" x2="376" y2="128" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<line x1="120" y1="170" x2="98" y2="216" stroke="#f0b429" marker-end="url(#kg)"></line>
-<line x1="240" y1="170" x2="196" y2="216" stroke="#f0b429" marker-end="url(#kg)"></line>
-<line x1="252" y1="170" x2="360" y2="216" stroke="#f0b429" marker-end="url(#kg)"></line>
-<rect x="34" y="220" width="248" height="76" rx="8" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="5 3"></rect>
-<text x="158" y="238" font-size="11" fill="#f0b429" text-anchor="middle">消费者组「推荐」— 组内分工，各拿一部分分区</text>
-<rect x="50" y="248" width="98" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="99" y="268" font-size="11.5" fill="#b9c0ca" text-anchor="middle">消费者 1</text>
-<rect x="164" y="248" width="98" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="213" y="268" font-size="11.5" fill="#b9c0ca" text-anchor="middle">消费者 2</text>
-<rect x="300" y="220" width="226" height="76" rx="8" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="5 3"></rect>
-<text x="413" y="238" font-size="11" fill="#f0b429" text-anchor="middle">消费者组「数据仓库」— 独立拿全量</text>
-<rect x="352" y="248" width="122" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="413" y="268" font-size="11.5" fill="#b9c0ca" text-anchor="middle">离线加载任务</text>
-<text x="280" y="318" font-size="11" fill="#7c8593" text-anchor="middle">组内：一条消息只给一个人 · 组间：各拿各的一整份</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 330" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ka" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="kg" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="106" x="40" y="14"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="93" y="34">生产者 A</text>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="106" x="176" y="14"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="229" y="34">生产者 B</text>
+<line marker-end="url(#ka)" stroke="#7c8593" x1="93" x2="120" y1="46" y2="86"></line>
+<line marker-end="url(#ka)" stroke="#7c8593" x1="229" x2="270" y1="46" y2="86"></line>
+<rect fill="rgba(255,255,255,0.03)" height="76" rx="8" stroke="#e8794b" width="128" x="34" y="90"></rect>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="98" y="108">BROKER 1</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="98" y="128">主题T / 分区0</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="98" y="147">主题T / 分区1</text>
+<rect fill="rgba(255,255,255,0.03)" height="76" rx="8" stroke="#e8794b" width="128" x="176" y="90"></rect>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="240" y="108">BROKER 2</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="240" y="128">主题T / 分区2</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="240" y="147">主题T / 分区3</text>
+<rect fill="rgba(255,255,255,0.02)" height="76" rx="8" stroke="#7c8593" stroke-dasharray="4 3" width="146" x="380" y="90"></rect>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="453" y="112">ZooKeeper</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="453" y="131">谁在线 · 谁占哪个分区</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="453" y="149">各分区消费到哪个 offset</text>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="304" x2="376" y1="128" y2="128"></line>
+<line marker-end="url(#kg)" stroke="#f0b429" x1="120" x2="98" y1="170" y2="216"></line>
+<line marker-end="url(#kg)" stroke="#f0b429" x1="240" x2="196" y1="170" y2="216"></line>
+<line marker-end="url(#kg)" stroke="#f0b429" x1="252" x2="360" y1="170" y2="216"></line>
+<rect fill="rgba(240,180,41,0.05)" height="76" rx="8" stroke="#f0b429" stroke-dasharray="5 3" width="248" x="34" y="220"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="158" y="238">消费者组「推荐」— 组内分工，各拿一部分分区</text>
+<rect fill="rgba(255,255,255,0.04)" height="30" rx="6" stroke="#7c8593" width="98" x="50" y="248"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="99" y="268">消费者 1</text>
+<rect fill="rgba(255,255,255,0.04)" height="30" rx="6" stroke="#7c8593" width="98" x="164" y="248"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="213" y="268">消费者 2</text>
+<rect fill="rgba(240,180,41,0.05)" height="76" rx="8" stroke="#f0b429" stroke-dasharray="5 3" width="226" x="300" y="220"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="413" y="238">消费者组「数据仓库」— 独立拿全量</text>
+<rect fill="rgba(255,255,255,0.04)" height="30" rx="6" stroke="#7c8593" width="122" x="352" y="248"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="413" y="268">离线加载任务</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="280" y="318">组内：一条消息只给一个人 · 组间：各拿各的一整份</text>
 </svg>
 <figcaption>图 1 · Kafka 架构：主题切成分区摊在多个 broker 上；同一消费者组内分工消费、组与组之间互不影响；ZooKeeper 只负责协调与记录进度。</figcaption>
 </figure>
-<h3>二、用「位置」代替「消息 ID」</h3>
+<h3 data-tts="06067650104c0fa4">二、用「位置」代替「消息 ID」</h3>
 <p>每个分区在物理上是<strong>一组大小相近的段文件（segment file，例如 1GB 一个）</strong>。生产者发来消息，broker 只做一件事：追加到最后一个段文件的末尾；攒够一定条数或时间才刷盘，<strong>刷盘之后才对消费者可见</strong>。</p>
 <p>最不寻常的一刀在这里：<strong>Kafka 的消息没有显式 ID，直接用它在日志中的位置（offset）寻址。</strong>这省掉了传统消息系统里那套「ID → 物理位置」的随机访问索引——既要维护，查起来又满盘找。代价是 offset <strong>递增但不连续</strong>（下一条 = 当前 + 当前消息长度，本质就是字节位置）。</p>
 <p>那怎么定位？broker 内存里只留一张很小的有序表：<strong>每个段文件首条消息的 offset</strong>。收到「从 offset X 起给我最多 N 字节」的请求，先查出 X 落在哪个段，再顺着读出去。</p>
 <figure>
-<svg viewBox="0 0 560 290" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="kb" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
-<marker id="kc" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
-<text x="40" y="30" font-size="11.5" fill="#7c8593">内存中的小索引：每个段文件的首条 offset</text>
-<rect x="40" y="40" width="140" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="110" y="58" font-size="11" fill="#b9c0ca" text-anchor="middle">段1 → 0</text>
-<rect x="196" y="40" width="140" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="266" y="58" font-size="11" fill="#b9c0ca" text-anchor="middle">段2 → 14517018</text>
-<rect x="352" y="40" width="150" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="427" y="58" font-size="11" fill="#b9c0ca" text-anchor="middle">段3 → 30706778</text>
-<line x1="110" y1="68" x2="110" y2="96" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<line x1="266" y1="68" x2="266" y2="96" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<line x1="427" y1="68" x2="427" y2="96" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<rect x="40" y="100" width="140" height="44" rx="5" fill="rgba(232,121,75,0.10)" stroke="#e8794b"></rect><text x="110" y="127" font-size="11.5" fill="#e7ebf1" text-anchor="middle">段文件 1（最旧）</text>
-<rect x="196" y="100" width="140" height="44" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"></rect><text x="266" y="127" font-size="11.5" fill="#e7ebf1" text-anchor="middle">段文件 2</text>
-<rect x="352" y="100" width="150" height="44" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"></rect><text x="427" y="127" font-size="11.5" fill="#e7ebf1" text-anchor="middle">段文件 3（正在写）</text>
-<path d="M502,122 L540,122" stroke="#f0b429" stroke-width="1.8" marker-end="url(#kb)" fill="none"></path>
-<text x="521" y="112" font-size="10.5" fill="#f0b429" text-anchor="middle">追加</text>
-<path d="M40,122 L14,122" stroke="#e8794b" stroke-width="1.8" marker-end="url(#kc)" fill="none"></path>
-<text x="30" y="162" font-size="10.5" fill="#e8794b" text-anchor="start">到期整段删除</text>
-<line x1="150" y1="146" x2="150" y2="196" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<line x1="392" y1="146" x2="392" y2="196" stroke="#7c8593" stroke-dasharray="3 3"></line>
-<rect x="76" y="200" width="148" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="150" y="220" font-size="11" fill="#b9c0ca" text-anchor="middle">离线消费者：offset 落后</text>
-<rect x="318" y="200" width="148" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="392" y="220" font-size="11" fill="#b9c0ca" text-anchor="middle">实时消费者：紧咬队尾</text>
-<path d="M150,236 C150,258 110,258 110,246" stroke="#f0b429" stroke-width="1.4" fill="none" marker-end="url(#kb)"></path>
-<text x="290" y="276" font-size="11" fill="#7c8593" text-anchor="middle">书签各拿各的 · 谁都能往回拨、重读一遍</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 290" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="kb" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="kc" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="40" y="30">内存中的小索引：每个段文件的首条 offset</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#7c8593" width="140" x="40" y="40"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="110" y="58">段1 → 0</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#7c8593" width="140" x="196" y="40"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="266" y="58">段2 → 14517018</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#7c8593" width="150" x="352" y="40"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="427" y="58">段3 → 30706778</text>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="110" x2="110" y1="68" y2="96"></line>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="266" x2="266" y1="68" y2="96"></line>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="427" x2="427" y1="68" y2="96"></line>
+<rect fill="rgba(232,121,75,0.10)" height="44" rx="5" stroke="#e8794b" width="140" x="40" y="100"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="110" y="127">段文件 1（最旧）</text>
+<rect fill="rgba(240,180,41,0.10)" height="44" rx="5" stroke="#f0b429" width="140" x="196" y="100"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="266" y="127">段文件 2</text>
+<rect fill="rgba(240,180,41,0.10)" height="44" rx="5" stroke="#f0b429" width="150" x="352" y="100"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="427" y="127">段文件 3（正在写）</text>
+<path d="M502,122 L540,122" fill="none" marker-end="url(#kb)" stroke="#f0b429" stroke-width="1.8"></path>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="521" y="112">追加</text>
+<path d="M40,122 L14,122" fill="none" marker-end="url(#kc)" stroke="#e8794b" stroke-width="1.8"></path>
+<text fill="#e8794b" font-size="10.5" text-anchor="start" x="30" y="162">到期整段删除</text>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="150" x2="150" y1="146" y2="196"></line>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="392" x2="392" y1="146" y2="196"></line>
+<rect fill="rgba(255,255,255,0.04)" height="30" rx="6" stroke="#7c8593" width="148" x="76" y="200"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="150" y="220">离线消费者：offset 落后</text>
+<rect fill="rgba(255,255,255,0.04)" height="30" rx="6" stroke="#7c8593" width="148" x="318" y="200"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="392" y="220">实时消费者：紧咬队尾</text>
+<path d="M150,236 C150,258 110,258 110,246" fill="none" marker-end="url(#kb)" stroke="#f0b429" stroke-width="1.4"></path>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="290" y="276">书签各拿各的 · 谁都能往回拨、重读一遍</text>
 </svg>
 <figcaption>图 2 · 分区日志：只在最后一个段文件末尾追加，旧段按时间到期整段删除；每个消费者自带 offset 书签，可以落后、可以倒带。</figcaption>
 </figure>
-<h3>三、无状态 broker：账本交给消费者</h3>
+<h3 data-tts="464aa82b03eb41ef">三、无状态 broker：账本交给消费者</h3>
 <p>全篇最反直觉的一刀：<strong>broker 不记录任何消费者消费到了哪儿</strong>。好处是它少了一大堆复杂度与开销——不必为每条消息维护投递状态，也就不必为此建索引、写盘。</p>
 <p>可这样一来 broker 不知道消息是否已被所有订阅方读走，<strong>什么时候能删</strong>？答案简单粗暴：<strong>按时间保留</strong>——超过一段时间（论文说典型是 7 天）就删，与有没有人读过无关；理由是消费者要么实时、要么按小时按天消费，而 Kafka 性能不随数据量劣化，长期保留负担得起。</p>
 <p>这一刀还砍出一个红利：消费者可以<strong>故意把 offset 往回拨、重新消费</strong>。这违反了队列「取走即消失」的常识，却是刚需——消费端逻辑写错了，改完可以重放。论文特意点明<strong>倒带在拉模型里很容易、在推模型里很难</strong>；而「拉」本就是明确立场：消费者按自己能承受的最大速率取数据，不会被推垮。</p>
-<h3>四、把数据搬运做到极致</h3>
+<h3 data-tts="041b91a1075f82e8">四、把数据搬运做到极致</h3>
 <p><strong>① 不在自己进程里缓存消息，直接吃操作系统页缓存。</strong>Kafka 用 JVM 写成，却完全不做应用层消息缓存：避免双份缓冲、进程重启后缓存依然是热的、几乎没有消息对象因而垃圾回收负担极轻。更妙的是生产者与消费者<strong>都顺序访问段文件、且消费者通常只落后一点点</strong>，正撞在操作系统写透缓存与预读的枪口上。作者称生产与消费的性能都<strong>与数据量呈线性、直到许多 TB</strong>。</p>
 <p><strong>② 用 <code>sendfile</code> 省掉两次拷贝一次系统调用。</strong>把本地文件发到远端 socket 的常规做法要走四步：磁盘→页缓存、页缓存→应用缓冲区、应用缓冲区→socket 缓冲区、再上网卡，共 <strong>4 次拷贝 + 2 次系统调用</strong>。<code>sendfile</code> 把字节从文件通道直送 socket 通道，<strong>省掉中间那 2 次拷贝和 1 次系统调用</strong>。前提是 Kafka <em>不需要在中途改动消息</em>：存的什么格式，发的就是什么格式。</p>
 <p><strong>③ 批量。</strong>生产者一次请求发一组消息，消费者每次拉取也是一批（典型几百 KB），RPC 的固定开销就被摊薄了。</p>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="kd" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
-<marker id="ke" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
-<text x="20" y="24" font-size="11.5" fill="#7c8593">常规做法：4 次拷贝 · 2 次系统调用</text>
-<rect x="20" y="36" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="68" y="57" font-size="11" fill="#b9c0ca" text-anchor="middle">磁盘文件</text>
-<line x1="118" y1="53" x2="146" y2="53" stroke="#7c8593" marker-end="url(#kd)"></line>
-<rect x="150" y="36" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="198" y="57" font-size="11" fill="#b9c0ca" text-anchor="middle">页缓存</text>
-<line x1="248" y1="53" x2="276" y2="53" stroke="#7c8593" marker-end="url(#kd)"></line>
-<rect x="280" y="36" width="102" height="34" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect><text x="331" y="57" font-size="11" fill="#e7ebf1" text-anchor="middle">应用缓冲区</text>
-<line x1="384" y1="53" x2="412" y2="53" stroke="#7c8593" marker-end="url(#kd)"></line>
-<rect x="416" y="36" width="102" height="34" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect><text x="467" y="57" font-size="11" fill="#e7ebf1" text-anchor="middle">socket 缓冲</text>
-<line x1="467" y1="72" x2="467" y2="94" stroke="#7c8593" marker-end="url(#kd)"></line>
-<rect x="416" y="98" width="102" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="467" y="118" font-size="11" fill="#b9c0ca" text-anchor="middle">网卡 → 消费者</text>
-<text x="331" y="88" font-size="10.5" fill="#e8794b" text-anchor="middle">这两步是白搬的</text>
-<line x1="20" y1="150" x2="540" y2="150" stroke="rgba(240,180,41,0.2)"></line>
-<text x="20" y="176" font-size="11.5" fill="#f0b429">Kafka 用 sendfile：2 次拷贝 · 1 次系统调用</text>
-<rect x="20" y="188" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="68" y="209" font-size="11" fill="#b9c0ca" text-anchor="middle">磁盘文件</text>
-<line x1="118" y1="205" x2="146" y2="205" stroke="#f0b429" marker-end="url(#ke)"></line>
-<rect x="150" y="188" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="198" y="209" font-size="11" fill="#b9c0ca" text-anchor="middle">页缓存</text>
-<path d="M248,205 L412,205" stroke="#f0b429" stroke-width="1.8" marker-end="url(#ke)" fill="none"></path>
-<text x="330" y="196" font-size="10.5" fill="#f0b429" text-anchor="middle">文件通道直通 socket 通道</text>
-<rect x="416" y="188" width="102" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="467" y="209" font-size="11" fill="#e7ebf1" text-anchor="middle">网卡 → 消费者</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="kd" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="ke" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="20" y="24">常规做法：4 次拷贝 · 2 次系统调用</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="96" x="20" y="36"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="68" y="57">磁盘文件</text>
+<line marker-end="url(#kd)" stroke="#7c8593" x1="118" x2="146" y1="53" y2="53"></line>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="96" x="150" y="36"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="198" y="57">页缓存</text>
+<line marker-end="url(#kd)" stroke="#7c8593" x1="248" x2="276" y1="53" y2="53"></line>
+<rect fill="rgba(232,121,75,0.12)" height="34" rx="6" stroke="#e8794b" width="102" x="280" y="36"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="331" y="57">应用缓冲区</text>
+<line marker-end="url(#kd)" stroke="#7c8593" x1="384" x2="412" y1="53" y2="53"></line>
+<rect fill="rgba(232,121,75,0.12)" height="34" rx="6" stroke="#e8794b" width="102" x="416" y="36"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="467" y="57">socket 缓冲</text>
+<line marker-end="url(#kd)" stroke="#7c8593" x1="467" x2="467" y1="72" y2="94"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="102" x="416" y="98"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="467" y="118">网卡 → 消费者</text>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="331" y="88">这两步是白搬的</text>
+<line stroke="rgba(240,180,41,0.2)" x1="20" x2="540" y1="150" y2="150"></line>
+<text fill="#f0b429" font-size="11.5" x="20" y="176">Kafka 用 sendfile：2 次拷贝 · 1 次系统调用</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="96" x="20" y="188"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="68" y="209">磁盘文件</text>
+<line marker-end="url(#ke)" stroke="#f0b429" x1="118" x2="146" y1="205" y2="205"></line>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="96" x="150" y="188"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="198" y="209">页缓存</text>
+<path d="M248,205 L412,205" fill="none" marker-end="url(#ke)" stroke="#f0b429" stroke-width="1.8"></path>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="330" y="196">文件通道直通 socket 通道</text>
+<rect fill="rgba(240,180,41,0.12)" height="34" rx="6" stroke="#f0b429" width="102" x="416" y="188"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="467" y="209">网卡 → 消费者</text>
 </svg>
 <figcaption>图 3 · 零拷贝：消息存的格式就是发的格式，于是字节可以从段文件直通网卡，省掉两次内存拷贝和一次系统调用。</figcaption>
 </figure>
-<h3>五、去中心的消费者协调</h3>
+<h3 data-tts="efae2fd9af41ffb8">五、去中心的消费者协调</h3>
 <p><strong>消费者组（consumer group）</strong>：组内一条消息只投给其中一个消费者（点对点），组间各自独立地拿到全量（发布订阅），组与组之间无需任何协调。两个设计决定值得记：</p>
 <ul>
 <li><strong>分区是并行的最小单位</strong>：任一时刻，一个分区在一个组内<strong>只被一个消费者消费</strong>。若允许多人同吃一个分区就得加锁、维护共享状态；现在只有<em>重平衡（rebalance）</em>时才需协调，那是低频事件。代价是组内并行度上限就是分区数——所以论文建议把主题<strong>过度分区</strong>。</li>
 <li><strong>不设中央 master</strong>：加 master 就得再操心它挂了怎么办。消费者通过 <strong>ZooKeeper</strong> 自行协调，用四个注册表：broker、消费者、归属（分区当前归谁）、offset；前三个是<strong>临时节点</strong>，进程一挂就自动消失，故障因此被自动感知。消费者在前两个上挂监听，一有增减就触发重平衡：把分区排序切成等份、认领自己那份、从记录的 offset 接着拉。</li>
 </ul>
-<h3>投递保证</h3>
+<h3 data-tts="f9dd91998571c2bc">投递保证</h3>
 <p>论文给得坦白：<strong>一般只保证「至少一次」</strong>——「恰好一次」要两阶段提交，作者认为对其场景不必要。消费者非正常崩溃时，接管其分区的人会重读一小段（已消费、但 offset 还没提交到 ZooKeeper 的那些）而产生<strong>重复</strong>，在意的应用要自己按 offset 或唯一键去重。顺序上：<strong>单分区内有序，跨分区不保证</strong>。每条消息还带 CRC，broker 遇 I/O 错误会剔掉对不上的。</p>
-<h2>关键结果</h2>
+<h2 data-tts="4b7ff97540249c62">关键结果</h2>
 <p><strong>生产环境。</strong>每个线上数据中心各配一个 Kafka 集群；分析数据中心另有一个集群，用内嵌消费者把线上数据拉过来，再送进 Hadoop 与数据仓库。整条管线<strong>端到端平均约 10 秒</strong>（论文说「没怎么调优」，已够用）；当时的量是<strong>每天数百 GB、接近十亿条消息</strong>。</p>
 <p><strong>对比实验。</strong>对手是 ActiveMQ v5.4（默认存储 KahaDB）与以性能著称的 RabbitMQ v2.4；两台 Linux 机器各 8 个 2GHz 核、16GB 内存、6 块盘做 RAID 10，千兆互联，一台当 broker，都配成异步刷盘。</p>
 <ul>
@@ -206,16 +206,16 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>消费</strong>：单消费者取 1000 万条，各系统都配成每次预取约 1000 条 / 200KB。Kafka 平均 <strong>2.2 万条/秒</strong>，是两个对手的<strong>四倍多</strong>；对手的 broker 要为每条消息维护投递状态（测试中 ActiveMQ 有线程忙着写 KahaDB 页，而 Kafka broker <strong>没有任何写盘动作</strong>）。</li>
 </ul>
 <p>作者主动加了句限定：<strong>实验目的不是证明别的系统差</strong>——两个对手的功能都比 Kafka 多——而是说明专用系统能换来多大的性能空间。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="0dd2a72dfde7eebf">为什么重要 / 影响</h2>
 <p>Kafka 真正的贡献不是「一个更快的队列」，而是<strong>把「日志」提升成了一等的系统抽象</strong>。当消息不再随消费而消失、进度由消费者自持，「队列」与「存储」的界限就模糊了：同一份有序的事实流，实时服务紧咬队尾读，数据仓库慢半天读，新系统上线还能从头重放历史。这解开了大公司里最难缠的一团线——原本 N 个数据源各自对接 M 个下游，如今都先汇进这条主干道。论文里未竟的两件事后来成了主战场：<strong>跨 broker 复制</strong>补上持久性，<strong>流处理</strong>长成了 Kafka Streams。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="aadaefdb304a5130">局限与批评</h2>
 <ul>
 <li><strong>没有复制</strong>：每个分区只存在一个 broker 上，论文写得很直白——broker 一挂其上未被消费的消息不可用，存储永久损坏则永久丢失，复制是「未来工作」。这也让文中的吞吐数字带着「不必为副本付代价」的底色。</li>
 <li><strong>保证偏弱</strong>：漂亮的写入数字部分来自生产者「发完就走、不等确认」——论文承认这意味着<strong>没有任何保证消息真被 broker 收到</strong>；而要全局顺序就只能挤在单分区里，直接放弃扩展性。「恰好一次」是很多年后才由后续版本以事务机制补上的。</li>
 <li><strong>按时间保留是双刃剑</strong>：删不删与有没有人读过无关——消费者掉队超过保留期，数据就静悄悄地永久错过了。</li>
 <li><strong>协调代价与实验局限</strong>：重平衡建在 ZooKeeper 上多背一个重量级依赖，组内成员一变动就全组停下重分配（后来分别由自研共识层与增量重平衡改进）；实验也只是单 broker、单生产者 / 单消费者、无故障与积压场景，更适合读作「专用设计的上限演示」而非中立评测。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="004acc7b7ab473fb">要点</h2>
 <div class="tl">
 <p>① 一句话：把消息系统重做成「分区 + 只追加日志」，broker 不记消费进度、不因被读而删，消费者自持 offset。</p>
 <p>② 痛点：行为日志比业务数据大几个数量级；企业消息系统扛不住量（逐条确认、无批量、积压即劣化），日志聚合器只能小时级离线。</p>
