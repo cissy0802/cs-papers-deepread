@@ -78,7 +78,7 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <a class="entry" href="dynamo-paper54.html"><span class="num"></span><span class="title">Dynamo: Amazon's Highly Available Key-value Store — 为「购物车永不拒绝写入」而生：用即时一致换永远可用，一致性哈希决定数据落点、R+W 法定人数可调、向量时钟记录版本冲突交应用合并，点燃了 Cassandra 等一整代最终一致 NoSQL</span><span class="meta">DeCandia 等 · 2007</span></a>
 <a class="entry" href="harvest-yield-paper56.html"><span class="num"></span><span class="title">Harvest, Yield, and Scalable Tolerant Systems — 把「可用」拆成产出率与收获度两把旋钮做优雅降级，故障时选择怎么坏、而非整个倒下，CAP 定理的思想前身</span><span class="meta">Fox &amp; Brewer · 1999</span></a>
 <a class="entry" href="chord-paper57.html"><span class="num"></span><span class="title">Chord: A Scalable Peer-to-peer Lookup Service — 把「几百万台随时进出的机器里，谁负责这个 key」做成一个可证明的最小原语：机器与 key 摆上一致性哈希环、key 归顺时针最近的节点，靠「翻倍距离」的指针表 O(log N) 跳定位、stabilization 协议自愈，一代 NoSQL 与 P2P 系统的地基</span><span class="meta">Stoica 等 · 2001</span></a>
-<div class="entry todo"><span class="num"></span><span class="title">Kafka: a Distributed Messaging System for Log Processing — 以日志为中心的流处理与消息系统</span><span class="meta">Kreps 等 · 2011</span></div>
+<a class="entry" href="kafka-paper58.html"><span class="num"></span><span class="title">Kafka — 把消息队列重做成「只追加的分区日志」：broker 不记谁读到哪、消息不因被读而删，读者自持 offset，于是多方共读、可倒带重放</span><span class="meta">Kreps 等 · 2011</span></a>
 <div class="group">数据库 · 数据模型</div>
 <a class="entry" href="relational-model-paper32.html"><span class="num">Paper 1</span><span class="title">A Relational Model of Data（关系模型）— 把数据摊成规整的表，表间不靠物理指针、只靠共享的值关联，查询从「教它怎么走」变成「说清要什么」，几乎所有现代数据库与 SQL 的理论根</span><span class="meta">E. F. Codd · 1970</span></a>
 <div class="group">操作系统 · 网络架构</div>

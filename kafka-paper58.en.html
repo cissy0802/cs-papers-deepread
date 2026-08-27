@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Kafka: a Distributed Messaging System for Log Processing — CS Papers Deep-Read Paper 58</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 58</p>
+<h1>Kafka: a Distributed Messaging System for Log Processing</h1>
+<p class="sub">Kreps, Narkhede &amp; Rao · LinkedIn · NetDB 2011</p>
+<p class="langbar"><a href="kafka-paper58.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2011 three engineers at LinkedIn published a seven-page paper describing something they had built themselves: <strong>Kafka</strong>. It is a <strong>data highway</strong> running through the company: everything the servers notice (who clicked what, who searched for what, which machine is running hot) gets tossed onto that highway, and whoever needs it picks it up. Today, from the status of your online order to a bank's real-time fraud checks, there is a good chance Kafka or an imitator is behind it.</p>
+<h2>The pain of the old world</h2>
+<p>A sizeable website produces far more <strong>activity records</strong> — every click, refresh, and swipe — than it does "real" data like orders and accounts: orders of magnitude more. Back then there were two ways to handle it.</p>
+<p>One was the traditional <strong>message queue</strong>, a fussy post office: every letter registered, signed for, logged as collected, then destroyed. Reliable, but the bookkeeping alone cost too much to survive that volume. The other was the <strong>log hauler</strong>: each machine piles its log files up, and on a schedule they get packed off to a big warehouse to be crunched together — the volume is fine, but a round trip takes hours, and by the time you work out "this person might want to see that," the person is long gone.</p>
+<p><strong>What was fast couldn't scale; what scaled wasn't fast.</strong></p>
+<h2>The idea: not a post office, a bound volume</h2>
+<p>Kafka goes the other way: <strong>the server stops keeping anyone's books.</strong></p>
+<p>It writes messages into a ledger that only ever grows — each new message becomes one more line at the end, never edited, never inserted in the middle. Whoever wants to read it <strong>remembers which line they got to</strong> and picks up from there next time. Nothing disappears once read; whole sections are thrown out only when they age out (say, after seven days).</p>
+<p>So the self-evident rule that "a message can only be taken once" is gone: search reads it, recommendations read it, reporting reads it at midnight, each with its own bookmark, none disturbing the others. A bug in your program? Wind your bookmark back a few pages and read it again.</p>
+<h2>So why is it fast?</h2>
+<p><strong>One: it only appends at the end.</strong> What a disk hates is hunting all over for a spot; what it does best is writing straight on.</p>
+<p><strong>Two: the server keeps no books.</strong> "Who has read up to where" was the most annoying ledger of all — a status per message, plus an index to look them up. Handed to the readers themselves, the server has just two jobs left: append, and fetch by line number.</p>
+<p><strong>Three: fetching takes no detour.</strong> A reader says "give me a stretch starting at line N," and the server pushes those bytes straight from the file onto the wire, without first hauling them through its own memory.</p>
+<p><strong>Four: one ledger becomes many.</strong> The ledger for a topic is split into several books kept on different machines, so they can be written and read at the same time.</p>
+<p>One honest cost: in the paper's Kafka each message is stored <strong>only once</strong>, so if that machine's disk dies outright, anything not yet read is gone forever (keeping extra copies came later).</p>
+<h2>What it brought</h2>
+<p>The "log" went from an unloved by-product to the company's main data artery: one stream sits there, anyone who wants it just taps in, and adding a new system no longer means disturbing the ones upstream. Today almost anything that talks about "real-time data" or "event-driven" architecture is built on this shape.</p>
+<h2>Remember this</h2>
+<div class="tl">
+<p>Turn the message hub from "a post office keeping everyone's books" into "a ledger that only grows and expires on a schedule": the server doesn't track who read what, readers hold their own bookmarks — so it is fast, many parties can read the same stream, and anyone can rewind and replay.</p>
+</div>
+<p class="switch-hint">Want the architecture diagram, the offset and zero-copy mechanics, and the measured numbers? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Kafka redesigns the messaging system as a distributed <strong>append-only log</strong>: messages in a <em>topic</em> are split across <em>partitions</em>, and each partition is simply a file that is appended to at the end; the server (<em>broker</em>) <strong>records nothing about who has consumed what</strong> and does not delete a message because it was read (whole segments are dropped on a time schedule instead), with progress held by the consumer. This "stateless broker + sequential I/O + pull" combination lets ordinary machines take hundreds of thousands of writes per second, while the same data is consumed by many parties at their own pace — and can be rewound and replayed.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Messaging system</strong>: middleware that passes messages between programs. A <em>producer</em> hands a message over, a <em>consumer</em> takes it away; neither has to be online at the same time.</li>
+<li><strong>Log</strong>: not "strings printed for a human to read" but <strong>a sequence of records that can only be appended to and stays in order</strong> — a ledger.</li>
+<li><strong>Sequential vs. random I/O</strong>: reading and writing straight down a disk is one to two orders of magnitude faster than hopping around, which is the physical premise behind much of this design.</li>
+<li><strong>Page cache</strong>: the operating system's automatic in-memory cache of file content that programs need not manage and that survives a process restart.</li>
+<li><strong>ZooKeeper</strong>: a highly available coordination service with a file-tree-like interface; it supports ephemeral nodes ("the node vanishes the moment its process disconnects") and change notifications.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The authors are Jay Kreps, Neha Narkhede, and Jun Rao of LinkedIn, and the paper appeared at <strong>NetDB'11</strong> (a small workshop in Athens co-located with SIGMOD in June 2011), running only seven pages. It says outright that it combines the strengths of two existing lines: <strong>enterprise messaging systems</strong> (IBM WebSphere MQ, the JMS spec and implementations such as ActiveMQ and RabbitMQ) and <strong>log aggregators</strong> (Facebook's Scribe, Cloudera's Flume, Yahoo's Data Highway). Kafka was open-sourced in 2011 and became an Apache top-level project the following year; the three authors later founded Confluent.</p>
+<h2>Problem and motivation</h2>
+<p>Internet companies generate enormous volumes of <strong>log data</strong>: logins, pageviews, clicks, searches, plus operational metrics like call latency and CPU. The shift the paper points to is that this data used to be raw material for after-the-fact analysis, and is now <strong>fed directly into live product features</strong>: search relevance, recommendations, ad targeting, anti-abuse, the newsfeed. And it is <strong>orders of magnitude larger</strong> than "real" data such as orders and accounts: computing click-through rates alone means recording a row for every item on the page that was <em>not</em> clicked.</p>
+<p>So the requirement became "handle the volume and be usable within seconds," and each existing class of system had only half of it. <strong>Enterprise messaging systems</strong> are feature-heavy (per-message acknowledgment and similar strong guarantees are a luxury for logs where losing a few pageview events is fine), do not treat throughput as the primary constraint (JMS has no API for a producer to batch, so every message costs a full TCP round trip), are weak on distribution, and assume near-immediate consumption — performance degrades badly once messages accumulate. <strong>Log aggregators</strong>, built for offline use, periodically dump into HDFS or a warehouse and are therefore inherently hourly; most also use a <strong>push</strong> model, which floods a slow consumer.</p>
+<h2>Core ideas and method</h2>
+<h3>1. Spread the message stream across partition logs</h3>
+<p>There are only four concepts: a stream of messages of one kind is a <strong>topic</strong>; producers publish to a topic; messages live on a set of servers called <strong>brokers</strong>; consumers subscribe to a topic and <strong>pull</strong> messages from it. To spread load, <strong>a topic is divided into multiple partitions and each broker stores some of them</strong>.</p>
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ka" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="kg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="40" y="14" width="106" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="93" y="34" font-size="12" fill="#e7ebf1" text-anchor="middle">Producer A</text>
+<rect x="176" y="14" width="106" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="229" y="34" font-size="12" fill="#e7ebf1" text-anchor="middle">Producer B</text>
+<line x1="93" y1="46" x2="120" y2="86" stroke="#7c8593" marker-end="url(#ka)"></line>
+<line x1="229" y1="46" x2="270" y2="86" stroke="#7c8593" marker-end="url(#ka)"></line>
+<rect x="34" y="90" width="128" height="76" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect>
+<text x="98" y="108" font-size="11.5" fill="#e8794b" text-anchor="middle">BROKER 1</text>
+<text x="98" y="128" font-size="11" fill="#b9c0ca" text-anchor="middle">topicT / part0</text>
+<text x="98" y="147" font-size="11" fill="#b9c0ca" text-anchor="middle">topicT / part1</text>
+<rect x="176" y="90" width="128" height="76" rx="8" fill="rgba(255,255,255,0.03)" stroke="#e8794b"></rect>
+<text x="240" y="108" font-size="11.5" fill="#e8794b" text-anchor="middle">BROKER 2</text>
+<text x="240" y="128" font-size="11" fill="#b9c0ca" text-anchor="middle">topicT / part2</text>
+<text x="240" y="147" font-size="11" fill="#b9c0ca" text-anchor="middle">topicT / part3</text>
+<rect x="380" y="90" width="146" height="76" rx="8" fill="rgba(255,255,255,0.02)" stroke="#7c8593" stroke-dasharray="4 3"></rect>
+<text x="453" y="112" font-size="11.5" fill="#7c8593" text-anchor="middle">ZooKeeper</text>
+<text x="453" y="131" font-size="10.5" fill="#7c8593" text-anchor="middle">who is up · who owns what</text>
+<text x="453" y="149" font-size="10.5" fill="#7c8593" text-anchor="middle">consumed offset per partition</text>
+<line x1="304" y1="128" x2="376" y2="128" stroke="#7c8593" stroke-dasharray="3 3"></line>
+<line x1="120" y1="170" x2="98" y2="216" stroke="#f0b429" marker-end="url(#kg)"></line>
+<line x1="240" y1="170" x2="196" y2="216" stroke="#f0b429" marker-end="url(#kg)"></line>
+<line x1="252" y1="170" x2="360" y2="216" stroke="#f0b429" marker-end="url(#kg)"></line>
+<rect x="34" y="220" width="248" height="76" rx="8" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="5 3"></rect>
+<text x="158" y="238" font-size="11" fill="#f0b429" text-anchor="middle">Group "recommendations" — splits the partitions</text>
+<rect x="50" y="248" width="98" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="99" y="268" font-size="11.5" fill="#b9c0ca" text-anchor="middle">consumer 1</text>
+<rect x="164" y="248" width="98" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="213" y="268" font-size="11.5" fill="#b9c0ca" text-anchor="middle">consumer 2</text>
+<rect x="300" y="220" width="226" height="76" rx="8" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="5 3"></rect>
+<text x="413" y="238" font-size="11" fill="#f0b429" text-anchor="middle">Group "warehouse" — its own full copy</text>
+<rect x="352" y="248" width="122" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="413" y="268" font-size="11.5" fill="#b9c0ca" text-anchor="middle">offline load job</text>
+<text x="280" y="318" font-size="11" fill="#7c8593" text-anchor="middle">within a group: one message to one member · across groups: a full copy each</text>
+</svg>
+<figcaption>Fig 1 · Kafka architecture: a topic is split into partitions spread over brokers; members of one consumer group divide the work, groups do not affect each other, and ZooKeeper only coordinates and records progress.</figcaption>
+</figure>
+<h3>2. Address by position instead of by message ID</h3>
+<p>Physically a partition is <strong>a set of roughly equal-sized segment files (1GB each, say)</strong>. When a producer sends a message the broker does exactly one thing: append it to the last segment file. Files are flushed only after a configurable number of messages or amount of time, and <strong>a message becomes visible to consumers only once flushed</strong>.</p>
+<p>Here is the most unconventional cut: <strong>a Kafka message has no explicit ID; it is addressed by its logical offset in the log.</strong> That removes the auxiliary, seek-intensive random-access index mapping IDs to locations that traditional messaging systems maintain. The price is that offsets are <strong>increasing but not consecutive</strong> (the next one = current offset + the length of the current message — it is essentially a byte position).</p>
+<p>So how is a position found? The broker keeps just one very small sorted list in memory: <strong>the offset of the first message in each segment file</strong>. Given a request for "up to N bytes starting at offset X," it finds which segment X falls in and reads on from there.</p>
+<figure>
+<svg viewBox="0 0 560 290" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="kb" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="kc" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text x="40" y="30" font-size="11.5" fill="#7c8593">in-memory index: first offset of each segment file</text>
+<rect x="40" y="40" width="140" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="110" y="58" font-size="11" fill="#b9c0ca" text-anchor="middle">seg 1 → 0</text>
+<rect x="196" y="40" width="140" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="266" y="58" font-size="11" fill="#b9c0ca" text-anchor="middle">seg 2 → 14517018</text>
+<rect x="352" y="40" width="150" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="427" y="58" font-size="11" fill="#b9c0ca" text-anchor="middle">seg 3 → 30706778</text>
+<line x1="110" y1="68" x2="110" y2="96" stroke="#7c8593" stroke-dasharray="3 3"></line>
+<line x1="266" y1="68" x2="266" y2="96" stroke="#7c8593" stroke-dasharray="3 3"></line>
+<line x1="427" y1="68" x2="427" y2="96" stroke="#7c8593" stroke-dasharray="3 3"></line>
+<rect x="40" y="100" width="140" height="44" rx="5" fill="rgba(232,121,75,0.10)" stroke="#e8794b"></rect><text x="110" y="127" font-size="11.5" fill="#e7ebf1" text-anchor="middle">segment 1 (oldest)</text>
+<rect x="196" y="100" width="140" height="44" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"></rect><text x="266" y="127" font-size="11.5" fill="#e7ebf1" text-anchor="middle">segment 2</text>
+<rect x="352" y="100" width="150" height="44" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"></rect><text x="427" y="127" font-size="11.5" fill="#e7ebf1" text-anchor="middle">segment 3 (active)</text>
+<path d="M502,122 L540,122" stroke="#f0b429" stroke-width="1.8" marker-end="url(#kb)" fill="none"></path>
+<text x="521" y="112" font-size="10.5" fill="#f0b429" text-anchor="middle">append</text>
+<path d="M40,122 L14,122" stroke="#e8794b" stroke-width="1.8" marker-end="url(#kc)" fill="none"></path>
+<text x="30" y="162" font-size="10.5" fill="#e8794b" text-anchor="start">whole segment dropped on expiry</text>
+<line x1="150" y1="146" x2="150" y2="196" stroke="#7c8593" stroke-dasharray="3 3"></line>
+<line x1="392" y1="146" x2="392" y2="196" stroke="#7c8593" stroke-dasharray="3 3"></line>
+<rect x="76" y="200" width="148" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="150" y="220" font-size="11" fill="#b9c0ca" text-anchor="middle">offline consumer: behind</text>
+<rect x="318" y="200" width="148" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect><text x="392" y="220" font-size="11" fill="#b9c0ca" text-anchor="middle">real-time: at the tail</text>
+<path d="M150,236 C150,258 110,258 110,246" stroke="#f0b429" stroke-width="1.4" fill="none" marker-end="url(#kb)"></path>
+<text x="290" y="276" font-size="11" fill="#7c8593" text-anchor="middle">each holds its own bookmark · any of them may wind back and re-read</text>
+</svg>
+<figcaption>Fig 2 · The partition log: appends go to the last segment file only, old segments are dropped whole once they expire, and each consumer carries its own offset — free to lag, free to rewind.</figcaption>
+</figure>
+<h3>3. Stateless broker: the ledger goes to the consumer</h3>
+<p>The most counterintuitive cut in the paper: <strong>the broker records nothing about how far any consumer has read</strong>. That strips a great deal of complexity and overhead from it — no delivery state per message, and so no index or disk writes to maintain that state.</p>
+<p>But then the broker does not know whether all subscribers have read a message, so <strong>when may it delete?</strong> The answer is blunt: <strong>retain by time</strong> — anything older than a set period (typically 7 days, the paper says) is deleted whether or not anyone read it. The justification is that consumers are either real-time or hourly/daily, and since Kafka's performance does not degrade with data size, long retention is affordable.</p>
+<p>The cut also yields a bonus: a consumer can <strong>deliberately wind its offset back and re-consume</strong>. This violates the usual contract of a queue, yet proves essential — when consumer-side logic is wrong, you fix it and replay. The paper notes explicitly that <strong>rewinding is easy in a pull model and hard in a push model</strong>; and pull is a deliberate stance: a consumer retrieves at the maximum rate it can sustain and never gets flooded.</p>
+<h3>4. Move the bytes as cheaply as possible</h3>
+<p><strong>① No message cache in the process — live off the OS page cache.</strong> Kafka is written for the JVM and yet caches no messages at the application layer: no double buffering, the cache stays warm across a broker restart, and with almost no message objects in the process, garbage-collection overhead is tiny. Better still, producer and consumer <strong>both access the segment files sequentially, with the consumer usually only slightly behind</strong>, which plays directly into the OS's write-through caching and read-ahead. The authors report production and consumption performance <strong>linear in data size, up to many terabytes</strong>.</p>
+<p><strong>② Use <code>sendfile</code> to save two copies and one system call.</strong> The usual way to send a local file to a remote socket takes four steps: disk → page cache, page cache → application buffer, application buffer → socket buffer, then out to the NIC — <strong>4 data copies and 2 system calls</strong>. <code>sendfile</code> transfers bytes from a file channel straight into a socket channel, <strong>avoiding 2 of those copies and 1 system call</strong>. It works only because Kafka <em>never has to alter a message in transit</em>: the format it stores is the format it sends.</p>
+<p><strong>③ Batch.</strong> A producer sends a set of messages per request, and each consumer pull retrieves a batch (typically hundreds of KB), so the fixed RPC cost is amortized.</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="kd" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="ke" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text x="20" y="24" font-size="11.5" fill="#7c8593">the usual path: 4 copies · 2 system calls</text>
+<rect x="20" y="36" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="68" y="57" font-size="11" fill="#b9c0ca" text-anchor="middle">disk file</text>
+<line x1="118" y1="53" x2="146" y2="53" stroke="#7c8593" marker-end="url(#kd)"></line>
+<rect x="150" y="36" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="198" y="57" font-size="11" fill="#b9c0ca" text-anchor="middle">page cache</text>
+<line x1="248" y1="53" x2="276" y2="53" stroke="#7c8593" marker-end="url(#kd)"></line>
+<rect x="280" y="36" width="102" height="34" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect><text x="331" y="57" font-size="11" fill="#e7ebf1" text-anchor="middle">app buffer</text>
+<line x1="384" y1="53" x2="412" y2="53" stroke="#7c8593" marker-end="url(#kd)"></line>
+<rect x="416" y="36" width="102" height="34" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect><text x="467" y="57" font-size="11" fill="#e7ebf1" text-anchor="middle">socket buffer</text>
+<line x1="467" y1="72" x2="467" y2="94" stroke="#7c8593" marker-end="url(#kd)"></line>
+<rect x="416" y="98" width="102" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="467" y="118" font-size="11" fill="#b9c0ca" text-anchor="middle">NIC → consumer</text>
+<text x="331" y="88" font-size="10.5" fill="#e8794b" text-anchor="middle">these two hops are wasted work</text>
+<line x1="20" y1="150" x2="540" y2="150" stroke="rgba(240,180,41,0.2)"></line>
+<text x="20" y="176" font-size="11.5" fill="#f0b429">Kafka with sendfile: 2 copies · 1 system call</text>
+<rect x="20" y="188" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="68" y="209" font-size="11" fill="#b9c0ca" text-anchor="middle">disk file</text>
+<line x1="118" y1="205" x2="146" y2="205" stroke="#f0b429" marker-end="url(#ke)"></line>
+<rect x="150" y="188" width="96" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="198" y="209" font-size="11" fill="#b9c0ca" text-anchor="middle">page cache</text>
+<path d="M248,205 L412,205" stroke="#f0b429" stroke-width="1.8" marker-end="url(#ke)" fill="none"></path>
+<text x="330" y="196" font-size="10.5" fill="#f0b429" text-anchor="middle">file channel straight to socket channel</text>
+<rect x="416" y="188" width="102" height="34" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="467" y="209" font-size="11" fill="#e7ebf1" text-anchor="middle">NIC → consumer</text>
+</svg>
+<figcaption>Fig 3 · Zero copy: because the stored format is the sent format, bytes can go from segment file straight to the NIC, saving two memory copies and one system call.</figcaption>
+</figure>
+<h3>5. Decentralized consumer coordination</h3>
+<p><strong>Consumer groups</strong>: within a group each message goes to exactly one member (point-to-point); different groups each get the full set independently (publish/subscribe), needing no coordination between them. Two decisions are worth remembering:</p>
+<ul>
+<li><strong>A partition is the smallest unit of parallelism</strong>: at any moment a partition is <strong>consumed by only one member of a group</strong>. Letting several members share a partition would require locking and shared state; as it is, they coordinate only during a <em>rebalance</em>, an infrequent event. The cost is that a group's parallelism is capped by the partition count — hence the paper's advice to <strong>over-partition</strong> a topic.</li>
+<li><strong>No central master</strong>: a master would mean worrying about the master failing. Consumers coordinate among themselves through <strong>ZooKeeper</strong>, using four registries: broker, consumer, ownership (who currently owns a partition), and offset. The first three are <strong>ephemeral</strong>, disappearing when a process dies, so failures are detected automatically. Consumers watch the first two, and any addition or removal triggers a rebalance: sort the partitions, cut them into equal ranges, claim your own, and pull from the recorded offset.</li>
+</ul>
+<h3>Delivery guarantees</h3>
+<p>The paper is candid: <strong>Kafka in general guarantees only at-least-once delivery</strong> — exactly-once would typically need two-phase commit, which the authors considered unnecessary for their applications. When a consumer crashes without a clean shutdown, whoever takes over its partitions may re-read a short stretch (messages consumed but whose offset was not yet committed to ZooKeeper), producing <strong>duplicates</strong>; applications that care must de-duplicate by offset or by a unique key. On ordering: <strong>in-order within a partition, no guarantee across partitions</strong>. Each message also carries a CRC, and a broker hitting an I/O error runs a recovery pass that removes messages whose CRC no longer matches.</p>
+<h2>Key results</h2>
+<p><strong>In production.</strong> Each user-facing datacenter has its own Kafka cluster; a separate cluster in the analysis datacenter runs embedded consumers that pull the live data across, and load jobs feed it into Hadoop and the data warehouse. End-to-end the whole pipeline averages <strong>about 10 seconds</strong> (the paper notes this is "without too much tuning" and good enough); the volume at the time was <strong>hundreds of gigabytes and close to a billion messages per day</strong>.</p>
+<p><strong>The comparison.</strong> The competitors were ActiveMQ v5.4 (with its default KahaDB store) and RabbitMQ v2.4, known for performance. Two Linux machines, each with 8 2GHz cores, 16GB of memory, and 6 disks in RAID 10, on a 1Gb link; one was the broker, the other the producer or consumer, and all systems were set to flush asynchronously.</p>
+<ul>
+<li><strong>Producer</strong>: a single producer published 10 million messages of 200 bytes each. Kafka averaged <strong>50,000 messages/sec</strong> at batch size 1 and <strong>400,000/sec</strong> at batch size 50 — the paper's wording is <strong>orders of magnitude</strong> above ActiveMQ and <strong>at least 2× </strong>RabbitMQ (neither competitor had an easy way to batch, so batch size 1 is assumed).</li>
+<li><strong>Why it was faster</strong>: the Kafka producer at that time <strong>did not wait for broker acknowledgments</strong> and simply kept sending (at batch 50 a single producer almost saturated the 1Gb link); and the storage format is leaner — about <strong>9 bytes</strong> of overhead per message in Kafka versus about <strong>144 bytes</strong> in ActiveMQ, so storing the same 10 million messages cost ActiveMQ some <strong>70% more</strong> space.</li>
+<li><strong>Consumer</strong>: a single consumer retrieved 10 million messages, every system configured to prefetch roughly 1000 messages / 200KB per request. Kafka averaged <strong>22,000 messages/sec</strong>, more than <strong>4×</strong> the other two; the competitors' brokers must maintain delivery state per message (during the test an ActiveMQ thread was busy writing KahaDB pages, while the Kafka broker did <strong>no disk writing at all</strong>).</li>
+</ul>
+<p>The authors add a caveat of their own: <strong>the point of the experiment is not that the other systems are inferior</strong> — both have more features than Kafka — but to show how much performance a specialized system can buy.</p>
+<h2>Why it matters</h2>
+<p>Kafka's real contribution is not "a faster queue" but <strong>promoting the log to a first-class system abstraction</strong>. Once messages stop vanishing on consumption and progress is held by the consumer, the line between "queue" and "storage" blurs: one ordered stream of facts, read at the tail by live services, read half a day late by the warehouse, and replayed from the beginning by a newly launched system. That untangles the worst knot in a large company — N data sources each wiring up to M downstream consumers now all feed one artery first. The two loose ends in the paper became its main battlegrounds afterwards: <strong>cross-broker replication</strong> supplied durability, and <strong>stream processing</strong> grew into Kafka Streams.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>No replication</strong>: each partition lived on a single broker. The paper says it plainly — if a broker goes down, unconsumed messages on it are unavailable, and if its storage is permanently damaged they are lost forever; replication was future work. That also colors the throughput numbers, which never pay for a replica.</li>
+<li><strong>Weak guarantees</strong>: part of the attractive write numbers comes from the producer sending without waiting for acknowledgment — the paper concedes this means <strong>no guarantee that a published message actually reached the broker</strong>; and anything needing a global order has to squeeze into a single partition, giving up scalability outright. Exactly-once arrived only many years later, via transactions in a much later version.</li>
+<li><strong>Time-based retention cuts both ways</strong>: deletion is unrelated to whether anyone read the data — a consumer that falls behind the retention window misses it permanently and silently.</li>
+<li><strong>Coordination cost and a limited evaluation</strong>: building rebalance on ZooKeeper adds a heavyweight external dependency, and any membership change stops the whole group to redistribute (both were later improved, by a self-hosted consensus layer and by incremental rebalancing); and the experiment is a single broker with a single producer / single consumer and no failure or backlog scenarios, better read as a demonstration of a specialized design's ceiling than as a neutral benchmark.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: redesign messaging as "partitions + an append-only log," where the broker records no consumption progress, deletes nothing on read, and the consumer holds its own offset.</p>
+<p>② The pain: activity logs are orders of magnitude larger than business data; enterprise messaging could not take the volume (per-message acks, no batching, weak distribution, degradation under backlog), and log aggregators were hourly and offline.</p>
+<p>③ Storage: a partition is a chain of ~1GB segment files appended at the end; <strong>no message ID — addressing is by byte-position offset</strong>, which removes the random-access index, and the broker keeps only a tiny "first offset per segment" table in memory.</p>
+<p>④ Stateless broker: progress goes to the consumer and deletion becomes <strong>expiry by time (typically 7 days)</strong>; the bonus is rewind-and-replay, which only a pull model makes easy.</p>
+<p>⑤ Where the speed comes from: no application-level cache, living off the page cache; <code>sendfile</code> zero copy; batching on both send and fetch. Coordination uses consumer groups, with <strong>the partition as the smallest unit of parallelism</strong> and no master — consumers rebalance among themselves via ZooKeeper.</p>
+<p>⑥ Results: a single producer at 50,000 msg/sec (batch 1) and 400,000 (batch 50), consumption at 22,000 msg/sec (over 4× the competitors); 9 bytes of per-message overhead versus ActiveMQ's 144. At LinkedIn: hundreds of GB and close to a billion messages a day, end to end in about 10 seconds.</p>
+<p>⑦ Guarantees and limits: at-least-once, ordered within a partition; the paper's version has no replication, the producer does not wait for acks, expiry-based deletion loses data for slow consumers, and ZooKeeper-based rebalancing is a source of churn.</p>
+<p>⑧ Impact: it turned the log into the central abstraction of a company's data pipeline, and became the de facto foundation of stream processing and event-driven architecture.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the API details and the rebalance pseudocode, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
