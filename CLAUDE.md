@@ -48,7 +48,7 @@
 - 发布前更新 `index.html`（在 `<!-- entries -->` 前插入新条目）+ `index.en.html`（插入 `.en` 条目）。
 - **index 条目的 `.title` 是「简介」不是「摘要」——一句话、一个钩子，只点出那一两个核心 idea，`标题 — 一个 clause` 到句号即止（对标 paper1「Attention Is All You Need — 用纯注意力取代 RNN，一个架构成了当代所有大模型的地基」的分量，中文 ≤ 约 50 字、英文一行）。别把整页的问题、机制、结果、影响、局限全塞进 index——那些留给正文八节。宁短勿长。
 - **不要**手动在内容页里加 `comments.js` / `search.js` / `index-button.js` / `i18n-tts.js` / `lightbox.js`（GitHub Action 自动注入，含右上角中英切换药丸 + TTS 朗读 + 图片/内联 SVG 点开放大）；也别硬写 `← Hub`。（index 页可硬写这些脚本，与姊妹站一致。）**图只管照常写 `<figure><svg>…</svg><figcaption>`，注入的 `lightbox.js` 会自动让每张图可点开、滚轮缩放、拖拽平移——不用你加任何 class 或 onclick。**
-- **TTS 走浏览器 Web Speech，不做 Azure 烘焙**：`i18n-tts.js` 没有 mp3 时会自动回退成读 `h1/h2/h3/p` 的浏览器语音——所以**别加 `data-tts` 属性、别建 `audio/` 目录、别恢复 `bake-tts.py`/`bake-tts.yml`**。朗读效果由浏览器语音决定，够用即可。
+- **TTS 由 CI 自动烘焙（Azure），你什么都不用做**：内容页 push 到 `main` 后，`bake-tts.yml` 调 `bake-tts.py` 按 `<h2>` 分段调 Azure TTS，生成 `audio/<lang>/<hash>.mp3` 并把 `data-tts-{lang}=<hash>` 自动写回锚点元素（`h1` 为封面段、每个 `h2` 一段），然后以 `Auto-bake TTS audio [skip bake]` 回推提交。所以：**别手写 `data-tts` 属性、别手动碰 `audio/` 目录、别删 `bake-tts.py` / `bake-tts.yml`**——它们是在役系统。`index.html` / `index.en.html` 按设计不烘焙（`bake-tts.py` 显式排除 `index.*`），所以只改 index 的提交会触发 workflow 但无产出，属正常。没有 mp3 时 `i18n-tts.js` 才回退到浏览器 Web Speech。
 - 用 `./publish.sh` 发布：自动 add/commit/push 到 `main`，并校验体量、index 引用、div 平衡、重复编号、TOPICS 未被改等。
 - git：`user.name=BigCat` / `user.email=chengchen0802@gmail.com`。
 
