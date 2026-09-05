@@ -82,32 +82,32 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <div class="entry todo"><span class="num"></span><span class="title">Distributed Snapshots — 没有全局时钟，怎么给整个系统「拍一张一致的照」，Flink / Spark checkpoint 的祖宗</span><span class="meta">Chandy &amp; Lamport · 1985</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">FLP 不可能性 — 异步网络里只要一个进程可能崩溃，就不存在确定性的共识算法，Paxos / Raft 都在绕它</span><span class="meta">Fischer, Lynch, Paterson · 1985</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Consistent Hashing — 加减节点只搬动 1/N 的数据，Dynamo 与 Chord 共同的前置零件</span><span class="meta">Karger 等 · 1997</span></div>
-<div class="group">数据库 · 数据模型</div>
+<div class="group">数据库 · 数据模型<span class="tag">— 关系模型 / 事务与恢复 / 列存</span></div>
 <a class="entry" href="relational-model-paper32.html"><span class="num">Paper 1</span><span class="title">A Relational Model of Data（关系模型）— 把数据摊成规整的表，表间不靠物理指针、只靠共享的值关联，查询从「教它怎么走」变成「说清要什么」，几乎所有现代数据库与 SQL 的理论根</span><span class="meta">E. F. Codd · 1970</span></a>
 <div class="entry todo"><span class="num"></span><span class="title">ARIES — 预写日志 + 「先重演历史再回滚」+ 补偿日志，关系库崩溃恢复的实现蓝本</span><span class="meta">Mohan 等 · 1992</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">A Critique of ANSI SQL Isolation Levels — 拆穿标准用「三种异常」定义隔离级别的模糊与不完备，补上真实异常与快照隔离</span><span class="meta">Berenson, Bernstein, Gray 等 · 1995</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">C-Store — 按列而非按行存储 + 高压缩 + 读优化，分析型数据库换代的起点</span><span class="meta">Stonebraker 等 · 2005</span></div>
 <div class="entry todo"><span class="num"></span><span class="title">Spark RDD — 用「血统」而非复制来容错的不可变内存数据集，MapReduce 之后大数据的主力抽象</span><span class="meta">Zaharia 等 · 2012</span></div>
-<div class="group">操作系统 · 网络架构</div>
+<div class="group">操作系统 · 网络架构<span class="tag">— UNIX 哲学 / 分层原则 / 拥塞控制</span></div>
 <a class="entry" href="unix-time-sharing-paper33.html"><span class="num">Paper 1</span><span class="title">The UNIX Time-Sharing System（UNIX）— 用「一切皆文件 + 小工具用管道自由拼接 + 树状文件夹」几个极简点子，做出一个又小又通用的操作系统，Linux、macOS、安卓、iOS 都是它的思想后代</span><span class="meta">Ritchie &amp; Thompson · 1974</span></a>
 <a class="entry" href="end-to-end-arguments-paper39.html"><span class="num">Paper 2</span><span class="title">End-to-End Arguments in System Design（端到端论证）— 有些功能只有收发两头自己才能做对（如确认文件一字不差），网络在中间也做不全、还连累所有人，所以把聪明活留给两头、让网络保持简单——TCP/IP「笨管道 + 聪明终端」的思想地基</span><span class="meta">Saltzer, Reed &amp; Clark · 1984</span></a>
 <a class="entry" href="congestion-avoidance-and-control-paper45.html"><span class="num">Paper 3</span><span class="title">Congestion Avoidance and Control（TCP 拥塞控制）— 没有中央调度，就让每个发送方按「对方的回音（ACK）」打拍子发包、顺利时慢慢加速、一丢包就把速度砍半，用这套人人自律的「慢加猛减」让互联网不再在流量下一起崩溃</span><span class="meta">Van Jacobson · 1988</span></a>
 <div class="entry todo"><span class="num"></span><span class="title">A Protocol for Packet Network Intercommunication — 网关 + 统一数据报格式，把互不相通的异构网络拼成「网络的网络」，TCP/IP 的源头</span><span class="meta">Cerf &amp; Kahn · 1974</span></div>
-<div class="group">密码学 · 安全 · 去中心化</div>
+<div class="group">密码学 · 安全 · 去中心化<span class="tag">— 公钥 / 签名 / 区块链 / 安全设计</span></div>
 <a class="entry" href="new-directions-in-cryptography-paper34.html"><span class="num"></span><span class="title">New Directions in Cryptography — 把钥匙拆成「公开一把 + 私藏一把」，两个陌生人当众也能约出暗号，现代加密的地基</span><span class="meta">Diffie &amp; Hellman · 1976</span></a>
 <a class="entry" href="rsa-paper40.html"><span class="num"></span><span class="title">RSA — 第一个能真正落地的公钥体制，把加密与数字签名押在「大数分解极难」上</span><span class="meta">Rivest, Shamir &amp; Adleman · 1978</span></a>
 <a class="entry" href="bitcoin-paper46.html"><span class="num"></span><span class="title">Bitcoin（比特币白皮书）— 用「解难题才能记账 + 最长链才算数 + 记账有币赏」，让匿名陌生人不靠银行也能防住「同一笔钱花两次」，区块链的起点</span><span class="meta">Satoshi Nakamoto · 2008</span></a>
 <a class="entry" href="reflections-on-trusting-trust-paper51.html"><span class="num"></span><span class="title">Reflections on Trusting Trust（信任的信任）— 把后门藏进「编译器编译自己」的环节，让它自我繁殖、在任何源码里都查无一字，证明「你无法信任任何不是你亲手从头造出来的代码」，供应链攻击的思想原点</span><span class="meta">Ken Thompson · 1984</span></a>
 <div class="entry todo"><span class="num"></span><span class="title">The Protection of Information in Computer Systems — 最小权限、失败即拒、机制经济性……至今仍是每本安全书第一章的八条设计原则</span><span class="meta">Saltzer &amp; Schroeder · 1975</span></div>
-<div class="group">万维网 · 搜索 · 信息</div>
+<div class="group">万维网 · 搜索 · 信息<span class="tag">— 超文本 / PageRank</span></div>
 <a class="entry" href="as-we-may-think-paper35.html"><span class="num"></span><span class="title">As We May Think（诚如所思）— 1945 年就设想用一台叫 Memex 的桌子把知识按「联想」两两拴成可命名可分享的「小径」，超链接与万维网的思想源头</span><span class="meta">Vannevar Bush · 1945</span></a>
 <a class="entry" href="anatomy-of-a-search-engine-paper41.html"><span class="num"></span><span class="title">The Anatomy of a Search Engine（谷歌雏形）— 把每条链接当成一票带权重的推荐（PageRank），再用「别人怎么称呼你」（锚文本）描述一个页，在爆炸增长的网页里把最该看的排最前，谷歌的起点</span><span class="meta">Brin &amp; Page · 1998</span></a>
-<div class="group">计算与信息理论基石</div>
+<div class="group">计算与信息理论基石<span class="tag">— 图灵机 / 信息论 / 复杂性</span></div>
 <a class="entry" href="mathematical-theory-of-communication-paper36.html"><span class="num"></span><span class="title">A Mathematical Theory of Communication — 用「比特」给信息称重，并证明两条铁律：任何信源有压缩极限（熵），任何信道有速度上限（容量），不超速就能把噪声纠正到近乎零错</span><span class="meta">Claude Shannon · 1948</span></a>
 <a class="entry" href="on-computable-numbers-paper42.html"><span class="num"></span><span class="title">On Computable Numbers（图灵机）— 把「计算」定义成一台纸带机器，再造出「读说明书就能变成任何机器」的通用机，最后证明有些问题机器永远判定不了</span><span class="meta">Alan Turing · 1936</span></a>
 <a class="entry" href="computing-machinery-and-intelligence-paper47.html"><span class="num"></span><span class="title">Computing Machinery and Intelligence（图灵测试）— 把没法答的「机器能思考吗」换成一场模仿游戏：裁判隔屏打字分不出机器就算它会思考，AI 的哲学起点与第一块试金石</span><span class="meta">Alan Turing · 1950</span></a>
 <a class="entry" href="complexity-of-theorem-proving-paper52.html"><span class="num"></span><span class="title">The Complexity of Theorem-Proving Procedures（NP 完全性）— 把「难解」精确定义出来：证明 SAT 是「最难代表」，攻破它就攻破一整类「验证易、求解难」的问题，P vs NP 由此成为一道精确的百万美元悬案</span><span class="meta">Stephen Cook · 1971</span></a>
-<div class="group">软件工程 · 编程思想</div>
+<div class="group">软件工程 · 编程思想<span class="tag">— 结构化 / 模块化 / 并发模型 / 系统设计</span></div>
 <a class="entry" href="goto-considered-harmful-paper37.html"><span class="num"></span><span class="title">Go To Statement Considered Harmful — 一封两页短信论证 goto 让代码「读到哪」对不上「跑到哪」，只留顺序/分支/循环，点燃结构化编程</span><span class="meta">Edsger Dijkstra · 1968</span></a>
 <a class="entry" href="decomposing-systems-into-modules-paper43.html"><span class="num"></span><span class="title">On the Criteria To Be Used in Decomposing Systems into Modules — 别按处理步骤、按「最可能变的设计决定」拆模块，每块藏一个秘密只露接口，封装与面向对象的思想源</span><span class="meta">David Parnas · 1972</span></a>
 <a class="entry" href="no-silver-bullet-paper48.html"><span class="num"></span><span class="title">No Silver Bullet: Essence and Accident in Software Engineering — 软件之难分「本质」与「偶然」，过去的进步只削偶然、而偶然已所剩无几，故没有一颗能提速十倍的银弹</span><span class="meta">Fred Brooks · 1986</span></a>
