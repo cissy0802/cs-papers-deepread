@@ -79,17 +79,26 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <a class="entry" href="harvest-yield-paper56.html"><span class="num"></span><span class="title">Harvest, Yield, and Scalable Tolerant Systems — 把「可用」拆成产出率与收获度两把旋钮做优雅降级，故障时选择怎么坏、而非整个倒下，CAP 定理的思想前身</span><span class="meta">Fox &amp; Brewer · 1999</span></a>
 <a class="entry" href="chord-paper57.html"><span class="num"></span><span class="title">Chord: A Scalable Peer-to-peer Lookup Service — 把「几百万台随时进出的机器里，谁负责这个 key」做成一个可证明的最小原语：机器与 key 摆上一致性哈希环、key 归顺时针最近的节点，靠「翻倍距离」的指针表 O(log N) 跳定位、stabilization 协议自愈，一代 NoSQL 与 P2P 系统的地基</span><span class="meta">Stoica 等 · 2001</span></a>
 <a class="entry" href="kafka-paper58.html"><span class="num"></span><span class="title">Kafka — 把消息队列重做成「只追加的分区日志」：broker 不记谁读到哪、消息不因被读而删，读者自持 offset，于是多方共读、可倒带重放</span><span class="meta">Kreps 等 · 2011</span></a>
+<div class="entry todo"><span class="num"></span><span class="title">Distributed Snapshots — 没有全局时钟，怎么给整个系统「拍一张一致的照」，Flink / Spark checkpoint 的祖宗</span><span class="meta">Chandy &amp; Lamport · 1985</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">FLP 不可能性 — 异步网络里只要一个进程可能崩溃，就不存在确定性的共识算法，Paxos / Raft 都在绕它</span><span class="meta">Fischer, Lynch, Paterson · 1985</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Consistent Hashing — 加减节点只搬动 1/N 的数据，Dynamo 与 Chord 共同的前置零件</span><span class="meta">Karger 等 · 1997</span></div>
 <div class="group">数据库 · 数据模型</div>
 <a class="entry" href="relational-model-paper32.html"><span class="num">Paper 1</span><span class="title">A Relational Model of Data（关系模型）— 把数据摊成规整的表，表间不靠物理指针、只靠共享的值关联，查询从「教它怎么走」变成「说清要什么」，几乎所有现代数据库与 SQL 的理论根</span><span class="meta">E. F. Codd · 1970</span></a>
+<div class="entry todo"><span class="num"></span><span class="title">ARIES — 预写日志 + 「先重演历史再回滚」+ 补偿日志，关系库崩溃恢复的实现蓝本</span><span class="meta">Mohan 等 · 1992</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">A Critique of ANSI SQL Isolation Levels — 拆穿标准用「三种异常」定义隔离级别的模糊与不完备，补上真实异常与快照隔离</span><span class="meta">Berenson, Bernstein, Gray 等 · 1995</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">C-Store — 按列而非按行存储 + 高压缩 + 读优化，分析型数据库换代的起点</span><span class="meta">Stonebraker 等 · 2005</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Spark RDD — 用「血统」而非复制来容错的不可变内存数据集，MapReduce 之后大数据的主力抽象</span><span class="meta">Zaharia 等 · 2012</span></div>
 <div class="group">操作系统 · 网络架构</div>
 <a class="entry" href="unix-time-sharing-paper33.html"><span class="num">Paper 1</span><span class="title">The UNIX Time-Sharing System（UNIX）— 用「一切皆文件 + 小工具用管道自由拼接 + 树状文件夹」几个极简点子，做出一个又小又通用的操作系统，Linux、macOS、安卓、iOS 都是它的思想后代</span><span class="meta">Ritchie &amp; Thompson · 1974</span></a>
 <a class="entry" href="end-to-end-arguments-paper39.html"><span class="num">Paper 2</span><span class="title">End-to-End Arguments in System Design（端到端论证）— 有些功能只有收发两头自己才能做对（如确认文件一字不差），网络在中间也做不全、还连累所有人，所以把聪明活留给两头、让网络保持简单——TCP/IP「笨管道 + 聪明终端」的思想地基</span><span class="meta">Saltzer, Reed &amp; Clark · 1984</span></a>
 <a class="entry" href="congestion-avoidance-and-control-paper45.html"><span class="num">Paper 3</span><span class="title">Congestion Avoidance and Control（TCP 拥塞控制）— 没有中央调度，就让每个发送方按「对方的回音（ACK）」打拍子发包、顺利时慢慢加速、一丢包就把速度砍半，用这套人人自律的「慢加猛减」让互联网不再在流量下一起崩溃</span><span class="meta">Van Jacobson · 1988</span></a>
+<div class="entry todo"><span class="num"></span><span class="title">A Protocol for Packet Network Intercommunication — 网关 + 统一数据报格式，把互不相通的异构网络拼成「网络的网络」，TCP/IP 的源头</span><span class="meta">Cerf &amp; Kahn · 1974</span></div>
 <div class="group">密码学 · 安全 · 去中心化</div>
 <a class="entry" href="new-directions-in-cryptography-paper34.html"><span class="num"></span><span class="title">New Directions in Cryptography — 把钥匙拆成「公开一把 + 私藏一把」，两个陌生人当众也能约出暗号，现代加密的地基</span><span class="meta">Diffie &amp; Hellman · 1976</span></a>
 <a class="entry" href="rsa-paper40.html"><span class="num"></span><span class="title">RSA — 第一个能真正落地的公钥体制，把加密与数字签名押在「大数分解极难」上</span><span class="meta">Rivest, Shamir &amp; Adleman · 1978</span></a>
 <a class="entry" href="bitcoin-paper46.html"><span class="num"></span><span class="title">Bitcoin（比特币白皮书）— 用「解难题才能记账 + 最长链才算数 + 记账有币赏」，让匿名陌生人不靠银行也能防住「同一笔钱花两次」，区块链的起点</span><span class="meta">Satoshi Nakamoto · 2008</span></a>
 <a class="entry" href="reflections-on-trusting-trust-paper51.html"><span class="num"></span><span class="title">Reflections on Trusting Trust（信任的信任）— 把后门藏进「编译器编译自己」的环节，让它自我繁殖、在任何源码里都查无一字，证明「你无法信任任何不是你亲手从头造出来的代码」，供应链攻击的思想原点</span><span class="meta">Ken Thompson · 1984</span></a>
+<div class="entry todo"><span class="num"></span><span class="title">The Protection of Information in Computer Systems — 最小权限、失败即拒、机制经济性……至今仍是每本安全书第一章的八条设计原则</span><span class="meta">Saltzer &amp; Schroeder · 1975</span></div>
 <div class="group">万维网 · 搜索 · 信息</div>
 <a class="entry" href="as-we-may-think-paper35.html"><span class="num"></span><span class="title">As We May Think（诚如所思）— 1945 年就设想用一台叫 Memex 的桌子把知识按「联想」两两拴成可命名可分享的「小径」，超链接与万维网的思想源头</span><span class="meta">Vannevar Bush · 1945</span></a>
 <a class="entry" href="anatomy-of-a-search-engine-paper41.html"><span class="num"></span><span class="title">The Anatomy of a Search Engine（谷歌雏形）— 把每条链接当成一票带权重的推荐（PageRank），再用「别人怎么称呼你」（锚文本）描述一个页，在爆炸增长的网页里把最该看的排最前，谷歌的起点</span><span class="meta">Brin &amp; Page · 1998</span></a>
@@ -102,6 +111,14 @@ footer{text-align:center;padding:40px 0 12px;font-size:0.82rem;color:#5a6069}
 <a class="entry" href="goto-considered-harmful-paper37.html"><span class="num"></span><span class="title">Go To Statement Considered Harmful — 一封两页短信论证 goto 让代码「读到哪」对不上「跑到哪」，只留顺序/分支/循环，点燃结构化编程</span><span class="meta">Edsger Dijkstra · 1968</span></a>
 <a class="entry" href="decomposing-systems-into-modules-paper43.html"><span class="num"></span><span class="title">On the Criteria To Be Used in Decomposing Systems into Modules — 别按处理步骤、按「最可能变的设计决定」拆模块，每块藏一个秘密只露接口，封装与面向对象的思想源</span><span class="meta">David Parnas · 1972</span></a>
 <a class="entry" href="no-silver-bullet-paper48.html"><span class="num"></span><span class="title">No Silver Bullet: Essence and Accident in Software Engineering — 软件之难分「本质」与「偶然」，过去的进步只削偶然、而偶然已所剩无几，故没有一颗能提速十倍的银弹</span><span class="meta">Fred Brooks · 1986</span></a>
+<div class="entry todo"><span class="num"></span><span class="title">Communicating Sequential Processes — 并发不靠共享内存、靠进程间同步通信，Go 的 channel 与 Erlang 消息传递的思想源</span><span class="meta">C. A. R. Hoare · 1978</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Hints for Computer System Design — 「怎么做对、怎么做快、怎么做可靠」，一位系统大师把数十年经验压成一页箴言</span><span class="meta">Butler Lampson · 1983</span></div>
+<div class="group">云原生 · Serverless · 可观测性<span class="tag">— 集群调度 / 函数计算 / 追踪</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Borg — 把整个数据中心当一台机器来分配，Kubernetes 的直接前身（配 Borg, Omega, and Kubernetes 对读）</span><span class="meta">Verma 等 · 2015</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Autopilot — 自动调每个容器的资源配额（纵向伸缩）；揭穿云上的浪费主要不来自伸缩不及时，而来自人不会填 resource request</span><span class="meta">Rzadca 等 · 2020</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">A Berkeley View on Serverless Computing — serverless 的标准入口与它的结构性缺陷清单；配同年反方 One Step Forward, Two Steps Back 对读</span><span class="meta">Jonas 等 · 2019</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Firecracker — Lambda / Fargate 底下真正跑的 microVM：同时要虚拟机的隔离强度和容器的启动速度</span><span class="meta">Agache 等 · 2020</span></div>
+<div class="entry todo"><span class="num"></span><span class="title">Pivot Tracing — 用 happened-before join 问出 Dapper 问不了的因果问题：此刻的开销到底是谁造成的</span><span class="meta">Mace, Roelke, Fonseca · 2015</span></div>
 </div>
 <footer>把一篇论文读透，胜过刷过十篇摘要。</footer>
 </div>

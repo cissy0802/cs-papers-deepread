@@ -51,9 +51,12 @@ BigCat 人工维护的 IT / 计算机 / AI 里程碑论文清单。**按重要�
 
 ## 分布式共识 · 一致性 · 存储
 - **逻辑时钟** — Time, Clocks, and the Ordering of Events · Lamport · 1978 — 逻辑时钟与 happens-before，分布式一致性思想原点（slug: `time-clocks-ordering`）
+- **分布式快照** — Distributed Snapshots: Determining Global States of Distributed Systems · Chandy & Lamport · 1985 — 没有全局时钟，怎么给整个系统「拍一张一致的照」；Flink / Spark checkpoint 的直接祖宗（slug: `chandy-lamport-snapshots`）
 - **拜占庭将军** — The Byzantine Generals Problem · Lamport, Shostak, Pease · 1982 — 有节点会说谎时如何达成一致（slug: `byzantine-generals`）
+- **FLP 不可能性** — Impossibility of Distributed Consensus with One Faulty Process · Fischer, Lynch, Paterson · 1985 — 异步网络里只要一个进程可能崩溃，就不存在确定性的共识算法；共识领域的天花板，Paxos / Raft 都在绕它（slug: `flp-impossibility`）
 - **Paxos** — Paxos Made Simple · Lamport · 2001 — 分布式共识的奠基算法（的简化讲法）（slug: `paxos-made-simple`）
 - **Raft** — In Search of an Understandable Consensus Algorithm · Ongaro & Ousterhout · 2014 — 为「可理解」而设计的共识算法，工业界事实标准（slug: `raft`）
+- **一致性哈希** — Consistent Hashing and Random Trees · Karger 等 (MIT) · 1997 — 加减节点只搬动 1/N 的数据，Dynamo 与 Chord 共同的前置零件（slug: `consistent-hashing`）
 - **Dynamo** — Amazon's Highly Available Key-value Store · DeCandia 等 · 2007 — 最终一致 + 一致性哈希 + 向量时钟，NoSQL 浪潮源头（slug: `dynamo`）
 - **CAP 雏形** — Harvest, Yield, and Scalable Tolerant Systems · Fox & Brewer · 1999 — CAP 定理思想雏形，一致性与可用性取舍（slug: `harvest-yield`）
 - **Chord** — A Scalable Peer-to-peer Lookup Service · Stoica 等 (MIT) · 2001 — 分布式哈希表（DHT），P2P 查找经典（slug: `chord`）
@@ -61,9 +64,14 @@ BigCat 人工维护的 IT / 计算机 / AI 里程碑论文清单。**按重要�
 
 ## 数据库 · 数据模型
 - **关系模型** — A Relational Model of Data for Large Shared Data Banks · E. F. Codd · 1970 — 几乎所有现代数据库的理论根（slug: `relational-model`）
+- **ARIES** — A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks Using Write-Ahead Logging · Mohan 等 (IBM) · 1992 — 预写日志 + 「先重演历史再回滚」+ 补偿日志，几乎所有关系库崩溃恢复的实现蓝本；与 Codd 的「理论根」配成理论+落地一对（slug: `aries-recovery`）
+- **SQL 隔离级别批判** — A Critique of ANSI SQL Isolation Levels · Berenson, Bernstein, Gray 等 · 1995 — 拆穿标准用「三种异常」定义隔离级别既模糊又不完备，补上真实异常与快照隔离，工程师最常踩坑的那块（slug: `ansi-sql-isolation-critique`）
+- **C-Store** — A Column-oriented DBMS · Stonebraker 等 · 2005 — 按列而非按行存储 + 高压缩 + 读优化，分析型数据库换代的起点，与 Dremel 对读（slug: `c-store`）
+- **Spark RDD** — Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing · Zaharia 等 (Berkeley) · 2012 — 用「血统」而非复制来容错的不可变内存数据集，MapReduce 之后大数据的主力抽象（slug: `spark-rdd`）
 
 ## 操作系统 · 网络架构
 - **UNIX** — The UNIX Time-Sharing System · Ritchie & Thompson · 1974 — 定义现代操作系统哲学：一切皆文件、小工具组合（slug: `unix-time-sharing`）
+- **TCP/IP 原始论文** — A Protocol for Packet Network Intercommunication · Cerf & Kahn · 1974 — 网关 + 统一数据报格式，把互不相通的异构网络拼成「网络的网络」，TCP/IP 的源头（slug: `packet-network-intercommunication`）
 - **端到端原则** — End-to-End Arguments in System Design · Saltzer, Reed, Clark · 1984 — 「功能该放在哪一层」，互联网架构第一性原理（slug: `end-to-end-arguments`）
 - **TCP 拥塞控制** — Congestion Avoidance and Control · Van Jacobson · 1988 — 让互联网没有在流量下崩溃（slug: `congestion-avoidance-and-control`）
 
@@ -71,6 +79,7 @@ BigCat 人工维护的 IT / 计算机 / AI 里程碑论文清单。**按重要�
 - **公钥密码学** — New Directions in Cryptography · Diffie & Hellman · 1976 — 公钥密码学诞生，无需预共享密钥也能安全通信（slug: `new-directions-in-cryptography`）
 - **RSA** — A Method for Obtaining Digital Signatures and Public-Key Cryptosystems · Rivest, Shamir, Adleman · 1978 — 第一个实用公钥体制（slug: `rsa`）
 - **Bitcoin** — A Peer-to-Peer Electronic Cash System · Satoshi Nakamoto · 2008 — 工作量证明解决无信任双花，区块链源头（slug: `bitcoin`）
+- **安全设计八原则** — The Protection of Information in Computer Systems · Saltzer & Schroeder · 1975 — 最小权限、失败即拒、机制经济性……至今仍是每本安全书第一章（slug: `protection-of-information`）
 - **信任的信任** — Reflections on Trusting Trust · Ken Thompson · 1984 — 「你能信任你没亲手写的代码吗」，最深刻的安全思想实验（slug: `reflections-on-trusting-trust`）
 
 ## 万维网 · 搜索 · 信息
@@ -87,3 +96,13 @@ BigCat 人工维护的 IT / 计算机 / AI 里程碑论文清单。**按重要�
 - **结构化编程** — Go To Statement Considered Harmful · Edsger Dijkstra · 1968 — 结构化编程宣言，一封信改变编程范式（slug: `goto-considered-harmful`）
 - **信息隐藏** — On the Criteria To Be Used in Decomposing Systems into Modules · David Parnas · 1972 — 模块化与封装的思想源（slug: `decomposing-systems-into-modules`）
 - **没有银弹** — No Silver Bullet: Essence and Accident in Software Engineering · Fred Brooks · 1986 — 为什么软件复杂性没有银弹（slug: `no-silver-bullet`）
+- **CSP** — Communicating Sequential Processes · C. A. R. Hoare · 1978 — 并发不靠共享内存、靠进程间同步通信，Go 的 channel 与 Erlang 消息传递的思想源（slug: `communicating-sequential-processes`）
+- **系统设计箴言** — Hints for Computer System Design · Butler Lampson · 1983 — 「怎么做对、怎么做快、怎么做可靠」，一位系统大师把数十年经验压成一页箴言（slug: `hints-for-computer-system-design`）
+
+## 云原生 · Serverless · 可观测性
+> DDIA（2017）之后才成型的一簇：集群调度 / 函数计算 / 追踪。这批更接近工业生产报告，精读时重点提「被什么约束逼出了什么设计」，别照抄产品细节。
+- **Borg** — Large-scale Cluster Management at Google with Borg · Verma 等 · 2015 — 把整个数据中心当一台机器来分配，Kubernetes 的直接前身、本簇的地基；**配 Borg, Omega, and Kubernetes（Burns 等 · 2016）对读**，前者给设计、后者给十年教训（slug: `borg`）
+- **Autopilot** — Workload Autoscaling at Google · Rzadca 等 · EuroSys 2020 — 自动调每个容器 CPU/内存配额的「纵向」伸缩；它真正揭穿的是：云上的浪费主要不来自伸缩不及时，而来自工程师不会填 resource request（slug: `autopilot-autoscaling`）
+- **Serverless 正反两面** — Cloud Programming Simplified: A Berkeley View on Serverless Computing · Jonas 等 (UC Berkeley) · 2019 — 该领域的标准入口，价值在于把结构性缺陷列成清单；**必须配同年反方 Serverless Computing: One Step Forward, Two Steps Back（Hellerstein 等 · CIDR 2019）对读**——同校、作者部分重合、结论相反：FaaS 强制「把数据运到代码」，逆转了分布式数据系统四十年的经验（slug: `berkeley-view-serverless`）
+- **Firecracker** — Lightweight Virtualization for Serverless Applications · Agache 等 (Amazon) · NSDI 2020 — Lambda / Fargate 底下真正跑的 microVM：同时要虚拟机的隔离强度与容器的启动速度，与 Dynamo 同属「被约束逼出来的设计」（slug: `firecracker`）
+- **Pivot Tracing** — Dynamic Causal Monitoring for Distributed Systems · Mace, Roelke, Fonseca · SOSP 2015 — 用 happened-before join 问出 Dapper 问不了的因果问题（此刻的开销到底是谁造成的），与已有的 Lamport 逻辑时钟同源（slug: `pivot-tracing`）
