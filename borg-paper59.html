@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Borg — IT 论文精读 Paper 59</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 59</p>
+<h1>Borg：把一栋机房当一台机器</h1>
+<p class="sub">Verma, Pedrosa, Korupolu, Oppenheimer, Tune, Wilkes · Google · EuroSys 2015</p>
+<p class="langbar"><a href="borg-paper59.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2015 年，Google 第一次系统地公开了 <strong>Borg</strong>——一套已在它内部默默跑了十几年的系统，Google 几乎所有程序（搜索、Gmail、广告、数据分析）都由它安排在哪台机器上运行；今天广为人知的 <strong>Kubernetes</strong>，就是照着 Borg 的思路重写并开源的产物。</p>
+<p>Borg 干的事一句话说得清：<strong>把一栋机房里成千上万台机器，当成一台巨大的机器来分配</strong>。你不再说「我要 3 号机和 7 号机」，只说「我要跑 500 份这个程序、每份大概要这么多算力和内存」。</p>
+<h2>旧世界有多浪费</h2>
+<p>在 Borg 之前（今天很多公司仍然如此）：每个团队圈一批属于自己的机器。麻烦有两层：每批都得按<strong>最忙的那一刻</strong>来买，于是平时大半时间闲着；而且<strong>互不借用</strong>——广告那批机器半夜闲得发慌，隔壁排队等算力的报表任务也用不上它。</p>
+<p>打个比方：一栋写字楼给每家公司分死一层楼，谁都不许用别家的会议室。于是每层都得按「全员开大会」的规模留出会议室——可全员大会一年只开两次。</p>
+<h2>点子：把两种脾气相反的活混着放</h2>
+<p>机器上跑的活分两类，脾气正相反。<strong>在线服务</strong>（网页搜索、邮箱）得一直开着，慢一点用户立刻有感觉，但忙闲随时段大幅起伏；<strong>批处理</strong>（跑数据、算报表）一次跑几分钟到几小时、跑完就散，慢一点没人在乎，大不了重跑。</p>
+<p>Borg 的核心就是：<strong>把这两类活混在同一批机器上跑</strong>，让批处理去吃掉在线服务此刻没用上的那部分。回到写字楼的比方：会议室不再分死，谁要用谁登记；但<strong>开会分等级</strong>——真有客户来了，正在里面开内部脑暴的那伙人得腾地方。</p>
+<h2>那它怎么保证在线服务不被拖累？</h2>
+<p>第一，<strong>排优先级</strong>。机器紧张时，Borg 直接把低优先级的活<strong>踢下去</strong>、把位置腾给高优先级的；被踢掉的批处理排队等下一轮——反正它能从头重跑。</p>
+<p>第二，<strong>盯着真实用量，把没用上的收回来</strong>。工程师申请资源时几乎总是往多了要，怕不够。Borg 不太信这个数字，它一直观察你<strong>实际</strong>用了多少，在申请额和实际用量之间划一条带安全余量的线，<strong>中间那截空的转手借给批处理</strong>；等你用量真涨上来，再把借出去的收回。</p>
+<p>第三，<strong>机器坏了它自己补</strong>。上万台机器每天都有坏的。Borg 一直听着每台机器的心跳，某台失联，上面的活自动在别处重开。</p>
+<h2>带来了什么</h2>
+<p>Google 自己算过账：如果把在线服务和批处理拆到不同机器上分开放，<strong>中位规模的机房要多买两到三成的机器</strong>。更深远的是它定下了一种做法：<strong>你只描述你要什么，不指定它在哪儿跑</strong>——今天几乎所有的云、所有 Kubernetes 集群用的都是这个思路。诚实说一句代价：这份便宜是<strong>批处理任务用「随时可能被踢掉」换来的</strong>，写这类程序必须能忍受跑到一半被杀、从头再来。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>把整栋机房当一台机器：你只说要什么、不说在哪跑；在线服务与批处理混装在同一批机器上，靠「优先级抢占」和「回收你申请了却没用的额度」把利用率榨上去，机器坏了自动补——省下两三成机器，也定义了后来 Kubernetes 的样子。</p>
+</div>
+<p class="switch-hint">想看 Borg 的架构图、调度器怎么在上万台机器里挑一台、以及那些实测数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Borg 是 Google 的集群管理系统：用户提交一份<strong>声明式</strong>的作业规格（要跑几份、每份要多少 CPU 与内存、有什么约束），Borg 在一个由上万台机器组成的 <em>cell</em> 里替它选机器、启动、监控、失败重启。它靠<strong>优先级抢占</strong>把延迟敏感的在线服务与吞吐型批处理<strong>混装</strong>在同一批机器上，再靠<strong>资源回收</strong>把「申请了却没真用」的额度借给低优先级任务，从而在保住在线服务可用性的前提下大幅拉高机房利用率。这是 Google 十余年生产经验的首次系统披露，也是 Kubernetes 的直接设计蓝本。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>集群 / cell</strong>：集群（cluster）是一栋机房楼里的一批机器；<strong>cell</strong> 是 Borg 里「作为一个整体来分配」的机器集合，中位规模约 1 万台。</li>
+<li><strong>作业 / 任务（job / task）</strong>：job 是「同一个程序的一组副本」，比如「跑 500 份前端服务」；每一份副本叫一个 task，落地为某台机器上的一个进程组。</li>
+<li><strong>容器（container）与 cgroups</strong>：把一台机器上多个程序彼此隔开的轻量手段——Linux 内核的 <code>cgroups</code> 给每个程序框定能用多少 CPU 和内存。它不像虚拟机那样各带一个操作系统，开销小得多，但隔离也没那么彻底。</li>
+<li><strong>在线服务 vs 批处理</strong>：前者长期运行、对延迟敏感（搜索、邮箱）；后者跑完即止、只在乎总吞吐（数据分析、索引构建）。</li>
+<li><strong>抢占（preemption）</strong>：资源不够时系统主动杀掉低优先级任务、把位置让给高优先级任务，被杀的通常重新排队。</li>
+<li><strong>配额（quota）</strong>：「你这个团队最多能申请多少」，用于<em>提交时</em>的准入控制。它和优先级是两回事——配额管「能不能提交」，优先级管「跑起来后谁让谁」。</li>
+<li><strong>Paxos</strong>：让一组副本对「当前状态是什么」达成一致、并选出主副本的经典共识算法，少数副本宕机仍可工作。</li>
+<li><strong>milli-core（毫核）</strong>：CPU 的计量单位，1000 毫核 = 1 个 CPU 核，因此可以申请「0.1 个核」这种细粒度的量。</li>
+<li><strong>Kubernetes（K8s）</strong>：Google 2014 年开源的容器编排系统，由 Borg 的部分作者主导，是 Borg 思想的开源改写版。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 Abhishek Verma、Luis Pedrosa、Madhukar Korupolu、David Oppenheimer、Eric Tune、John Wilkes，来自 Google，论文发在 <strong>EuroSys 2015</strong>。写这篇时 Borg 已在生产环境跑了十余年——GFS、MapReduce、Bigtable 这些名篇里的系统，本身都是跑在 Borg 上的任务。同代的外部对手是 Mesos（2011）与 YARN（2013）；Google 内部还有个把单体主控改成「共享状态 + 乐观并发」的实验性后继 <strong>Omega</strong>（2013）。一年后同一批人写了 <em>Borg, Omega, and Kubernetes</em>（2016）复盘十年教训——而 <strong>Kubernetes</strong> 正是把 Borg 的模型开源重写的产物。</p>
+<h2>问题与动机</h2>
+<p>Google 要在同一批机器上养活两类性格相反的负载。<strong>在线服务</strong>（搜索、Gmail、广告投放）长期运行、对尾延迟敏感，但流量有昼夜峰谷；<strong>批处理</strong>（索引构建、日志分析、MapReduce 作业）从几秒到几天不等，跑完即退，只在乎吞吐。</p>
+<p>旧做法是<strong>按用途把机器切成互不相干的几摊</strong>：每摊按自己的峰值配容量，于是每摊都长期闲置一大块，闲置的那块又借不给隔壁。更麻烦的是，机器故障在万台规模下是<strong>常态而非意外</strong>——若要人工去补、去重启、去改配置，运维根本跟不上。</p>
+<p>于是真问题有三条，且互相拉扯：怎么把利用率提上去；提利用率就得混装，而混装会让在线服务被邻居干扰，怎么保住它的可用性；以及怎么让几千名工程师<strong>不必知道机器的存在</strong>就能把程序跑起来、跑得住。</p>
+<h2>核心思想 / 方法</h2>
+<h3>一、你说「要什么」，不说「在哪跑」</h3>
+<p>Borg 的第一个决定是把接口收窄成一份<strong>声明式规格</strong>：一个 job 声明「跑多少份、每份要多少毫核 / 内存 / 磁盘、需要什么样的机器」，然后交出去。Borg 负责选机器、装包、启动、监控存活、失败重启、机器挂了换一台重开。<strong>「我的程序在哪台机器上」从此不再是工程师需要回答的问题。</strong></p>
+<p>配套两个小零件让这件事真正可用。一是 <strong>alloc</strong>（allocation 的缩写）：在一台机器上预留一块资源，可以往里塞多个互相配合的 task（比如主程序 + 一个上传日志的边车进程），它们随预留一起搬家——<em>这正是后来 Kubernetes 里 pod 的原型</em>。二是 <strong>BNS（Borg Name Service）</strong>：每个 task 拿到一个稳定的名字（存在 Chubby 里），别人按名字找它，不必知道它此刻落在哪台机器、哪个端口——<strong>没有这层命名，「任务随时会换机器」就是灾难而不是特性。</strong></p>
+<p>架构本身很朴素：一个 cell 里有一个逻辑上的 <strong>Borgmaster</strong>（实为 5 个副本，用 Paxos 保存 cell 状态并选主，内含调度器）和每台机器上的小代理 <strong>Borglet</strong>。Borgmaster 每隔几秒轮询一次每个 Borglet，取回现状、下发待办；<strong>轮询而不是让 Borglet 主动上报，是为了让主控自己掌握流量节奏，免得恢复时被上万台机器同时冲垮</strong>。而主控失联时 Borglet 继续照看已在跑的任务，所以主控短暂不可用不波及正在服务的程序。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 580 330" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="bg1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="290" y="16">一个 cell ≈ 中位 1 万台机器，作为一个整体来分配</text>
+<rect fill="rgba(255,255,255,0.03)" height="48" rx="6" stroke="#7c8593" width="118" x="16" y="56"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="75" y="76">用户提交 job</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="75" y="93">「要什么」不「在哪」</text>
+<line marker-end="url(#bg1)" stroke="#7c8593" x1="134" x2="166" y1="80" y2="80"></line>
+<rect fill="rgba(240,180,41,0.08)" height="116" rx="8" stroke="#f0b429" width="248" x="168" y="34"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="292" y="54">Borgmaster · 5 副本 · Paxos 选主</text>
+<rect fill="rgba(255,255,255,0.04)" height="32" rx="5" stroke="#7c8593" width="110" x="182" y="64"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="237" y="84">cell 全量状态</text>
+<rect fill="rgba(255,255,255,0.04)" height="32" rx="5" stroke="#7c8593" width="102" x="300" y="64"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="351" y="84">调度器</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="292" y="115">可行性筛选 → 打分 → 放置 / 必要时抢占</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="292" y="133">每隔几秒轮询每台机器：取现状、下发待办</text>
+<rect fill="rgba(255,255,255,0.03)" height="48" rx="6" stroke="#7c8593" width="118" x="448" y="56"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="507" y="76">BNS 命名服务</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="507" y="93">按名字找，不按机器</text>
+<line marker-end="url(#bg1)" stroke="#7c8593" x1="418" x2="446" y1="80" y2="80"></line>
+<line marker-end="url(#bg1)" stroke="#7c8593" x1="292" x2="292" y1="150" y2="182"></line>
+<text fill="#7c8593" font-size="10.5" x="300" y="170">轮询 / 下发</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="7" stroke="#4d5561" width="164" x="20" y="188"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="102" y="207">Borglet</text>
+<rect fill="rgba(240,180,41,0.14)" height="24" rx="4" stroke="#f0b429" width="132" x="36" y="216"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="102" y="232">在线服务 task</text>
+<rect fill="rgba(232,121,75,0.12)" height="24" rx="4" stroke="#e8794b" width="132" x="36" y="246"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="102" y="262">批处理 task</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="102" y="285">cgroups 容器隔离</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="7" stroke="#4d5561" width="164" x="208" y="188"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="290" y="207">Borglet</text>
+<rect fill="rgba(240,180,41,0.14)" height="24" rx="4" stroke="#f0b429" width="132" x="224" y="216"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="290" y="232">在线服务 task</text>
+<rect fill="rgba(232,121,75,0.12)" height="24" rx="4" stroke="#e8794b" width="132" x="224" y="246"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="290" y="262">批处理 task</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="290" y="285">主控失联也继续照看</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="7" stroke="#4d5561" width="164" x="396" y="188"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="478" y="207">Borglet</text>
+<rect fill="rgba(240,180,41,0.14)" height="24" rx="4" stroke="#f0b429" width="132" x="412" y="216"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="478" y="232">在线服务 task</text>
+<rect fill="rgba(232,121,75,0.12)" height="24" rx="4" stroke="#e8794b" width="132" x="412" y="246"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="478" y="262">批处理 task</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="478" y="285">…… ×上万台</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="290" y="316">每台机器同时装着两类负载——这正是 Borg 省机器的来源</text>
+</svg>
+<figcaption>图 1 · Borg 架构：一个 cell 里一个 Borgmaster（5 副本、Paxos 选主，内含调度器）+ 每台机器一个 Borglet；用户只提交声明式的 job 规格，其余交给 Borg。</figcaption>
+</figure>
+<h3>二、混装：优先级、抢占与配额</h3>
+<p>提高利用率的主发动机，是把在线服务和批处理<strong>装到同一批机器上</strong>。做法是给每个 task 一个<strong>优先级</strong>，优先级归入几个不重叠的档（由高到低大致是：监控 → 生产 → 批处理 → 尽力而为）。<em>生产（prod）</em>指的就是那些不能挂的在线服务，其余归为<em>非生产</em>。</p>
+<p>规则很直白：<strong>机器上装不下时，高优先级的 task 可以把低优先级的挤下去</strong>——后者被杀掉、退回待调度队列。有一条重要例外：<strong>生产级 task 之间不互相抢占</strong>，否则一次抢占会引发「你踢我、我踢他」的级联。</p>
+<p>光有优先级还不够，否则人人都把自己的活标成最高级。于是配上<strong>配额（quota）</strong>：某个团队在某个优先级上、某段时间内最多能申请多少资源，在<strong>提交时</strong>做准入控制；高优先级的配额更贵、更难拿，最低优先级则近乎不限量（代价是它随时会被抢占）。<strong>优先级管运行时谁让谁，配额管提交时谁能要多少——两件事必须分开，否则「优先级」就会沦为一场谁也不肯先让步的通货膨胀。</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 580 280" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="bg2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="140" y="20">平时：在线服务用一半</text>
+<rect fill="none" height="180" rx="6" stroke="#4d5561" width="150" x="65" y="34"></rect>
+<rect fill="rgba(240,180,41,0.2)" height="86" stroke="none" width="148" x="66" y="127"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="140" y="176">在线服务</text>
+<rect fill="rgba(232,121,75,0.16)" height="92" stroke="none" width="148" x="66" y="35"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="140" y="76">批处理填满空隙</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="94">（低优先级）</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="230">一台机器的容量</text>
+<line marker-end="url(#bg2)" stroke="#e8794b" stroke-width="1.6" x1="232" x2="322" y1="120" y2="120"></line>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="277" y="110">流量高峰来了</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="277" y="140">Borg 抢占</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="277" y="156">低优先级 task</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="440" y="20">峰值：批处理让位</text>
+<rect fill="none" height="180" rx="6" stroke="#4d5561" width="150" x="365" y="34"></rect>
+<rect fill="rgba(240,180,41,0.2)" height="150" stroke="none" width="148" x="366" y="63"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="440" y="142">在线服务扩张</text>
+<rect fill="rgba(232,121,75,0.08)" height="28" stroke="none" width="148" x="366" y="35"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="440" y="53">剩下的批处理</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="440" y="230">被踢掉的排队重跑</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="290" y="262">生产级 task 之间不互相抢占，以免引发「你踢我、我踢他」的级联</text>
+</svg>
+<figcaption>图 2 · 混装与抢占：批处理平时填满在线服务留下的空隙；峰值一来，Borg 杀掉低优先级 task 腾出位置，被杀的排队重跑。</figcaption>
+</figure>
+<h3>三、资源回收：不信申请值，只信实测值</h3>
+<p>混装还不够，因为工程师申请资源时几乎总是<strong>往多了要</strong>——宁可多买保险，也不愿半夜被内存不足叫醒。于是一台机器上「已被申请走」与「真正在被使用」之间，长期空着一大截。</p>
+<p>Borg 的办法是把一个 task 的资源分成三条线：<strong>limit（申请上限）</strong>是你要的、也是收费依据；<strong>usage（实际用量）</strong>是 Borg 持续观测到的真实消耗；中间那条 <strong>reservation（预留）</strong>由 Borg 按近期用量估出来、再加一层安全余量。<strong>reservation 与 limit 之间的那截被判定为「你大概率用不上」，回收去借给非生产任务。</strong>用量一涨、预留跟着抬高，借出去的立刻收回——代价由能忍受被杀的低优先级任务承担。论文报告：约<strong>两成的负载跑在这类回收出来的资源上</strong>。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 580 250" xmlns="http://www.w3.org/2000/svg">
+<line stroke="#7c8593" x1="72" x2="72" y1="24" y2="200"></line>
+<line stroke="#7c8593" x1="72" x2="528" y1="200" y2="200"></line>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="530" y="218">时间 →</text>
+<text fill="#7c8593" font-size="11" x="20" y="20">资源</text>
+<line stroke="#f0b429" stroke-dasharray="5,4" stroke-width="1.8" x1="72" x2="520" y1="44" y2="44"></line>
+<text fill="#f0b429" font-size="11.5" x="382" y="38">limit：你申请的上限</text>
+<path d="M72,44 L520,44 L520,112 L440,112 L440,96 L320,96 L320,124 L200,124 L200,108 L72,108 Z" fill="rgba(232,121,75,0.14)" stroke="none"></path>
+<polyline fill="none" points="72,108 200,108 200,124 320,124 320,96 440,96 440,112 520,112" stroke="#e8794b" stroke-width="2"></polyline>
+<text fill="#e8794b" font-size="11.5" x="88" y="100">reservation：估出来的预留（含安全余量）</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="300" y="72">这一截被回收 → 借给批处理等低优先级任务</text>
+<path d="M72,168 C140,150 180,176 240,160 C300,144 340,178 400,164 C450,152 490,170 520,158" fill="none" stroke="#b9c0ca" stroke-width="2"></path>
+<text fill="#b9c0ca" font-size="11.5" x="88" y="192">usage：持续观测到的真实用量</text>
+</svg>
+<figcaption>图 3 · 资源回收：limit 是申请值，usage 是实测值，reservation 是「实测 + 安全余量」的估计；reservation 与 limit 之间的空档被回收，借给低优先级任务。</figcaption>
+</figure>
+<h3>四、调度器：怎么在上万台里挑一台</h3>
+<p>调度分两步。第一步<strong>可行性筛选</strong>：哪些机器<em>能</em>装下这个 task。「够不够」的口径按优先级而不同——生产任务按各邻居声明的 limit 算，非生产任务按估出来的 reservation 算，<strong>这正是「超卖」得以发生的地方</strong>。第二步<strong>打分</strong>，在可行的机器里挑一台：策略是两种思路的混合——<strong>摊开</strong>（负载铺散，给流量突增留余地）与<strong>塞满</strong>（填实一台，减少碎片）；纯摊开会落得谁也装不下大任务，纯塞满则一有峰值就出事。</p>
+<p>难点在于规模：一个 cell 上万台机器，有的 cell 任务到达率超过<strong>每分钟一万个</strong>，逐台算分根本来不及。Borg 用三招压下来：<strong>缓存分数</strong>（机器没大变就复用上次的分）、<strong>等价类</strong>（同一 job 的几百个 task 需求一样，只算一次）、<strong>放松的随机化</strong>（随机扫一部分、够用就停）。<strong>三招换的是同一件事：用「够好」换「算得完」。</strong>另有个容易被忽略的实测结论：task 从被调度到跑起来中位约 <strong>25 秒</strong>，其中约 <strong>80% 花在装软件包上</strong>——所以 Borg 优先挑已装过该包的机器。<em>真实系统里，瓶颈常常不在你以为的那个算法上。</em></p>
+<h3>五、隔离与可用性：混装的代价怎么兜住</h3>
+<p>把互不相识的程序塞进同一台机器，隔离就是命门。Borg 用<strong>基于 cgroups 的容器</strong>而非虚拟机——省下每虚拟机一份操作系统的开销，代价是隔离没那么彻底。资源分两类对待：<strong>可压缩的</strong>（CPU、磁盘 I/O 带宽）超了就限速压慢；<strong>不可压缩的</strong>（内存、磁盘空间）没法压慢，超了只能杀。</p>
+<p>可用性则靠一整套习惯做法：被驱逐的任务自动重新调度；同一 job 的副本<strong>刻意分散到不同故障域</strong>（不同机架、不同供电），免得一次断电全灭；<strong>限制同时中断的速率</strong>。论文还提到一个很实用的东西——<strong>Fauxmaster</strong>：高保真的模拟主控，喂进真实 cell 状态离线重放，用来调试、做容量规划、验证「换个策略会怎样」。<em>下一节那些「省了多少机器」的结论，正是靠它算出来的。</em></p>
+<h2>关键结果</h2>
+<p>论文的评估方法本身值得学：<strong>cell 压缩（cell compaction）</strong>——把某个真实 cell 的负载喂给 Fauxmaster，不断拿掉机器、每次从头重装填，直到再也装不下；得到的最小机器数就是这份负载的「真实成本」。改一条策略重算一次，两者之差就是这条策略值多少台机器。</p>
+<ul>
+<li><strong>混装省多少</strong>：把生产与非生产负载拆到不同 cell 分开放，<strong>中位 cell 需要多出 20–30% 的机器</strong>。</li>
+<li><strong>细粒度申请值多少</strong>：Borg 允许按毫核、按字节申请；若改成粗档位——比如一律向上取整到 2 的幂——<strong>中位 cell 要多花 30–50% 的资源</strong>。<em>「四舍五入一下方便管理」在这个尺度上贵得离谱。</em></li>
+<li><strong>大 cell 优于小 cell</strong>：把一个大 cell 切成若干小 cell，所需机器数明显上升——<strong>池子越大，峰谷越容易互相抵消</strong>。</li>
+<li><strong>混装的真实配比</strong>：某个有代表性的 cell 里，生产任务被分配约 <strong>70% 的 CPU</strong>、实际用掉约 <strong>60%</strong>；被分配约 <strong>55% 的内存</strong>、实际用掉约 <strong>85%</strong>。<em>分配值与使用值之间的缺口，正是资源回收要吃的那块肉——约两成负载跑在回收出的资源上。</em></li>
+<li><strong>扩展性</strong>：单个 Borgmaster 可管数千台机器的 cell，部分 cell 任务到达率<strong>超过每分钟 10000 个</strong>。</li>
+</ul>
+<h2>为什么重要 / 影响</h2>
+<p><strong>第一，它把「集群即计算机」从口号变成了有生产证据的工程事实</strong>：十余年、上万台机器规模的运行记录，证明「工程师只声明需求、不接触机器」这条路走得通，而且省下的是两三成机器这种量级的钱。「混装 + 优先级抢占 + 按实测用量超卖回收」自此成了所有集群调度器的默认议题。</p>
+<p><strong>第二，它是 Kubernetes 的设计蓝本。</strong>alloc 变成了 pod，「声明式规格 + 主控持续把现实拉向期望状态」成了 K8s 的核心循环，Borglet 对应 kubelet。今天绝大多数「云原生」实践——容器、声明式配置、控制平面与数据平面分离、优先级与抢占——都能在这篇里找到原型。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>论文自陈的设计失误</strong>：<em>job 是唯一的分组手段</em>——没法把「一个服务的多个 job」（比如金丝雀版与正式版）当成整体来管；<em>一台机器一个 IP</em>——机器上所有 task 共享同一 IP 与端口空间，端口于是不得不被当成一种要调度的资源，任务得预先声明要几个、还得接受被指派（Kubernetes 改成每 pod 一个 IP，正是为了根治它）；<em>为高级用户优化过头</em>——功能给重度用户堆得很全，普通用户上手成本却偏高。</li>
+<li><strong>混装的隔离并不完美</strong>：cgroups 容器共享内核、共享缓存与内存带宽，邻居之间的干扰无法根除，对尾延迟敏感的服务尤其如此。论文承认这块仍在改进。此外 Borg 是集中式的单一逻辑主控，而 Google 内部的 Omega 恰恰认为这会成为瓶颈、改用共享状态加乐观并发——哪种更好没有定论，Kubernetes 最终取的是折中。</li>
+<li><strong>结论的可移植性存疑</strong>：Borg 的收益高度依赖 Google 的<strong>同质化环境</strong>——统一的 RPC 框架、统一的监控与命名、软件栈可控、机器型号有限。换到软件栈五花八门、还得防着不同租户互相下手的公有云，「大胆混装」的安全边界要窄得多。</li>
+<li><strong>不可复现且偏向成功面</strong>：系统闭源，数据来自 Google 内部 cell，外界既无法验证也难以对照；论文给足了利用率与规模的漂亮数字，但对批处理任务的排队等待、被反复抢占造成的重复计算浪费，着墨相对克制。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：用户只提交「要什么」的声明式规格，Borg 在一个上万台机器的 cell 里替它选机器、启动、监控、失败重开——把一栋机房当一台机器来分配。</p>
+<p>② 痛点：按用途把机器切成互不相干的几摊，每摊按峰值配、闲置又借不出去；万台规模下故障是常态，人工运维跟不上。</p>
+<p>③ 机制一，混装：在线服务与批处理放同一批机器，用优先级档与抢占保证前者优先；生产级任务之间不互相抢占，以免级联。</p>
+<p>④ 机制二，回收：limit（申请）/ usage（实测）/ reservation（实测+余量）三条线，reservation 与 limit 之间的空档借给低优先级任务；约 20% 负载跑在回收资源上。</p>
+<p>⑤ 调度：先可行性筛选、再打分（摊开与塞满的混合）；靠缓存分数、等价类、放松随机化把上万台的选择压到算得完；启动中位 25 秒，八成时间在装包。配套零件有 alloc（pod 的原型）、BNS 命名、cgroups 隔离。</p>
+<p>⑥ 结果（cell 压缩法测得）：分开放生产与非生产要多 20–30% 机器；资源请求粗粒度取整要多 30–50%；大 cell 优于小 cell；中位 cell 约 1 万台。</p>
+<p>⑦ 影响与局限：它是 Kubernetes 的直接蓝本（alloc→pod、声明式控制循环、kubelet）；但作者自陈 job 是唯一分组手段、一机一 IP 是设计失误，容器隔离不彻底，且收益高度依赖 Google 的同质化环境，公有云未必照搬得动。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的调度策略细节与全部图表，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

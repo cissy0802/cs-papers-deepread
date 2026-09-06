@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Borg — CS Papers Deep-Read Paper 59</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 59</p>
+<h1>Borg: A Datacenter as One Machine</h1>
+<p class="sub">Verma, Pedrosa, Korupolu, Oppenheimer, Tune, Wilkes · Google · EuroSys 2015</p>
+<p class="langbar"><a href="borg-paper59.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2015 Google published the first systematic account of <strong>Borg</strong> — a system that had already been quietly running inside the company for over a decade, deciding which machine every Google program (Search, Gmail, ads, data analysis) runs on. <strong>Kubernetes</strong>, which you have probably heard of, is essentially Borg's ideas rewritten and open-sourced.</p>
+<p>What Borg does fits in one sentence: <strong>it treats the thousands of machines in a datacenter building as one giant machine to hand out</strong>. You no longer say "give me machine 3 and machine 7"; you say "run 500 copies of this program, each needing roughly this much compute and memory."</p>
+<h2>How wasteful the old world was</h2>
+<p>Before Borg — and still, in many companies today — each team fenced off its own pile of machines. Two problems follow. Every pile has to be bought for <strong>its busiest moment</strong>, so most of the time it sits idle. And the piles <strong>can't lend to each other</strong>: while the ads machines are bored at 3am, the reporting jobs queued up next door still can't touch them.</p>
+<p>An analogy: an office building assigns each company its own floor and forbids anyone from using another floor's meeting rooms. Every floor must then keep a room big enough for an all-hands — a meeting that happens twice a year.</p>
+<h2>The idea: mix two workloads with opposite temperaments</h2>
+<p>The work running on those machines comes in two kinds with opposite personalities. <strong>Online services</strong> (web search, email) must stay up, and users feel it immediately when they slow down — but their load swings wildly across the day. <strong>Batch jobs</strong> (crunching data, building reports) run for minutes or hours and then vanish; nobody minds if they're slow, and re-running them is fine.</p>
+<p>Borg's core move is to <strong>run both kinds on the same machines</strong>, letting batch jobs eat whatever the online services aren't using right now. Back to the building: meeting rooms are no longer assigned — you just book one. But <strong>meetings have ranks</strong>: when a real client arrives, the internal brainstorm inside has to clear out.</p>
+<h2>So how does it keep the online services safe?</h2>
+<p>First, <strong>ranks</strong>. Every piece of work carries a priority. When machines get tight, Borg simply <strong>kicks the low-priority work out</strong> and hands the space to the high-priority work; the evicted batch job queues up for the next round — it can just re-run.</p>
+<p>Second, <strong>watch real usage and take back what isn't used</strong>. Engineers almost always ask for more than they need, out of fear of running short. Borg doesn't quite trust that number: it keeps watching how much you <strong>actually</strong> use, draws a line a safe margin above that, and <strong>lends the gap between that line and your request to batch jobs</strong>. When your usage really does climb, it takes the loan back.</p>
+<p>Third, <strong>it repairs itself</strong>. At ten thousand machines, some break every day. Borg listens to every machine's heartbeat; when one goes silent, the work on it restarts elsewhere automatically.</p>
+<h2>What it bought</h2>
+<p>Google did the arithmetic: splitting online services and batch jobs onto separate machines would make a median-sized datacenter buy <strong>20–30% more machines</strong>. More lasting is the habit it established — <strong>you describe what you want, not where it runs</strong> — which is how essentially every cloud and every Kubernetes cluster works today. One honest note on the price: this bargain is paid for by batch jobs accepting that they <strong>may be killed at any moment</strong>, so such programs must tolerate being cut off halfway and starting over.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Treat the whole building as one machine: you say what you want, not where it runs. Online services and batch jobs are mixed onto the same machines, and utilization is squeezed up by priority-based eviction plus reclaiming the resources you asked for but never used, with failed machines replaced automatically — saving 20–30% of the fleet, and defining what Kubernetes would later look like.</p>
+</div>
+<p class="switch-hint">Want the architecture diagram, how the scheduler picks one machine out of ten thousand, and the measured numbers? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Borg is Google's cluster manager: users submit a <strong>declarative</strong> job spec (how many copies, how much CPU and memory each, what constraints), and Borg picks machines inside a <em>cell</em> of tens of thousands of them, starts the work, watches it, and restarts it on failure. Using <strong>priority-based preemption</strong> it packs latency-sensitive online services and throughput-oriented batch work onto the <strong>same</strong> machines, then uses <strong>resource reclamation</strong> to lend out capacity that was requested but never used — pushing datacenter utilization far up while keeping the online services available. It is the first systematic account of a decade-plus of Google production experience, and the direct design blueprint for Kubernetes.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Cluster / cell</strong>: a cluster is the set of machines in a datacenter building; a <strong>cell</strong> is the set of machines Borg allocates as one unit — median size around 10,000 machines.</li>
+<li><strong>Job / task</strong>: a job is "a group of copies of the same program" (say, 500 front-end replicas); each copy is a task, which lands as a process group on some machine.</li>
+<li><strong>Container and cgroups</strong>: the lightweight way to keep several programs on one machine out of each other's way — the Linux kernel's <code>cgroups</code> caps how much CPU and memory each program may use. Unlike a virtual machine it carries no operating system of its own, so it is far cheaper, but the isolation is also less complete.</li>
+<li><strong>Online service vs. batch</strong>: the former runs indefinitely and is latency-sensitive (search, email); the latter runs to completion and only cares about total throughput (analytics, index building).</li>
+<li><strong>Preemption</strong>: when resources run short, the system kills a lower-priority task to make room for a higher-priority one. The killed task is usually re-queued.</li>
+<li><strong>Quota</strong>: "how much this team may request at most," used for admission control <em>at submission time</em>. It is a separate thing from priority: quota governs whether you may submit, priority governs who yields to whom once running.</li>
+<li><strong>Paxos</strong>: the classic consensus algorithm that lets a set of replicas agree on "what the current state is" and elect a leader, surviving the failure of a minority of them.</li>
+<li><strong>Milli-core</strong>: the unit CPU is requested in — 1000 milli-cores = 1 CPU core — so you can ask for "0.1 of a core."</li>
+<li><strong>Kubernetes (K8s)</strong>: the container orchestrator Google open-sourced in 2014, led in part by Borg's own authors; an open rewrite of Borg's ideas.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>By Abhishek Verma, Luis Pedrosa, Madhukar Korupolu, David Oppenheimer, Eric Tune and John Wilkes of Google, published at <strong>EuroSys 2015</strong>. By the time it was written, Borg had been in production for over a decade — the systems behind famous papers like GFS, MapReduce and Bigtable are themselves just tasks running on Borg. Its external contemporaries were Mesos (2011) and YARN (2013); inside Google there was also <strong>Omega</strong> (2013), an experimental successor replacing Borg's monolithic master with shared state and optimistic concurrency. A year later the same people wrote <em>Borg, Omega, and Kubernetes</em> (2016) to review a decade of lessons — and <strong>Kubernetes</strong> is Borg's model rewritten in the open.</p>
+<h2>The problem and the motivation</h2>
+<p>Google had to keep two temperamentally opposite workloads alive on the same fleet. <strong>Online services</strong> (Search, Gmail, ad serving) run indefinitely and are sensitive to tail latency, but their traffic peaks and troughs across the day. <strong>Batch work</strong> (index building, log analysis, MapReduce jobs) runs from seconds to days, exits when done, and only cares about throughput.</p>
+<p>The old approach was to <strong>carve the fleet into disjoint pools by purpose</strong>: each pool sized for its own peak, so each pool sits on a large idle margin that it cannot lend to its neighbor. Worse, at ten-thousand-machine scale hardware failure is <strong>routine, not exceptional</strong> — if humans had to patch, restart and reconfigure by hand, operations could never keep up.</p>
+<p>So there were three problems, pulling against each other: raise utilization; but raising utilization means mixing workloads, and mixing lets neighbors interfere with the online services, so keep those available anyway; and let thousands of engineers ship and keep programs running <strong>without needing to know that machines exist</strong>.</p>
+<h2>Core ideas and method</h2>
+<h3>1. You say what you want, not where it runs</h3>
+<p>Borg's first decision was to narrow the interface down to a <strong>declarative spec</strong>: a job declares how many copies, how many milli-cores / how much memory / how much disk each needs, and what kind of machine it requires. Then you hand it over. Borg picks machines, installs packages, starts the tasks, watches liveness, restarts failures, and moves work off dead machines. <strong>"Which machine is my program on" stops being a question engineers have to answer.</strong></p>
+<p>Two small parts make this actually usable. One is the <strong>alloc</strong> (short for allocation): a reserved slice of resources on a machine into which several cooperating tasks can be placed (a main program plus a log-shipping sidecar, say), moving together with the reservation — <em>this is precisely the ancestor of the Kubernetes pod</em>. The other is <strong>BNS (the Borg Name Service)</strong>: every task gets a stable name (kept in Chubby) so others can find it without knowing which machine or port it currently sits on. <strong>Without that naming layer, "tasks move around at any time" would be a catastrophe rather than a feature.</strong></p>
+<p>The architecture itself is plain: a cell has one logical <strong>Borgmaster</strong> (in fact 5 replicas, holding cell state and electing a leader via Paxos, with the scheduler inside) plus a small agent, the <strong>Borglet</strong>, on every machine. The Borgmaster polls each Borglet every few seconds to pull current state and push pending work; <strong>polling rather than having Borglets report in lets the master control the pace of traffic, so it isn't swamped by tens of thousands of machines at once during recovery</strong>. Conversely, when the master is unreachable a Borglet keeps looking after the tasks already running, so a brief master outage doesn't reach the programs actually serving users.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 580 330" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="bg1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="290" y="16">One cell ≈ 10,000 machines (median), allocated as a single unit</text>
+<rect fill="rgba(255,255,255,0.03)" height="48" rx="6" stroke="#7c8593" width="118" x="16" y="56"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="75" y="76">user submits a job</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="75" y="93">"what", not "where"</text>
+<line marker-end="url(#bg1)" stroke="#7c8593" x1="134" x2="166" y1="80" y2="80"></line>
+<rect fill="rgba(240,180,41,0.08)" height="116" rx="8" stroke="#f0b429" width="248" x="168" y="34"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="292" y="54">Borgmaster · 5 replicas · Paxos-elected</text>
+<rect fill="rgba(255,255,255,0.04)" height="32" rx="5" stroke="#7c8593" width="110" x="182" y="64"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="237" y="84">full cell state</text>
+<rect fill="rgba(255,255,255,0.04)" height="32" rx="5" stroke="#7c8593" width="102" x="300" y="64"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="351" y="84">scheduler</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="292" y="115">feasibility → scoring → place (preempt if needed)</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="292" y="133">polls every machine every few seconds</text>
+<rect fill="rgba(255,255,255,0.03)" height="48" rx="6" stroke="#7c8593" width="118" x="448" y="56"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="507" y="76">BNS naming</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="507" y="93">find by name, not host</text>
+<line marker-end="url(#bg1)" stroke="#7c8593" x1="418" x2="446" y1="80" y2="80"></line>
+<line marker-end="url(#bg1)" stroke="#7c8593" x1="292" x2="292" y1="150" y2="182"></line>
+<text fill="#7c8593" font-size="10.5" x="300" y="170">poll / dispatch</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="7" stroke="#4d5561" width="164" x="20" y="188"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="102" y="207">Borglet</text>
+<rect fill="rgba(240,180,41,0.14)" height="24" rx="4" stroke="#f0b429" width="132" x="36" y="216"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="102" y="232">online-service task</text>
+<rect fill="rgba(232,121,75,0.12)" height="24" rx="4" stroke="#e8794b" width="132" x="36" y="246"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="102" y="262">batch task</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="102" y="285">cgroups containers</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="7" stroke="#4d5561" width="164" x="208" y="188"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="290" y="207">Borglet</text>
+<rect fill="rgba(240,180,41,0.14)" height="24" rx="4" stroke="#f0b429" width="132" x="224" y="216"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="290" y="232">online-service task</text>
+<rect fill="rgba(232,121,75,0.12)" height="24" rx="4" stroke="#e8794b" width="132" x="224" y="246"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="290" y="262">batch task</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="290" y="285">keeps going if master is down</text>
+<rect fill="rgba(255,255,255,0.02)" height="106" rx="7" stroke="#4d5561" width="164" x="396" y="188"></rect>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="478" y="207">Borglet</text>
+<rect fill="rgba(240,180,41,0.14)" height="24" rx="4" stroke="#f0b429" width="132" x="412" y="216"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="478" y="232">online-service task</text>
+<rect fill="rgba(232,121,75,0.12)" height="24" rx="4" stroke="#e8794b" width="132" x="412" y="246"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="478" y="262">batch task</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="478" y="285">… × tens of thousands</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="290" y="316">every machine carries both kinds of load — that is where the savings come from</text>
+</svg>
+<figcaption>Figure 1 · Borg's architecture: one Borgmaster per cell (5 replicas, Paxos-elected, scheduler inside) plus one Borglet per machine; users submit only a declarative job spec.</figcaption>
+</figure>
+<h3>2. Mixing: priority, preemption and quota</h3>
+<p>The main engine of utilization is putting online services and batch work <strong>on the same machines</strong>. Each task carries a <strong>priority</strong>, and priorities fall into non-overlapping bands (roughly, from high to low: monitoring → production → batch → best-effort). <em>Production (prod)</em> means the online services that must not go down; everything else is <em>non-prod</em>.</p>
+<p>The rule is blunt: <strong>when a machine can't fit everything, a higher-priority task pushes a lower-priority one out</strong> — the latter is killed and re-queued. With one important exception: <strong>production tasks do not preempt one another</strong>, or a single eviction would set off a cascade of "I evict you, you evict him."</p>
+<p>Priority alone isn't enough, or everyone would label their own work top priority. Hence <strong>quota</strong>: how much a team may request, at a given priority, over a given period, checked as admission control <strong>at submission time</strong>. Quota at high priority is expensive and scarce, while quota at the lowest priority is close to unlimited — the price being that such work can be preempted at any moment. <strong>Priority decides who yields at run time, quota decides who may ask for how much at submission time; the two must stay separate, or "priority" degenerates into an arms race nobody backs down from.</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 580 280" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="bg2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="140" y="20">normal: service uses half</text>
+<rect fill="none" height="180" rx="6" stroke="#4d5561" width="150" x="65" y="34"></rect>
+<rect fill="rgba(240,180,41,0.2)" height="86" stroke="none" width="148" x="66" y="127"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="140" y="176">online service</text>
+<rect fill="rgba(232,121,75,0.16)" height="92" stroke="none" width="148" x="66" y="35"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="140" y="76">batch fills the gap</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="94">(low priority)</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="140" y="230">capacity of one machine</text>
+<line marker-end="url(#bg2)" stroke="#e8794b" stroke-width="1.6" x1="232" x2="322" y1="120" y2="120"></line>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="277" y="110">traffic peak arrives</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="277" y="140">Borg preempts</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="277" y="156">low-priority tasks</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="440" y="20">peak: batch gives way</text>
+<rect fill="none" height="180" rx="6" stroke="#4d5561" width="150" x="365" y="34"></rect>
+<rect fill="rgba(240,180,41,0.2)" height="150" stroke="none" width="148" x="366" y="63"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="440" y="142">service expands</text>
+<rect fill="rgba(232,121,75,0.08)" height="28" stroke="none" width="148" x="366" y="35"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="440" y="53">what batch is left</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="440" y="230">evicted work is re-queued</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="290" y="262">production tasks never preempt each other, to avoid eviction cascades</text>
+</svg>
+<figcaption>Figure 2 · Mixing and preemption: batch work fills the gap an online service leaves; when the peak comes, Borg kills low-priority tasks to make room, and the evicted work re-queues.</figcaption>
+</figure>
+<h3>3. Reclamation: don't trust the request, trust the measurement</h3>
+<p>Mixing alone is not enough, because engineers almost always <strong>ask for more than they need</strong> — better to over-insure than be paged at 3am for out-of-memory. So on any machine there is a persistent gap between what has been "handed out" and what is actually in use.</p>
+<p>Borg's answer is to split a task's resources into three lines. The <strong>limit</strong> is what you requested, and what you are charged for. The <strong>usage</strong> is the real consumption Borg keeps observing. In between sits the <strong>reservation</strong>, which Borg estimates from recent usage plus a safety margin. <strong>Everything between reservation and limit is judged "you almost certainly won't need this" and reclaimed — lent out to non-production work.</strong> When usage rises the reservation rises with it and the loan is called back immediately, with the cost borne by low-priority tasks that can survive being killed. The paper reports that roughly <strong>20% of the workload runs on such reclaimed resources</strong>.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 580 250" xmlns="http://www.w3.org/2000/svg">
+<line stroke="#7c8593" x1="72" x2="72" y1="24" y2="200"></line>
+<line stroke="#7c8593" x1="72" x2="528" y1="200" y2="200"></line>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="530" y="218">time →</text>
+<text fill="#7c8593" font-size="11" x="20" y="20">resource</text>
+<line stroke="#f0b429" stroke-dasharray="5,4" stroke-width="1.8" x1="72" x2="520" y1="44" y2="44"></line>
+<text fill="#f0b429" font-size="11.5" x="392" y="38">limit: what you requested</text>
+<path d="M72,44 L520,44 L520,112 L440,112 L440,96 L320,96 L320,124 L200,124 L200,108 L72,108 Z" fill="rgba(232,121,75,0.14)" stroke="none"></path>
+<polyline fill="none" points="72,108 200,108 200,124 320,124 320,96 440,96 440,112 520,112" stroke="#e8794b" stroke-width="2"></polyline>
+<text fill="#e8794b" font-size="11.5" x="88" y="100">reservation: estimate + safety margin</text>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="300" y="72">this band is reclaimed → lent to batch and other low-priority work</text>
+<path d="M72,168 C140,150 180,176 240,160 C300,144 340,178 400,164 C450,152 490,170 520,158" fill="none" stroke="#b9c0ca" stroke-width="2"></path>
+<text fill="#b9c0ca" font-size="11.5" x="88" y="192">usage: continuously measured</text>
+</svg>
+<figcaption>Figure 3 · Reclamation: limit is the request, usage is the measurement, reservation is "measurement plus margin"; the band between reservation and limit is reclaimed for low-priority work.</figcaption>
+</figure>
+<h3>4. The scheduler: picking one machine out of ten thousand</h3>
+<p>Scheduling has two steps. First, <strong>feasibility checking</strong>: which machines <em>could</em> hold this task. What counts as "enough room" depends on priority — for production tasks it is computed against the neighbours' declared limits, for non-production tasks against their estimated reservations, <strong>and that is exactly where overcommitment happens</strong>. Second, <strong>scoring</strong>, to pick one of the feasible machines: the policy is a hybrid of <strong>spreading</strong> (scatter load, leaving headroom for spikes) and <strong>best fit</strong> (pack a machine tight, reducing fragmentation). Pure spreading leaves nowhere able to take a large task; pure packing falls over at the first peak.</p>
+<p>The difficulty is scale: a cell has tens of thousands of machines, and some cells see arrival rates above <strong>10,000 tasks per minute</strong>, so scoring machine by machine can never keep up. Borg cuts it down three ways: <strong>score caching</strong> (reuse the last score unless the machine changed materially), <strong>equivalence classes</strong> (the hundreds of tasks in one job have identical requirements, so score once, not hundreds of times), and <strong>relaxed randomization</strong> (examine a random subset and stop once there's enough, rather than chasing the global optimum). <strong>All three buy the same thing: trading "optimal" for "computable in time."</strong> One easily overlooked measurement: a task takes a median of about <strong>25 seconds</strong> from scheduling to running, roughly <strong>80% of it spent installing packages</strong> — which is why Borg prefers machines that already have the package. <em>In real systems the bottleneck is often not in the algorithm you were staring at.</em></p>
+<h3>5. Isolation and availability: covering the cost of mixing</h3>
+<p>Once you pack strangers onto one machine, isolation becomes the crux. Borg uses <strong>cgroups-based containers</strong> rather than virtual machines — saving one operating system per VM, at the cost of less complete isolation. Resources are treated in two classes: <strong>compressible</strong> ones (CPU, disk I/O bandwidth) are simply throttled when exceeded; <strong>non-compressible</strong> ones (memory, disk space) cannot be slowed down, so exceeding them means the task is killed.</p>
+<p>Availability rests on a set of habits: evicted tasks are automatically rescheduled; the replicas of a job are <strong>deliberately spread across failure domains</strong> (different racks, different power) so one outage can't take them all; and <strong>the rate of simultaneous disruptions is capped</strong>. The paper also mentions something very practical — <strong>Fauxmaster</strong>, a high-fidelity simulated master that can replay real cell state offline, used for debugging, capacity planning, and asking "what if we changed this policy?" <em>The "how many machines did that save" results in the next section came out of it.</em></p>
+<h2>Key results</h2>
+<p>The evaluation method is itself worth learning: <strong>cell compaction</strong> — feed a real cell's workload to Fauxmaster, keep removing machines and re-packing from scratch each time until the workload no longer fits. The smallest machine count that still works is the workload's true cost; change one policy, recompute, and the difference tells you what that policy is worth in machines.</p>
+<ul>
+<li><strong>What mixing saves</strong>: segregating production and non-production work into separate cells would need <strong>20–30% more machines in the median cell</strong>.</li>
+<li><strong>What fine-grained requests save</strong>: Borg lets you request in milli-cores and bytes. Coarsening that — rounding every request up to the next power of two — would cost the median cell <strong>30–50% more resources</strong>. <em>"Let's just round it off, it's easier to manage" is astonishingly expensive at this scale.</em></li>
+<li><strong>Big cells beat small ones</strong>: subdividing one large cell into several smaller ones raises the machine count noticeably — <strong>the bigger the pool, the more peaks and troughs cancel out</strong>.</li>
+<li><strong>The real mix</strong>: in a representative cell, production jobs are allocated about <strong>70% of the CPU</strong> and account for about <strong>60% of CPU usage</strong>; they are allocated about <strong>55% of memory</strong> and account for about <strong>85% of memory usage</strong>. <em>The gap between allocation and usage is exactly the meat reclamation feeds on — about 20% of the workload runs on reclaimed resources.</em></li>
+<li><strong>Scale</strong>: a single Borgmaster manages a cell of many thousands of machines, and several cells see arrival rates <strong>above 10,000 tasks per minute</strong>.</li>
+</ul>
+<h2>Why it matters</h2>
+<p><strong>First, it turned "the cluster is the computer" from a slogan into an engineering fact with production evidence</strong>: a decade-plus of running records at ten-thousand-machine scale showing that "engineers declare needs and never touch machines" works, and that it saves fleet-sized money. "Mix, preempt by priority, overcommit against measured usage" became the default agenda for every cluster scheduler afterwards.</p>
+<p><strong>Second, it is the design blueprint for Kubernetes.</strong> The alloc became the pod; "declarative spec plus a master continuously pulling reality toward the desired state" became K8s's core loop; the Borglet became the kubelet. Most of what we now call cloud-native practice — containers, declarative configuration, control plane separated from data plane, priority and preemption — has its prototype in this paper.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Design mistakes the authors own up to</strong>: <em>the job is the only grouping mechanism</em> — there is no way to manage "several jobs of one service" (a canary track and a production track, say) as a single entity; <em>one IP address per machine</em> — every task on a machine shares the host's IP and port space, so ports have to be scheduled as a resource, with tasks pre-declaring how many they need and accepting whichever they're given (Kubernetes gave each pod its own IP precisely to cure this); <em>over-optimizing for power users</em> — the feature surface is rich for heavy users but steep for casual ones.</li>
+<li><strong>Isolation while mixing is imperfect</strong>: cgroups containers share a kernel, and share cache and memory bandwidth, so neighbour interference can't be eliminated — especially for tail-latency-sensitive services. The paper acknowledges this is still being improved. Borg is also a single centralized logical master, whereas Google's own Omega argued that would become the bottleneck and moved to shared state with optimistic concurrency; neither has been settled, and Kubernetes ended up in between.</li>
+<li><strong>The conclusions may not travel</strong>: Borg's gains lean heavily on Google's <strong>homogeneous environment</strong> — one RPC framework, one monitoring and naming stack, a controlled software base, a limited set of machine types. On a public cloud with wildly varied stacks and mutually distrustful tenants, the safe envelope for aggressive mixing is much narrower.</li>
+<li><strong>Not reproducible, and told from the winning side</strong>: the system is closed-source and the data comes from Google's internal cells, so outsiders can neither verify nor compare; and while the utilization and scale numbers are generous, the paper is comparatively reticent about batch queueing delays and the wasted recomputation caused by repeated preemption.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one sentence: users submit a declarative "what I want" spec and Borg picks machines, starts, watches and restarts the work inside a cell of tens of thousands — allocating a datacenter as if it were one machine.</p>
+<p>② The pain: fleets carved into disjoint pools, each sized for its own peak and unable to lend its idle capacity; at ten-thousand-machine scale, failure is routine and manual operations can't keep up.</p>
+<p>③ Mechanism one, mixing: online services and batch work on the same machines, with priority bands and preemption keeping the former first; production tasks never preempt each other, to avoid cascades.</p>
+<p>④ Mechanism two, reclamation: limit (requested) / usage (measured) / reservation (measured + margin); the band between reservation and limit is lent to low-priority work, and about 20% of the workload runs there.</p>
+<p>⑤ Scheduling: feasibility checking then scoring (a hybrid of spreading and best fit), made computable by score caching, equivalence classes and relaxed randomization; median task startup 25s, 80% of it package installation. Supporting parts: allocs (pod ancestors), BNS naming, cgroups isolation.</p>
+<p>⑥ Results (measured by cell compaction): segregating prod from non-prod costs 20–30% more machines; coarsening resource requests costs 30–50% more; big cells beat small ones; median cell about 10,000 machines.</p>
+<p>⑦ Impact and limits: the direct blueprint for Kubernetes (alloc→pod, declarative control loop, kubelet); but the authors themselves call the job-only grouping and one-IP-per-machine mistakes, container isolation is incomplete, and the gains lean on Google's homogeneous environment in ways a public cloud may not be able to copy.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full scheduling policy details and all the charts, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
