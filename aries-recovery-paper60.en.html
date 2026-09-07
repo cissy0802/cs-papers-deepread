@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>ARIES (Database Crash Recovery) — CS Papers Deep-Read Paper 60</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 60</p>
+<h1>ARIES: Database Crash Recovery</h1>
+<p class="sub">Mohan, Haderle, Lindsay, Pirahesh, Schwarz · IBM Almaden · ACM TODS 1992</p>
+<p class="langbar"><a href="aries-recovery-paper60.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>You tap "confirm transfer" and the screen says "done." If the data center loses power one second later, could half the money vanish — debited from one account and never credited to the other? It can't. And that confidence comes in large part from <strong>ARIES</strong>, published in 1992 by a team at IBM. It took "how to tidy up the books after a crash" from a pile of house-specific folk remedies and turned it into one standard method you can explain, argue about, and copy. Most databases you touch today still run on its skeleton.</p>
+<h2>First, how hard this is</h2>
+<p>A database doesn't write each change straight to disk — far too slow. It changes things in <strong>memory</strong>, lets them pile up, and writes whole blocks back later. So at the instant the power dies, the disk holds a <strong>half-cooked mess</strong>: some transactions already told the user "done" while their changes still sit in memory (<strong>lost</strong>); others got only halfway and never committed, yet the memory they dirtied happened to be flushed to disk anyway (<strong>dirty</strong>). Both kinds coexist, tangled together on the same page.</p>
+<h2>The one core move: write the diary before the ledger</h2>
+<p>ARIES rests on a rule so plain it sounds boring: <strong>before touching the ledger, write down what you are about to do in a diary, and make sure that diary entry reaches disk first.</strong> The diary is append-only, never erased — "I changed that number on page 7 from 3 to 5." With it, the half-cooked mess is salvageable: whatever the diary records but the ledger lacks gets <strong>redone</strong>; whatever traces a half-finished transaction left behind get <strong>undone</strong> by working backwards. And the diary is written sequentially, which is far faster than scribbling in a dozen scattered spots of the ledger.</p>
+<h2>Three details that make redo and undo actually safe</h2>
+<p><strong>1. Number every diary entry, and stamp every ledger page.</strong> Each page carries a line in its header: "I was last modified by diary entry 42." Hold diary entry 57 against it: the stamp says 42, earlier than 57, so this change hasn't landed on this page yet — redo it. If the stamp already says 90, it was applied long ago — skip. So <strong>redoing ten times gives the same result as redoing once</strong>, which matters enormously, because the power can die again mid-recovery and the whole thing starts over.</p>
+<p><strong>2. Replay history exactly, then undo.</strong> Recovery doesn't sort the good from the bad. It replays the diary end to end exactly as written — including changes made by the doomed half-finished transactions — restoring the database to precisely how it looked the instant before the crash, and only then cleanly undoes those half-finished transactions. Why the extra step? Because undo is an action with preconditions: to erase a record you first have to know where it is and what surrounds it. Redo only the "good" changes and the database lands in a strange state <strong>that never actually existed</strong>. It's forensic practice: put the scene back exactly as the photographs show it, then reason backwards step by step.</p>
+<p><strong>3. Undo itself gets written into the diary.</strong> Each time it undoes a step, it adds an entry: "just undid that one; <strong>the next one to undo is number N</strong>." If the power dies halfway through the rollback, on restart the last such entry says exactly where to resume — everything already undone is skipped wholesale and never undone twice. That is precisely what guarantees that repeated crashes still converge.</p>
+<h2>What it buys</h2>
+<p>With all this in place, a database can finally treat memory as memory: dirty data can be flushed whenever convenient (even for a transaction that hasn't committed), and a commit needn't wait for the data to land on disk — only the diary entry. Fast, and unafraid of power failure. The cost is real too: every change is written twice, so this diary becomes the busiest single lane in the system — and in the age of many-core in-memory databases, it turned into the new bottleneck.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Before touching data, write the change into an append-only diary and get it on disk. After a crash, the "last modified by entry N" stamp on each page turns redo into an action that's safe to repeat any number of times; replay all of history exactly to restore the scene, then go back and undo the half-finished transactions — logging each undo step too. So no matter which instant the power dies again, recovery can pick up where it left off and is guaranteed to finish the cleanup.</p>
+</div>
+<p class="switch-hint">Want the three-pass diagram, the CLR pointer chain, and the steal / no-force trade-off? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">ARIES builds a three-pass recovery algorithm — <strong>Analysis → Redo → Undo</strong> — on top of <strong>write-ahead logging (WAL) and log sequence numbers (LSNs)</strong>: the redo pass <strong>repeats history exactly</strong> (including the changes of transactions doomed to roll back) to restore the state at the moment of the crash, then undoes uncommitted transactions backwards, writing each undo step as a <strong>compensation log record (CLR)</strong> that is redo-only and never itself undone. It was the first method to simultaneously support a high-performance buffer policy, record-level locking, logical undo, partial rollback, and bounded, convergent recovery even when the system crashes again during recovery.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Transaction</strong>: a group of operations that must all happen or none happen (a transfer's "debit here, credit there"). <strong>Commit</strong> = declare it in effect; <strong>rollback</strong> = treat it as never having happened. Recovery exists to deliver exactly that: no transaction half-done, no committed change lost to a power cut.</li>
+<li><strong>Page and buffer pool</strong>: a database reads and writes disk in fixed-size "pages" (say 8KB); the in-memory cache of pages is the buffer pool. A page modified but not yet written back is a <strong>dirty page</strong>.</li>
+<li><strong>Log</strong>: an append-only, never-rewritten stream of records saying "who changed what from which old value to which new value," kept separately and written sequentially — sequential writes are far faster than scattered random writes into the data files.</li>
+<li><strong>REDO / UNDO</strong>: redo = apply changes the log has but the disk page lacks; undo = erase traces an uncommitted transaction already left in the data.</li>
+<li><strong>Locking granularity</strong>: whether the unit of locking is a whole table, a page, or a single record. Finer granularity means more concurrency and <strong>harder recovery</strong> — which is exactly this paper's difficulty.</li>
+<li><strong>B-tree</strong>: the most common index structure; when a page gets too full it <strong>splits</strong> into two and records move house — the canonical "structural change" this paper worries about.</li>
+<li><strong>Idempotent</strong>: doing the operation once and doing it many times give the same result. Recovery must be idempotent, because it can crash mid-way and start over.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are C. Mohan, Don Haderle, Bruce Lindsay, Hamid Pirahesh, and Peter Schwarz of IBM Almaden Research Center; it circulated as an IBM research report in 1989 and appeared formally in <em>ACM TODS</em> in 1992, running past sixty pages. It inherits System R's <em>shadow paging</em> (never overwrite a page — write a fresh copy and switch the page-table pointer at commit) and the transaction/logging theory of Jim Gray's line, and it launches the sister papers on index locking and concurrency (ARIES/KVL, ARIES/IM) plus the default blueprint for commercial relational recovery subsystems ever since. Codd's relational model gave databases their <em>theoretical</em> root; this paper gave them their <em>engineering</em> root.</p>
+<h2>The problem</h2>
+<h3>Performance against correctness, head-on</h3>
+<p>All the difficulty comes from one fact: to be fast, the movement of pages between memory and disk <strong>cannot</strong> be aligned with the start and end of transactions. Two policy dimensions:</p>
+<ul>
+<li><strong>steal</strong>: when the buffer pool needs room, allow pages dirtied by an <strong>uncommitted</strong> transaction to be written to disk. Forbid it and a long transaction can pin the buffer pool solid; allow it and the disk may hold uncommitted traces → <strong>UNDO required</strong>.</li>
+<li><strong>no-force</strong>: at commit, don't force every modified data page back to disk (a pile of expensive random writes) — force only the log. So committed changes may live only in memory → <strong>REDO required</strong>.</li>
+</ul>
+<p>Performance demands <strong>steal + no-force</strong>, and the price is that both redo and undo become mandatory. That is the source of the whole problem.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 600 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="277" y="30">no-steal</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="277" y="47">uncommitted pages stay in memory</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="482" y="30">steal</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="482" y="47">uncommitted pages may be flushed</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="168" y="94">force</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="168" y="111">flush pages at commit</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="end" x="168" y="168">no-force</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="168" y="185">flush only the log</text>
+<rect fill="rgba(255,255,255,0.02)" height="64" rx="7" stroke="#3a4048" width="195" x="180" y="62"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="277" y="89">no REDO / no UNDO</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="277" y="108">but commit waits on random writes</text>
+<rect fill="rgba(255,255,255,0.02)" height="64" rx="7" stroke="#3a4048" width="195" x="385" y="62"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="482" y="89">UNDO needed</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="482" y="108">disk may hold uncommitted traces</text>
+<rect fill="rgba(255,255,255,0.02)" height="64" rx="7" stroke="#3a4048" width="195" x="180" y="136"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="277" y="163">REDO needed</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="277" y="182">committed changes may not be on disk</text>
+<rect fill="rgba(240,180,41,0.09)" height="64" rx="7" stroke="#f0b429" stroke-width="1.6" width="195" x="385" y="136"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="482" y="163">REDO + UNDO needed</text>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="482" y="182">ARIES picks this cell: fastest</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="380" y="222">down and to the right is faster — and leans harder on the recovery algorithm</text>
+</svg>
+<figcaption>Fig 1 · The buffer policy decides the recovery duty: chasing performance means stealing dirty pages and not forcing at commit, so both redo and undo are mandatory.</figcaption>
+</figure>
+<h3>Fine-granularity locking pushes it over the edge</h3>
+<p>What really broke earlier methods was <strong>record-level locking</strong>. Once the locking unit drops from a page to a single record, changes from several transactions sit side by side on one page: you can no longer roll a page back wholesale to an older version (that would erase someone else's committed work too). And a B-tree split moves records to other pages, so by the time you undo an insert the record may no longer be where it was — "restore the bytes in slot 3 of page 7" simply stops working. Undo has to be able to say, <strong>logically</strong>, "delete the record with key 42."</p>
+<p>Earlier schemes each had a crack: shadow paging destroyed physical clustering and concurrency; some WAL schemes redid only the "winners," or required pages to be in some agreed state at rollback, which collides head-on with fine-granularity locking; others <strong>re-undid work when a crash happened during rollback</strong>, so the log could grow without bound. The real question was: <strong>is there an algorithm that permits steal / no-force, supports record-level locking and logical undo, and still converges with bounded work when the system crashes again at any point during recovery?</strong></p>
+<h2>Core ideas</h2>
+<h3>Part zero: WAL — the log goes first</h3>
+<p>One rule: <strong>the log record describing a change must reach stable storage before the changed page may be written back to disk</strong>; a commit need only ensure its own log records are on disk. WAL was not invented by ARIES, but ARIES got everything built on top of it right.</p>
+<h3>Part one: LSN and page_LSN — making redo testable and idempotent</h3>
+<p>Every log record carries a <strong>monotonically increasing</strong> number, its <code>LSN</code>. The key move: <strong>every data page stores a <code>page_LSN</code> in its header, the LSN of the last log record that modified it</strong>. The redo test is then a single line: apply the record only if <code>page_LSN &lt; the record's LSN</code>, then set <code>page_LSN</code> to it. What is it computing? "Has this page already seen this particular change?" The stamp the page carries turns a question you would otherwise have to guess at into one numeric comparison, which makes redo <strong>idempotent</strong>: crash halfway through recovery, start over, and the same change is never applied twice. The reliability of everything else in ARIES rests on that one small header field.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="54" rx="7" stroke="#f0b429" width="176" x="14" y="52"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="102" y="76">log record LSN = 57</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="102" y="94">"on page 7, byte A→B"</text>
+<path d="M192,72 C222,72 222,44 250,44" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<path d="M192,86 C222,86 222,122 250,122" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<rect fill="rgba(255,255,255,0.02)" height="46" rx="7" stroke="#3a4048" width="292" x="256" y="21"></rect>
+<text fill="#b9c0ca" font-size="11.5" x="270" y="41">page_LSN = 42, earlier than 57</text>
+<text fill="#f0b429" font-size="11.5" x="270" y="59">→ not yet applied here: redo, stamp 57</text>
+<rect fill="rgba(255,255,255,0.02)" height="46" rx="7" stroke="#3a4048" width="292" x="256" y="99"></rect>
+<text fill="#b9c0ca" font-size="11.5" x="270" y="119">page_LSN = 90, already past 57</text>
+<text fill="#e8794b" font-size="11.5" x="270" y="137">→ applied long ago: skip</text>
+</svg>
+<figcaption>Fig 2 · The page_LSN stamp: one numeric comparison decides whether this page has already seen this change, so redo is safe to repeat.</figcaption>
+</figure>
+<h3>Part two: repeating history</h3>
+<p>The most counterintuitive and most essential decision. The redo pass <strong>does not distinguish winners (committed) from losers (uncommitted)</strong>: it reapplies every redoable change in order — <strong>including changes about to be undone</strong> — bringing the database back to exactly the instant of the crash, and only then undoes the losers.</p>
+<p>Why the detour? Because in a world of fine-granularity locking and logical undo, <strong>undo is an action with preconditions</strong>: "delete the record with key 42" only means something if the page and the index are in the shape they were when that record was logged. Redo only the winners and the database sits in a <strong>mixed state that never actually existed</strong>, with undo facing a scene it has never seen. This one decision compresses the correctness argument into a single invariant: <em>when redo ends, the database state equals the state at the moment of the crash.</em></p>
+<h3>Part three: CLRs and UndoNxtLSN — logging undo, and never undoing it</h3>
+<p>When ARIES undoes a change it doesn't quietly revert it; it writes a <strong>compensation log record (CLR)</strong> describing what the undo did. Every CLR carries a pointer, <code>UndoNxtLSN</code>, to the record <strong>preceding</strong> the one just undone — that is, to the next thing still needing undo. And a CLR is <strong>redo-only</strong>: it can be redone, but is <strong>never itself undone</strong>.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 600 230" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="494" y="18">↓ crash again mid-rollback</text>
+<line stroke="#e8794b" stroke-dasharray="4 4" x1="494" x2="494" y1="26" y2="100"></line>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="6" stroke="#f0b429" width="84" x="20" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="62" y="65">LSN 10</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="62" y="81">change A</text>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="6" stroke="#f0b429" width="84" x="116" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="158" y="65">LSN 20</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="158" y="81">change B</text>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="6" stroke="#f0b429" width="84" x="212" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="254" y="65">LSN 30</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="254" y="81">change C</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="6" stroke="#e8794b" width="84" x="308" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="350" y="65">CLR 40</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="350" y="81">undo C</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="6" stroke="#e8794b" width="84" x="404" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="446" y="65">CLR 50</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="446" y="81">undo B</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="6" stroke="#e8794b" stroke-dasharray="3 3" width="84" x="500" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="542" y="65">CLR 60</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="542" y="81">undo A</text>
+<path d="M350,90 C350,126 158,126 158,92" fill="none" marker-end="url(#a2)" stroke="#e8794b" stroke-width="1.4"></path>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="254" y="142">UndoNxtLSN → 20</text>
+<path d="M446,90 C446,178 62,178 62,92" fill="none" marker-end="url(#a2)" stroke="#e8794b" stroke-width="1.4"></path>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="254" y="194">UndoNxtLSN → 10</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="300" y="216">on restart, CLR 50 sends undo straight to LSN 10: what was undone is skipped, never redone</text>
+</svg>
+<figcaption>Fig 3 · CLR and UndoNxtLSN: undo is itself logged and carries a "what to undo next" pointer, so undo work stays bounded across repeated crashes.</figcaption>
+</figure>
+<p>Three payoffs: <strong>(1) undo work is bounded</strong> — crash during rollback, and on restart the last CLR's <code>UndoNxtLSN</code> resumes exactly where it stopped; already-undone stretches are skipped, there is no "undo of the undo," and the log doesn't balloon across repeated crashes (precisely the crack in earlier schemes); <strong>(2) partial rollback comes free</strong> — rolling back to a <strong>savepoint</strong> mid-transaction uses the same pointer machinery; <strong>(3) undo is protected by redo</strong> — since undo actions are in the log, they can be redone, so recovery may be interrupted at any point.</p>
+<h3>Part four: three passes — Analysis, Redo, Undo</h3>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="a4" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<line stroke="#7c8593" x1="30" x2="545" y1="62" y2="62"></line>
+<text fill="#7c8593" font-size="11" x="30" y="80">start of log</text>
+<line stroke="#f0b429" x1="70" x2="70" y1="54" y2="70"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="80" y="46">RedoLSN</text>
+<line stroke="#7c8593" x1="175" x2="175" y1="54" y2="70"></line>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="175" y="46">checkpoint</text>
+<line stroke="#e8794b" x1="520" x2="520" y1="50" y2="74"></line>
+<text fill="#e8794b" font-size="11" text-anchor="end" x="545" y="46">crash / end of log</text>
+<text fill="#e7ebf1" font-size="11.5" x="175" y="112">1 · Analysis: rebuild the dirty-page and transaction tables, fix RedoLSN and the losers</text>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-width="2" x1="175" x2="518" y1="122" y2="122"></line>
+<text fill="#e7ebf1" font-size="11.5" x="70" y="172">2 · Redo: from RedoLSN, repeat all history exactly (losers included)</text>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-width="2" x1="70" x2="518" y1="182" y2="182"></line>
+<text fill="#e7ebf1" font-size="11.5" x="70" y="232">3 · Undo: roll losers back from the end, writing a CLR per step</text>
+<line marker-end="url(#a4)" stroke="#e8794b" stroke-width="2" x1="520" x2="72" y1="242" y2="242"></line>
+<text fill="#7c8593" font-size="11" x="70" y="276">RedoLSN usually precedes the checkpoint: it is the smallest recLSN in the dirty-page table</text>
+</svg>
+<figcaption>Fig 4 · The three passes: analysis fixes the starting point and the losers, redo restores the crash-instant state, undo then cleans up uncommitted work backwards.</figcaption>
+</figure>
+<p><strong>1 · Analysis</strong>: scan from the most recent <em>checkpoint</em> (a periodic log entry recording roughly how the system looked) to the end of the log, rebuilding the <strong>dirty-page table</strong> (each dirty page records a <code>recLSN</code>: the LSN of the record that first dirtied it since it was last written out) and the <strong>transaction table</strong> (transactions still alive at the crash and their last LSN). Take the <strong>smallest recLSN</strong> in the dirty-page table as the redo starting point, <code>RedoLSN</code>. This pass touches no data; it only establishes where to start and who the losers are.</p>
+<p><strong>2 · Redo</strong>: scan forward from <code>RedoLSN</code>, applying the test in Fig 2. The dirty-page table saves enormous work: any page not in the table, or whose <code>recLSN</code> already exceeds this LSN, was written out long ago, so the record is skipped without even reading the page into memory.</p>
+<p><strong>3 · Undo</strong>: merge the log records of all loser transactions into one stream in <strong>descending</strong> LSN order, undoing each and writing a CLR, until every loser is rolled back to its start. Merging rather than undoing one transaction at a time keeps each page from being visited more than about once.</p>
+<p>And the checkpoint here is a <strong>fuzzy checkpoint</strong>: it writes only those two tables into the log, <strong>forcing no dirty pages and quiescing nothing</strong>; dirty pages drain in the background, and the smallest <code>recLSN</code> also decides how far the log can safely be truncated.</p>
+<h3>Part five: page-oriented redo, logical undo</h3>
+<p>Here is the signature compromise. <strong>Redo is always page-oriented</strong> — a log record touches exactly one page and depends on no other page's state (the paper's <em>physiological logging</em>: physical to a page, logical within it, as in "delete this record from this page and shuffle the rest"), which is both fast and decidable by <code>page_LSN</code> alone. <strong>Undo, however, may be logical</strong>: "delete the record with key 42," with the current index deciding which page that is, because the B-tree may have split since. That pairing is exactly what makes fine-granularity locking possible.</p>
+<p>Alongside it sits the <strong>nested top action</strong>: a structural adjustment like a B-tree page split, once done, must <strong>not</strong> be undone when the enclosing transaction rolls back (other transactions may already be working on the new structure). The trick: after the sub-action completes, write a dummy CLR whose <code>UndoNxtLSN</code> points to just <strong>before</strong> the sub-action began, so a rollback of the outer transaction leaps straight over it and the structural change stands.</p>
+<h2>Key results</h2>
+<p>An honest note: <strong>this is a design paper, not an experimental one</strong> — there is no benchmark table in its sixty-odd pages. Its evidence comes in three kinds: a <strong>correctness argument</strong> (spelling out why recovery still converges, with bounded work, if it crashes again at any point); a <strong>capability comparison</strong> (a long section setting ARIES against System R's shadow paging, early DB2, IMS, Tandem and others, item by item — not on speed but on <em>what is possible at all</em>: does it allow steal / no-force, does it support record-level locking and partial rollback, is repeated-crash recovery bounded, must checkpointing quiesce the system); and <strong>industrial deployment</strong> (by publication ARIES had been implemented in several IBM products and prototypes, including the OS/2 Extended Edition Database Manager, the Starburst prototype, and the QuickSilver distributed file system).</p>
+<p>So ARIES "won" not on a scoreboard but because it <strong>filled in the whole capability matrix at once</strong>: steal + no-force, record-level locking, logical undo, partial rollback, bounded recovery across repeated crashes, and non-quiescing checkpoints — no prior method delivered all six together.</p>
+<h2>Why it matters</h2>
+<p><strong>It became the default blueprint for commercial relational recovery subsystems.</strong> IBM DB2 goes without saying; Microsoft SQL Server's restart recovery is described in exactly those three phases, analysis / redo / undo; MySQL's InnoDB uses an LSN-stamped physiological redo log plus separate rollback segments — the same skeleton. <strong>PostgreSQL is an instructive contrast</strong>: it too uses WAL and LSNs and replays by the LSN test, but its MVCC leaves uncommitted versions in place, hides them by visibility rules, and cleans them up later with VACUUM — so it has <strong>no ARIES undo pass at all</strong>, which nicely shows these parts can be taken apart and used separately.</p>
+<p>It also turned a batch of terms into industry vocabulary: WAL, LSN, dirty-page table, compensation log record, repeating history. At a higher level, its contribution was to <strong>turn recovery from a pile of ad-hoc special cases into an algorithm you can reason about</strong> — with a stated invariant and a convergence guarantee (restart at any interruption point and it continues and terminates). Before it, recovery was the dirtiest, most feared code in every database.</p>
+<h2>Limits and criticism</h2>
+<ul>
+<li><strong>Complex, and hard to implement correctly</strong>: sixty-odd pages of interlocking detail (latch protocols, nested top actions, the interplay of page- and record-level information), with the index algorithms spread across further sister papers; implementations calling themselves "ARIES-style" differ considerably from one another. It also gives <strong>no quantitative evaluation</strong> — nothing on log volume, recovery time, or checkpoint impact on live traffic, so implementers must weigh the trade-offs themselves.</li>
+<li><strong>Write amplification and the log bottleneck</strong>: each change generally needs both redo and undo information, and the log is the one serialized shared resource in the system. In the many-core in-memory era, log contention and flush latency became the scalability limit, prompting group commit, scalable logging work, and alternatives such as <strong>command logging</strong> — record only "which stored procedure ran, with what arguments," which is very cheap at runtime but forces recovery to recompute the entire history.</li>
+<li><strong>Its assumptions are being rewritten</strong>: ARIES assumes pages, disks, update-in-place, and a single node. LSM-trees, copy-on-write, MVCC, non-volatile memory, and cloud architectures that treat the log itself as the database and let the storage layer replay it all sidestep its division of labor to some degree. And as PostgreSQL shows, a different concurrency-control design removes the undo path entirely — the full ARIES shape is tied to "update-in-place plus fine-granularity locking," not the only answer to recovery.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1 · In one line: three-pass recovery (analysis → redo → undo) on top of WAL + LSN, where redo repeats all of history and undo writes redo-only CLRs.</p>
+<p>2 · Root of the pain: performance forces steal + no-force, so REDO and UNDO are both mandatory; record-level locking then kills whole-page rollback and kills physical undo once a B-tree splits.</p>
+<p>3 · The bedrock part: each page's header holds <code>page_LSN</code>, so redo is decided by one numeric comparison — hence idempotent, hence safe when recovery crashes again.</p>
+<p>4 · The counterintuitive move: redo makes <strong>no distinction between winners and losers</strong>, restoring the exact crash-instant state so undo has a scene it recognizes.</p>
+<p>5 · CLR + <code>UndoNxtLSN</code>: undo is logged and never undone, so undo work stays bounded across repeated crashes, and partial rollback to a savepoint comes free.</p>
+<p>6 · Page-oriented redo with logical undo (physiological logging) is the signature compromise; nested top actions keep B-tree splits from being rolled back; fuzzy checkpoints force no pages and quiesce nothing.</p>
+<p>7 · Form of evidence: not benchmarks, but a correctness argument, a capability matrix against prior methods, and deployment in several IBM products and prototypes.</p>
+<p>8 · Impact and limits: DB2, SQL Server, and InnoDB share the skeleton, while PostgreSQL's MVCC drops the undo pass entirely; against that, ARIES is very complex to implement correctly, offers no measurements, and its log became the scalability bottleneck of the many-core era.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Finishing this page ≈ holding the core of the paper; for the full log-record formats, latch protocols, and index algorithms, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

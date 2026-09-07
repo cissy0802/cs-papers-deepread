@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>ARIES（崩溃恢复）— IT 论文精读 Paper 60</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 60</p>
+<h1>ARIES：数据库崩溃恢复</h1>
+<p class="sub">Mohan, Haderle, Lindsay, Pirahesh, Schwarz · IBM Almaden · ACM TODS 1992</p>
+<p class="langbar"><a href="aries-recovery-paper60.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>你点「确认转账」，屏幕回了「成功」。假如下一秒机房断电，这笔钱会不会扣了一半、另一半没到账？不会——这份底气很大程度上来自 1992 年 IBM 一队人发表的 <strong>ARIES</strong>：它把「崩溃之后怎么把账收拾干净」从各家各法的土办法，变成一套能讲清楚、能照着抄的标准做法。今天绝大多数数据库用的还是它的骨架。</p>
+<h2>先说说这有多难</h2>
+<p>数据库改数据不是改一笔落一笔盘——太慢。它先在<strong>内存</strong>里改，攒一攒才整块写回磁盘。于是断电那一瞬，磁盘上是一锅<strong>夹生饭</strong>：有的事务已经跟用户说了「成功」，改动却还在内存里（<strong>丢了</strong>）；有的只做了一半、还没提交，弄脏的内存却被顺手刷了盘（<strong>脏了</strong>）。两种还交织在同一页上。</p>
+<h2>核心那一招：先写日记，再改账本</h2>
+<p>ARIES 的地基是一条近乎无聊的规矩：<strong>动账本之前，先把「我要干什么」写进日记，并保证这笔日记先落到磁盘上。</strong>日记只往后加、绝不涂改——「我把第 7 页那个数从 3 改成了 5」。有了它，夹生饭就有救：日记里写着、账本上没有的<strong>补做</strong>；日记里属于半截事务的痕迹<strong>倒推撤掉</strong>。而日记是顺序写的，比在账本上东改一处西改一处快得多。</p>
+<h2>三个细节，让补做和撤销真的可靠</h2>
+<p><strong>一、给每条日记编号，给每页账本盖印章。</strong>页眉上盖着一行小字：「我最后一次被改，对应日记第 42 条」。拿日记第 57 条来对：印章是 42，早于 57，说明这笔还没落在这页上，补做；印章若已是 90，说明早做过了，跳过。于是<strong>补做十遍和一遍结果一样</strong>——这点至关重要，因为恢复途中还可能再断电、再来一遍。</p>
+<p><strong>二、先原样重演历史，再回头撤销。</strong>它<strong>不挑好人坏人</strong>，把日记从头到尾原样重演一遍，连注定要撤销的半截事务的改动也照做，先把数据库复原成「断电前最后一瞬」的模样，再把半截事务干净撤掉。为什么多这一步？因为撤销是有前提的：要抹掉一条记录，得先知道它在哪儿、周围长什么样。只挑着补做，数据库会停在一个<strong>从未真实存在过</strong>的怪状态。像刑侦：先按照片把现场摆回原样，再一步步倒推。</p>
+<p><strong>三、撤销本身也写进日记。</strong>每撤一步就补记一笔「刚才那笔撤了，<strong>下一个该撤第几条</strong>」。撤到一半又断电，重启读到最后那笔补记就知道从哪儿接着撤——撤过的整段跳过，绝不重撤。这正是「反复崩溃也一定收敛」的保证。</p>
+<h2>它换来了什么</h2>
+<p>有了这套，数据库才敢把内存当内存用：脏数据想什么时候刷盘就什么时候刷（哪怕事务还没提交），提交时也不必傻等数据落盘、只等日记落盘。快，且不怕断电。代价也实打实：每笔改动都要写两遍，这本日记成了全系统最拥挤的一条路，到了几十核的内存数据库时代反成新瓶颈。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>动数据前先把改动写进一本只追加的日记并落盘；崩溃后靠每页上的「最后改动编号」印章，把补做变成做几遍都一样的安全动作，先原样重演全部历史复原现场，再回头撤销半截事务，每一步撤销也记进日记——于是无论哪一刻再断电，恢复都能接着跑并收拾干净。</p>
+</div>
+<p class="switch-hint">想看三趟恢复的流程图、CLR 指针链和 steal / no-force 的取舍？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">ARIES 用一套建在<strong>预写日志（WAL）与日志序号（LSN）</strong>之上的三趟恢复——<strong>分析 → 重做 → 撤销</strong>——收拾崩溃现场：重做阶段<strong>原样重演全部历史</strong>（连注定回滚的事务也照做）把状态复原到崩溃瞬间，再倒着撤销未提交事务，并把每一步撤销也写成「只重做、永不被撤销」的<strong>补偿日志（CLR）</strong>。它第一次同时满足了高性能缓冲策略、记录级锁、逻辑撤销、部分回滚，以及恢复途中再崩也收敛且工作量有界。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>事务（transaction）</strong>：一组要么全做、要么全不做的操作（转账的「这边扣、那边加」）。<strong>提交</strong> = 宣布生效，<strong>回滚</strong> = 当作没发生。恢复要兑现的就是：事务不能只做一半，已提交的改动断电也不能丢。</li>
+<li><strong>页（page）与缓冲池（buffer pool）</strong>：数据库按固定大小的「页」（如 8KB）读写磁盘，内存里缓存页的地方叫缓冲池；改过还没写回磁盘的页叫<strong>脏页</strong>。</li>
+<li><strong>日志（log）</strong>：只能追加、不能改写的记录流，记「谁把什么从旧值改成新值」，单独存放并顺序写入——顺序写远快于在数据文件里随机写。</li>
+<li><strong>重做 / 撤销（REDO / UNDO）</strong>：重做 = 把日志里有、磁盘页上没有的改动补上；撤销 = 抹掉未提交事务留在数据上的痕迹。</li>
+<li><strong>锁粒度（locking granularity）</strong>：加锁的单位是整表、整页还是单条记录。粒度越细并发越高，<strong>恢复也越难</strong>——这正是本文的难点。</li>
+<li><strong>B 树（B-tree）</strong>：最常用的索引结构，插入过多时一页会「<strong>分裂</strong>」成两页、记录随之搬家，是本文所说「结构性改动」的典型。</li>
+<li><strong>幂等（idempotent）</strong>：同一操作做一次和做多次结果相同。恢复必须幂等，因为途中还可能再崩、再来一遍。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 C. Mohan、Don Haderle、Bruce Lindsay、Hamid Pirahesh、Peter Schwarz，出自 IBM Almaden 研究中心；1989 年先以研究报告在圈内流传，1992 年正式发表于 <em>ACM TODS</em>，正文六十余页。它上承 System R 的<em>影子分页</em>（改页时不覆盖原页、另写副本，提交时切换页表指针）与 Jim Gray 一系的事务日志理论，下启专攻索引加锁的姊妹论文（ARIES/KVL、ARIES/IM），并成为此后商用关系库恢复子系统的默认蓝本。关系模型（Codd）给了数据库<em>理论的根</em>，这一篇给的是<em>工程的根</em>。</p>
+<h2>问题与动机</h2>
+<h3>性能与正确性的正面冲突</h3>
+<p>恢复之难全部来自一件事：为了快，数据页在内存与磁盘之间的流动<strong>不能</strong>与事务的起止对齐。两个策略维度：</p>
+<ul>
+<li><strong>steal（允许偷）</strong>：缓冲池腾地方时允许把<strong>尚未提交</strong>事务弄脏的页刷到磁盘。不允许，长事务会把缓冲池占死；允许了，盘上就可能留下未提交的痕迹 → <strong>需要 UNDO</strong>。</li>
+<li><strong>no-force（提交不强刷）</strong>：提交时不强制把改过的数据页写回磁盘（一堆昂贵的随机写），只强制日志落盘。于是已提交的改动可能只在内存里 → <strong>需要 REDO</strong>。</li>
+</ul>
+<p>要性能就得选 <strong>steal + no-force</strong>，代价是重做与撤销一个都不能少。这是整个问题的源头。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 600 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="277" y="30">no-steal</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="277" y="47">未提交脏页不许落盘</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="482" y="30">steal</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="482" y="47">未提交脏页可被刷盘</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="end" x="168" y="94">force</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="168" y="111">提交时强刷脏页</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="end" x="168" y="168">no-force</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="168" y="185">提交时只刷日志</text>
+<rect fill="rgba(255,255,255,0.02)" height="64" rx="7" stroke="#3a4048" width="195" x="180" y="62"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="277" y="89">不用 REDO / UNDO</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="277" y="108">但提交要等一堆随机写，最慢</text>
+<rect fill="rgba(255,255,255,0.02)" height="64" rx="7" stroke="#3a4048" width="195" x="385" y="62"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="482" y="89">需要 UNDO</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="482" y="108">盘上可能有未提交的痕迹</text>
+<rect fill="rgba(255,255,255,0.02)" height="64" rx="7" stroke="#3a4048" width="195" x="180" y="136"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="277" y="163">需要 REDO</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="277" y="182">已提交的改动可能还没落盘</text>
+<rect fill="rgba(240,180,41,0.09)" height="64" rx="7" stroke="#f0b429" stroke-width="1.6" width="195" x="385" y="136"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="482" y="163">需要 REDO + UNDO</text>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="482" y="182">ARIES 选这一格：最快</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="380" y="222">越往右下越快，也越依赖一套靠谱的恢复算法</text>
+</svg>
+<figcaption>图 1 · 缓冲策略决定恢复责任：要性能就得允许「偷」脏页、提交时不强刷，于是重做与撤销一个都少不了。</figcaption>
+</figure>
+<h3>细粒度锁把事情推到了绝境</h3>
+<p>真正让前人方案失效的是<strong>记录级锁</strong>。加锁单位从整页降到单条记录后，同一页上同时躺着多个事务的改动：回滚时不能把整页囫囵退回旧版本（那会连别人已提交的改动一起抹掉）；而 B 树分裂会让记录换页搬家，等到要撤销一条插入时它可能已不在原处，「把第 7 页第 3 槽改回去」这种<strong>物理撤销</strong>直接失效——撤销必须能<strong>逻辑地</strong>说「把 key=42 那条删掉」。</p>
+<p>前人方案各有裂缝：影子分页破坏物理聚簇、并发差；一些 WAL 方案只重做「赢家」、或要求回滚时页面处于某种约定状态，与细粒度锁直接打架；还有的<strong>在回滚途中再次崩溃时会重复撤销</strong>，日志没有上界。真问题于是是：<strong>有没有一套算法，既允许 steal / no-force，又支持记录级锁与逻辑撤销，还能在恢复中任意时刻再崩、依旧收敛且工作量有界？</strong></p>
+<h2>核心思想 / 方法</h2>
+<h3>零号零件：WAL——日志先行</h3>
+<p>规矩只有一句：<strong>描述某次改动的日志记录必须先落到稳定存储，被改的那页才允许写回磁盘</strong>；提交只需保证自己的日志已落盘。WAL 不是 ARIES 首创，但 ARIES 把建在它上面的一切做对了。</p>
+<h3>一号零件：LSN 与 page_LSN——让重做可测、幂等</h3>
+<p>每条日志记录有一个<strong>单调递增</strong>的编号 <code>LSN</code>。关键动作是：<strong>每个数据页的页头存一个 <code>page_LSN</code>，值为最后一次改动这页的那条日志的 LSN</strong>。重做的判据于是只有一句：<code>page_LSN &lt; 该日志的 LSN</code> 才做，做完把 <code>page_LSN</code> 更新成它。它在算什么？——「这一页到底做没做过这一笔」。页自带的印章把一个原本靠猜的问题变成一次数值比较，重做由此<strong>幂等</strong>：恢复跑到一半又崩、从头再来也不会把同一笔加两次。ARIES 后面所有机制的可靠性，都压在这个小小的页头字段上。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="54" rx="7" stroke="#f0b429" width="176" x="14" y="52"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="102" y="76">日志记录 LSN = 57</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="102" y="94">「第 7 页某字节 A→B」</text>
+<path d="M192,72 C222,72 222,44 250,44" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<path d="M192,86 C222,86 222,122 250,122" fill="none" marker-end="url(#a1)" stroke="#7c8593"></path>
+<rect fill="rgba(255,255,255,0.02)" height="46" rx="7" stroke="#3a4048" width="292" x="256" y="21"></rect>
+<text fill="#b9c0ca" font-size="11.5" x="270" y="41">该页 page_LSN = 42，早于 57</text>
+<text fill="#f0b429" font-size="11.5" x="270" y="59">→ 这笔还没落在这页上：重做，并盖章 57</text>
+<rect fill="rgba(255,255,255,0.02)" height="46" rx="7" stroke="#3a4048" width="292" x="256" y="99"></rect>
+<text fill="#b9c0ca" font-size="11.5" x="270" y="119">该页 page_LSN = 90，已在 57 之后</text>
+<text fill="#e8794b" font-size="11.5" x="270" y="137">→ 早就做过了：跳过</text>
+</svg>
+<figcaption>图 2 · 页头印章 page_LSN：一次数值比较就判定「这页做没做过这一笔」，重做因此做几遍都一样。</figcaption>
+</figure>
+<h3>二号零件：重演历史（Repeating History）</h3>
+<p>最反直觉、也最本质的决定。重做阶段<strong>不区分赢家（已提交）与输家（未提交）</strong>，把所有可重做的改动按顺序统统补做一遍——<strong>包括马上要被撤销的输家的改动</strong>——让数据库精确回到崩溃那一瞬，才回头撤销输家。</p>
+<p>为什么绕这一圈？因为在细粒度锁 + 逻辑撤销的世界里，<strong>撤销是有前提的动作</strong>：「把 key=42 那条删掉」需要页面与索引处在它当初被记录时的样子才有意义。若只挑赢家重做，数据库会停在一个<strong>从未真实存在过的混合状态</strong>，撤销面对的是它没见过的现场。这一决定把恢复的正确性论证压成一句统一的不变式：<em>重做结束时，数据库状态 = 崩溃瞬间的状态。</em></p>
+<h3>三号零件：CLR 与 UndoNxtLSN——撤销也写日志，且永不被撤销</h3>
+<p>撤销一条改动时，ARIES 不是悄悄改回去了事，而是补写一条<strong>补偿日志记录（CLR，compensation log record）</strong>说明这次撤销做了什么。每条 CLR 带一个指针 <code>UndoNxtLSN</code>，指向刚被撤销那条记录的<strong>前一条</strong>，即下一个还该撤销的位置；而 CLR 是 <strong>redo-only</strong> 的——只会被重做，<strong>永不被撤销</strong>。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 600 230" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="494" y="18">↓ 回滚途中再次崩溃</text>
+<line stroke="#e8794b" stroke-dasharray="4 4" x1="494" x2="494" y1="26" y2="100"></line>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="6" stroke="#f0b429" width="84" x="20" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="62" y="65">LSN 10</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="62" y="81">改 A</text>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="6" stroke="#f0b429" width="84" x="116" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="158" y="65">LSN 20</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="158" y="81">改 B</text>
+<rect fill="rgba(240,180,41,0.1)" height="40" rx="6" stroke="#f0b429" width="84" x="212" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="254" y="65">LSN 30</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="254" y="81">改 C</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="6" stroke="#e8794b" width="84" x="308" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="350" y="65">CLR 40</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="350" y="81">撤 C</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="6" stroke="#e8794b" width="84" x="404" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="446" y="65">CLR 50</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="446" y="81">撤 B</text>
+<rect fill="rgba(232,121,75,0.14)" height="40" rx="6" stroke="#e8794b" stroke-dasharray="3 3" width="84" x="500" y="48"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="542" y="65">CLR 60</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="542" y="81">撤 A</text>
+<path d="M350,90 C350,126 158,126 158,92" fill="none" marker-end="url(#a2)" stroke="#e8794b" stroke-width="1.4"></path>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="254" y="142">UndoNxtLSN → 20</text>
+<path d="M446,90 C446,178 62,178 62,92" fill="none" marker-end="url(#a2)" stroke="#e8794b" stroke-width="1.4"></path>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="254" y="194">UndoNxtLSN → 10</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="300" y="216">重启后读到 CLR 50，直接跳到 LSN 10 接着撤：撤过的整段跳过，绝不重撤</text>
+</svg>
+<figcaption>图 3 · CLR 与 UndoNxtLSN：撤销自身也进日志、并带一个「下一个该撤谁」的指针，反复崩溃下撤销工作量有界。</figcaption>
+</figure>
+<p>三个收益：<strong>① 撤销工作量有界</strong>——回滚途中崩溃，重启后顺着最后一条 CLR 的 <code>UndoNxtLSN</code> 接着撤，撤过的整段跳过，不会「撤销的撤销」，日志也不会因反复崩溃而无限膨胀（前人方案最常见的裂缝就在这）；<strong>② 部分回滚免费得到</strong>——回滚到事务中途的<strong>存档点（savepoint）</strong>用同一套指针；<strong>③ 撤销受重做保护</strong>——撤销动作既在日志里就同样能被重做，恢复因此可在任意一点被打断。</p>
+<h3>四号零件：三趟恢复——分析 → 重做 → 撤销</h3>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="a4" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<line stroke="#7c8593" x1="30" x2="545" y1="62" y2="62"></line>
+<text fill="#7c8593" font-size="11" x="30" y="80">日志开头</text>
+<line stroke="#f0b429" x1="70" x2="70" y1="54" y2="70"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="80" y="46">RedoLSN</text>
+<line stroke="#7c8593" x1="175" x2="175" y1="54" y2="70"></line>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="175" y="46">检查点</text>
+<line stroke="#e8794b" x1="520" x2="520" y1="50" y2="74"></line>
+<text fill="#e8794b" font-size="11" text-anchor="end" x="545" y="46">崩溃 / 日志末尾</text>
+<text fill="#e7ebf1" font-size="11.5" x="175" y="112">① 分析：重建脏页表与事务表，定出 RedoLSN 和输家名单</text>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-width="2" x1="175" x2="518" y1="122" y2="122"></line>
+<text fill="#e7ebf1" font-size="11.5" x="70" y="172">② 重做：从 RedoLSN 起原样重演全部历史（含输家的改动）</text>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-width="2" x1="70" x2="518" y1="182" y2="182"></line>
+<text fill="#e7ebf1" font-size="11.5" x="70" y="232">③ 撤销：从末尾倒着回滚输家，每撤一步写一条 CLR</text>
+<line marker-end="url(#a4)" stroke="#e8794b" stroke-width="2" x1="520" x2="72" y1="242" y2="242"></line>
+<text fill="#7c8593" font-size="11" x="70" y="276">RedoLSN 通常早于检查点：它取自脏页表里最小的 recLSN</text>
+</svg>
+<figcaption>图 4 · 三趟恢复：分析定起点与输家，重做把数据库复原到崩溃瞬间，撤销再倒着清理未提交事务。</figcaption>
+</figure>
+<p><strong>① 分析</strong>：从最近一次<em>检查点</em>（日志里周期性记下的「此刻系统大致如此」）扫到日志末尾，重建<strong>脏页表</strong>（每个脏页记一个 <code>recLSN</code>：自上次落盘后第一次把它弄脏的那条日志的 LSN）与<strong>事务表</strong>（崩溃时仍活着的事务及其最后一条日志的 LSN），取脏页表里<strong>最小的 recLSN</strong> 作为重做起点 <code>RedoLSN</code>。这一趟不碰数据，只摸清「从哪开始、谁是输家」。</p>
+<p><strong>② 重做</strong>：从 <code>RedoLSN</code> 向前扫，按图 2 的判据决定做还是跳过。脏页表省下大量工作：不在表里、或 <code>recLSN</code> 已超过该 LSN 的页，内容早已落盘，整条日志直接略过，连那页都不必读进内存。</p>
+<p><strong>③ 撤销</strong>：把所有输家事务的日志按 LSN <strong>从大到小</strong>合并成一条倒序流，逐条撤销、逐条写 CLR，直到每个输家都撤到起点。合并倒序而非一个事务一个事务地撤，是为了让同一个页尽量只被访问一次。</p>
+<p>而这里的检查点是<strong>模糊检查点（fuzzy checkpoint）</strong>：只把两张表写进日志，<strong>既不强制刷脏页，也不暂停系统</strong>；脏页由后台慢慢刷，最小的 <code>recLSN</code> 同时决定日志能安全截断到哪里。</p>
+<h3>五号零件：页级重做 + 逻辑撤销</h3>
+<p>招牌折中在这里：<strong>重做永远是页级的</strong>——一条日志只作用于一页、不依赖别页的状态（论文称之为 <em>physiological logging</em>：对页是物理的、页内部是逻辑的，如「在这页里删掉这条记录，其余挪一挪」），因而既快又能用 <code>page_LSN</code> 一票判定；<strong>而撤销允许是逻辑的</strong>：「把 key=42 那条删掉」，落到哪一页由当时的索引说了算——因为 B 树可能早已分裂。这一对搭配正是细粒度锁能成立的前提。</p>
+<p>还有<strong>嵌套顶层动作（nested top action）</strong>：B 树页分裂这类结构调整一旦做完就<strong>不该</strong>因外层事务回滚而被撤销（别的事务可能已在新结构上工作）。做法是子动作做完后写一条哑 CLR，让它的 <code>UndoNxtLSN</code> 指向子动作开始<strong>之前</strong>；外层回滚时指针一跃而过，结构改动就此定格。</p>
+<h2>关键结果</h2>
+<p>诚实说明：<strong>这是一篇设计论文，不是实验论文</strong>——六十余页正文里没有基准测试表格。证据是三类：<strong>正确性论证</strong>（逐条说明恢复在任意时刻再崩仍收敛且有界）；<strong>能力矩阵对照</strong>（把 ARIES 与 System R 影子分页、DB2 早期版本、IMS、Tandem 等逐项比较，比的不是速度而是<em>能不能做到</em>：是否允许 steal / no-force、是否支持记录级锁与部分回滚、恢复中再崩是否有界、检查点是否停机）；<strong>工业落地</strong>（发表时已实现进 IBM 多个产品与原型：OS/2 Extended Edition 的数据库管理器、Starburst、QuickSilver 等）。</p>
+<p>所以说 ARIES「赢了」不是因为某张跑分表，而是它<strong>第一次把恢复算法的功能矩阵一次填满</strong>：steal + no-force、记录级锁、逻辑撤销、部分回滚、恢复中可再崩且有界、检查点不停机——此前没有任何方案能同时给出这六项。</p>
+<h2>为什么重要 / 影响</h2>
+<p><strong>它成了商用关系数据库恢复子系统的默认蓝本。</strong>IBM DB2 自不必说；Microsoft SQL Server 的重启恢复被明确描述为分析 / 重做 / 撤销三段；MySQL 的 InnoDB 用带 LSN 的物理逻辑重做日志加独立回滚段，骨架同源。<strong>PostgreSQL 是个有意思的对照</strong>：它同样用 WAL 与 LSN、按 LSN 判据重放，但它的 MVCC 把未提交版本原地留着、靠可见性屏蔽、由 VACUUM 事后清理，所以<strong>没有 ARIES 那趟 undo</strong>——恰好说明这几件零件可以拆开取用。</p>
+<p>它还把一批词汇变成了行业通用语：WAL、LSN、脏页表、补偿日志、重演历史。更抽象一层的贡献是：<strong>把「恢复」从一堆见招拆招的特例，变成一个可被论证的算法</strong>——有明确的不变式与收敛性保证（任何中断点重启都能继续并终止）。在这之前，恢复是各家数据库里最脏、最没人敢碰的那块代码。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>复杂，且难以实现正确</strong>：论文六十余页、细节相互缠绕（latch 协议、嵌套顶层动作、页与记录级信息的配合），索引配套算法还散在多篇姊妹论文里；业界所谓「ARIES 风格」的实现彼此差异不小。它也<strong>没有量化评估</strong>——日志量、恢复时长、检查点对在线事务的影响都没给数字，取舍只能靠实现者自己衡量。</li>
+<li><strong>写放大与日志瓶颈</strong>：每笔改动通常既要 redo 又要 undo 信息，而日志是全系统唯一、必须串行化的共享资源。到多核内存数据库时代，日志争用与刷盘延迟成了扩展瓶颈，才有成组提交、可扩展日志等后续工作，以及<strong>命令日志（command logging）</strong>这类替代——只记「执行了哪个存储过程、参数是什么」，运行期极省，代价是恢复得把整段历史重算一遍。</li>
+<li><strong>前提假设正在被改写</strong>：ARIES 假定「页 + 磁盘 + 就地更新 + 单机」。LSM-tree、写时复制、MVCC、非易失内存，以及把日志本身当数据库主体、由存储层自行重放的云原生架构，都在不同程度上绕开了它的分工。而如 PostgreSQL 所示，换一套并发控制就能整条省掉撤销通道——ARIES 的完整形态与「就地更新 + 细粒度锁」绑定，不是恢复问题的唯一解。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：WAL + LSN 之上的三趟恢复（分析 → 重做 → 撤销），重做原样重演全部历史，撤销写只重做、不被撤销的 CLR。</p>
+<p>② 痛点根源：为性能必须 steal + no-force，REDO 与 UNDO 一个不能少；记录级锁又让整页回退失效、让物理撤销在 B 树分裂后失效。</p>
+<p>③ 地基零件：每页页头存 <code>page_LSN</code>，重做时比一次数值就知道该做还是跳过——重做因此幂等，途中再崩也安全。</p>
+<p>④ 最反直觉的一招：重做<strong>不分赢家输家</strong>，先把数据库精确复原到崩溃瞬间，撤销才有认得的现场可依。</p>
+<p>⑤ CLR + <code>UndoNxtLSN</code>：撤销自身也写日志且永不被撤销，反复崩溃下撤销工作量有界，部分回滚顺带免费得到。</p>
+<p>⑥ 页级重做 + 逻辑撤销（physiological logging）是招牌折中；嵌套顶层动作让 B 树分裂不被外层回滚抹掉；模糊检查点不刷脏页也不停机。</p>
+<p>⑦ 证据形态：不是跑分，而是正确性论证 + 与前人的能力矩阵对照 + 在 IBM 产品与原型中的落地。</p>
+<p>⑧ 影响与局限：DB2、SQL Server、InnoDB 骨架同源，PostgreSQL 靠 MVCC 省掉 undo 那趟；而它极复杂难实现对、无量化评估，日志更成了多核时代的扩展瓶颈。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的日志记录格式、latch 协议与索引配套算法，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
