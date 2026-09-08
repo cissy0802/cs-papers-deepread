@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Autopilot（Google 工作负载自动伸缩）— IT 论文精读 Paper 61</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 61</p>
+<h1>Autopilot：Google 的工作负载自动伸缩</h1>
+<p class="sub">Rzadca 等 · 华沙大学 &amp; Google · EuroSys 2020</p>
+<p class="langbar"><a href="autopilot-autoscaling-paper61.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2020 年，Google 公开了 <strong>Autopilot</strong>——一个替工程师<strong>自动决定「每个程序该分多少内存、多少 CPU」</strong>的系统。论文写作时它已管着 Google 全球机群里<strong>超过 48% 的资源用量</strong>，把「被预定了却一直没用上」的那部分从 <strong>46% 压到 23%</strong>——按机器数折算是上万台的量级。</p>
+<h2>先说个怪事</h2>
+<p>云上最大的浪费，往往不是机器闲着，而是<strong>被人预定了、却一直没被用掉</strong>。</p>
+<p>你上线一个服务，平台让你填一张表：这东西要多少内存、多少 CPU？说实话，没人真的知道。而填错的两种后果<strong>完全不对等</strong>：填少了，内存一超程序当场被杀、CPU 一超被卡到爬，半夜被叫醒的是你；填多了，只是账单上多一笔，当场没人骂你。</p>
+<p>于是每个人都往大了填——单独看谁都理性又无辜，加起来却是天文数字的空转。<strong>云上的浪费主要不是「机器伸缩得不够快」，而是「人不会填这张表」。</strong></p>
+<h2>点子</h2>
+<p>Autopilot 的点子朴素得几乎无聊：<strong>别再让人猜了。</strong>系统天天看着每个程序真实用了多少，自己把这个数填上、并随时改。就像水电公司不会让你申报下个月要用多少度电，而是照着你过去的用量给你定档。</p>
+<h2>它到底怎么定这个档</h2>
+<p>三步，每一步都很像人的常识。</p>
+<p>第一步<strong>记账</strong>：给每个程序记一本「过去用了多少」的账本，而且<strong>越旧的记录颜色越淡</strong>——上个月某天的一次偶发高峰，不该永远绑架今天的配额。</p>
+<p>第二步<strong>两种资源、两种胆量</strong>：<strong>内存看历史最高值</strong>，因为内存一超就是当场被杀，这个赌打不起；<strong>CPU 看「绝大多数时候都不超过的那条线」</strong>，因为 CPU 超了只是慢一点、能忍，不必按最高峰买单。定完档再往上留一点安全余量。</p>
+<p>第三步<strong>拿不准就开个会</strong>：定档的规则不止一套（账本褪色的快慢、余量留多留少都可以不同）。Autopilot 干脆<strong>让好几套规则一起上</strong>，各自把过去几周<strong>重新推演一遍</strong>——「要是当初听你的，会闯几次祸？又白留多少？」谁的账最好看就多听谁的。而且<strong>改主意本身也要记一笔代价</strong>，免得它今天听 A、明天听 B 地来回横跳。</p>
+<h2>真正的难处不在算法</h2>
+<p>「照着历史用量定配额」谁都想得到。这篇论文值钱的地方，是它在十万台机器量级的真实环境里<strong>跑通了，而且让工程师肯把手松开</strong>。</p>
+<p>秘诀是把那份「不对等」明明白白写进规则：<strong>省过头的代价，被算得比浪费重得多</strong>——这架天平从设计上就是歪的。再配上「先离线推演 → 再空跑不生效 → 再小范围对照 → 最后灰度铺开、随时能一键退出」的上线节奏。结果它不但没多杀程序，反而让<strong>被内存超限严重折腾的程序少了约十倍</strong>——很多人当初拍脑袋填的数，还不如机器估的准。</p>
+<p>也说句诚实的：它只会照着历史往下推。<strong>第一次上线、或形态突变的程序没有历史可抄</strong>，只能先按保守的默认值来。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>云上的浪费大头不是「伸缩不及时」，而是「人填不准资源申请」——填少了挨打、填多了没人管。Autopilot 把这张表交给机器：看会褪色的历史用量，内存按峰值、CPU 按高分位，再留一点安全边际，还让好几套规则回放历史比谁代价更小。Google 靠它管住了近半个机群，浪费从 46% 降到 23%，而程序被内存杀掉的情况反而更少。</p>
+</div>
+<p class="switch-hint">想看衰减直方图的算法、多模型推荐器的代价函数和完整实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Autopilot 是 Google 在 Borg 之上运行的自动伸缩系统，它<strong>替工程师自动设定每个任务的 CPU / 内存配额（垂直伸缩）与任务副本数（水平伸缩）</strong>：做法是把每个任务的历史用量攒成一个<em>按时间指数衰减的直方图</em>，从中取统计量（内存取峰值、在线服务的 CPU 取高分位）再乘上安全边际；同时用一组<strong>参数各异的模型回放历史、按「代价」加权投票</strong>来挑推荐值。论文发表时它已覆盖 Google <strong>超过 48% 的机群资源用量</strong>，把 slack（配额与实际用量之差）的中位水平从人工管理的 <strong>46% 降到 23%</strong>，同时把<strong>被 OOM 严重影响的作业数减少了约一个数量级</strong>。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>集群管理器 / Borg</strong>：Google 内部把整个数据中心当一台大机器来分配的调度系统（本站 Paper 59）。它决定「哪个程序跑在哪台机器上」，Kubernetes 是它的开源后继。</li>
+<li><strong>作业（job）与任务（task）</strong>：一个 job 是一个逻辑服务，由若干个跑着同样代码的 task（副本 / 容器）组成。Borg 调度的单位是 task。</li>
+<li><strong>资源配额 / limit（也叫 resource request）</strong>：提交程序时声明「我最多要 x 核 CPU、y GB 内存」。调度器按这个数给你留位置，也按它计费。</li>
+<li><strong>OOM（out-of-memory）</strong>：程序用的内存超过配额时被内核直接杀掉。内存是<em>不可压缩</em>资源——超了没得商量。</li>
+<li><strong>CPU 节流（throttling）</strong>：CPU 用量超过配额时不会被杀，只是被强行限速、变慢。CPU 是<em>可压缩</em>资源。</li>
+<li><strong>slack</strong>：配额与实际用量之间那段空当，<code>(limit − usage) / limit</code>。它被调度器占着、却没人在用，是这篇论文要压缩的目标。</li>
+<li><strong>垂直伸缩 vs 水平伸缩</strong>：垂直 = 把单个副本调大调小；水平 = 增减副本个数。</li>
+<li><strong>分位数（percentile，如 p95）</strong>：把一堆数从小到大排好，p95 就是「95% 的样本都不超过的那个值」。用它可以避开极端毛刺。</li>
+<li><strong>直方图（histogram）</strong>：把连续数值切成一格格「桶」，只记每格出现了多少次——用很小的空间近似保存整个分布，从而能随时算出任意分位数。</li>
+<li><strong>在线服务 vs 批处理</strong>：前者要即时响应用户请求、怕慢；后者是离线跑数、怕的是跑不完，对短暂变慢不敏感。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 Krzysztof Rzadca（华沙大学 / Google）领衔的一支 Google 团队，合作者包括 Borg 论文的作者 <strong>John Wilkes</strong>，发表于 <strong>EuroSys 2020</strong>。它上承 <strong>Borg（2015）</strong>——Borg 解决的是「这些容器该塞进哪几台机器」，而 Autopilot 补上了 Borg 一直没解决的另一半：<strong>这些容器一开始要的数字本身就是错的</strong>。它下启的是今天所有云上的「资源右调（rightsizing）」实践：<strong>Kubernetes 的 VPA（Vertical Pod Autoscaler）推荐器用的正是这套「衰减直方图 + 取分位数 + 加安全边际」的路子</strong>。</p>
+<h2>问题与动机</h2>
+<p>Borg 这类系统要求提交作业时声明配额（limit）。声明少了，任务会被 OOM 杀掉或被 CPU 节流；声明多了，调度器会替你把那份资源占着不给别人。于是<strong>激励是彻底不对称的</strong>：填小的代价是页面报错、值班被叫醒、事故复盘；填大的代价只是一张没人细看的账单。</p>
+<p>结果是所有人都往大了填，而且填完不再回来改——负载变了、代码优化了、流量迁走了，那个数字仍停在两年前某次事故之后拍的脑门上。论文用一个词概括这段空当：<strong>slack</strong>。人工管理的作业 slack 高达 <strong>46%</strong>：<strong>近一半被预定的资源从来没被用过。</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap1" markerheight="8" markerwidth="8" orient="auto" refx="4" refy="4"><path d="M4,0 L8,4 L4,8 L0,4 Z" fill="#e8794b"></path></marker></defs>
+<line stroke="#7c8593" x1="70" x2="70" y1="34" y2="205"></line>
+<line stroke="#7c8593" x1="70" x2="530" y1="205" y2="205"></line>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="70" y="26">资源</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="530" y="223">时间 →</text>
+<path d="M70,158 C105,150 125,132 155,140 C185,148 205,164 235,158 C265,152 285,134 315,142 C345,150 365,166 395,158 C425,150 445,138 470,148 L470,205 L70,205 Z" fill="rgba(240,180,41,0.16)"></path>
+<path d="M70,158 C105,150 125,132 155,140 C185,148 205,164 235,158 C265,152 285,134 315,142 C345,150 365,166 395,158 C425,150 445,138 470,148" fill="none" stroke="#f0b429" stroke-width="1.8"></path>
+<text fill="#a89a6d" font-size="11" x="86" y="184">实际用量</text>
+<line stroke="#7c8593" stroke-dasharray="5 4" stroke-width="1.4" x1="70" x2="470" y1="58" y2="58"></line>
+<text fill="#b9c0ca" font-size="11.5" x="76" y="51">人工填的 limit（怕被杀，往大了填）</text>
+<line stroke="#e8794b" stroke-width="1.8" x1="70" x2="470" y1="104" y2="104"></line>
+<text fill="#e8794b" font-size="11.5" x="76" y="120">Autopilot 定的 limit</text>
+<line marker-end="url(#ap1)" marker-start="url(#ap1)" stroke="#e8794b" stroke-width="1.3" x1="188" x2="188" y1="60" y2="144"></line>
+<text fill="#e7ebf1" font-size="11.5" x="196" y="82">人工的 slack ≈ 46%</text>
+<line marker-end="url(#ap1)" marker-start="url(#ap1)" stroke="#e8794b" stroke-width="1.3" x1="432" x2="432" y1="106" y2="150"></line>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="end" x="424" y="134">Autopilot 压到 ≈ 23%</text>
+</svg>
+<figcaption>图 1 · slack：配额与实际用量之间那段空当。它被调度器占着、却没人用；人工管理的作业里它接近一半。</figcaption>
+</figure>
+<p>为什么不能靠 Borg 已有的「资源回收」解决？Borg 确实会把申请了却没用的部分回收给低优先级的批处理任务，但那只是<strong>把浪费掩盖起来</strong>：高优先级作业的 limit 仍是硬预留，仍占着调度容量、仍决定着容量规划要买多少机器。<strong>回收治症状，改小 limit 才治因。</strong></p>
+<h2>核心思想 / 方法</h2>
+<h3>把「填配额」重写成一个有代价函数的问题</h3>
+<p>Autopilot 最关键的一步不是算法，而是<strong>承认这件事的代价是不对称的，并把这份不对称写成明文</strong>。它给每个候选配额算一个代价，大致是三项之和：</p>
+<ul>
+<li><strong>超限的代价</strong>：用量超过 limit 的那些时刻。内存超限意味着任务被杀，权重给得极重；CPU 超限只是被节流，权重轻得多。</li>
+<li><strong>浪费的代价</strong>：limit 高于用量的那部分，按空占的资源量计。</li>
+<li><strong>改动的代价</strong>：改一次 limit 本身就要罚一笔。因为在 Borg 里改配额往往意味着任务被重新调度、重启一次——对有状态或启动慢的服务，这不是免费的。</li>
+</ul>
+<p>有了这个代价函数，「该填多少」就从一个靠胆量的判断题，变成了一个可以<strong>拿历史数据回放、算分、比较</strong>的优化题。这是整篇论文的枢纽。</p>
+<h3>垂直伸缩之一：滑动窗口推荐器</h3>
+<p>第一套推荐器朴素而好用。它给每个任务持续采样 CPU 与内存用量，把样本攒进一个<strong>直方图</strong>（不存原始时间序列，只存分布，省空间又能随时取分位数）。</p>
+<p>关键的一笔是<strong>指数衰减</strong>：每个样本的权重按 <code>w(τ) = 2^(−τ/t½)</code> 随时间变轻——<code>τ</code> 是这个样本有多老，<code>t½</code> 是半衰期。白话说：<strong>直方图会「褪色」，一个月前的偶发尖峰不会永远绑架今天的配额，但也不会立刻被忘掉。</strong>论文给的典型值是 <strong>CPU 半衰期约 12 小时、内存约 48 小时</strong>——内存记得更久，因为忘得太快会付出被杀的代价。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.08)" height="36" rx="6" stroke="#f0b429" width="252" x="24" y="18"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="150" y="41">① 采样每个任务的真实用量</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="150" x2="150" y1="56" y2="72"></line>
+<rect fill="rgba(240,180,41,0.08)" height="36" rx="6" stroke="#f0b429" width="252" x="24" y="74"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="150" y="97">② 攒成会「褪色」的直方图</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="150" x2="150" y1="112" y2="128"></line>
+<rect fill="rgba(240,180,41,0.08)" height="48" rx="6" stroke="#f0b429" width="252" x="24" y="130"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="150" y="150">③ 内存取峰值</text><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="150" y="168">CPU 取高分位（在线服务）</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="150" x2="150" y1="180" y2="196"></line>
+<rect fill="rgba(240,180,41,0.08)" height="36" rx="6" stroke="#f0b429" width="252" x="24" y="198"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="150" y="221">④ 乘安全边际、向上取整</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="150" x2="150" y1="236" y2="252"></line>
+<rect fill="rgba(232,121,75,0.12)" height="36" rx="6" stroke="#e8794b" width="252" x="24" y="254"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="150" y="277">⑤ 滚动地把新 limit 发下去</text>
+<text fill="#f0b429" font-size="11.5" x="322" y="96">③ 从直方图里取数</text>
+<line stroke="#7c8593" x1="318" x2="536" y1="200" y2="200"></line>
+<rect fill="rgba(240,180,41,0.45)" height="10" width="16" x="324" y="190"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="22" width="16" x="342" y="178"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="40" width="16" x="360" y="160"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="60" width="16" x="378" y="140"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="50" width="16" x="396" y="150"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="32" width="16" x="414" y="168"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="18" width="16" x="432" y="182"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="11" width="16" x="450" y="189"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="6" width="16" x="468" y="194"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="4" width="16" x="486" y="196"></rect>
+<line stroke="#e8794b" stroke-dasharray="4 3" x1="482" x2="482" y1="118" y2="204"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="482" y="112">p95</text>
+<line stroke="#b9c0ca" stroke-dasharray="4 3" x1="504" x2="504" y1="132" y2="204"></line>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="506" y="126">峰值</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="end" x="536" y="218">用量 →</text>
+<text fill="#7c8593" font-size="10.5" x="318" y="248">旧样本按半衰期变轻：</text>
+<text fill="#7c8593" font-size="10.5" x="318" y="264">CPU 约 12 小时 · 内存约 48 小时</text>
+</svg>
+<figcaption>图 2 · 垂直伸缩流水线：用量 → 会褪色的直方图 → 取统计量（内存看峰值、在线服务的 CPU 看高分位）→ 乘安全边际 → 滚动下发新配额。</figcaption>
+</figure>
+<p>取哪个统计量，取决于「超限了会怎样」：</p>
+<ul>
+<li><strong>内存</strong>：取衰减窗口内的<strong>峰值</strong>。内存超一次就是被杀，没有讨价还价余地。</li>
+<li><strong>在线服务的 CPU</strong>：取<strong>高分位（如 p90 / p95）</strong>。偶尔被节流几秒只是轻微变慢，按峰值买单不划算。</li>
+<li><strong>批处理的 CPU</strong>：取<strong>平均值</strong>就够。它们本来就不在乎瞬时变慢，只在乎总吞吐。</li>
+</ul>
+<p>算出的数字再<strong>乘一个安全边际</strong>（量级在一成上下；用量越小的任务边际给得越宽，因为小任务的相对波动更大），然后向上取整到一个规整档位。整套东西没有一行难懂的数学——它的分量全在「哪个资源该用哪种胆量」这个判断上。</p>
+<p>最后是<strong>怎么落地</strong>。因为改配额可能触发任务重启，Autopilot 是<strong>分批滚动</strong>地改（不会一口气动完一个作业的所有副本），而且对<strong>调小内存格外谨慎</strong>——调大随时可以，调小要更充分的历史证据。</p>
+<h3>垂直伸缩之二：多模型推荐器</h3>
+<p>滑动窗口推荐器有一堆旋钮：半衰期多长？取 p90 还是 p95？边际留多少？<strong>不同作业的最优旋钮位置并不一样</strong>——流量平稳的服务和每天两个尖峰的服务，需要的褪色速度完全不同。人工给每个作业调旋钮，等于把「填表」的问题换了个地方而已。</p>
+<p>第二套推荐器（论文说其思路受强化学习启发）的解法是：<strong>不选一套参数，而是养一群模型</strong>。每个模型带一组固定参数——自己的衰减速度、自己的安全边际、自己把直方图折算成 limit 的方式。对每个作业，系统把它<strong>过去几周的真实用量拿出来回放</strong>，问每个模型：「如果当初听你的，会超限几次、白留多少、改了几次 limit？」按前面那个代价函数算出分数，<strong>代价小的模型话语权大</strong>，最终推荐值由这群模型按分数加权得出。</p>
+<p>还有一笔关键罚分：<strong>换模型本身也要计代价</strong>。否则系统会因分数上的微小抖动今天听 A、明天听 B，把配额来回拉扯——而每次拉扯都可能重启任务。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 305" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.08)" height="34" rx="6" stroke="#f0b429" width="212" x="174" y="12"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="34">把过去几周的真实用量回放一遍</text>
+<path d="M280,48 L280,60 L100,60 L100,76" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<path d="M280,48 L280,76" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<path d="M280,48 L280,60 L460,60 L460,76" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<rect fill="rgba(255,255,255,0.03)" height="44" rx="6" stroke="#7c8593" width="140" x="30" y="78"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="100" y="97">模型 A</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="100" y="114">褪色快 · 边际小</text>
+<rect fill="rgba(240,180,41,0.1)" height="44" rx="6" stroke="#f0b429" width="140" x="210" y="78"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="97">模型 B</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="114">褪色慢 · 边际中</text>
+<rect fill="rgba(255,255,255,0.03)" height="44" rx="6" stroke="#7c8593" width="140" x="390" y="78"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="460" y="97">模型 C</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="460" y="114">只盯峰值 · 边际大</text>
+<rect fill="rgba(255,255,255,0.06)" height="10" rx="3" width="140" x="30" y="136"></rect><rect fill="#e8794b" height="10" rx="3" width="112" x="30" y="136"></rect>
+<rect fill="rgba(255,255,255,0.06)" height="10" rx="3" width="140" x="210" y="136"></rect><rect fill="#f0b429" height="10" rx="3" width="42" x="210" y="136"></rect>
+<rect fill="rgba(255,255,255,0.06)" height="10" rx="3" width="140" x="390" y="136"></rect><rect fill="#e8794b" height="10" rx="3" width="84" x="390" y="136"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="100" y="164">回放代价：大（超限多）</text>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="280" y="164">回放代价：小 ✓</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="460" y="164">回放代价：中（太浪费）</text>
+<path d="M100,172 L100,196 L258,196" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<path d="M280,172 L280,200" fill="none" marker-end="url(#ap3)" stroke="#f0b429"></path>
+<path d="M460,172 L460,196 L302,196" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<circle cx="280" cy="222" fill="rgba(232,121,75,0.16)" r="21" stroke="#e8794b"></circle><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="227">加权</text>
+<line marker-end="url(#ap3)" stroke="#7c8593" x1="280" x2="280" y1="244" y2="260"></line>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="280" y="278">推荐的 limit</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="298">代价 = 超限的痛（权重很大）+ 浪费 + 改 limit / 换模型的罚分</text>
+</svg>
+<figcaption>图 3 · 多模型推荐器：一群参数各异的模型各自回放历史、算出代价，代价小的话语权大；换模型本身也要罚分，避免来回横跳。</figcaption>
+</figure>
+<h3>水平伸缩：上调快、下调慢</h3>
+<p>垂直伸缩管「一个副本多大」，水平伸缩管「有几个副本」。后者按一个信号定副本数——默认是 CPU 利用率（总负载除以目标利用率），也允许作业主自定义指标（队列长度、每秒请求数等）。</p>
+<p>这里最值得学的是它<strong>刻意做成不对称的</strong>：<strong>上调看短窗口的近期负载、几乎立刻跟上；下调看的却是好几天窗口内的峰值</strong>，而且一小步一小步地降。理由很实际——加副本加错了只是多花点钱，减副本减错了就是流量回来时抓瞎。<strong>同一条「代价不对称」原则，在水平方向上又用了一遍。</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap4" markerheight="8" markerwidth="8" orient="auto" refx="4" refy="4"><path d="M4,0 L8,4 L4,8 L0,4 Z" fill="#e8794b"></path></marker></defs>
+<line stroke="#7c8593" x1="70" x2="70" y1="34" y2="205"></line>
+<line stroke="#7c8593" x1="70" x2="530" y1="205" y2="205"></line>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="70" y="26">规模</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="530" y="223">时间 →</text>
+<line stroke="#5a6069" stroke-dasharray="3 3" x1="352" x2="352" y1="95" y2="198"></line>
+<line stroke="#5a6069" stroke-dasharray="3 3" x1="420" x2="420" y1="78" y2="198"></line>
+<path d="M70,180 L145,180 L152,95 L350,95 L357,180 L520,180" fill="none" stroke="#f0b429" stroke-width="1.8"></path>
+<path d="M70,165 L150,165 L150,78 L420,78 L420,108 L465,108 L465,140 L520,140" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<text fill="#e8794b" font-size="11.5" x="228" y="70">任务数（Autopilot 定）</text>
+<text fill="#f0b429" font-size="11.5" x="228" y="118">实际负载</text>
+<text fill="#e8794b" font-size="11" x="158" y="52">上调：立刻跟上</text>
+<line marker-end="url(#ap4)" marker-start="url(#ap4)" stroke="#e8794b" stroke-width="1.2" x1="352" x2="420" y1="192" y2="192"></line>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="386" y="186">拖着不降</text>
+<text fill="#7c8593" font-size="10.5" x="432" y="176">再一小步一小步地收</text>
+</svg>
+<figcaption>图 4 · 水平伸缩的不对称：负载涨，副本立刻跟上；负载跌，要连着几天的高峰都降下来才敢往回收，而且分小步走。</figcaption>
+</figure>
+<h3>让人肯松手：上线本身就是设计的一部分</h3>
+<p>这一节常被跳过，但它才是这篇论文与一篇算法论文的真正分野。把配额控制权从工程师手里拿走，技术上不难，<strong>难的是让人同意</strong>。Autopilot 的做法是一条递进的证据链：先在<strong>历史轨迹上离线仿真</strong>；再在生产里<strong>空跑（dry-run）</strong>——只记录「我本来会怎么设」、不真的生效，让作业主自己对着看；再做<strong>对照实验</strong>；然后<strong>分批灰度</strong>接管，配上看得见的仪表盘，并且<strong>随时能一键退出</strong>。小的、新的作业则默认纳管、允许选择退出。<strong>这是一份关于「自动化如何取得信任」的工程学，不只是关于配额怎么算。</strong></p>
+<h2>关键结果</h2>
+<ul>
+<li><strong>覆盖面</strong>：论文写作时，被 Autopilot 管理的作业已占 Google 全机群<strong>超过 48% 的资源用量</strong>——这不是实验室原型，是半个 Google。</li>
+<li><strong>省了多少</strong>：autopilot 化作业的 slack 约 <strong>23%</strong>，人工管理的约 <strong>46%</strong>——差不多砍掉一半。论文里的一组对照中，绝对 slack 从相当于约 <strong>12000 台机器</strong>降到约 <strong>500 台</strong>；作者估计整体节省对 Google 是<strong>数千万美元量级</strong>。</li>
+<li><strong>没有拿稳定性换</strong>：这是最反直觉、也最有说服力的一条。压紧配额通常意味着更容易被 OOM，但结果相反——<strong>被 OOM 严重影响的作业数量减少了约一个数量级</strong>，并且<strong>超过 99.5% 的「作业-天」完全没有出现 OOM</strong>。换句话说，机器估的数不但更省，还比人拍的更准。</li>
+</ul>
+<h2>为什么重要 / 影响</h2>
+<p>第一，它<strong>补上了 Borg 的另一半</strong>。Borg 把装箱做到了极致，但它接收的输入——每个作业声明的 limit——一直是错的。<strong>再好的调度器也救不了一份系统性夸大的需求单。</strong>Autopilot 修的是输入本身。</p>
+<p>第二，它把「资源右调」<strong>从一门运维手艺变成了一个可优化的问题</strong>。一旦能写出代价函数、能在历史数据上回放打分，这件事就可以自动化、可以持续做，而不是靠某个人某个季度的良心。今天 Kubernetes 的 VPA、各家云的资源推荐与 FinOps 工具走的都是这条路——<strong>VPA 的推荐器几乎就是这套「衰减直方图 + 分位数 + 安全边际」的公开实现</strong>。</p>
+<p>第三，最容易被低估：它给出了一个<strong>「自动化怎么被接受」的样板</strong>。离线仿真 → 空跑 → 对照 → 灰度 → 可退出，这条路径本身就是可复制的方法论。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>它只会照抄历史</strong>：没有历史就没有推荐。全新上线的作业、刚做完大改的作业、形态突变的流量（新功能、大促、故障转移涌入），它都滞后，只能先落到保守的默认值。真正难的「预测未来」它并没有解。</li>
+<li><strong>用量本身被配额扭曲</strong>：系统看到的「用量」不是真实需求，而是<em>被限制之后的用量</em>——CPU 被节流时用量看起来就是低的。这是所有「按用量定配额」的系统共有的反馈回路：越压越紧，可能把一个本来就吃不饱的服务判成不需要吃。论文靠高分位、安全边际和对节流的监控来缓解，但这个回路在机制上无法根除。</li>
+<li><strong>改配额不是免费的</strong>：垂直伸缩落地往往意味着任务被重新调度、重启。对有状态服务、缓存要预热的服务、启动要几分钟的服务，这笔代价实打实——所以才要给「改动」单独记罚分、要分批滚动。这也意味着它天然更适合无状态的在线服务。</li>
+<li><strong>目标是资源账单，不是用户体验</strong>：它优化的 slack 与 OOM 都是<em>代理指标</em>。CPU 高分位配够了，不等于端到端尾延迟没被影响——尤其在被节流的边缘。论文没有、也很难给出 SLO 层面的证明。</li>
+<li><strong>「自动化」没有消灭人的猜测，只是搬了个家</strong>：代价函数里超限与浪费的相对权重、模型池怎么构造、边际给多少，仍是人定的全局判断。它把「每个作业猜一次」变成了「全局猜几个超参」——巨大的进步，但不是问题的消失。</li>
+<li><strong>一份生产报告，不是通用算法</strong>：所有数字来自 Google 的 Borg 与它相对同质、监控完备的负载，没有公开代码与数据集，外部难以复现；在负载更杂、监控更差、隔离更弱的环境里能拿到多少收益，是开放问题。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：Autopilot 自动设定 Borg 上每个任务的 CPU / 内存配额与副本数，靠的是「会指数衰减的历史用量直方图 + 取统计量 + 安全边际」。</p>
+<p>② 痛点：云上的大头浪费不是伸缩慢，而是人填不准 resource request——填少了被 OOM 杀 / 被节流，填多了只是账单难看，激励彻底不对称，于是全都往大了填。</p>
+<p>③ 枢纽：把这份不对称写成明文<strong>代价函数</strong>（超限的痛 ≫ 浪费，再加改动罚分），「填多少」于是从判断题变成可回放、可打分的优化题。</p>
+<p>④ 垂直伸缩：用量攒进<strong>会褪色的直方图</strong>（<code>w(τ)=2^(−τ/t½)</code>，CPU 约 12h、内存约 48h）；内存取峰值、在线服务 CPU 取高分位、批处理取均值；乘安全边际后滚动下发，调小内存尤其谨慎。</p>
+<p>⑤ 多模型推荐器：养一群参数各异的模型，各自回放历史算代价，按代价加权投票；换模型也要罚分，防止来回横跳。</p>
+<p>⑥ 水平伸缩：同一条不对称原则——<strong>上调看短窗口、立刻跟上；下调看多日峰值、小步慢降</strong>。</p>
+<p>⑦ 结果：覆盖 Google 超过 48% 的资源用量；slack 46% → 23%（一组对照中绝对量从约 12000 台机器降到约 500 台）；被 OOM 严重影响的作业减少约一个数量级，&gt;99.5% 的作业-天无 OOM。</p>
+<p>⑧ 影响与局限：Kubernetes VPA 与各家云的资源推荐几乎照抄这套；但它只会照抄历史（冷启动无解）、看到的用量已被节流扭曲、改配额可能重启任务，而且权重与超参仍是人定的——自动化搬走了猜测，没有消灭它。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的代价函数形式与全部实验图表，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

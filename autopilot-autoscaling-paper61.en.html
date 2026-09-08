@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Autopilot: Workload Autoscaling at Google — CS Papers Deep-Read Paper 61</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 61</p>
+<h1>Autopilot: Workload Autoscaling at Google</h1>
+<p class="sub">Rzadca et al. · University of Warsaw &amp; Google · EuroSys 2020</p>
+<p class="langbar"><a href="autopilot-autoscaling-paper61.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What this paper did</h2>
+<p>In 2020 Google described <strong>Autopilot</strong> — a system that <strong>decides, on its own, how much memory and CPU every program gets</strong>, so engineers no longer have to. By the time of writing it already governed <strong>more than 48% of the resources</strong> used across Google's fleet, and it cut the share that is <strong>reserved but never actually used</strong> from <strong>46% down to 23%</strong>. Counted in machines, that is tens of thousands of them.</p>
+<h2>Start with something odd</h2>
+<p>The biggest waste in the cloud is usually not machines sitting idle. It is capacity that <strong>somebody reserved and then never touched</strong>.</p>
+<p>You launch a service, and the platform asks you to fill in a form: how much memory does this need? how much CPU? Honestly — nobody knows. And the two ways of being wrong are <strong>wildly unequal</strong>. Ask for too little and your program gets killed the moment it exceeds its memory, or throttled to a crawl when it exceeds its CPU, and you are the one woken at 3am. Ask for too much and there is one more line on a bill nobody reads out loud.</p>
+<p>So everybody asks for too much. Each person is being perfectly reasonable; added up, it is an astronomical amount of idling. <strong>Cloud waste comes less from scaling too slowly than from people being unable to fill in that form.</strong></p>
+<h2>The idea</h2>
+<p>Autopilot's idea is so plain it is almost boring: <strong>stop making people guess.</strong> The system watches what every program actually uses, day after day, and fills the number in itself — and keeps changing it. Your electricity company does not ask you to declare next month's consumption; it reads your past usage and sets your tier.</p>
+<h2>So how does it pick the number?</h2>
+<p>Three steps, each of them close to ordinary common sense.</p>
+<p>First, <strong>keep a ledger</strong>: for every program, a record of what it used in the past — in which <strong>the older entries fade</strong>. One freak spike from a Tuesday last month should not hold today's quota hostage forever.</p>
+<p>Second, <strong>two resources, two different appetites for risk</strong>. For <strong>memory, take the historical peak</strong>: going over means being killed on the spot, and that is not a bet you can take. For <strong>CPU, take "the line it stays under almost all of the time"</strong>: going over merely means running slower for a while, which is survivable, so there is no reason to pay for the highest spike ever seen. Then add a little safety headroom on top.</p>
+<p>Third, <strong>when unsure, hold a vote</strong>. There is more than one sensible rule for picking that number — ledgers can fade faster or slower, headroom can be thinner or fatter. So Autopilot simply <strong>runs several rules at once</strong> and makes each of them <strong>replay the last few weeks</strong>: "if we had listened to you back then, how much trouble would you have caused, and how much would you have wasted?" Whichever rule has the best books gets the loudest voice. And <strong>changing its mind costs something too</strong>, so it does not flip between rule A and rule B day after day.</p>
+<h2>The hard part isn't the algorithm</h2>
+<p>"Set the quota from past usage" is an idea anyone can have. What makes this paper valuable is that it <strong>worked in a real environment of a hundred thousand machines — and that engineers were willing to let go of the wheel</strong>.</p>
+<p>The trick is that the asymmetry is written into the rules in plain sight: <strong>cutting too close is scored as far more expensive than wasting</strong>, so the scales are deliberately tilted. That comes with a careful rollout: simulate on history first, then run silently without taking effect, then a small controlled comparison, then a gradual handover with a one-click way out. The result is the counter-intuitive part: it did not kill more programs, it killed fewer — <strong>the number of programs badly hurt by running out of memory dropped by about ten times</strong>, because the numbers people had guessed were worse than the machine's estimates.</p>
+<p>One honest caveat: it can only extrapolate from history. <strong>A program launching for the first time, or one whose shape suddenly changed, has no history to copy</strong> — it has to start from a conservative default.</p>
+<h2>Remember this one thing</h2>
+<div class="tl">
+<p>Cloud waste is mostly not "scaling too slowly" — it is people guessing their resource requests wrong, because guessing low gets you punished and guessing high does not. Autopilot hands the form to a machine: read the fading history of real usage, take the peak for memory and a high percentile for CPU, add a safety margin, and let several rules replay history to see whose choices would have cost least. Google runs nearly half its fleet this way; waste fell from 46% to 23%, and programs were killed for memory <em>less</em> often, not more.</p>
+</div>
+<p class="switch-hint">Want the decaying-histogram algorithm, the cost function behind the multi-model recommender, and the measured numbers? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Autopilot is the autoscaling system Google runs on top of Borg. It <strong>sets each task's CPU and memory limits (vertical scaling) and each job's replica count (horizontal scaling) automatically</strong>: usage is accumulated into a <em>histogram whose samples decay exponentially with age</em>, a statistic is read off it (the peak for memory, a high percentile for serving CPU) and multiplied by a safety margin; in parallel, a pool of <strong>differently parameterised models replays history and votes, weighted by a "cost"</strong>. By publication it covered <strong>more than 48% of Google's fleet-wide resource usage</strong>, cut slack — the gap between limit and actual usage — from <strong>46% under human management to 23%</strong>, and reduced the number of <strong>jobs severely affected by OOMs by roughly an order of magnitude</strong>.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Cluster manager / Borg</strong>: Google's internal scheduler that treats a whole datacenter as one machine (Paper 59 on this site). It decides which program runs on which physical box; Kubernetes is its open-source successor.</li>
+<li><strong>Job and task</strong>: a job is one logical service made of several tasks (replicas, containers) running the same code. Borg schedules tasks.</li>
+<li><strong>Limit (also called the resource request)</strong>: what you declare when submitting a program — "at most x CPU cores and y GB of memory". The scheduler reserves that much for you, and bills you for it.</li>
+<li><strong>OOM (out of memory)</strong>: exceeding your memory limit gets the program killed by the kernel. Memory is an <em>incompressible</em> resource — there is no negotiating.</li>
+<li><strong>CPU throttling</strong>: exceeding your CPU limit does not kill you, it just forcibly slows you down. CPU is <em>compressible</em>.</li>
+<li><strong>Slack</strong>: the gap between limit and usage, <code>(limit − usage) / limit</code>. The scheduler is holding it for you and nobody is using it. Shrinking it is what this paper is about.</li>
+<li><strong>Vertical vs horizontal scaling</strong>: vertical resizes a single replica; horizontal changes how many replicas there are.</li>
+<li><strong>Percentile (e.g. p95)</strong>: sort the samples; p95 is the value 95% of them stay under. It lets you ignore extreme spikes.</li>
+<li><strong>Histogram</strong>: chop a range of values into buckets and count how many samples fall in each — a compact approximation of the whole distribution, from which any percentile can be read back.</li>
+<li><strong>Serving vs batch</strong>: serving jobs answer user requests now and fear latency; batch jobs crunch data offline and only care about finishing, not about being briefly slowed.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The paper is led by Krzysztof Rzadca (University of Warsaw / Google) with a Google team that includes <strong>John Wilkes</strong>, an author of the Borg paper, and appeared at <strong>EuroSys 2020</strong>. It follows directly from <strong>Borg (2015)</strong>: Borg solved "which machines should these containers be packed onto", while Autopilot fixes the half Borg never touched — <strong>the numbers those containers asked for were wrong to begin with</strong>. Downstream, it is the reference point for every "rightsizing" practice in the cloud today: <strong>the recommender in Kubernetes' Vertical Pod Autoscaler is built on exactly this decaying-histogram / percentile / safety-margin recipe</strong>.</p>
+<h2>The problem</h2>
+<p>Systems like Borg make you declare a limit at submission time. Declare too little and your tasks get OOM-killed or CPU-throttled; declare too much and the scheduler holds that capacity for you and gives it to nobody else. The incentives are <strong>completely asymmetric</strong>: underestimating costs you an outage, a pager and a postmortem; overestimating costs you a line on a bill nobody audits.</p>
+<p>So everyone overshoots — and then never revisits the number. The load changes, the code gets optimised, the traffic moves away, and that figure still sits where somebody set it in a panic two years ago. The paper's name for the resulting gap is <strong>slack</strong>, and for manually managed jobs it runs to <strong>46%</strong>: <strong>almost half of what was reserved was never used.</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap1" markerheight="8" markerwidth="8" orient="auto" refx="4" refy="4"><path d="M4,0 L8,4 L4,8 L0,4 Z" fill="#e8794b"></path></marker></defs>
+<line stroke="#7c8593" x1="70" x2="70" y1="34" y2="205"></line>
+<line stroke="#7c8593" x1="70" x2="530" y1="205" y2="205"></line>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="76" y="26">resources</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="530" y="223">time →</text>
+<path d="M70,158 C105,150 125,132 155,140 C185,148 205,164 235,158 C265,152 285,134 315,142 C345,150 365,166 395,158 C425,150 445,138 470,148 L470,205 L70,205 Z" fill="rgba(240,180,41,0.16)"></path>
+<path d="M70,158 C105,150 125,132 155,140 C185,148 205,164 235,158 C265,152 285,134 315,142 C345,150 365,166 395,158 C425,150 445,138 470,148" fill="none" stroke="#f0b429" stroke-width="1.8"></path>
+<text fill="#a89a6d" font-size="11" x="86" y="184">actual usage</text>
+<line stroke="#7c8593" stroke-dasharray="5 4" stroke-width="1.4" x1="70" x2="470" y1="58" y2="58"></line>
+<text fill="#b9c0ca" font-size="11.5" x="76" y="51">hand-set limit (set high, out of fear)</text>
+<line stroke="#e8794b" stroke-width="1.8" x1="70" x2="470" y1="104" y2="104"></line>
+<text fill="#e8794b" font-size="11.5" x="76" y="120">limit chosen by Autopilot</text>
+<line marker-end="url(#ap1)" marker-start="url(#ap1)" stroke="#e8794b" stroke-width="1.3" x1="188" x2="188" y1="60" y2="144"></line>
+<text fill="#e7ebf1" font-size="11.5" x="196" y="82">hand-set slack ≈ 46%</text>
+<line marker-end="url(#ap1)" marker-start="url(#ap1)" stroke="#e8794b" stroke-width="1.3" x1="432" x2="432" y1="106" y2="150"></line>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="end" x="424" y="134">Autopilot cuts it to ≈ 23%</text>
+</svg>
+<figcaption>Fig 1 · Slack: the gap between the declared limit and real usage. The scheduler holds it, nobody uses it — and under human management it is nearly half.</figcaption>
+</figure>
+<p>Why can't Borg's existing resource reclamation fix this? Borg does hand the unused portion to low-priority batch work, but that only <strong>hides</strong> the waste: a high-priority job's limit is still a hard reservation, still occupies schedulable capacity, and still drives how many machines capacity planning has to buy. <strong>Reclamation treats the symptom; a smaller limit treats the cause.</strong></p>
+<h2>The core ideas</h2>
+<h3>Turning "pick a limit" into something with a cost function</h3>
+<p>Autopilot's pivotal move is not an algorithm. It is <strong>admitting that the two errors cost different amounts, and writing that down explicitly</strong>. Each candidate limit gets a cost that is roughly the sum of three terms:</p>
+<ul>
+<li><strong>The cost of overrunning</strong>: moments where usage exceeded the limit. Overrunning memory means the task dies, so it carries an enormous weight; overrunning CPU only means throttling, and weighs far less.</li>
+<li><strong>The cost of waste</strong>: however much the limit sat above actual usage, measured as resources held for nothing.</li>
+<li><strong>The cost of churn</strong>: changing a limit at all is penalised, because in Borg a changed limit often means the task is rescheduled and restarted — never free for a stateful or slow-starting service.</li>
+</ul>
+<p>With that function in hand, "what number should I put here" stops being a judgement call requiring nerve and becomes an optimisation you can <strong>replay against history and score</strong>. That is the hinge of the whole paper.</p>
+<h3>Vertical scaling, part one: the sliding-window recommender</h3>
+<p>The first recommender is plain and effective. It samples each task's CPU and memory usage continuously and accumulates the samples into a <strong>histogram</strong> — not the raw time series, just the distribution, which is cheap to store and lets any percentile be read back at will.</p>
+<p>The crucial twist is <strong>exponential decay</strong>: each sample's weight shrinks with age as <code>w(τ) = 2^(−τ/t½)</code>, where <code>τ</code> is how old the sample is and <code>t½</code> the half-life. In plain terms: <strong>the histogram fades, so a freak spike from a month ago does not hold today's quota hostage — but it isn't forgotten instantly either.</strong> The typical values the paper gives are a half-life of about <strong>12 hours for CPU and about 48 hours for memory</strong>. Memory remembers longer, because forgetting too fast is paid for in dead tasks.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.08)" height="36" rx="6" stroke="#f0b429" width="262" x="18" y="18"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="149" y="41">① sample each task's real usage</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="149" x2="149" y1="56" y2="72"></line>
+<rect fill="rgba(240,180,41,0.08)" height="36" rx="6" stroke="#f0b429" width="262" x="18" y="74"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="149" y="97">② roll it into a fading histogram</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="149" x2="149" y1="112" y2="128"></line>
+<rect fill="rgba(240,180,41,0.08)" height="48" rx="6" stroke="#f0b429" width="262" x="18" y="130"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="149" y="150">③ memory: the peak</text><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="149" y="168">CPU: a high percentile (serving)</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="149" x2="149" y1="180" y2="196"></line>
+<rect fill="rgba(240,180,41,0.08)" height="36" rx="6" stroke="#f0b429" width="262" x="18" y="198"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="149" y="221">④ add safety margin, round up</text>
+<line marker-end="url(#ap2)" stroke="#7c8593" x1="149" x2="149" y1="236" y2="252"></line>
+<rect fill="rgba(232,121,75,0.12)" height="36" rx="6" stroke="#e8794b" width="262" x="18" y="254"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="149" y="277">⑤ roll the new limits out gradually</text>
+<text fill="#f0b429" font-size="11.5" x="318" y="96">③ read it off the histogram</text>
+<line stroke="#7c8593" x1="318" x2="536" y1="200" y2="200"></line>
+<rect fill="rgba(240,180,41,0.45)" height="10" width="16" x="324" y="190"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="22" width="16" x="342" y="178"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="40" width="16" x="360" y="160"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="60" width="16" x="378" y="140"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="50" width="16" x="396" y="150"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="32" width="16" x="414" y="168"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="18" width="16" x="432" y="182"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="11" width="16" x="450" y="189"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="6" width="16" x="468" y="194"></rect>
+<rect fill="rgba(240,180,41,0.45)" height="4" width="16" x="486" y="196"></rect>
+<line stroke="#e8794b" stroke-dasharray="4 3" x1="482" x2="482" y1="118" y2="204"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="482" y="112">p95</text>
+<line stroke="#b9c0ca" stroke-dasharray="4 3" x1="504" x2="504" y1="132" y2="204"></line>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="508" y="126">peak</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="end" x="536" y="218">usage →</text>
+<text fill="#7c8593" font-size="10.5" x="318" y="248">old samples fade by half-life:</text>
+<text fill="#7c8593" font-size="10.5" x="318" y="264">CPU ≈ 12 h · memory ≈ 48 h</text>
+</svg>
+<figcaption>Fig 2 · The vertical-scaling pipeline: usage → a fading histogram → a statistic (peak for memory, high percentile for serving CPU) → safety margin → new limits rolled out gradually.</figcaption>
+</figure>
+<p>Which statistic you take depends on what happens when you exceed it:</p>
+<ul>
+<li><strong>Memory</strong>: the <strong>peak</strong> over the decayed window. One overrun means death; there is nothing to haggle over.</li>
+<li><strong>Serving CPU</strong>: a <strong>high percentile (p90 / p95)</strong>. Being throttled for a few seconds now and then is a mild slowdown; paying for the all-time peak is not worth it.</li>
+<li><strong>Batch CPU</strong>: the <strong>average</strong> is enough. Batch work never cared about momentary slowness, only about total throughput.</li>
+</ul>
+<p>The resulting number is then <strong>multiplied by a safety margin</strong> — on the order of ten percent, and relatively wider for small tasks, whose relative fluctuations are larger — and rounded up to a tidy value. Not a line of it is difficult mathematics. All of its weight is in one judgement: <em>which resource deserves which appetite for risk.</em></p>
+<p>Then there is <strong>applying</strong> the new limit. Because a changed limit can trigger a restart, Autopilot changes them <strong>in a rolling fashion</strong> — never every replica of a job at once — and is <strong>especially cautious about lowering memory</strong>: raising is always allowed, lowering demands stronger evidence from history.</p>
+<h3>Vertical scaling, part two: the multi-model recommender</h3>
+<p>The sliding-window recommender has knobs: how long a half-life? p90 or p95? how much margin? <strong>The best setting is not the same for every job</strong> — a service with flat traffic and one with two daily spikes need entirely different fade rates. Tuning knobs per job by hand would just move the form-filling problem somewhere else.</p>
+<p>The second recommender (whose approach the paper describes as inspired by reinforcement learning) answers this by <strong>not picking one parameter set, but keeping a stable of models</strong>. Each model carries fixed parameters: its own decay rate, its own safety margin, its own way of turning the histogram into a limit. For each job the system <strong>replays the last few weeks of real usage</strong> and asks each model: "if we had followed you, how often would you have overrun, how much would you have wasted, how many times would you have changed the limit?" The cost function above turns that into a score, <strong>models with lower cost get more say</strong>, and the recommendation is their score-weighted combination.</p>
+<p>One more penalty matters: <strong>switching models costs something too</strong>. Otherwise a hair's-breadth difference in scores would have the system following A today and B tomorrow, yanking the limit back and forth — and each yank can restart tasks.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 305" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.08)" height="34" rx="6" stroke="#f0b429" width="252" x="154" y="12"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="34">replay the last few weeks of real usage</text>
+<path d="M280,48 L280,60 L100,60 L100,76" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<path d="M280,48 L280,76" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<path d="M280,48 L280,60 L460,60 L460,76" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<rect fill="rgba(255,255,255,0.03)" height="44" rx="6" stroke="#7c8593" width="150" x="25" y="78"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="100" y="97">model A</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="100" y="114">fades fast · thin margin</text>
+<rect fill="rgba(240,180,41,0.1)" height="44" rx="6" stroke="#f0b429" width="150" x="205" y="78"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="97">model B</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="114">fades slow · mid margin</text>
+<rect fill="rgba(255,255,255,0.03)" height="44" rx="6" stroke="#7c8593" width="150" x="385" y="78"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="460" y="97">model C</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="460" y="114">peak only · fat margin</text>
+<rect fill="rgba(255,255,255,0.06)" height="10" rx="3" width="150" x="25" y="136"></rect><rect fill="#e8794b" height="10" rx="3" width="120" x="25" y="136"></rect>
+<rect fill="rgba(255,255,255,0.06)" height="10" rx="3" width="150" x="205" y="136"></rect><rect fill="#f0b429" height="10" rx="3" width="45" x="205" y="136"></rect>
+<rect fill="rgba(255,255,255,0.06)" height="10" rx="3" width="150" x="385" y="136"></rect><rect fill="#e8794b" height="10" rx="3" width="90" x="385" y="136"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="100" y="164">replay cost: high (overruns)</text>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="280" y="164">replay cost: low ✓</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="460" y="164">replay cost: mid (wasteful)</text>
+<path d="M100,172 L100,196 L258,196" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<path d="M280,172 L280,200" fill="none" marker-end="url(#ap3)" stroke="#f0b429"></path>
+<path d="M460,172 L460,196 L302,196" fill="none" marker-end="url(#ap3)" stroke="#7c8593"></path>
+<circle cx="280" cy="222" fill="rgba(232,121,75,0.16)" r="21" stroke="#e8794b"></circle><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="280" y="226">weigh</text>
+<line marker-end="url(#ap3)" stroke="#7c8593" x1="280" x2="280" y1="244" y2="260"></line>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="280" y="278">recommended limit</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="298">cost = overrun pain (heavy) + waste + penalty for changing limit or model</text>
+</svg>
+<figcaption>Fig 3 · The multi-model recommender: differently parameterised models replay history and are scored; the cheapest gets the loudest voice, and switching models is itself penalised to stop it oscillating.</figcaption>
+</figure>
+<h3>Horizontal scaling: fast up, slow down</h3>
+<p>Vertical scaling governs how big one replica is; horizontal scaling governs how many there are. The latter sets the replica count from a signal — CPU utilisation by default (total load divided by a target utilisation), or a custom metric the job owner supplies, such as queue depth or requests per second.</p>
+<p>The instructive part is that it is <strong>deliberately asymmetric</strong>: <strong>scaling up follows recent load over a short window and reacts almost immediately, while scaling down looks at the peak over a multi-day window</strong> and descends one small step at a time. The reasoning is thoroughly practical — adding a replica you did not need costs a little money; removing one you did need leaves you caught out when the traffic returns. <strong>The same asymmetric-cost principle, applied a second time along the other axis.</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ap4" markerheight="8" markerwidth="8" orient="auto" refx="4" refy="4"><path d="M4,0 L8,4 L4,8 L0,4 Z" fill="#e8794b"></path></marker></defs>
+<line stroke="#7c8593" x1="70" x2="70" y1="34" y2="205"></line>
+<line stroke="#7c8593" x1="70" x2="530" y1="205" y2="205"></line>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="70" y="26">scale</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="530" y="223">time →</text>
+<line stroke="#5a6069" stroke-dasharray="3 3" x1="352" x2="352" y1="95" y2="198"></line>
+<line stroke="#5a6069" stroke-dasharray="3 3" x1="420" x2="420" y1="78" y2="198"></line>
+<path d="M70,180 L145,180 L152,95 L350,95 L357,180 L520,180" fill="none" stroke="#f0b429" stroke-width="1.8"></path>
+<path d="M70,165 L150,165 L150,78 L420,78 L420,108 L465,108 L465,140 L520,140" fill="none" stroke="#e8794b" stroke-width="2.4"></path>
+<text fill="#e8794b" font-size="11.5" x="222" y="70">replica count (set by Autopilot)</text>
+<text fill="#f0b429" font-size="11.5" x="222" y="118">actual load</text>
+<text fill="#e8794b" font-size="11" x="158" y="52">up: immediately</text>
+<line marker-end="url(#ap4)" marker-start="url(#ap4)" stroke="#e8794b" stroke-width="1.2" x1="352" x2="420" y1="192" y2="192"></line>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="386" y="186">held high</text>
+<text fill="#7c8593" font-size="10.5" x="430" y="176">then stepped down slowly</text>
+</svg>
+<figcaption>Fig 4 · Asymmetric horizontal scaling: load rises and replicas follow at once; load falls and it waits for several days of peaks to come down, then descends in small steps.</figcaption>
+</figure>
+<h3>Getting people to let go: the rollout is part of the design</h3>
+<p>Readers skip this section, and it is exactly what separates this paper from an algorithms paper. Taking quota control away from engineers is not technically hard; <strong>getting them to agree is</strong>. Autopilot's answer is a ladder of evidence: <strong>offline simulation</strong> on historical traces first; then a <strong>dry run</strong> in production that records what it <em>would</em> have set without applying anything, so owners can watch it against their own judgement; then <strong>controlled comparisons</strong>; then a <strong>phased handover</strong> with visible dashboards and a <strong>one-click way out</strong> at any moment. Small and new jobs are opted in by default, with opt-out available. <strong>This is engineering about how automation earns trust, not just about how a quota is computed.</strong></p>
+<h2>Results</h2>
+<ul>
+<li><strong>Reach</strong>: at publication, autopiloted jobs already accounted for <strong>more than 48% of Google's fleet-wide resource usage</strong>. This is not a lab prototype; it is half of Google.</li>
+<li><strong>Savings</strong>: autopiloted jobs run at about <strong>23% slack</strong> against about <strong>46%</strong> for manually managed ones — roughly half of it gone. In one comparison in the paper, absolute slack fell from the equivalent of about <strong>12,000 machines</strong> to about <strong>500</strong>; the authors estimate overall savings for Google in the <strong>tens of millions of dollars</strong>.</li>
+<li><strong>Not paid for in stability</strong>: this is the counter-intuitive and most persuasive part. Tightening limits should mean more OOM kills — instead, the number of <strong>jobs severely affected by OOMs dropped by about an order of magnitude</strong>, and <strong>over 99.5% of job-days saw no OOMs at all</strong>. The machine's estimates were not just cheaper than the humans' guesses; they were more accurate.</li>
+</ul>
+<h2>Why it matters</h2>
+<p>First, it <strong>completes Borg's other half</strong>. Borg perfected the packing, but the input it packs — the limit each job declares — had always been wrong. <strong>No scheduler, however good, can rescue a systematically inflated order form.</strong> Autopilot fixes the input itself.</p>
+<p>Second, it turns rightsizing <strong>from an operations craft into an optimisation problem</strong>. Once you can write a cost function and score candidates by replaying history, the work becomes automatable and continuous instead of depending on somebody's conscience one quarter. Kubernetes' VPA, cloud resource recommenders and FinOps tooling all walk this road — <strong>the VPA recommender is essentially the public implementation of this decaying-histogram / percentile / safety-margin recipe</strong>.</p>
+<p>Third, and most underrated: it offers a <strong>template for how automation gets accepted</strong>. Simulate, dry-run, compare, phase in, allow exit — the path itself is reusable methodology.</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>It can only copy history.</strong> No history, no recommendation. Brand-new jobs, jobs just rewritten, and traffic that changes shape (a launch, a sale, failover spillover) all leave it lagging behind on a conservative default. The genuinely hard problem — predicting the future — it does not solve.</li>
+<li><strong>Usage is itself distorted by the limit.</strong> What the system observes is not real demand but <em>demand after being constrained</em>: a throttled task simply looks like it uses less CPU. Every usage-driven quota system shares this feedback loop, and it can ratchet a starved service further down. High percentiles, safety margins and throttling metrics mitigate it; nothing removes it.</li>
+<li><strong>Changing a limit is not free.</strong> Applying vertical scaling often means the task is rescheduled and restarted — a real cost for stateful services, services with caches to warm, services that take minutes to start. That is precisely why churn gets its own penalty term and why rollouts are gradual, and it means the approach fits stateless serving work best.</li>
+<li><strong>The objective is the resource bill, not the user experience.</strong> Slack and OOMs are both <em>proxies</em>. Provisioning the CPU p95 correctly does not prove end-to-end tail latency was unharmed, especially near the throttling boundary. The paper does not — and could hardly — offer an SLO-level proof.</li>
+<li><strong>Automation did not abolish human guessing; it relocated it.</strong> The relative weights of overrun versus waste, how the model pool is constructed, how much margin to allow — all remain global human judgements. It replaced "guess once per job" with "guess a handful of hyperparameters once". An enormous improvement, but not the disappearance of the problem.</li>
+<li><strong>It is a production report, not a general algorithm.</strong> Every number comes from Borg and Google's comparatively homogeneous, thoroughly instrumented workloads. There is no public code or dataset, so it is hard to reproduce externally, and how much of the benefit survives in messier, less observable, more weakly isolated environments is open.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: Autopilot sets CPU/memory limits and replica counts for every task on Borg automatically, from an exponentially decaying histogram of past usage plus a statistic plus a safety margin.</p>
+<p>② The pain: cloud waste comes mostly not from slow scaling but from people mis-declaring resource requests — asking too little gets you killed or throttled, asking too much only shows on a bill, so everyone overshoots.</p>
+<p>③ The hinge: write that asymmetry down as an explicit <strong>cost function</strong> (overrun ≫ waste, plus a churn penalty). "What number?" becomes a replayable, scoreable optimisation.</p>
+<p>④ Vertical: usage accumulates into a <strong>fading histogram</strong> (<code>w(τ)=2^(−τ/t½)</code>, ≈12 h for CPU, ≈48 h for memory); peak for memory, high percentile for serving CPU, average for batch; multiply by a margin, roll out gradually, lower memory only with care.</p>
+<p>⑤ The multi-model recommender: keep a stable of differently parameterised models, score each by replaying history, weight by cost — and penalise switching so it does not oscillate.</p>
+<p>⑥ Horizontal: the same asymmetry — <strong>scale up on a short window immediately, scale down on multi-day peaks in small steps</strong>.</p>
+<p>⑦ Results: over 48% of Google's fleet-wide usage; slack 46% → 23% (in one comparison, from ~12,000 machines' worth to ~500); jobs severely affected by OOMs down about 10×, with &gt;99.5% of job-days OOM-free.</p>
+<p>⑧ Legacy and limits: Kubernetes VPA and cloud rightsizing tools follow this recipe almost directly — but it only copies history (cold start unsolved), the usage it observes is already distorted by throttling, changing limits can restart tasks, and the weights and hyperparameters are still set by humans. Automation moved the guessing; it did not end it.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the exact form of the cost function and all the charts, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
