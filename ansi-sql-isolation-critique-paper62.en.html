@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>A Critique of ANSI SQL Isolation Levels — CS Papers Deep-Read Paper 62</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 62</p>
+<h1>A Critique of ANSI SQL Isolation Levels</h1>
+<p class="sub">Berenson, Bernstein, Gray, Melton, O'Neil, O'Neil · SIGMOD 1995</p>
+<p class="langbar"><a href="ansi-sql-isolation-critique-paper62.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>Every database has a dial called the <strong>isolation level</strong>. It decides how much several simultaneous pieces of work are allowed to disturb each other. Turn it tight and you are safe but slow; turn it loose and you are fast but your books may come out wrong. The 1992 international SQL standard put four notches on that dial and described, in a few sentences of plain English, what each notch protects you from. In 1995 six heavyweights of the database world — including the editor of the SQL standard himself, and Jim Gray, one of the founders of transaction processing — wrote this paper and took those sentences apart. Their finding: the plain English <strong>can be read two different ways</strong>, and the list of hazards it names <strong>leaves out several accidents that happen every day</strong>.</p>
+<h2>Start with something odd</h2>
+<p>The standard's description of a "dirty read" runs roughly like this: A changes a row but has not finalized it, B reads that row anyway, and then A changes its mind and cancels — so B has read <strong>a number that never really existed</strong>. Sounds reasonable.</p>
+<p>But the paper points out: taken literally, <strong>it is only an accident if A cancels at the end</strong>. What if A never changes its mind and finishes normally? B can still read a half-finished ledger — money has left one account and not yet arrived in the other, and B, looking at that moment, sees the total mysteriously short. By the literal reading, that does not count as a violation. One sentence, two readings: the strict one forbids all of these situations, the loose one forbids only a corner of them. This is not hair-splitting — what sits between the two readings is whether your money gets counted wrong.</p>
+<h2>What else the manual left out</h2>
+<p>The paper then lists hazards the standard never mentions but that are common in practice. <strong>First: two people change the same spot at once, and the later write quietly erases the earlier one.</strong> Even the loosest notch has to prevent that one, or else "cancel" itself stops working — you no longer know which old value to restore. <strong>Second: two people each read a balance, each add money, each write it back, and one of the two updates simply evaporates.</strong></p>
+<p>The nastiest is the third: <strong>two people each look at the same books, each make a decision that is perfectly legal on its own, and together they break the rule.</strong> A couple holds two cards on two accounts, and the bank's rule is that the two accounts together must not go into the red. Both check at the same time, both see "a hundred left between us", so one takes eighty from this account and the other takes eighty from that one. Neither withdrawal crosses the line by itself; together they are sixty in the red. Nobody read dirty data, and the books are still wrong.</p>
+<h2>Snapshot isolation: everyone reads their own photograph</h2>
+<p>The paper also tidied up and formally named a technique that databases were already using: <strong>snapshot isolation</strong>. The intuition: <strong>the moment you walk in, someone photographs the entire library for you; from then on, no matter how other people shuffle the books, you only ever look at your own photograph.</strong> So reading never has to queue behind anyone, and you never catch anyone mid-shuffle. Your own changes are kept under your name where nobody else can see them, and only come out when you go to the counter to check out. There the clerk runs one test: <strong>if someone touched the same book after you walked in and checked out before you did, they win and your whole basket is voided — go do it again.</strong></p>
+<p>It is fast and clean, and it blocks nearly every accident above — <strong>except the couple at the cash machine</strong>: those two touched different books, so the clerk's test finds no collision and waves both through, even though the photographs they each acted on had gone stale.</p>
+<h2>What it led to</h2>
+<p>This paper turned "isolation level" from a paragraph that is easy to misread into a <strong>checklist you can go through line by line</strong>: for each notch, exactly which accidents are prevented and which are let through. The industry got a shared vocabulary out of it — dirty read, non-repeatable read, phantom, lost update, write skew, snapshot isolation all trace back here.</p>
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>The standard defined isolation levels in a few sentences of plain English that were both ambiguous (one sentence, two readings, with real money between them) and incomplete (real accidents missing). This paper wrote out, hazard by hazard, what each notch actually prevents, filled in the gaps, and named the "read your own snapshot, first committer wins" technique snapshot isolation — while noting that useful as it is, it cannot stop the case where two decisions are each legal and jointly wrong.</p>
+</div>
+<p class="switch-hint">Want the precise notation, the four missing anomalies, and why isolation levels do not line up in a single row? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">The 1992 SQL-92 standard defined four isolation levels in terms of three <em>phenomena</em> — dirty read, non-repeatable read, phantom. This paper shows that definition is <strong>both ambiguous and incomplete</strong>: the English prose admits a loose and a strict reading, and only the strict one survives scrutiny; and the list omits real anomalies such as dirty write, lost update, read skew and write skew. The authors rewrite every anomaly as a <strong>precise sequence of operations</strong>, complete the list, formally define <em>cursor stability</em> and <strong>snapshot isolation</strong>, and deliver a structural result: isolation levels are not a straight line — <strong>snapshot isolation and REPEATABLE READ are incomparable</strong>.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Transaction</strong>: a group of database operations that must either all happen or none happen — "debit A, credit B" has to travel as one bundle.</li>
+<li><strong>Commit / abort (rollback)</strong>: commit = finalize this transaction's changes and make them visible to everyone; abort = give up midway and undo everything, as if it never happened.</li>
+<li><strong>Concurrency and interleaving</strong>: when transactions run at the same time, their reads and writes get shuffled together in time; different shufflings can give different results.</li>
+<li><strong>Isolation level</strong>: a dial that fixes how much of each other's half-finished state concurrent transactions may see. Tighter is more correct and slower.</li>
+<li><strong>Serializable</strong>: the gold standard of correctness — the effect of running transactions concurrently must equal running them one at a time in some order.</li>
+<li><strong>Lock</strong>: claim a row before reading or writing it so others must wait. A <em>short</em> lock is released immediately after use; a <em>long</em> lock is held until commit — and how long you hold which lock is exactly what makes an isolation level strong or weak.</li>
+<li><strong>Multiversion (MVCC)</strong>: instead of overwriting data, every write leaves a new version behind, so readers can read an older version and readers and writers never block each other.</li>
+<li><strong>Predicate</strong>: a query condition, e.g. "all employees earning over 100k". A predicate read returns <strong>a set of rows</strong> rather than one row — phantoms only exist for this kind of read.</li>
+<li><strong>History and notation</strong>: an execution written out as a string of events. This paper writes <code>r1[x]</code> for "transaction 1 reads item x", <code>w1[x]</code> for "writes x", <code>c1</code> for "commits", <code>a1</code> for "aborts", and <code>r1[P]</code> for "reads the set of rows matching predicate P".</li>
+<li><strong>ANSI SQL-92</strong>: the SQL standard finalized in 1992; the four isolation-level names come from it.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The authors are Hal Berenson, Phil Bernstein, <strong>Jim Gray</strong> (a founder of transaction-processing theory and a Turing Award winner), <strong>Jim Melton</strong> (editor of the SQL standard), Elizabeth O'Neil and Patrick O'Neil; the work was done at Microsoft Research and published at SIGMOD 1995. <strong>The standard's own editor took part in criticizing the standard</strong>, which gives the paper unusual weight. It follows Gray et al.'s 1976 lock-based "degrees of consistency" tradition and the SQL-92 text; it leads to Adya's generalized definitions in 1999 and to the whole line of work after 2005 on making snapshot isolation genuinely serializable.</p>
+<h2>The problem and the motivation</h2>
+<p>Start with why isolation levels exist at all. The correct thing is obviously to run transactions one at a time (serializable), but throughput then becomes unusable. So engineering strikes a bargain: <strong>give up a little correctness, buy back concurrency</strong>. And if it is a bargain, the crucial thing is to state precisely what you gave up.</p>
+<p>SQL-92's answer was to avoid mentioning locks (so as not to nail down an implementation) and define four levels via three <em>phenomena</em>: <strong>dirty read P1</strong> (reading someone's uncommitted data), <strong>non-repeatable read P2</strong> (reading a row twice and getting different values), <strong>phantom P3</strong> (running the same predicate query twice and finding rows appear or disappear). READ UNCOMMITTED allows all three; READ COMMITTED bars dirty reads; REPEATABLE READ also bars non-repeatable reads; SERIALIZABLE bars all three.</p>
+<p>The paper finds three places where that neat table caves in.</p>
+<p><strong>One: "implementation independent" is not true.</strong> The three phenomena were reverse-engineered from a locking implementation — they line up exactly with Gray's 1976 degrees 1/2/3 (how long you hold read locks, how long you hold write locks). Move to a multiversion implementation and levels and phenomena stop matching: a multiversion system cannot see uncommitted data at all, yet commits other sins.</p>
+<p><strong>Two: the English prose is ambiguous.</strong> Detailed in the next section.</p>
+<p><strong>Three: the list is incomplete</strong> — and what it omits happens to be exactly what engineers trip over.</p>
+<p>Which surfaces the real problem: <strong>an engineer who picks READ COMMITTED by reading the standard does not actually know what they just allowed.</strong> Meanwhile DBAs, vendors and the standards committee talk past each other, because they are all reading the same two-way sentence.</p>
+<h2>The core ideas</h2>
+<h3>Method: translate the prose into histories</h3>
+<p>The most valuable move in the paper looks almost humble: <strong>rewrite each anomaly from an English description into a family of forbidden event sequences.</strong> With the notation from the glossary, "dirty read" stops being a sentence whose wording can be argued about and becomes a pattern — any execution shaped like this is forbidden, full stop.</p>
+<p>That shifts the argument from "how do you read this sentence" to "does this execution match this pattern". <strong>Once something can be checked case by case, people can no longer talk past each other.</strong> Everything below follows from this one move.</p>
+<h3>The ambiguity: loose A versus strict P</h3>
+<p>Take dirty read first. The standard's English says: T1 modifies a row, T2 reads it before T1 commits, and <em>if T1 then rolls back</em>, T2 has read a value that was never committed. Read literally, what is forbidden is this pattern (the paper calls it <strong>A1</strong>): <code>w1[x] … r2[x] … (a1 and c2 in either order)</code> — note the <code>a1</code>: <strong>it only counts if T1 aborts at the end.</strong></p>
+<p>The paper argues the pattern that should be forbidden is the broader one (<strong>P1</strong>): <code>w1[x] … r2[x] … (c1 or a1)</code> — <strong>the moment T2 reads an x that T1 has not committed, it counts, whatever happens afterwards.</strong></p>
+<p>Why must it be the broad reading? One counterexample is enough. Let x and y be two accounts holding 50 each, under the business constraint <code>x + y = 100</code>. T1 transfers 40 from x to y:</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 250" font-family="-apple-system,sans-serif">
+<text x="280" y="20" fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle">One sentence about "dirty read", two readings</text>
+<line x1="72" x2="528" y1="62" y2="62" stroke="#3a4048" stroke-dasharray="4 4"></line>
+<line x1="72" x2="528" y1="118" y2="118" stroke="#3a4048" stroke-dasharray="4 4"></line>
+<text x="46" y="66" fill="#7c8593" font-size="12">T1</text>
+<text x="46" y="122" fill="#7c8593" font-size="12">T2</text>
+<rect x="80" y="47" width="140" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="150" y="66" fill="#e7ebf1" font-size="11.5" text-anchor="middle">write x: 50 → 10</text>
+<rect x="368" y="47" width="160" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="448" y="66" fill="#e7ebf1" font-size="11.5" text-anchor="middle">write y: 50 → 90, commit</text>
+<rect x="236" y="103" width="190" height="30" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="331" y="122" fill="#e7ebf1" font-size="11.5" text-anchor="middle">read x=10, y=50 → sum 60, commit</text>
+<line x1="228" x2="228" y1="47" y2="140" stroke="#5a6069" stroke-dasharray="3 3"></line>
+<text x="331" y="156" fill="#e8794b" font-size="11.5" text-anchor="middle">T2 sees 40 missing: a transfer caught halfway</text>
+<rect x="72" y="172" width="448" height="30" rx="6" fill="rgba(255,255,255,0.02)" stroke="#5a6069"></rect>
+<text x="86" y="191" fill="#b9c0ca" font-size="11.5">Loose A1: needs T1 to abort → the run above is <tspan fill="#e8794b">legal</tspan>, though the books are wrong</text>
+<rect x="72" y="208" width="448" height="30" rx="6" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect>
+<text x="86" y="227" fill="#b9c0ca" font-size="11.5">Strict P1: reading an uncommitted x is enough → the run above is <tspan fill="#f0b429">forbidden</tspan></text>
+</svg>
+<figcaption>Fig 1 · T1 commits rather than aborts, so by the standard's literal reading this is not a dirty read — yet T2 read a transfer caught halfway. The counterexample forces the strict reading of all three phenomena.</figcaption>
+</figure>
+<p>Non-repeatable read and phantom go the same way: read literally, each demands that <em>the same transaction read again and find a difference</em> — so a transaction that reads once and then acts on it can be wrecked without the standard calling it a violation. The strict reading instead forbids the underlying event: <strong>someone modifying what T1 has read while T1 is still running.</strong></p>
+<p>The strict reading buys something decisive: <strong>only under it does "exclude P1, P2, P3" become equivalent to lock-based serializability.</strong> Under the literal reading, a level that excludes A1, A2 and A3 is <em>not</em> serializable — the paper coins the name <strong>ANOMALY SERIALIZABLE</strong> for that misnamed level. The standard's SERIALIZABLE sits suspended between the two readings.</p>
+<h3>The incompleteness: four missing anomalies</h3>
+<p>Once the notation is laid out, the gaps are obvious.</p>
+<p><strong>Dirty write, P0: <code>w1[x] … w2[x] … (c1 or a1)</code>.</strong> Two uncommitted transactions write the same item in turn. The standard never mentions it, yet the paper shows <strong>every level must forbid it, including the loosest one</strong>. The reason is hard: otherwise rollback is meaningless — when T1 aborts, what should x be restored to? Its old value has already been overwritten by T2. And constraints across items shatter: under the constraint <code>x = y</code>, if T1 wants both set to 1 and T2 wants both set to 2, an interleaving can leave x=1, y=2, with both transactions having "run in full" and the constraint broken. So even the loosest notch is not a free-for-all — it must hold its <strong>write</strong> locks until commit.</p>
+<p><strong>Lost update, P4: <code>r1[x] … w2[x] … w1[x] … c1</code>.</strong> Read a balance, add to it, write it back. Two people do that at once and T2's contribution evaporates, because T1 computed its new value from a <em>stale</em> read and then pasted it over. READ COMMITTED does not stop it (the read lock is dropped immediately); REPEATABLE READ does; this is probably the most common concurrency bug in application code. The cheap variant that protects only the row the cursor is sitting on is <strong>P4C</strong>, matching the <em>cursor stability</em> notch industry already had and the standard has no slot for.</p>
+<p><strong>Read skew, A5A: <code>r1[x] … w2[x] w2[y] c2 … r1[y]</code>.</strong> A transaction reads two related items one after another, and in between somebody changes <strong>both</strong> of them in one go, so it ends up holding an old x and a new y that do not fit together. Every individual value it read was committed; the combination is a state that never existed.</p>
+<p><strong>Write skew, A5B: <code>r1[x] r2[y] w1[y] w2[x] (c1 and c2)</code>.</strong> The subtlest one: each transaction reads what the other is about to modify, each write is legal on its own, and together they break the constraint.</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 244" font-family="-apple-system,sans-serif">
+<text x="280" y="20" fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle">Write skew: each legal alone, illegal together</text>
+<text x="280" y="42" fill="#f5c451" font-size="11.5" text-anchor="middle">Constraint: x + y ≥ 0    Initially x = 50, y = 50</text>
+<text x="34" y="80" fill="#7c8593" font-size="12">T1</text>
+<rect x="62" y="61" width="150" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="137" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">read x, y → sum 100</text>
+<rect x="240" y="61" width="150" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="315" y="80" fill="#e7ebf1" font-size="11.5" text-anchor="middle">take 80 from x → x = −30</text>
+<rect x="410" y="61" width="62" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#5a6069"></rect>
+<text x="441" y="80" fill="#b9c0ca" font-size="11.5" text-anchor="middle">commit</text>
+<text x="34" y="136" fill="#7c8593" font-size="12">T2</text>
+<rect x="90" y="117" width="150" height="30" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="165" y="136" fill="#e7ebf1" font-size="11.5" text-anchor="middle">read x, y → sum 100</text>
+<rect x="290" y="117" width="150" height="30" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="365" y="136" fill="#e7ebf1" font-size="11.5" text-anchor="middle">take 80 from y → y = −30</text>
+<rect x="460" y="117" width="62" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#5a6069"></rect>
+<text x="491" y="136" fill="#b9c0ca" font-size="11.5" text-anchor="middle">commit</text>
+<line x1="34" x2="528" y1="162" y2="162" stroke="#3a4048"></line>
+<text x="528" y="178" fill="#7c8593" font-size="11" text-anchor="end">time →</text>
+<rect x="34" y="188" width="494" height="46" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"></rect>
+<text x="48" y="206" fill="#e7ebf1" font-size="11.5">Neither withdrawal crosses the line (each saw a sum of 100), yet after both commit:</text>
+<text x="48" y="226" fill="#e8794b" font-size="11.5">x + y = −60, the constraint is broken — and nobody ever read an uncommitted value.</text>
+</svg>
+<figcaption>Fig 2 · Write skew: the two transactions read the same state but write <em>different</em> items, so any conflict check of the form "did we write the same row" sees nothing.</figcaption>
+</figure>
+<h3>Snapshot isolation: a precise definition for multiversion systems</h3>
+<p>Having closed the gaps, the paper does its second big thing: it pins down the technique multiversion databases were already using but had never formally named — <strong>snapshot isolation (SI)</strong>.</p>
+<p>Three steps. <strong>(1)</strong> A transaction takes a <em>start-timestamp</em> when it begins; from then on it reads only versions committed before that timestamp, plus whatever it wrote itself — the database freezes into a photograph for it. <strong>(2)</strong> Its writes go into new versions visible only to itself. <strong>(3)</strong> At commit it takes a <em>commit-timestamp</em>, and the database checks: did any other committed transaction write an item I also wrote within the interval <code>[start, commit]</code>? If so, I am rolled back — <strong>first-committer-wins</strong>.</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 290" font-family="-apple-system,sans-serif">
+<text x="280" y="20" fill="#e7ebf1" font-size="13" font-weight="700" text-anchor="middle">Snapshot isolation: your own photograph + first-committer-wins</text>
+<line x1="120" x2="120" y1="40" y2="250" stroke="#f0b429" stroke-dasharray="3 3"></line>
+<line x1="470" x2="470" y1="40" y2="250" stroke="#e8794b" stroke-dasharray="3 3"></line>
+<text x="122" y="36" fill="#f0b429" font-size="11">T1 starts: snapshot taken</text>
+<text x="468" y="36" fill="#e8794b" font-size="11" text-anchor="end">T1 commits: conflict check</text>
+<rect x="120" y="50" width="350" height="34" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="295" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">T1: sees only the versions as of its start; reads take no locks, wait for nobody</text>
+<rect x="185" y="102" width="180" height="34" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="275" y="124" fill="#e7ebf1" font-size="11.5" text-anchor="middle">T2: writes x, then commits</text>
+<text x="120" y="156" fill="#7c8593" font-size="11.5">T2 committed inside T1's interval, and it also wrote x — a collision</text>
+<rect x="120" y="172" width="410" height="60" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect>
+<text x="134" y="194" fill="#e7ebf1" font-size="11.5">First-committer-wins → T2 stands, T1 is rolled back and retried</text>
+<text x="134" y="216" fill="#7c8593" font-size="11.5">Had they written different items → check passes, both commit → write skew slips through</text>
+<line x1="60" x2="530" y1="250" y2="250" stroke="#3a4048"></line>
+<text x="530" y="268" fill="#7c8593" font-size="11" text-anchor="end">time →</text>
+</svg>
+<figcaption>Fig 3 · Snapshot isolation: reads come from a frozen snapshot and never block; only "wrote the same item" is caught at commit. The reason write skew escapes is on the last line.</figcaption>
+</figure>
+<p>The properties are elegant: <strong>reads never block writes and writes never block reads</strong>; uncommitted versions are invisible to others, so dirty reads and dirty writes cannot occur; the snapshot is frozen, so non-repeatable reads and phantom re-reads cannot occur; first-committer-wins stops lost updates; a single consistent photograph stops read skew.</p>
+<p><strong>But it does not stop write skew.</strong> The reason is baked into the mechanism: the conflict check only asks whether two transactions wrote the same item, and in write skew they wrote <em>different</em> items. Their conflict lives on the read side, where both snapshots had gone stale, and the check cannot see it. So <strong>snapshot isolation is not serializable</strong>.</p>
+<h3>The structural result: levels do not form a line</h3>
+<p>This is the paper's heaviest punch. Try to slot snapshot isolation into the standard's ladder and it simply will not fit. <strong>REPEATABLE READ stops write skew</strong> (it holds read locks to commit, so the second transaction cannot modify what the first has read) <strong>but not phantoms</strong> (it does not lock predicates, so new rows can be inserted). <strong>Snapshot isolation is the mirror image</strong>: the frozen snapshot immunizes it against phantom re-reads, while write skew goes straight through.</p>
+<p><strong>Neither contains the other.</strong> So the widespread mental image of isolation levels as a line from loose to strict is wrong — it is a partially ordered net. And that is the intrinsic price of defining levels by "which anomalies are excluded": you can compare two sets of excluded anomalies, but sets do not give you a total order.</p>
+<figure>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 330" font-family="-apple-system,sans-serif">
+<rect x="180" y="16" width="200" height="34" rx="8" fill="rgba(240,180,41,0.14)" stroke="#f0b429"></rect>
+<text x="280" y="38" fill="#e7ebf1" font-size="12" text-anchor="middle">SERIALIZABLE</text>
+<rect x="46" y="88" width="190" height="34" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect>
+<text x="141" y="110" fill="#e7ebf1" font-size="12" text-anchor="middle">REPEATABLE READ</text>
+<rect x="46" y="156" width="190" height="34" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect>
+<text x="141" y="178" fill="#e7ebf1" font-size="12" text-anchor="middle">Cursor Stability</text>
+<rect x="46" y="224" width="190" height="34" rx="8" fill="rgba(240,180,41,0.08)" stroke="#f0b429"></rect>
+<text x="141" y="246" fill="#e7ebf1" font-size="12" text-anchor="middle">READ COMMITTED</text>
+<rect x="46" y="284" width="190" height="34" rx="8" fill="rgba(255,255,255,0.03)" stroke="#5a6069"></rect>
+<text x="141" y="306" fill="#b9c0ca" font-size="12" text-anchor="middle">READ UNCOMMITTED</text>
+<rect x="330" y="156" width="180" height="34" rx="8" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect>
+<text x="420" y="178" fill="#e7ebf1" font-size="12" text-anchor="middle">Snapshot Isolation</text>
+<line x1="141" x2="141" y1="284" y2="258" stroke="#7c8593"></line>
+<line x1="141" x2="141" y1="224" y2="190" stroke="#7c8593"></line>
+<line x1="141" x2="141" y1="156" y2="122" stroke="#7c8593"></line>
+<path d="M141,88 L141,64 L200,50" fill="none" stroke="#7c8593"></path>
+<path d="M236,232 L330,190" fill="none" stroke="#7c8593"></path>
+<path d="M420,156 L420,60 L370,50" fill="none" stroke="#7c8593"></path>
+<line x1="236" x2="330" y1="164" y2="164" stroke="#e8794b" stroke-dasharray="5 4"></line>
+<text x="283" y="156" fill="#e8794b" font-size="11" text-anchor="middle">incomparable</text>
+<text x="46" y="326" fill="#7c8593" font-size="11">Higher is stricter; across the dashed link, neither side is stricter than the other</text>
+</svg>
+<figcaption>Fig 4 · The partial order: snapshot isolation is stricter than READ COMMITTED and looser than SERIALIZABLE, yet incomparable with REPEATABLE READ — no single line holds them all.</figcaption>
+</figure>
+<h2>Key results</h2>
+<p>This is a paper of definitions and arguments: <strong>no benchmarks, no performance numbers</strong>, and saying so plainly beats inventing figures. Its "results" are three things: a list of anomalies pinned down as event sequences, a level-by-level table, and the strength relations between levels (including the incomparability above). The table reads as an engineering checklist:</p>
+<ul>
+<li><strong>READ UNCOMMITTED</strong>: excludes dirty write P0. (Degree 1 locking: long write locks only.)</li>
+<li><strong>READ COMMITTED</strong>: excludes P0 and dirty read P1. (Degree 2: long write locks plus short read locks.) The default in most databases.</li>
+<li><strong>Cursor stability</strong>: additionally excludes cursor lost update P4C.</li>
+<li><strong>REPEATABLE READ</strong>: excludes P0, P1, non-repeatable read P2 and lost update P4; <strong>still allows phantoms P3</strong>.</li>
+<li><strong>Snapshot isolation</strong>: excludes P0, P1, P4 and read skew A5A; <strong>still allows write skew A5B</strong>.</li>
+<li><strong>SERIALIZABLE</strong>: excludes all of them. (Degree 3: long read and write locks, including predicate locks.)</li>
+</ul>
+<p>The paper then holds that table up against the commercial systems of the day: most default to READ COMMITTED; several offer cursor stability; and Oracle's multiversion "read consistency" belongs to the snapshot-isolation family — <strong>what it delivers is not true serializability</strong>. (Oracle's SERIALIZABLE mode being snapshot isolation for years afterwards is the footnote to that verdict.)</p>
+<h2>Why it matters</h2>
+<p><strong>It gave the whole industry a shared vocabulary.</strong> The anomaly list in any database manual today — dirty read, non-repeatable read, phantom, lost update, read skew, write skew — traces back here. Engineers stopped asking "what is this level called" and started asking <strong>"which anomalies does this level exclude"</strong>. The level name is marketing; the anomaly list is the contract.</p>
+<p><strong>Snapshot isolation got its name here and went mainstream.</strong> PostgreSQL's REPEATABLE READ, MySQL InnoDB's consistent reads, and the SNAPSHOT level added in SQL Server 2005 all belong to this family. The vast majority of applications today run on snapshot isolation or READ COMMITTED, not on serializability.</p>
+<p><strong>It launched a research line directly.</strong> If snapshot isolation is only one anomaly short, can that gap be closed? Fekete et al. (2005) characterized the "dangerous structures" that make an SI execution non-serializable, and Cahill et al. (2008) built <strong>serializable snapshot isolation (SSI)</strong> on top of that — track read-write dependencies and abort one side when a dangerous cycle forms. PostgreSQL 9.1 (2011) shipped it, becoming the first mainstream database to offer genuine serializability on a multiversion engine. The starting gun for all of it was this paper's "SI does not exclude A5B".</p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The definitions are still lock-flavored.</strong> Adya's 1999 dissertation argued that defining levels by forbidding operation sequences is <em>too restrictive</em> for multiversion and optimistic implementations — it rules out implementations that are in fact correct. He redefined the levels in terms of forbidden cycles in a serialization graph (PL-1 / PL-2 / PL-3 and relatives), which is what finally achieved implementation independence and is the more general formulation today.</li>
+<li><strong>A list of anomalies can never be complete.</strong> Adding four does not mean the set is closed; defining correctness by enumerating hazards is patching by nature, and serializability remains the only positively defined level. Anomalies named later, especially predicate-related ones, make the point.</li>
+<li><strong>The standard itself was never fixed.</strong> The corrections live in the literature and in vendor documentation; the SQL standard text has essentially kept the three-phenomena definition — so the ambiguity is still there to be read today.</li>
+<li><strong>The danger of snapshot isolation was understated.</strong> The paper names write skew, but nobody then foresaw how many production incidents would come from shipping SI under the SERIALIZABLE label; the real fix was more than a decade away.</li>
+<li><strong>Narrow scope.</strong> It covers only read-write transactions in a single-node database: not distributed consistency, not session guarantees (read-your-writes, monotonic reads), not the correctness of the application-level "compute on a snapshot, then retry" pattern. Those still need a different vocabulary.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1. In one sentence: SQL-92 defined four isolation levels via three "phenomena"; this paper proved that definition both ambiguous and incomplete, and closed the gaps.</p>
+<p>2. The pain and the method: the standard aimed at implementation independence but was reverse-engineered from locking, so an engineer picking a level from it does not know what they allowed; the paper rewrites every anomaly as a precise event sequence (<code>w1[x] … r2[x] … c1</code>), moving the argument from wording to checkable patterns.</p>
+<p>3. The ambiguity: read literally (A1), a dirty read requires T1 to abort; a counterexample — a half-finished transfer observed while T1 goes on to commit — forces the strict reading (P1). Only under the strict reading does excluding the three phenomena amount to serializability.</p>
+<p>4. The gaps: dirty write P0 (every level must forbid it, or rollback itself breaks), lost update P4 and its cursor variant P4C, read skew A5A, write skew A5B — none of them in the standard.</p>
+<p>5. Snapshot isolation: read from a snapshot frozen at your start-timestamp, keep writes in your own versions, and at commit apply first-committer-wins; readers and writers never block each other. But it does not exclude write skew — the conflict check only asks "did we write the same item", while the conflict lives on the read side; hence SI is not serializable.</p>
+<p>6. Structural result: SI and REPEATABLE READ are <strong>incomparable</strong> (one stops phantoms but not write skew, the other the reverse) — isolation levels form a partially ordered net, not a line.</p>
+<p>7. Impact and limitations: it left the industry its anomaly vocabulary, named snapshot isolation and made it where most databases actually run, and led straight to Fekete (2005) → SSI (2008) → PostgreSQL 9.1; but its definitions remain lock-flavored (generalized by Adya in 1999 via serialization graphs), enumerating anomalies can never be complete, and the SQL standard itself was never amended.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full phenomena tables and the locking-level derivations, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
