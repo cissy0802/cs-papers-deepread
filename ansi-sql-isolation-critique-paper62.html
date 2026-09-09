@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>A Critique of ANSI SQL Isolation Levels（SQL 隔离级别批判）— IT 论文精读 Paper 62</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 62</p>
-<h1>A Critique of ANSI SQL Isolation Levels（SQL 隔离级别批判）</h1>
+<h1 data-tts="752db2ec489d85ec">A Critique of ANSI SQL Isolation Levels（SQL 隔离级别批判）</h1>
 <p class="sub">Berenson, Bernstein, Gray, Melton, O'Neil, O'Neil · SIGMOD 1995</p>
 <p class="langbar"><a href="ansi-sql-isolation-critique-paper62.en.html">EN →</a></p>
 <div class="modebar">
@@ -43,29 +44,29 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="78fdd6deea5bc8d4">这篇论文干了什么？</h2>
 <p>数据库上有个旋钮叫<strong>隔离级别</strong>：它决定「同时进行的好几笔操作，彼此能干扰到什么程度」。拧紧了安全但慢，拧松了快但可能算错账。1992 年的 SQL 国际标准给这个旋钮定了四档，并用几句大白话说明每档防住了什么。1995 年，六位重量级人物（包括 SQL 标准的编辑本人，以及事务处理的奠基者 Jim Gray）写了这篇论文逐条拆穿：那几句大白话<strong>一句能读出两个意思</strong>，而且<strong>漏掉了好几种天天发生的事故</strong>。</p>
-<h2>先说个怪事</h2>
+<h2 data-tts="79a9ce8969ebb881">先说个怪事</h2>
 <p>标准里对「脏读」的说明大意是：A 改了一行还没落定，B 就把它读走了，随后 A 反悔撤销——于是 B 读到了一个从未真正存在过的数字。听上去挺合理。</p>
 <p>但论文指出：照这个字面读法，<strong>只有 A 最后反悔才算事故</strong>。那要是 A 没反悔、一路改完落定了呢？B 照样可能在「改到一半」的账本上读到错账——转账转了一半，钱从这头扣了、还没进那头，B 这时看过去，总额凭空少了一截，按字面读法却不算违规。同一句话，<strong>严的读法把这类情形全禁掉，松的读法只禁其中一种</strong>，而标准没说清自己是哪个意思。两种读法之间，隔着「你的钱会不会被算错」。</p>
-<h2>说明书还漏了什么</h2>
+<h2 data-tts="8623796ae502164d">说明书还漏了什么</h2>
 <p>论文接着补上标准只字未提、现实里却常见的事故。<strong>一是两个人同时改同一处，后写的把先写的悄悄抹掉</strong>——这一类连最松那一档都必须防住，否则「撤销」本身就没法做对（你不知道该恢复成谁的旧值）。<strong>二是各自读了余额、各自加钱写回，一个人的更新凭空蒸发。</strong></p>
 <p>最阴的是第三类：<strong>两个人分别看了同一份账，各自做出看起来都合法的决定，合起来却把规矩破了。</strong>夫妻俩各持一张卡，银行规定两个账户加起来不能欠钱；两人同时查账，都看到「一共还剩一百」，于是一个从这边取八十、一个从那边取八十——各自都不越线，合起来欠了六十。谁也没读到脏数据，账还是烂了。</p>
-<h2>快照隔离：各看各的照片</h2>
+<h2 data-tts="1ad2164af7f95047">快照隔离：各看各的照片</h2>
 <p>论文还把一种当时已流行、却没被标准收录的做法整理清楚，正式命名为<strong>快照隔离</strong>。直觉是：<strong>每个人一进门，就先给整座图书馆拍一张照片；此后无论别人怎么搬书，你只看手里那张照片。</strong>所以读永远不必排队等人让开，也看不到别人搬到一半的样子。你的改动先记在自己名下，结账时柜台查一次：<strong>如果有人在你进门后动过同一本书、且比你先结完账，那就先结账的算数，你这一单作废重来。</strong></p>
 <p>这套办法又快又干净，前面的事故几乎全被挡住——<strong>但挡不住夫妻取钱那一种</strong>：两人动的是不同的书，柜台一查没撞车就都放行了，可他们依据的照片都已过期。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="b3fb50092061abda">带来了什么</h2>
 <p>它把「隔离级别」从一段容易读歪的说明书，变成一份<strong>可以逐条对表的清单</strong>：每一档到底防住哪几种事故、放过哪几种，写得明明白白。今天数据库手册里的「脏读、不可重复读、幻读、丢失更新、写偏斜、快照隔离」，基本都出自这里。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="dfc3b03fe8e36eff">一句话记住</h2>
 <div class="tl">
 <p>标准用几句大白话定义隔离级别，既含糊（一句两读、宽严差着真金白银）又不全（漏掉真实事故）。这篇论文把每一档「到底防住什么」写成能逐条对照的清单，并给「各看各的快照、先结账者算数」这套做法起名叫快照隔离——顺带点破：它好用，却挡不住「各自都合法、合起来出事」的那一种。</p>
 </div>
 <p class="switch-hint">想看那套精确记号、四类被漏掉的异常、以及为什么隔离级别根本排不成一条直线？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="2a95d35306debaa7">一句话</h2>
 <p class="lead">1992 年的 SQL-92 标准用「脏读、不可重复读、幻读」三种<em>现象</em>定义了四个隔离级别，这篇论文证明这套定义<strong>既含糊又不完备</strong>：现象的英文表述至少有宽、严两种读法，只有宽读才站得住；而清单漏掉了脏写、丢失更新、读偏斜、写偏斜等真实异常。作者把每种异常改写成<strong>精确的操作序列</strong>、补齐清单、正式定义了<em>游标稳定性</em>与<strong>快照隔离</strong>，并给出一个结构性结论：隔离级别不是一条直线——<strong>快照隔离与 REPEATABLE READ 互不包含</strong>。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="2296eaad8c9bf181">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>事务（transaction）</strong>：一组要么全做、要么全不做的数据库操作，比如「从 A 扣钱 + 给 B 加钱」必须捆成一笔。</li>
@@ -79,17 +80,17 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>ANSI SQL-92</strong>：1992 年定稿的 SQL 国际标准，隔离级别的四档名字就是它定下的。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="efc9c272e6d60421">坐标</h2>
 <p>作者是 Hal Berenson、Phil Bernstein、<strong>Jim Gray</strong>（事务处理理论的奠基者之一、图灵奖得主）、<strong>Jim Melton</strong>（SQL 标准的编辑）、Elizabeth O'Neil 与 Patrick O'Neil，成文于微软研究院，发表在 SIGMOD 1995。<strong>标准的执笔人自己参与了对标准的批判</strong>，这让这篇文章格外有分量。它上承 Gray 等 1976 年那套用锁定义的「一致性度（degrees of consistency）」传统与 SQL-92 文本；下启 Adya 1999 年的通用化定义、以及 2005 年之后「让快照隔离真正可串行化」的一整条研究线。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="c0bbfab807fcc16c">问题与动机</h2>
 <p>先说为什么需要隔离级别。最正确的做法当然是让所有事务排队一笔笔来（可串行化），但那样吞吐低得没法用。于是工程上做了个交易：<strong>放宽一点正确性，换回并发度</strong>。既然是交易，关键就在于——你必须说清自己放弃的到底是什么。</p>
 <p>SQL-92 的答案是：不提锁（避免绑死实现），改用三种<em>现象</em>定义四档。<strong>脏读 P1</strong>（读到别人未提交的数据）、<strong>不可重复读 P2</strong>（同一行读两次不一样）、<strong>幻读 P3</strong>（同一查询条件读两次，行数变了）。READ UNCOMMITTED 三种都允许，READ COMMITTED 禁脏读，REPEATABLE READ 再禁不可重复读，SERIALIZABLE 全禁。</p>
 <p>论文说，这个漂亮的表格有三处塌陷。<strong>其一，「实现无关」是假的</strong>：三种现象其实是从封锁实现倒推的，精确对应 Gray 1976 年那套 1/2/3 级封锁（读锁握多久、写锁握多久）；换成多版本实现就对不上号——多版本系统天生看不到未提交数据，却会犯别的错。<strong>其二，英文散文有歧义</strong>（下节详述）。<strong>其三，清单不全</strong>，而漏掉的恰恰是工程师最常踩的坑。</p>
 <p>于是真问题浮出水面：<strong>照着标准选了 READ COMMITTED 的工程师，并不知道自己放过了什么</strong>；而 DBA、厂商和标准委员会各说各话，因为读的是同一段可以两解的英文。</p>
-<h2>核心思想 / 方法</h2>
-<h3>方法：把散文翻译成「历史」</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="ca24cb69a54f2332">方法：把散文翻译成「历史」</h3>
 <p>全篇最有价值的动作，是一个看似朴素的转换：<strong>把每一种异常从一段英文描述，改写成一族被禁止的事件序列。</strong>用上面 Glossary 里的记号，「脏读」不再是一句可以争论措辞的话，而是一个模式——凡是长成这个样子的执行，一律禁止。争论于是从「你怎么理解这句话」挪到「这段执行是否匹配这个模式」：<strong>可以逐条检验，就不能再各说各话。</strong>下面所有结论都是这个转换的产物。</p>
-<h3>歧义：窄读 A 与宽读 P</h3>
+<h3 data-tts="3a6c4ee7454a5c69">歧义：窄读 A 与宽读 P</h3>
 <p>拿脏读开刀。标准的英文是：T1 改了一行，T2 在 T1 提交前读了它，<em>如果 T1 随后回滚</em>，T2 就读到了一个从未提交过的值。照字面翻译，被禁的是这个模式（论文记作 <strong>A1</strong>）：<code>w1[x] … r2[x] … (a1 与 c2 以任意顺序)</code>——注意 <code>a1</code>：<strong>非得 T1 最后回滚，才算事故。</strong>而论文主张真正该禁的是更宽的那个（<strong>P1</strong>）：<code>w1[x] … r2[x] … (c1 或 a1)</code>——<strong>只要 T2 读了 T1 尚未提交的 x 就算，不看结局。</strong></p>
 <p>为什么必须取宽读？一个反例就够。设 x、y 是两个账户各 50，业务约束是 <code>x + y = 100</code>，T1 从 x 往 y 转 40：</p>
 <figure>
@@ -115,7 +116,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <figcaption>图 1 · T1 提交而非回滚，所以按标准的字面读法不算脏读；可 T2 读到的是一笔转了一半的账。这个反例说明：三种现象只能取「宽读」。</figcaption>
 </figure>
 <p>不可重复读与幻读同理：字面读法都要求「同一事务再读一次、发现不一样」才算，于是只读一次就下决定的事务被坑了也不算数；宽读禁掉的则是<strong>「T1 还没结束，就有人去改它读过的东西」</strong>这件事本身。取宽读还有个决定性好处：<strong>只有在宽读下，「排除 P1、P2、P3」才等价于封锁式的可串行化</strong>；按窄读，一个排除了 A1、A2、A3 的级别<em>并不可串行化</em>——论文给这种名不副实的级别起了专名叫 <strong>ANOMALY SERIALIZABLE</strong>。</p>
-<h3>不完备：标准漏掉的四类异常</h3>
+<h3 data-tts="6f3cd46204cc6399">不完备：标准漏掉的四类异常</h3>
 <p>把记号摆开之后，缺口一目了然。</p>
 <p><strong>脏写 P0：<code>w1[x] … w2[x] … (c1 或 a1)</code>。</strong>两个未提交的事务先后写同一个数据项。标准只字未提，但论文指出<strong>每一档都必须禁止它，包括最松的 READ UNCOMMITTED</strong>。理由很硬：若允许，回滚就无从谈起——T1 回滚时该把 x 恢复成什么？旧值已被 T2 覆盖。跨行约束也会碎：设约束 <code>x = y</code>，T1 想把两者都写成 1、T2 想都写成 2，交错后可能落成 x=1、y=2。所以最松那一档也不是什么都不管——它至少要把<strong>写锁</strong>握到提交。</p>
 <p><strong>丢失更新 P4：<code>r1[x] … w2[x] … w1[x] … c1</code>。</strong>读余额、加钱、写回。两人同时做这套动作，T2 那笔就凭空蒸发——因为 T1 拿着<em>过期的</em>读数算出新值再盖上去。READ COMMITTED 挡不住（读锁一放就走人），REPEATABLE READ 能挡；这大概是应用层最常见的并发 bug。只保护「游标当前停留那一行」的廉价版本叫 <strong>P4C</strong>，对应工业界早有、标准里却没位置的<em>游标稳定性（Cursor Stability）</em>档。</p>
@@ -147,7 +148,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 2 · 写偏斜：两个事务读了同一份状态、写的却是不同的数据项，因此任何「谁和谁写了同一行」式的冲突检查都发现不了。</figcaption>
 </figure>
-<h3>快照隔离：给多版本实现一个精确定义</h3>
+<h3 data-tts="5f0d199a6d378579">快照隔离：给多版本实现一个精确定义</h3>
 <p>补完缺口后，论文做了第二件大事：把当时多版本数据库里流行、却没有正式名字的做法定义清楚，命名为<strong>快照隔离（Snapshot Isolation，SI）</strong>。机制分三步：<strong>①</strong> 事务开始时领一个<em>开始时间戳</em>，此后读到的永远是「该时间戳之前已提交」的版本（加上自己写过的）——数据库在它眼里定格成一张照片；<strong>②</strong> 它的写先存成只有自己可见的新版本；<strong>③</strong> 提交时领一个<em>提交时间戳</em>，检查 <code>[开始, 提交]</code> 区间里有没有别的已提交事务写过我也写过的数据项，有就把我回滚——<strong>先提交者获胜（First-Committer-Wins）</strong>。</p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 290" xmlns="http://www.w3.org/2000/svg">
@@ -171,7 +172,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </figure>
 <p>性质很漂亮：<strong>读不阻塞写、写不阻塞读</strong>；未提交版本对别人不可见，脏读脏写天然不存在；快照定格，重复读也不会变脸；先提交者获胜挡住丢失更新；一张一致的照片挡住读偏斜。</p>
 <p><strong>但它挡不住写偏斜。</strong>原因就在机制里：冲突检查只看「有没有写同一个数据项」，而写偏斜的两个事务写的是<em>不同</em>的项——它们的冲突藏在「读」上，各自依据的快照都已过时，检查看不见。所以<strong>快照隔离不是可串行化的</strong>。</p>
-<h3>结构性结论：级别排不成一条直线</h3>
+<h3 data-tts="889f4eeff7f76815">结构性结论：级别排不成一条直线</h3>
 <p>这是论文最有分量的一击。把快照隔离放进标准那条阶梯，会发现它根本插不进去：<strong>REPEATABLE READ 挡得住写偏斜</strong>（读锁握到提交，别人改不动它读过的行）<strong>却挡不住幻读</strong>（它不锁谓词，别人可以插入新行）；<strong>快照隔离正相反</strong>，定格的快照让它不受幻读之扰，却对写偏斜束手无策。<strong>两者互不包含</strong>——「隔离级别从松到严排成一条线」这个流传甚广的印象是错的，它是一张偏序的网。这也是「用禁止哪些异常来定义级别」的固有代价：清单能比交集，比不出全序。</p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 330" xmlns="http://www.w3.org/2000/svg">
@@ -199,7 +200,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 4 · 隔离级别的偏序网：快照隔离比 READ COMMITTED 严、比 SERIALIZABLE 松，却与 REPEATABLE READ 互不包含——一条直线排不下它们。</figcaption>
 </figure>
-<h2>关键结果</h2>
+<h2 data-tts="85c5facc104cee51">关键结果</h2>
 <p>这是一篇定义与论证式的论文，<strong>没有基准测试、没有性能数字</strong>。它的「结果」是三样东西：一套用事件序列写死的异常清单、一张级别对照表、以及级别之间的强弱关系（含上面那条「不可比」）。对照表可以直接当工程备忘：</p>
 <ul>
 <li><strong>READ UNCOMMITTED</strong>：排除脏写 P0。（等价于一级封锁：只有长写锁。）</li>
@@ -210,11 +211,11 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>SERIALIZABLE</strong>：全部排除。（三级封锁：长读写锁 + 谓词锁。）</li>
 </ul>
 <p>论文还拿这张表去对当时的商用系统：多数系统把 READ COMMITTED 设为默认，一批系统提供游标稳定性，而 Oracle 那套多版本的「读一致性」属于快照隔离一族——<strong>它给出的并不是真正的可串行化</strong>。（后来 Oracle 的 SERIALIZABLE 模式长期就是快照隔离，正是这个判断的注脚。）</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="f7a056e99e8283c3">为什么重要 / 影响</h2>
 <p><strong>它给了整个行业一套共同的词汇。</strong>今天任何一份数据库手册里的异常清单——脏读、不可重复读、幻读、丢失更新、读偏斜、写偏斜——基本都能追到这篇。工程师终于可以不问「这一档叫什么」，而问<strong>「这一档到底排除了哪几种异常」</strong>；级别名是营销，异常清单才是合同。</p>
 <p><strong>快照隔离由此得名并成为主流。</strong>PostgreSQL 的 REPEATABLE READ、MySQL InnoDB 的一致性读、SQL Server 2005 加入的 SNAPSHOT 隔离，都是这一族——今天绝大多数应用其实跑在快照隔离或 READ COMMITTED 上，而不是可串行化上。</p>
 <p><strong>它还直接催生了一条研究线。</strong>既然快照隔离只差写偏斜那一口气，能不能补上？Fekete 等人（2005）刻画了会引发不可串行化的「危险结构」，Cahill 等人（2008）据此做出<strong>可串行化快照隔离（SSI）</strong>——追踪读写依赖、发现危险环就中止一方；PostgreSQL 9.1（2011）把它落地，成为第一个在多版本引擎上提供真正可串行化的主流数据库。这条线的起点，就是本文那句「SI 挡不住 A5B」。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="69bd4b12fc1f2f8b">局限与批评</h2>
 <ul>
 <li><strong>定义仍然偏封锁。</strong>Adya 在 1999 年的博士论文里指出：用「禁止某些操作序列」定义级别，对多版本与乐观并发实现<em>过于严格</em>，会连带禁掉一些其实正确的实现。他改用「串行化图里不许出现某类环」来定义（PL-1/PL-2/PL-3 等），才真正做到实现无关——那是今天理论上更通用的表述。</li>
 <li><strong>清单式定义天生补不完。</strong>补上四类不等于补全。以异常为纲永远是在打补丁，唯一正面定义的只有可串行化。</li>
@@ -222,7 +223,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>快照隔离的危险被低估了。</strong>论文点出了写偏斜，但当年没人预料到「把 SI 标成 SERIALIZABLE 卖」会造成多少生产事故；真正的解法要等十多年后的 SSI。</li>
 <li><strong>覆盖面有限。</strong>全文只谈单机数据库里的读写事务，不涉及分布式一致性、会话保证（读己之写、单调读），也不涉及应用侧「拿快照算完再重试」这类模式的正确性。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="10c4241a7667c617">要点</h2>
 <div class="tl">
 <p>① SQL-92 用三种「现象」定义四档隔离级别，本文证明这套定义既含糊又不完备，并补齐了缺口。</p>
 <p>② 痛点与方法：标准想做到实现无关，实际是从封锁行为倒推的，工程师照它选级别并不知道自己放过了什么；论文把每种异常改写成精确的事件序列（<code>w1[x] … r2[x] … c1</code>），争论从措辞挪到可逐条检验的模式上。</p>
