@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>A Berkeley View on Serverless Computing（无服务器计算的伯克利视角）— IT 论文精读 Paper 63</title>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>A Berkeley View on Serverless Computing（无服务器计算的伯克利视角）— IT 论文精读 Paper 63</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
@@ -35,44 +36,35 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 63</p>
-<h1>A Berkeley View on Serverless Computing</h1>
+<h1 data-tts="74ff605d8f8688c9">A Berkeley View on Serverless Computing</h1>
 <p class="sub">Jonas, Schleier-Smith 等 · UC Berkeley · 2019（配同年反方 Hellerstein 等 · CIDR 2019 对读）</p>
 <p class="langbar"><a href="berkeley-view-serverless-paper63.en.html">EN →</a></p>
-
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="b413be2ef856b8b5">这篇论文干了什么？</h2>
 <p>你打开一个网站，背后总得有台机器一直开着等你。<strong>Serverless（无服务器）</strong>想省掉这件事：你只交一段代码，云平台在有请求时才把它跑起来，跑完就撤，没人访问时一分钱不收——「无服务器」不是真没有服务器，而是<strong>服务器不再归你管</strong>。2019 年，伯克利一群人写下这篇判断书：一边说「这就是云的未来」，一边老实列出<strong>它今天还干不了哪些事</strong>。</p>
-
-<h2>打个比方</h2>
+<h2 data-tts="e83e74dc76b5b504">打个比方</h2>
 <p>旧办法像<strong>包月租厂房</strong>：你得提前猜最忙那天要多大地方——租小了挤爆，租大了空着也照付，而它一年里绝大多数时间都空着。Serverless 像<strong>按趟叫车</strong>：来一单派一辆，没单时路上一辆都没有，你也不必付停车费。</p>
-
-<h2>新在哪</h2>
+<h2 data-tts="41f9655779a4f2bd">新在哪</h2>
 <p>旧世界里，工程师得先回答一堆和业务毫无关系的问题：租几台机器？什么型号？多少内存？半夜没人用要不要关？突然上热搜怎么加机器？——猜错任何一个，要么白烧钱，要么当场宕机。Serverless 把这些问题整个拿走：<strong>你说「这段代码该跑了」，剩下的归云。</strong> 论文自己给的类比是：像当年从汇编语言换到高级语言，程序员不必再亲手安排每一个寄存器。</p>
-
-<h2>它是怎么做到的</h2>
+<h2 data-tts="7ab5a1068b5b59fa">它是怎么做到的</h2>
 <p>秘密在于把「运行」切碎成<strong>一个个短命的小工</strong>：来一个请求就现开一个，干完立刻消失。正因为小工随生随灭，它们<strong>身上不能存东西</strong>（下次来的是全新的一个，什么都不记得），也<strong>不能互相打电话</strong>（你不知道对方在哪台机器上、这会儿还在不在）。于是所有要保存、要交换的东西，都得寄存进一个<strong>公共储物柜</strong>（云上的存储服务），谁要谁自己去取。</p>
 <p>这既是它省钱的原因，也是它所有麻烦的根源：几个小工要来回倒腾大量数据时，本来当面一句话的事，现在得<strong>写进柜子、再从柜子取出来</strong>；人一多，柜子前排起长队。这篇论文的主体，就是把这类「今天干不了的事」列成清单：缺一个又快又便宜的临时储物柜、缺让小工互相打招呼的办法、也缺稳定可预期的速度。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="0e70c56209785e27">带来了什么</h2>
 <p>同年一篇反方文章把话说得更狠：这等于<strong>把数据运到代码那儿去</strong>，而分布式系统四十年的经验恰恰相反——<strong>要把代码送到数据身边</strong>，因为数据重、代码轻；所以数据量大、要反复交换中间结果的活，搬上去就是又慢又贵。两篇合起来成了这个领域的公共词汇表，清单上的坑也在被一条条填。<strong>诚实说一句</strong>：六年过去，「serverless 将取代普通服务器、成为云的默认形态」这个预言并没有兑现——它成了工具箱里很好用的一把，而不是唯一那把。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="d100e2a66d4f56f9">一句话记住</h2>
 <div class="tl">
 <p>Serverless = 你只交代码，云替你开关机器、闲着不收钱；代价是函数短命、彼此不能直连，一切共享都得绕道存储。伯克利这篇把这笔交换讲清楚了，并把「它还差什么」列成了一张后来所有人都在用的清单。</p>
 </div>
 <p class="switch-hint">想看它给 serverless 下的正式定义、四大障碍与反方的完整论证？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
-<div class="mode mode-deep" hidden>
-<h2>一句话</h2>
+<div class="mode mode-deep" hidden="">
+<h2 data-tts="f5c75502674903aa">一句话</h2>
 <p class="lead">这不是一篇提出新系统的论文，而是一份<strong>判断书 + 缺陷清单</strong>：它先给被市场用滥的「无服务器计算（serverless computing）」下了可操作的定义——<strong>云函数（FaaS）+ 后端服务（BaaS）</strong>，判据是「计算与存储解耦、你不再申请资源只提交代码、按用量而非按分配量计费」；再拿五类真实应用去试探，指出今天的平台在<strong>临时共享存储、细粒度协调、通信模式、性能可预测性</strong>四处结构性地卡住；最后预言这条路终将成为云的主流形态。同年 Hellerstein 等的反方文章接住同一批事实，却得出了相反的结论。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="b291fdca3a3f0048">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>IaaS（基础设施即服务）</strong>：把别人机房里的机器按小时租给你。你拿到一台（虚拟）机器，装什么、怎么运维仍是你的事。虚拟机启动要秒到分钟级。</li>
@@ -84,17 +76,13 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>无状态（stateless）</strong>：一次调用结束就什么都不记得。好处是随便杀随便开、天然可扩展；坏处是任何要跨调用保留的东西都得存到外面去。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="287e8b90ac889779">坐标</h2>
 <p>Eric Jonas、Johann Schleier-Smith、Vikram Sreekanti 等十余人，来自 UC Berkeley RISELab，含 Joseph Gonzalez、Raluca Ada Popa、Ion Stoica 与 David Patterson；2019 年 2 月以伯克利技术报告（UCB/EECS-2019-3）发布。它明确接续 2009 年同校的《Above the Clouds: A Berkeley View of Cloud Computing》——那篇给「云计算」定了调，这篇想给「serverless」定调。同年 CIDR 上 Hellerstein 等的《Serverless Computing: One Step Forward, Two Steps Back》接上了结论相反的一半，两篇<strong>作者部分重合</strong>（Gonzalez、Schleier-Smith、Sreekanti 都在）。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="abea538452447df8">问题与动机</h2>
 <p>在此之前，用云的标准姿势是论文所称的 <em>serverful</em>（有服务器）：你租一批虚拟机，自己定型号、数量、内存，自己装环境、打补丁、配伸缩、做容错。麻烦有三层。<strong>第一，你被迫回答一堆与业务无关的问题</strong>——该给多少 CPU？峰值是平时的几倍？答案既要经验又要预知未来，而<strong>猜错的代价不对称</strong>：猜大了天天白烧钱，猜小了直接宕机，于是所有人都往大了猜。<strong>第二，你为「分配量」而非「用量」付费</strong>：机器一开就计费，哪怕整夜零请求。<strong>第三，弹性是你自己的活</strong>，而虚拟机启动太慢，往往赶不上突发。</p>
 <p>另一边，AWS Lambda 从 2014 年起已把「只交函数、按次计费」跑通了五年，但<strong>「serverless」这个词被市场用得面目全非</strong>：什么托管服务都自称 serverless，没人说得清它的边界，也就没人说得清它到底缺什么。这篇要干的正是这两件事：<strong>先定义它，再测量它的边界。</strong></p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>1）一个可操作的定义：serverless = FaaS + BaaS</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="7dcfa3875da617ef">1）一个可操作的定义：serverless = FaaS + BaaS</h3>
 <p>论文给的等式是 <code>serverless = FaaS + BaaS</code>：<em>云函数</em>跑你的代码，<em>后端服务</em>（对象存储、托管数据库、消息队列……）负责存数据和其他一切。真正把它和 serverful 分开的，是三条判据：</p>
 <ul>
 <li><strong>计算与存储解耦</strong>：两者由不同服务提供、各自独立伸缩、各自计价，计算侧因此可以随时归零。</li>
@@ -102,123 +90,117 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>按用量而非按分配量计费</strong>：以实际执行的时间片计价（Lambda 当时的计费粒度是 100 毫秒），<strong>没有请求时成本为零</strong>——这是前两条的经济后果，也是全篇的关键。</li>
 </ul>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="160" y="24" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">serverful：先租机器</text>
-<text x="160" y="44" fill="#7c8593" font-size="11" text-anchor="middle">你猜规格、你保活、按「分配量」计费</text>
-<text x="425" y="24" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">serverless：只交函数</text>
-<text x="425" y="44" fill="#7c8593" font-size="11" text-anchor="middle">平台决定规格、按请求起停、按「用量」计费</text>
-<rect x="45" y="104" width="230" height="96" fill="rgba(232,121,75,0.09)"></rect>
-<line x1="45" y1="104" x2="275" y2="104" stroke="#e8794b" stroke-dasharray="5 4"></line>
-<text x="160" y="96" fill="#e8794b" font-size="11" text-anchor="middle">按峰值预留的容量</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="160" y="24">serverful：先租机器</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="160" y="44">你猜规格、你保活、按「分配量」计费</text>
+<text fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle" x="425" y="24">serverless：只交函数</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="425" y="44">平台决定规格、按请求起停、按「用量」计费</text>
+<rect fill="rgba(232,121,75,0.09)" height="96" width="230" x="45" y="104"></rect>
+<line stroke="#e8794b" stroke-dasharray="5 4" x1="45" x2="275" y1="104" y2="104"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="160" y="96">按峰值预留的容量</text>
 <path d="M45,200 L65,188 L90,170 L115,130 L140,142 L165,112 L190,150 L215,178 L240,166 L260,192 L275,200 Z" fill="rgba(240,180,41,0.32)" stroke="#f0b429" stroke-width="1.6"></path>
-<text x="97" y="192" fill="#e7ebf1" font-size="11" text-anchor="middle">空着的部分也照付</text>
-<line x1="45" y1="200" x2="275" y2="200" stroke="#7c8593"></line>
-<text x="45" y="219" fill="#7c8593" font-size="10.5">请求量 ↑</text>
-<text x="275" y="219" fill="#7c8593" font-size="10.5" text-anchor="end">时间 →</text>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="97" y="192">空着的部分也照付</text>
+<line stroke="#7c8593" x1="45" x2="275" y1="200" y2="200"></line>
+<text fill="#7c8593" font-size="10.5" x="45" y="219">请求量 ↑</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="end" x="275" y="219">时间 →</text>
 <path d="M310,200 L330,188 L355,170 L380,130 L405,142 L430,112 L455,150 L480,178 L505,166 L525,192 L540,200 Z" fill="rgba(240,180,41,0.32)" stroke="#f0b429" stroke-width="1.6"></path>
 <path d="M310,194 L330,182 L355,164 L380,124 L405,136 L430,106 L455,144 L480,172 L505,160 L525,186 L540,194" fill="none" stroke="#e8794b" stroke-dasharray="5 4"></path>
-<text x="425" y="96" fill="#e8794b" font-size="11" text-anchor="middle">容量紧贴需求，闲时归零</text>
-<line x1="310" y1="200" x2="540" y2="200" stroke="#7c8593"></line>
-<text x="310" y="219" fill="#7c8593" font-size="10.5">请求量 ↑</text>
-<text x="540" y="219" fill="#7c8593" font-size="10.5" text-anchor="end">时间 →</text>
-<text x="425" y="240" fill="#7c8593" font-size="10.5" text-anchor="middle">没有请求的时刻 = 不计费</text>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="425" y="96">容量紧贴需求，闲时归零</text>
+<line stroke="#7c8593" x1="310" x2="540" y1="200" y2="200"></line>
+<text fill="#7c8593" font-size="10.5" x="310" y="219">请求量 ↑</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="end" x="540" y="219">时间 →</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="425" y="240">没有请求的时刻 = 不计费</text>
 </svg>
 <figcaption>图 1 · 同一条请求曲线下的两种付费方式：serverful 按「你预留了多少」收钱（虚线以下全算），serverless 按「你用掉了多少」收钱（只算实心部分）。</figcaption>
 </figure>
 <p>论文自己给的类比是<strong>从汇编语言到高级语言</strong>：高级语言把寄存器分配自动化了，serverless 则把<strong>机器资源的分配</strong>自动化了。还有一层常被忽略的漂亮之处：按用量计费<strong>把云厂商的激励也扭正了</strong>——闲置不再由你买单，填满机器第一次成了卖方自己的事。</p>
-
-<h3>2）代价：函数短命、彼此不可寻址，于是状态只能走存储</h3>
+<h3 data-tts="b1ce9539c1c6c433">2）代价：函数短命、彼此不可寻址，于是状态只能走存储</h3>
 <p>为了能「随时开、随时杀、按毫秒计费」，平台必须给函数设下硬约束。以论文成文时的 Lambda 为例：<strong>单次执行最长 15 分钟</strong>、<strong>内存上限约 3 GB</strong>、<strong>不接受入站网络连接</strong>——你无法给一个正在运行的函数发消息，因为你既不知道它在哪台机器上，也不能保证它下一秒还在。</p>
 <p>三条合起来逼出一个后果：<strong>函数之间任何形式的共享，都只能绕道外部存储。</strong>serverful 世界里两个进程要交换数据，直接连一条 TCP 或干脆共享同一块内存；serverless 世界里，同样的交换变成「A 写进对象存储 → B 从对象存储读出」，一趟变两跳，而对象存储一次往返是<strong>几十毫秒</strong>量级——对一个本该在内存里几微秒完成的动作来说，慢了上万倍。</p>
 <figure>
-<svg viewBox="0 0 560 310" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<line x1="282" y1="14" x2="282" y2="300" stroke="rgba(240,180,41,0.2)" stroke-dasharray="4 5"></line>
-<text x="142" y="24" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">serverful：进程之间直接连线</text>
-<line x1="75" y1="90" x2="210" y2="90" stroke="#7c8593" stroke-width="1.1"></line>
-<line x1="75" y1="180" x2="210" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
-<line x1="75" y1="90" x2="75" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
-<line x1="210" y1="90" x2="210" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
-<line x1="75" y1="90" x2="210" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
-<line x1="210" y1="90" x2="75" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
-<rect x="43" y="76" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="75" y="95" fill="#e7ebf1" font-size="11" text-anchor="middle">进程 A</text>
-<rect x="178" y="76" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="210" y="95" fill="#e7ebf1" font-size="11" text-anchor="middle">进程 B</text>
-<rect x="43" y="166" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="75" y="185" fill="#e7ebf1" font-size="11" text-anchor="middle">进程 C</text>
-<rect x="178" y="166" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="210" y="185" fill="#e7ebf1" font-size="11" text-anchor="middle">进程 D</text>
-<text x="142" y="232" fill="#7c8593" font-size="11" text-anchor="middle">数据留在本地内存 / 本地盘</text>
-<text x="142" y="252" fill="#7c8593" font-size="11" text-anchor="middle">要交换？一条连接直接发给对方</text>
-<text x="425" y="24" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">serverless：只能绕道存储</text>
-<defs><marker id="ad" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
-<marker id="au" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
-<rect x="303" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="330" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">函数 1</text>
-<rect x="368" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="395" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">函数 2</text>
-<rect x="433" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="460" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">函数 3</text>
-<rect x="498" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="525" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">函数 4</text>
-<line x1="322" y1="100" x2="395" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
-<line x1="387" y1="100" x2="412" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
-<line x1="468" y1="100" x2="443" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
-<line x1="533" y1="100" x2="460" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
-<line x1="405" y1="160" x2="338" y2="102" stroke="#f0b429" stroke-width="1.1" marker-end="url(#au)"></line>
-<line x1="450" y1="160" x2="517" y2="102" stroke="#f0b429" stroke-width="1.1" marker-end="url(#au)"></line>
-<ellipse cx="427" cy="180" rx="66" ry="13" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></ellipse>
-<rect x="361" y="180" width="132" height="38" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
-<line x1="361" y1="180" x2="361" y2="218" stroke="#f0b429"></line><line x1="493" y1="180" x2="493" y2="218" stroke="#f0b429"></line>
-<ellipse cx="427" cy="218" rx="66" ry="13" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></ellipse>
-<text x="427" y="205" fill="#e7ebf1" font-size="12" text-anchor="middle">对象存储</text>
-<text x="425" y="256" fill="#7c8593" font-size="11" text-anchor="middle">每一次交换 = 写一次 + 读一次（各几十毫秒）</text>
-<text x="425" y="276" fill="#7c8593" font-size="11" text-anchor="middle">N 个函数洗一次牌 → N×N 个小对象</text>
-<text x="425" y="296" fill="#e8794b" font-size="11" text-anchor="middle">延迟和账单一起翻上去</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 310" xmlns="http://www.w3.org/2000/svg">
+<line stroke="rgba(240,180,41,0.2)" stroke-dasharray="4 5" x1="282" x2="282" y1="14" y2="300"></line>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="142" y="24">serverful：进程之间直接连线</text>
+<line stroke="#7c8593" stroke-width="1.1" x1="75" x2="210" y1="90" y2="90"></line>
+<line stroke="#7c8593" stroke-width="1.1" x1="75" x2="210" y1="180" y2="180"></line>
+<line stroke="#7c8593" stroke-width="1.1" x1="75" x2="75" y1="90" y2="180"></line>
+<line stroke="#7c8593" stroke-width="1.1" x1="210" x2="210" y1="90" y2="180"></line>
+<line stroke="#7c8593" stroke-width="1.1" x1="75" x2="210" y1="90" y2="180"></line>
+<line stroke="#7c8593" stroke-width="1.1" x1="210" x2="75" y1="90" y2="180"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="64" x="43" y="76"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="75" y="95">进程 A</text>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="64" x="178" y="76"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="210" y="95">进程 B</text>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="64" x="43" y="166"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="75" y="185">进程 C</text>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="64" x="178" y="166"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="210" y="185">进程 D</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="142" y="232">数据留在本地内存 / 本地盘</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="142" y="252">要交换？一条连接直接发给对方</text>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="425" y="24">serverless：只能绕道存储</text>
+<defs><marker id="ad" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="au" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="54" x="303" y="70"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="330" y="89">函数 1</text>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="54" x="368" y="70"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="395" y="89">函数 2</text>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="54" x="433" y="70"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="460" y="89">函数 3</text>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="54" x="498" y="70"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="525" y="89">函数 4</text>
+<line marker-end="url(#ad)" stroke="#7c8593" stroke-width="1.1" x1="322" x2="395" y1="100" y2="162"></line>
+<line marker-end="url(#ad)" stroke="#7c8593" stroke-width="1.1" x1="387" x2="412" y1="100" y2="162"></line>
+<line marker-end="url(#ad)" stroke="#7c8593" stroke-width="1.1" x1="468" x2="443" y1="100" y2="162"></line>
+<line marker-end="url(#ad)" stroke="#7c8593" stroke-width="1.1" x1="533" x2="460" y1="100" y2="162"></line>
+<line marker-end="url(#au)" stroke="#f0b429" stroke-width="1.1" x1="405" x2="338" y1="160" y2="102"></line>
+<line marker-end="url(#au)" stroke="#f0b429" stroke-width="1.1" x1="450" x2="517" y1="160" y2="102"></line>
+<ellipse cx="427" cy="180" fill="rgba(240,180,41,0.1)" rx="66" ry="13" stroke="#f0b429"></ellipse>
+<rect fill="rgba(240,180,41,0.1)" height="38" stroke="#f0b429" width="132" x="361" y="180"></rect>
+<line stroke="#f0b429" x1="361" x2="361" y1="180" y2="218"></line><line stroke="#f0b429" x1="493" x2="493" y1="180" y2="218"></line>
+<ellipse cx="427" cy="218" fill="rgba(240,180,41,0.1)" rx="66" ry="13" stroke="#f0b429"></ellipse>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="427" y="205">对象存储</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="425" y="256">每一次交换 = 写一次 + 读一次（各几十毫秒）</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="425" y="276">N 个函数洗一次牌 → N×N 个小对象</text>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="425" y="296">延迟和账单一起翻上去</text>
 </svg>
 <figcaption>图 2 · 全篇的机制核心：函数不可被寻址、随时消失，于是两个函数之间没有「直接连线」这条路，任何共享都得写进公共存储再读出来。</figcaption>
 </figure>
 <p>把这条约束乘上规模，问题就露出獠牙。做一次<em>洗牌</em>时，N 个上游函数各要把数据分给 N 个下游函数：serverful 里这是 N 台机器之间的直连传输，serverless 里却变成往存储写 N×N 个小对象、再读回来。<strong>任务分得越细（而 serverless 的整个卖点就是分得细），这个「所有人对所有人」的代价涨得越凶。</strong>这不是某家云厂商实现得不好，而是「函数必须无状态、不可寻址」的直接推论——所以论文说它<strong>结构性</strong>地卡住。</p>
-
-<h3>3）四个障碍：论文的核心清单</h3>
+<h3 data-tts="034772a7c2e3bc5a">3）四个障碍：论文的核心清单</h3>
 <p>论文拿五类真实应用（实时视频编码、MapReduce 式批处理、大规模线性代数、机器学习训练与推理、数据库）逐一往 serverless 上搬，把撞到的墙归纳成四条：</p>
 <figure>
-<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="139" y="20" fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle">今天缺什么</text>
-<text x="423" y="20" fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle">于是什么做不了</text>
-<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
-<rect x="14" y="32" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
-<text x="139" y="54" fill="#e7ebf1" font-size="11.5" text-anchor="middle">① 又快又便宜的</text><text x="139" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">临时共享存储</text>
-<line x1="268" y1="58" x2="296" y2="58" stroke="#e8794b" marker-end="url(#a3)"></line>
-<rect x="302" y="32" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
-<text x="424" y="54" fill="#b9c0ca" font-size="11.5" text-anchor="middle">中间结果只能过对象存储，</text><text x="424" y="72" fill="#b9c0ca" font-size="11.5" text-anchor="middle">微秒级的动作被拖成毫秒级</text>
-<rect x="14" y="98" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
-<text x="139" y="120" fill="#e7ebf1" font-size="11.5" text-anchor="middle">② 函数之间的</text><text x="139" y="138" fill="#e7ebf1" font-size="11.5" text-anchor="middle">细粒度协调手段</text>
-<line x1="268" y1="124" x2="296" y2="124" stroke="#e8794b" marker-end="url(#a3)"></line>
-<rect x="302" y="98" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
-<text x="424" y="120" fill="#b9c0ca" font-size="11.5" text-anchor="middle">想等一个信号，只能反复</text><text x="424" y="138" fill="#b9c0ca" font-size="11.5" text-anchor="middle">去存储里轮询，又慢又费钱</text>
-<rect x="14" y="164" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
-<text x="139" y="186" fill="#e7ebf1" font-size="11.5" text-anchor="middle">③ 广播 / 聚合 / 洗牌</text><text x="139" y="204" fill="#e7ebf1" font-size="11.5" text-anchor="middle">这些通信模式的高效实现</text>
-<line x1="268" y1="190" x2="296" y2="190" stroke="#e8794b" marker-end="url(#a3)"></line>
-<rect x="302" y="164" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
-<text x="424" y="186" fill="#b9c0ca" font-size="11.5" text-anchor="middle">排序、连接、分组这类</text><text x="424" y="204" fill="#b9c0ca" font-size="11.5" text-anchor="middle">数据密集型任务代价爆炸</text>
-<rect x="14" y="230" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
-<text x="139" y="252" fill="#e7ebf1" font-size="11.5" text-anchor="middle">④ 可预测的性能：冷启动、</text><text x="139" y="270" fill="#e7ebf1" font-size="11.5" text-anchor="middle">拿到什么硬件全凭运气</text>
-<line x1="268" y1="256" x2="296" y2="256" stroke="#e8794b" marker-end="url(#a3)"></line>
-<rect x="302" y="230" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
-<text x="424" y="252" fill="#b9c0ca" font-size="11.5" text-anchor="middle">低延迟在线服务、要 GPU 的</text><text x="424" y="270" fill="#b9c0ca" font-size="11.5" text-anchor="middle">模型训练，不敢往上搬</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<text fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle" x="139" y="20">今天缺什么</text>
+<text fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle" x="423" y="20">于是什么做不了</text>
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.08)" height="52" rx="7" stroke="rgba(240,180,41,0.45)" width="250" x="14" y="32"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="54">① 又快又便宜的</text><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="72">临时共享存储</text>
+<line marker-end="url(#a3)" stroke="#e8794b" x1="268" x2="296" y1="58" y2="58"></line>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="7" stroke="rgba(240,180,41,0.2)" width="244" x="302" y="32"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="54">中间结果只能过对象存储，</text><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="72">微秒级的动作被拖成毫秒级</text>
+<rect fill="rgba(240,180,41,0.08)" height="52" rx="7" stroke="rgba(240,180,41,0.45)" width="250" x="14" y="98"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="120">② 函数之间的</text><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="138">细粒度协调手段</text>
+<line marker-end="url(#a3)" stroke="#e8794b" x1="268" x2="296" y1="124" y2="124"></line>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="7" stroke="rgba(240,180,41,0.2)" width="244" x="302" y="98"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="120">想等一个信号，只能反复</text><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="138">去存储里轮询，又慢又费钱</text>
+<rect fill="rgba(240,180,41,0.08)" height="52" rx="7" stroke="rgba(240,180,41,0.45)" width="250" x="14" y="164"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="186">③ 广播 / 聚合 / 洗牌</text><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="204">这些通信模式的高效实现</text>
+<line marker-end="url(#a3)" stroke="#e8794b" x1="268" x2="296" y1="190" y2="190"></line>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="7" stroke="rgba(240,180,41,0.2)" width="244" x="302" y="164"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="186">排序、连接、分组这类</text><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="204">数据密集型任务代价爆炸</text>
+<rect fill="rgba(240,180,41,0.08)" height="52" rx="7" stroke="rgba(240,180,41,0.45)" width="250" x="14" y="230"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="252">④ 可预测的性能：冷启动、</text><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="139" y="270">拿到什么硬件全凭运气</text>
+<line marker-end="url(#a3)" stroke="#e8794b" x1="268" x2="296" y1="256" y2="256"></line>
+<rect fill="rgba(255,255,255,0.03)" height="52" rx="7" stroke="rgba(240,180,41,0.2)" width="244" x="302" y="230"></rect>
+<text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="252">低延迟在线服务、要 GPU 的</text><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="424" y="270">模型训练，不敢往上搬</text>
 </svg>
 <figcaption>图 3 · 论文的核心清单：四个障碍与它们各自封死的应用类别。四条都不是「产品还没做」，而是从「函数无状态、不可寻址、随时被杀」这条前提里长出来的。</figcaption>
 </figure>
 <p>四条里<strong>第一条最要命，另外三条多少都由它派生</strong>：中间结果的需求很特别——只活几秒、要极低延迟、量还可能很大，而现有选项非此即彼：对象存储便宜但慢，内存型键值存储快但按常驻容量计费、贵且要自己运维，两边都不符合「按用量计费、闲时归零」的 serverless 精神。第四条则最劝退：<strong>GPU、TPU 这类加速器当时的 FaaS 平台根本不提供</strong>，等于把深度学习训练挡在门外。</p>
 <p>论文还点了两笔：函数把多租户切得更细、共享物理机的邻居更多，<strong>侧信道风险上升</strong>；而你只能声明「我要多少内存」、无法声明「我这个函数和那份数据有关系」，平台因此<strong>没有信息把计算调度到数据附近</strong>——这恰好是反方最用力的一击。</p>
-
-<h3>4）反方：One Step Forward, Two Steps Back</h3>
+<h3 data-tts="0e9fcb45a632c9b1">4）反方：One Step Forward, Two Steps Back</h3>
 <p>同年 CIDR 上，Hellerstein 等（含三位本文合著者）把同一批事实读出了相反的结论。核心论断只有一句：<strong>FaaS 是一种「数据运输」架构（data-shipping architecture）——它把数据运到代码那儿去。</strong>而分布式数据系统四十年积累的第一原则恰恰相反：<strong>要把代码送到数据身边</strong>，因为数据重、代码轻，搬数据是最贵的操作。FaaS 强制逆转了它，所以「向前一步（弹性与免运维），向后两步（数据局部性与分布式计算能力）」。</p>
 <p>他们的四条限制与伯克利的清单高度重叠但语气更硬：<strong>寿命有限</strong>、<strong>I/O 是瓶颈</strong>（函数拿到的网络带宽只是一台正常服务器的零头，而一切又都要走网络）、<strong>只能通过慢存储通信</strong>、<strong>没有专用硬件</strong>。他们把模型训练、低延迟预测、分布式事务、流式数据流四类负载搬上 Lambda 实测，结论是往往<strong>慢一个数量级、贵一个数量级</strong>；出路不是回头，而是把状态做成 serverless 的一等公民（该组后续的 Anna、Cloudburst 正是这条路）。两篇的<strong>事实认定几乎一致，分歧在于把这些限制看成「早期缺陷」还是「架构原罪」</strong>——伯克利这篇赌前者。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="55e28e54c8070f2c">关键结果</h2>
 <p>必须诚实地说：<strong>这是一篇立场论文（position paper），不提供新系统，也没有新基准测试。</strong>它的「结果」是两样东西。</p>
 <p><strong>一是五个案例研究。</strong>作者用自己组里已有的系统去撞墙，每一撞都指向清单上的某一条：实时视频编码卡在函数间需要频繁细粒度通信；MapReduce 式批处理与排序卡在洗牌只能过对象存储；大规模线性代数卡在缺快速共享内存；机器学习训练与推理卡在缺加速器与低延迟共享状态；数据库类负载卡在无法维持长连接。至于平台的硬约束——15 分钟、约 3 GB、100 毫秒计费粒度、不接受入站连接——都写在公开文档里，论文的贡献是论证<strong>它们不是随便设的</strong>，而是「按用量计费、随时可杀」这一商业模型的技术代价。</p>
 <p><strong>二是成本论证。</strong>按单位算力算，云函数比同规格虚拟机<strong>更贵</strong>；但因为闲时归零，对突发的、低占空比的负载，总账反而便宜。<strong>所以它的经济性不是「更便宜」，而是「把成本曲线从矩形改成了随需求起伏的形状」</strong>——负载越平稳越划不来。论文另有一节「谬见与陷阱」回应常见质疑（如「云函数天生做不了低延迟」在作者看来下得太早），并以一组预测收尾：serverless 会成为云计算的主导形态，价格会降，异构硬件会被纳入。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="7e691441a756a5a2">为什么重要 / 影响</h2>
 <p><strong>它给一个被市场用滥的词做了一次学术定标。</strong>「serverless = FaaS + BaaS，判据是解耦、不申请资源、按用量计费」此后成了论文、教材与厂商文档的公共起点；那张障碍清单更成了子领域的<strong>研究议程</strong>——之后好几年你几乎可以拿它当目录读新论文：<strong>临时共享存储</strong>那条催生了 Pocket（为 serverless 定制的弹性临时存储）、Locus（少量快存储混合对象存储做洗牌）；<strong>冷启动与隔离</strong>那条最漂亮的答卷是 <strong>Firecracker</strong>（2020）——为 Lambda 造的轻量 microVM，同时要虚拟机的隔离强度和容器的启动速度；<strong>平台配额</strong>这侧，Lambda 在 2020 年前后把内存上限提到 10 GB、计费粒度从 100 毫秒细到 1 毫秒，并支持挂载共享文件系统；<strong>有状态 serverless</strong> 则成了反方那派的主线（Anna、Cloudburst）。</p>
 <p>更广的影响是词汇本身：今天「serverless 数据库」「serverless 数仓」之所以能被听懂，靠的正是这篇把判据从「有没有函数」挪到了<strong>「你还需不需要申请和保活资源、账单是否随用量归零」</strong>。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="c71967e86c6b65f4">局限与批评</h2>
 <ul>
 <li><strong>核心预测至今未兑现。</strong>它预判 serverless 将「主导云计算的未来、在很大程度上取代 serverful」。六年过去，容器与 Kubernetes 仍是主流承载方式，FaaS 更多扮演胶水、事件处理与突发负载的角色。方向对了，力度和时间表都下得太满。</li>
 <li><strong>立场论文的固有短板。</strong>没有新系统、没有可复现的基准，五个案例大多来自作者自己实验室的系统，视角难免自证；要看硬数字，反而得读反方那篇的实测。</li>
@@ -226,8 +208,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>反方的根本质疑没被真正回应。</strong>「数据运输架构逆转了数据局部性原则」是架构层面的批评，而这篇的回应本质上是「这些坑能填」，属于乐观预期而非论证；到今天数据密集型负载在纯 FaaS 上依然不划算，这一条基本是反方赢了。</li>
 <li><strong>被淡化的两笔账。</strong>serverless 的能力大半来自厂商专有的 BaaS，锁定成本远高于虚拟机；把一个请求拆成几十次短命调用之后，排查问题的难度也陡增。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="89000334691ddd98">要点</h2>
 <div class="tl">
 <p>① 一句话：给「serverless」下一个可操作的定义，再用五类应用测出它的边界，列成一张四条的障碍清单。</p>
 <p>② 定义：<code>serverless = FaaS + BaaS</code>，三条判据——计算与存储解耦、只提交代码而不申请资源、按用量而非按分配量计费（闲时成本为零）。</p>
@@ -239,7 +220,6 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <p>⑧ 影响与局限：这份清单成了子领域的研究议程（Pocket、Locus、Firecracker、Cloudburst 都沿它推进）；但它是立场论文而非实验论文，「将取代 serverful」的预测至今未兑现，反方那记架构层面的质疑也没被真正回应。</p>
 </div>
 </div>
-
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想看完整的案例研究、成本表与预测清单，再去翻原文与同年那篇反方。</footer>
 </div>
 <script>
