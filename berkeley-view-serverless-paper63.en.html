@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>A Berkeley View on Serverless Computing — CS Papers Deep-Read Paper 63</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 63</p>
+<h1>A Berkeley View on Serverless Computing</h1>
+<p class="sub">Jonas, Schleier-Smith et al. · UC Berkeley · 2019 (read against Hellerstein et al. · CIDR 2019)</p>
+<p class="langbar"><a href="berkeley-view-serverless-paper63.html">中文 →</a></p>
+
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>When you open a website, some machine has to be sitting there, switched on, waiting for you. <strong>Serverless</strong> tries to make that somebody else's problem: you hand over a piece of code, the cloud runs it only when a request arrives, tears it down afterwards, and charges you nothing while nobody is visiting. "Serverless" does not mean there are no servers — it means <strong>the servers are no longer yours to manage</strong>. In 2019 a group at Berkeley wrote this verdict on the idea: one half says "this is the future of the cloud," the other half lists, honestly, <strong>what it still cannot do</strong>.</p>
+
+<h2>An analogy</h2>
+<p>The old way is like <strong>renting a warehouse by the month</strong>: you have to guess in advance how much floor space your busiest day will need — too small and you are crushed, too large and you pay for the empty space anyway, which is most of the year. Serverless is like <strong>hailing a van per delivery</strong>: one job, one van; no jobs, no vans on the road, and no parking to pay for.</p>
+
+<h2>What's new</h2>
+<p>In the old world an engineer first had to answer a pile of questions that have nothing to do with their actual product: how many machines? which type? how much memory? shut them down overnight? what happens when we get famous at 3am? Get any of them wrong and you either burn money or fall over. Serverless takes the whole pile away: <strong>you say "this code should run," and the rest is the cloud's problem.</strong> The paper's own analogy is the move from assembly language to high-level languages — the programmer stops placing every register by hand.</p>
+
+<h2>How it pulls that off</h2>
+<p>The trick is to chop "running" into <strong>a swarm of very short-lived temps</strong>: each request hires one, and it vanishes the moment the job is done. Precisely because a temp can be created and killed at any instant, it <strong>cannot keep anything on it</strong> (the next one is brand new and remembers nothing) and <strong>cannot phone the others</strong> (you have no idea which machine one is on, or whether it still exists). So everything that must be kept or handed over has to be checked into a <strong>shared locker room</strong> — a cloud storage service — for whoever needs it to fetch.</p>
+<p>That single fact is both why it is cheap and where all its trouble comes from: when several temps need to pass a lot of data back and forth, what used to be a sentence said face to face becomes <strong>write it into a locker, then walk over and take it out again</strong> — and with enough temps, a queue forms at the lockers. The body of this paper is exactly that list of "things you cannot do here today": no locker that is both fast and cheap, no way for temps to signal one another, and no dependable, predictable speed.</p>
+
+<h2>What came of it</h2>
+<p>A rebuttal published the same year put it more bluntly: this amounts to <strong>shipping the data to the code</strong>, whereas forty years of distributed systems say the opposite — <strong>ship the code to the data</strong>, because data is heavy and code is light. So anything data-hungry, anything that shuffles intermediate results around, is slow and expensive here. Together the two papers became the field's shared vocabulary, and the potholes on the list have been getting filled in one by one. <strong>One honest sentence</strong>: six years on, the prediction that serverless would replace ordinary servers as the default shape of the cloud has not come true — it turned out to be a very good tool in the box rather than the only one.</p>
+
+<h2>Remember this</h2>
+<div class="tl">
+<p>Serverless = you hand over code, the cloud starts and stops the machines and charges nothing while idle; the price is that functions are short-lived and cannot address each other, so every shared thing has to detour through storage. This paper made that trade explicit — and turned "what it still lacks" into a checklist everyone has used since.</p>
+</div>
+<p class="switch-hint">Want the formal definition, the four obstacles and the rebuttal in full? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+<h2>In one sentence</h2>
+<p class="lead">This is not a paper that proposes a system; it is a <strong>verdict plus a defect list</strong>. It first gives the marketing-worn term "serverless computing" a usable definition — <strong>cloud functions (FaaS) + backend services (BaaS)</strong>, identified by three tests: compute and storage are decoupled, you submit code instead of requesting resources, and you are billed for what you use rather than what you allocate. It then probes that model with five real application classes and shows it is structurally stuck in four places: <strong>ephemeral shared storage, fine-grained coordination, communication patterns, and predictable performance</strong>. Finally it predicts this is where cloud computing is heading. The same year, Hellerstein et al. took the same facts and reached the opposite conclusion.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>IaaS (Infrastructure as a Service)</strong>: renting machines in someone else's data center by the hour. You get a (virtual) machine; what runs on it and how it is maintained is still your job. Virtual machines take seconds to minutes to boot.</li>
+<li><strong>FaaS (Function as a Service), a.k.a. cloud functions</strong>: you upload a single function, the platform runs it only when an event arrives and bills per invocation. The canonical product is AWS Lambda (launched 2014).</li>
+<li><strong>BaaS (Backend as a Service)</strong>: ready-made backend pieces you don't have to run — object storage, managed databases, message queues — also billed by usage.</li>
+<li><strong>Object storage</strong>: cloud storage that treats data as whole "file objects" (e.g. Amazon S3). Effectively unlimited and very cheap, but one read or write costs <strong>tens of milliseconds</strong> — glacial by in-memory standards. In-memory <strong>key-value stores</strong> (Redis, DynamoDB) are far faster but are billed for standing capacity, which makes them expensive.</li>
+<li><strong>Cold start</strong>: a function has not been called in a while and its sandbox has been reclaimed, so the next call must build the sandbox and load the code — adding hundreds of milliseconds to seconds.</li>
+<li><strong>Shuffle</strong>: the standard move in big-data processing — N tasks each produce intermediate results that are redistributed by key to N downstream tasks. It is an all-to-all data exchange, and it is where the cost of sorts, group-bys and joins lives.</li>
+<li><strong>Stateless</strong>: once a call ends, nothing is remembered. The upside is that instances can be killed and created freely, so scaling is trivial; the downside is that anything that must survive across calls has to live somewhere else.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>Eric Jonas, Johann Schleier-Smith, Vikram Sreekanti and a dozen more from UC Berkeley's RISELab, including Joseph Gonzalez, Raluca Ada Popa, Ion Stoica and David Patterson; released in February 2019 as a Berkeley technical report (UCB/EECS-2019-3). It deliberately continues the lineage of the same lab's 2009 <em>Above the Clouds: A Berkeley View of Cloud Computing</em> — that one fixed the meaning of "cloud computing," this one wants to fix the meaning of "serverless." The opposite half arrived the same year at CIDR: Hellerstein et al., <em>Serverless Computing: One Step Forward, Two Steps Back</em>, with <strong>an overlapping author list</strong> (Gonzalez, Schleier-Smith and Sreekanti appear on both).</p>
+
+<h2>The problem</h2>
+<p>Until then the standard way to use a cloud was what the paper calls <em>serverful</em>: you rent virtual machines, choose their type, count and memory yourself, and install, patch, autoscale and fault-tolerate them yourself. Three kinds of pain follow. <strong>First, you are forced to answer questions unrelated to your product</strong> — how many cores does this service need, how much bigger is the peak than the average? The answers need both experience and clairvoyance, and <strong>the cost of guessing wrong is asymmetric</strong>: guess high and you burn money daily, guess low and you go down, so everyone guesses high. <strong>Second, you pay for what you allocate, not what you use</strong>: the meter runs from the moment a machine boots, even through a night with zero requests. <strong>Third, elasticity is your job</strong>, and virtual machines boot far too slowly to catch a surge.</p>
+<p>Meanwhile AWS Lambda had been making "just hand over a function, pay per call" work since 2014. But <strong>the word "serverless" had been beaten out of shape by marketing</strong>: every managed service claimed it, nobody could say where its boundary lay, and therefore nobody could say what it was actually missing. Hence the two jobs of this paper: <strong>define it, then measure its edges.</strong></p>
+
+<h2>The core ideas</h2>
+
+<h3>1) A usable definition: serverless = FaaS + BaaS</h3>
+<p>The paper's equation is <code>serverless = FaaS + BaaS</code>: cloud functions run your code, backend services (object storage, managed databases, queues) hold the data and everything else. What actually separates it from serverful is three tests:</p>
+<ul>
+<li><strong>Compute and storage are decoupled</strong>: provided by different services, scaled independently, priced separately — which is what lets the compute side drop to zero.</li>
+<li><strong>You submit code, not a resource request</strong>: you hand over a function, not a "give me 4 cores and 8 GB" order form; how many instances run, and where, is the platform's call.</li>
+<li><strong>You are billed for usage, not allocation</strong>: priced by slices of actual execution (Lambda's billing granularity at the time was 100 ms), and <strong>zero when no requests arrive</strong> — the economic consequence of the first two, and the hinge of the whole paper.</li>
+</ul>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="160" y="24" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">serverful: rent machines first</text>
+<text x="160" y="44" fill="#7c8593" font-size="11" text-anchor="middle">you size it · billed for what you allocate</text>
+<text x="425" y="24" fill="#f0b429" font-size="13" font-weight="700" text-anchor="middle">serverless: hand over a function</text>
+<text x="425" y="44" fill="#7c8593" font-size="11" text-anchor="middle">platform sizes it · billed for what you use</text>
+<rect x="45" y="104" width="230" height="96" fill="rgba(232,121,75,0.09)"></rect>
+<line x1="45" y1="104" x2="275" y2="104" stroke="#e8794b" stroke-dasharray="5 4"></line>
+<text x="160" y="96" fill="#e8794b" font-size="11" text-anchor="middle">capacity provisioned for the peak</text>
+<path d="M45,200 L65,188 L90,170 L115,130 L140,142 L165,112 L190,150 L215,178 L240,166 L260,192 L275,200 Z" fill="rgba(240,180,41,0.32)" stroke="#f0b429" stroke-width="1.6"></path>
+<text x="105" y="192" fill="#e7ebf1" font-size="11" text-anchor="middle">you pay for the empty part too</text>
+<line x1="45" y1="200" x2="275" y2="200" stroke="#7c8593"></line>
+<text x="45" y="219" fill="#7c8593" font-size="10.5">requests ↑</text>
+<text x="275" y="219" fill="#7c8593" font-size="10.5" text-anchor="end">time →</text>
+<path d="M310,200 L330,188 L355,170 L380,130 L405,142 L430,112 L455,150 L480,178 L505,166 L525,192 L540,200 Z" fill="rgba(240,180,41,0.32)" stroke="#f0b429" stroke-width="1.6"></path>
+<path d="M310,194 L330,182 L355,164 L380,124 L405,136 L430,106 L455,144 L480,172 L505,160 L525,186 L540,194" fill="none" stroke="#e8794b" stroke-dasharray="5 4"></path>
+<text x="425" y="96" fill="#e8794b" font-size="11" text-anchor="middle">capacity tracks demand, zero when idle</text>
+<line x1="310" y1="200" x2="540" y2="200" stroke="#7c8593"></line>
+<text x="310" y="219" fill="#7c8593" font-size="10.5">requests ↑</text>
+<text x="540" y="219" fill="#7c8593" font-size="10.5" text-anchor="end">time →</text>
+<text x="425" y="240" fill="#7c8593" font-size="10.5" text-anchor="middle">no requests = no bill</text>
+</svg>
+<figcaption>Fig 1 · Two ways of paying for the same request curve: serverful charges for what you provisioned (everything under the dashed line), serverless charges for what you consumed (the solid area only).</figcaption>
+</figure>
+<p>The paper's own analogy is <strong>assembly language to high-level languages</strong>: high-level languages automated register allocation, serverless automates <strong>machine resource allocation</strong>. There is a second, often-missed elegance here: billing by usage <strong>also fixes the provider's incentives</strong> — idle capacity is no longer paid for by you, so filling the machines becomes, for the first time, the seller's own problem.</p>
+
+<h3>2) The price: short-lived, unaddressable functions, so state must go through storage</h3>
+<p>To be startable, killable and billable by the millisecond, a function has to live under hard constraints. On Lambda as of the paper: <strong>15 minutes maximum per execution</strong>, <strong>a memory ceiling of about 3 GB</strong>, and <strong>no inbound network connections</strong> — you cannot send a message to a running function, because you neither know which machine it is on nor can guarantee it will still exist a second from now.</p>
+<p>Together those force one consequence: <strong>any sharing between functions has to detour through external storage.</strong> In the serverful world two processes exchanging data open a TCP connection, or simply share memory. In the serverless world the same exchange becomes "A writes to object storage → B reads it back": one hop becomes two, and an object-storage round trip costs <strong>tens of milliseconds</strong> — four orders of magnitude slower than the microseconds the same handoff would take in memory.</p>
+<figure>
+<svg viewBox="0 0 560 310" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="282" y1="14" x2="282" y2="300" stroke="rgba(240,180,41,0.2)" stroke-dasharray="4 5"></line>
+<text x="142" y="24" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">serverful: processes talk directly</text>
+<line x1="75" y1="90" x2="210" y2="90" stroke="#7c8593" stroke-width="1.1"></line>
+<line x1="75" y1="180" x2="210" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
+<line x1="75" y1="90" x2="75" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
+<line x1="210" y1="90" x2="210" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
+<line x1="75" y1="90" x2="210" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
+<line x1="210" y1="90" x2="75" y2="180" stroke="#7c8593" stroke-width="1.1"></line>
+<rect x="43" y="76" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="75" y="95" fill="#e7ebf1" font-size="11" text-anchor="middle">proc A</text>
+<rect x="178" y="76" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="210" y="95" fill="#e7ebf1" font-size="11" text-anchor="middle">proc B</text>
+<rect x="43" y="166" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="75" y="185" fill="#e7ebf1" font-size="11" text-anchor="middle">proc C</text>
+<rect x="178" y="166" width="64" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="210" y="185" fill="#e7ebf1" font-size="11" text-anchor="middle">proc D</text>
+<text x="142" y="232" fill="#7c8593" font-size="11" text-anchor="middle">data stays in local memory or disk</text>
+<text x="142" y="252" fill="#7c8593" font-size="11" text-anchor="middle">need to exchange? one direct connection</text>
+<text x="425" y="24" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">serverless: only via storage</text>
+<defs><marker id="ad" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="au" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="303" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="330" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">func 1</text>
+<rect x="368" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="395" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">func 2</text>
+<rect x="433" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="460" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">func 3</text>
+<rect x="498" y="70" width="54" height="28" rx="6" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect><text x="525" y="89" fill="#e7ebf1" font-size="10.5" text-anchor="middle">func 4</text>
+<line x1="322" y1="100" x2="395" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
+<line x1="387" y1="100" x2="412" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
+<line x1="468" y1="100" x2="443" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
+<line x1="533" y1="100" x2="460" y2="162" stroke="#7c8593" stroke-width="1.1" marker-end="url(#ad)"></line>
+<line x1="405" y1="160" x2="338" y2="102" stroke="#f0b429" stroke-width="1.1" marker-end="url(#au)"></line>
+<line x1="450" y1="160" x2="517" y2="102" stroke="#f0b429" stroke-width="1.1" marker-end="url(#au)"></line>
+<ellipse cx="427" cy="180" rx="66" ry="13" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></ellipse>
+<rect x="361" y="180" width="132" height="38" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<line x1="361" y1="180" x2="361" y2="218" stroke="#f0b429"></line><line x1="493" y1="180" x2="493" y2="218" stroke="#f0b429"></line>
+<ellipse cx="427" cy="218" rx="66" ry="13" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></ellipse>
+<text x="427" y="205" fill="#e7ebf1" font-size="12" text-anchor="middle">object storage</text>
+<text x="425" y="254" fill="#7c8593" font-size="11" text-anchor="middle">every exchange = one write + one read</text>
+<text x="425" y="274" fill="#7c8593" font-size="11" text-anchor="middle">N functions shuffling → N×N small objects</text>
+<text x="425" y="294" fill="#e8794b" font-size="11" text-anchor="middle">latency and the bill both go up</text>
+</svg>
+<figcaption>Fig 2 · The mechanism at the heart of the paper: functions cannot be addressed and can vanish at any moment, so there is no "direct line" between two of them — every shared byte is written to storage and read back.</figcaption>
+</figure>
+<p>Multiply that constraint by scale and it bares its teeth. In a <em>shuffle</em>, N upstream functions each have to hand data to N downstream functions: serverful, that is direct transfer between N machines; serverless, it becomes N×N small objects written to storage and read back. <strong>The finer you slice the work — and slicing finely is the entire selling point of serverless — the more brutally this all-to-all cost grows.</strong> That is not one cloud vendor implementing things badly; it follows directly from "functions must be stateless and unaddressable," which is why the paper calls the blockage <strong>structural</strong>.</p>
+
+<h3>3) Four obstacles: the paper's central checklist</h3>
+<p>The authors take five real application classes — real-time video encoding, MapReduce-style batch processing, large-scale linear algebra, machine learning training and serving, and databases — move each onto serverless, and distill the walls they hit into four:</p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="139" y="20" fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle">what is missing today</text>
+<text x="423" y="20" fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle">what that rules out</text>
+<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect x="14" y="32" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
+<text x="139" y="54" fill="#e7ebf1" font-size="11.5" text-anchor="middle">① fast, cheap, short-lived</text><text x="139" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">shared storage</text>
+<line x1="268" y1="58" x2="296" y2="58" stroke="#e8794b" marker-end="url(#a3)"></line>
+<rect x="302" y="32" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
+<text x="424" y="54" fill="#b9c0ca" font-size="11.5" text-anchor="middle">intermediate results must go via</text><text x="424" y="72" fill="#b9c0ca" font-size="11.5" text-anchor="middle">object storage: microseconds → ms</text>
+<rect x="14" y="98" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
+<text x="139" y="120" fill="#e7ebf1" font-size="11.5" text-anchor="middle">② fine-grained coordination</text><text x="139" y="138" fill="#e7ebf1" font-size="11.5" text-anchor="middle">between functions</text>
+<line x1="268" y1="124" x2="296" y2="124" stroke="#e8794b" marker-end="url(#a3)"></line>
+<rect x="302" y="98" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
+<text x="424" y="120" fill="#b9c0ca" font-size="11.5" text-anchor="middle">waiting for a signal means polling</text><text x="424" y="138" fill="#b9c0ca" font-size="11.5" text-anchor="middle">storage — slow, and billed each time</text>
+<rect x="14" y="164" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
+<text x="139" y="186" fill="#e7ebf1" font-size="11.5" text-anchor="middle">③ efficient broadcast,</text><text x="139" y="204" fill="#e7ebf1" font-size="11.5" text-anchor="middle">aggregation and shuffle</text>
+<line x1="268" y1="190" x2="296" y2="190" stroke="#e8794b" marker-end="url(#a3)"></line>
+<rect x="302" y="164" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
+<text x="424" y="186" fill="#b9c0ca" font-size="11.5" text-anchor="middle">sorts, joins and group-bys blow up</text><text x="424" y="204" fill="#b9c0ca" font-size="11.5" text-anchor="middle">in both time and cost</text>
+<rect x="14" y="230" width="250" height="52" rx="7" fill="rgba(240,180,41,0.08)" stroke="rgba(240,180,41,0.45)"></rect>
+<text x="139" y="252" fill="#e7ebf1" font-size="11.5" text-anchor="middle">④ predictable performance:</text><text x="139" y="270" fill="#e7ebf1" font-size="11.5" text-anchor="middle">cold starts, hardware by lottery</text>
+<line x1="268" y1="256" x2="296" y2="256" stroke="#e8794b" marker-end="url(#a3)"></line>
+<rect x="302" y="230" width="244" height="52" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(240,180,41,0.2)"></rect>
+<text x="424" y="252" fill="#b9c0ca" font-size="11.5" text-anchor="middle">low-latency serving and GPU model</text><text x="424" y="270" fill="#b9c0ca" font-size="11.5" text-anchor="middle">training stay off the platform</text>
+</svg>
+<figcaption>Fig 3 · The central checklist: four obstacles and the application classes each one closes off. None of them is "the product isn't finished yet" — each grows out of the premise that functions are stateless, unaddressable and killable.</figcaption>
+</figure>
+<p>Of the four, <strong>the first is the worst, and the other three largely descend from it</strong>: intermediate state has an unusual profile — it lives for seconds, wants very low latency, and can be large — while the available options are all-or-nothing. Object storage is cheap but slow; in-memory key-value stores are fast but billed for standing capacity, expensive, and yours to operate. Neither honors the "pay per use, zero when idle" spirit of serverless. The fourth is the most off-putting in practice: <strong>accelerators like GPUs and TPUs were simply not offered by FaaS platforms then</strong>, which locks deep learning training out entirely.</p>
+<p>Two further notes from the paper: slicing multi-tenancy this finely puts more neighbours on your physical machine, raising <strong>side-channel risk</strong>; and because you can declare "I want this much memory" but not "this function is related to that data," the platform <strong>has no information with which to schedule computation near its data</strong> — which is precisely where the rebuttal lands its hardest punch.</p>
+
+<h3>4) The rebuttal: One Step Forward, Two Steps Back</h3>
+<p>At CIDR the same year, Hellerstein et al. (three of them co-authors of this paper) read the same facts the other way. Their central claim is a single sentence: <strong>FaaS is a data-shipping architecture — it ships the data to the code.</strong> The first principle accumulated over forty years of distributed data systems is the reverse: <strong>ship the code to the data</strong>, because data is heavy, code is light, and moving data is the expensive operation. FaaS inverts that by force, hence "one step forward (elasticity and no operations), two steps back (data locality and the ability to compute in a distributed way)."</p>
+<p>Their four limitations overlap heavily with the Berkeley checklist but are stated more harshly: <strong>limited lifetimes</strong>, <strong>I/O bottlenecks</strong> (a function gets a fraction of a normal server's network bandwidth, and everything has to cross that network), <strong>communication only through slow storage</strong>, and <strong>no specialized hardware</strong>. They ported four workloads — model training, low-latency prediction serving, distributed transactions and streaming dataflow — onto Lambda and measured them: typically <strong>an order of magnitude slower and an order of magnitude more expensive</strong>. Their prescription is not retreat but making state a first-class citizen of serverless (their group's later Anna and Cloudburst follow exactly that line). <strong>The two papers agree almost entirely on the facts; they disagree on whether these limits are early defects or original sin</strong> — and Berkeley bets on the former.</p>
+
+<h2>Key results</h2>
+<p>It has to be said plainly: <strong>this is a position paper. It offers no new system and no new benchmark.</strong> Its "results" are two things.</p>
+<p><strong>First, five case studies.</strong> The authors take systems already built in their own group and drive them into the wall; each crash points at one line of the checklist. Real-time video encoding is blocked by the need for frequent fine-grained communication between functions; MapReduce-style batch processing and sorting are blocked by shuffles that can only cross object storage; large-scale linear algebra is blocked by the absence of fast shared memory; ML training and serving are blocked by missing accelerators and low-latency shared state; database workloads are blocked by the inability to hold long-lived connections. As for the platform limits — 15 minutes, roughly 3 GB, 100 ms billing granularity, no inbound connections — those are all in the public docs; the paper's contribution is arguing that <strong>they are not arbitrary</strong>, but the technical price of a business model built on "billed by usage, killable at will."</p>
+<p><strong>Second, the cost argument.</strong> Per unit of compute, a cloud function is <strong>more expensive</strong> than a comparable virtual machine; but because it costs nothing while idle, the total bill for bursty, low-duty-cycle workloads comes out lower. <strong>So the economics of serverless are not "cheaper" but "the cost curve changes shape, from a rectangle into something that follows demand"</strong> — the steadier your load, the worse the deal. A separate section on "fallacies and pitfalls" answers common objections (the verdict that cloud functions are inherently unfit for low latency, for instance, strikes the authors as premature), and the paper closes on predictions: serverless will come to dominate cloud computing, prices will fall, heterogeneous hardware will be brought in.</p>
+
+<h2>Why it matters</h2>
+<p><strong>It gave academic calibration to a word marketing had worn out.</strong> "Serverless = FaaS + BaaS, identified by decoupling, not requesting resources, and usage-based billing" became the common starting point for papers, textbooks and vendor documentation alike, and the obstacle list became the sub-field's <strong>research agenda</strong> — for several years you could read new papers using it as a table of contents. The <strong>ephemeral shared storage</strong> line produced Pocket (elastic ephemeral storage built for serverless) and Locus (mixing a little fast storage with object storage to make shuffles work). The <strong>cold start and isolation</strong> line got its finest answer in <strong>Firecracker</strong> (2020), the lightweight microVM built for Lambda that wants virtual-machine isolation at container startup speed. On the <strong>platform quota</strong> side, Lambda raised its memory ceiling to 10 GB around 2020, refined billing granularity from 100 ms to 1 ms, and added mountable shared file systems. And <strong>stateful serverless</strong> became the rebuttal camp's main line (Anna, Cloudburst).</p>
+<p>The broader legacy is the vocabulary itself: "serverless database" and "serverless warehouse" are intelligible phrases today precisely because this paper moved the test away from "is there a function?" to <strong>"do you still have to request and keep resources alive, and does the bill fall to zero when usage does?"</strong></p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The central prediction has not come true.</strong> The paper forecast that serverless would "dominate the future of cloud computing and largely replace serverful computing." Six years on, containers and Kubernetes remain the mainstream way to run things, with FaaS playing glue, event handling and burst absorption. The direction was right; the conviction and the timetable were both set far too high.</li>
+<li><strong>The inherent weakness of a position paper.</strong> No new system, no reproducible benchmark, and five case studies drawn mostly from the authors' own lab, which makes the view somewhat self-confirming. For hard numbers you have to read the rebuttal's measurements instead.</li>
+<li><strong>"FaaS + BaaS" is a narrow definition.</strong> It anchors serverless mainly on functions, whereas the fastest-growing reality has been serverless-ized managed services — databases, messaging, warehouses. Those do pass its three tests, but the analytical frame of the whole paper is built around functions, and this path gets very little attention.</li>
+<li><strong>The fundamental objection was never really answered.</strong> "A data-shipping architecture inverts data locality" is a criticism at the architectural level; this paper's reply amounts to "these potholes can be filled," which is optimism rather than argument. Data-intensive workloads on pure FaaS are still a bad deal today, and on that point the rebuttal has essentially won.</li>
+<li><strong>Two costs it plays down.</strong> Most of serverless's power comes from a vendor's proprietary BaaS, so lock-in runs far deeper than with virtual machines; and once a request is shattered into dozens of short-lived calls, debugging gets dramatically harder.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: give "serverless" a usable definition, then probe its edges with five application classes and write the result up as a four-item obstacle list.</p>
+<p>② The definition: <code>serverless = FaaS + BaaS</code>, with three tests — compute and storage decoupled, code submitted instead of resources requested, billed for usage rather than allocation (zero cost when idle).</p>
+<p>③ The old pain: you were forced to guess sizes and peaks, with asymmetric costs for guessing wrong; the meter ran from boot; elasticity was your own job.</p>
+<p>④ Mechanism and price: to be startable, killable and billable by the millisecond, functions must be <strong>short-lived, stateless and unaddressable</strong>; so there is no direct line between two of them and all sharing detours through external storage, turning a microsecond in-memory handoff into tens of milliseconds. A shuffle degrades from "N machines connected directly" into "N×N small objects written to storage" — and the finer the slicing (serverless's whole selling point), the worse it gets.</p>
+<p>⑤ The four obstacles: no low-latency ephemeral shared storage (the worst one), no fine-grained coordination, expensive broadcast/aggregation/shuffle, unpredictable performance (cold starts + hardware lottery + no accelerators).</p>
+<p>⑥ The truth about the economics: per unit of compute it is more expensive; it wins by charging nothing while idle, so it pays off only for bursty, low-duty-cycle workloads — the steadier the load, the worse the deal.</p>
+<p>⑦ The rebuttal (Hellerstein et al., CIDR 2019): FaaS is a data-shipping architecture that inverts forty years of "ship the code to the data," and for data-intensive work it comes out roughly an order of magnitude slower and more expensive.</p>
+<p>⑧ Legacy and limits: the checklist became the sub-field's research agenda (Pocket, Locus, Firecracker and Cloudburst all follow it); but this is a position paper rather than an experimental one, its "serverless will replace serverful" prediction has yet to come true, and the architectural objection from the other side was never truly answered.</p>
+</div>
+</div>
+
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full case studies, cost tables and predictions, go to the original — and to the rebuttal published the same year.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
