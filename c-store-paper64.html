@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>C-Store（列式数据库）— IT 论文精读 Paper 64</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 64</p>
+<h1>C-Store：列式数据库</h1>
+<p class="sub">Stonebraker, Abadi, Madden, Cherniack, O'Neil 等 · MIT / Brandeis / UMass Boston / Brown · VLDB 2005</p>
+<p class="langbar"><a href="c-store-paper64.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>2005 年，Michael Stonebraker 和一群数据库研究者做了个叫 <strong>C-Store</strong> 的系统原型，把数据库里的数据<strong>从「一行一行地存」改成「一列一列地存」</strong>。听起来只是换了个摆法，却让「把上亿条记录汇总成一个数字」这类查询快了两个数量级。今天你用的 BigQuery、Snowflake、ClickHouse，以及数据湖里到处都是的 Parquet 文件，走的都是这条路。</p>
+<h2>打个比方</h2>
+<p>把数据库想成超市的账本。传统做法是<strong>按收据存</strong>：每笔交易的时间、门店、商品、金额写成完整的一张，一张张摞起来。这时老板问一句：「去年全国一共卖了多少钱？」——你只需要「金额」这一个数字，却不得不把每张收据<strong>整张抽出来</strong>、瞟一眼金额、再塞回去。上亿张收据，力气几乎全花在搬运你根本不看的那些字段上。</p>
+<h2>新在哪</h2>
+<p>C-Store 换了个摆法：<strong>把所有收据的「金额」抄成一长条，「门店」抄成另一长条，「商品」再抄一条。</strong>老板问金额，你就只搬金额那一条，别的碰都不碰。同样一个问题，要搬的东西少了一大截。</p>
+<h2>怎么做到的</h2>
+<p>而且这么一摆，还顺手带出三件好事。</p>
+<p>一是<strong>特别好压缩</strong>。一整条里全是同一种东西——门店那条里「北京中关村店」可能一连重复几千行，记一笔「北京中关村店，从第 1 行起，连着 5000 行」就完事了。更妙的是，很多问题<strong>压着不解开就能回答</strong>：想知道这家店有多少笔交易，看一眼那句「连着 5000 行」即可，根本不用把它摊开还原成 5000 行。</p>
+<p>二是<strong>同一份数据可以按几种顺序各存一套</strong>。常按日期查就排一套按日期的，常按门店查就排一套按门店的——好比同一批账同时按日期、按门店装订了两本，问哪种问题都有一本现成排好的。传统数据库靠「另外建索引」去够到类似效果；这里因为列压得极小，索性多存几套更划算。这几套副本还顺便是<strong>备份</strong>：坏掉一台机器，从别的副本把它缺的数据重新问出来就行。</p>
+<p>三是<strong>写入怎么办</strong>。排得整整齐齐、又压得死紧的账本，想在中间插一行非常费劲。C-Store 的办法是分成两处：新数据先进一个小小的「随手记」（写得快、不压缩），后台养着一个搬运工，定期把攒够的部分<strong>成批合并</strong>进那本整齐的大账。读的时候两边一起看，所以不会读丢刚写的数据。</p>
+<h2>带来了什么</h2>
+<p>论文里，C-Store 在一组分析型查询上比当时的商用行式数据库快了两个数量级，占的磁盘还不到人家一半。它后来变成一家公司 <strong>Vertica</strong>（2011 年被惠普收购），而「列式 + 重压缩」从此成了数据仓库的默认长相。</p>
+<p>也说句诚实的代价：这套摆法天生是给「写得少、读得多」的分析场景准备的。要一笔笔改订单、改完立刻生效的交易型业务，一行一行地存依然更合适。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>按列存，查询就只搬它真正要用的那几列；一整列长得像，于是能压到很小、还能压着不解开直接算；再把同一份数据按几种顺序各存一套，既当索引又当备份；写入慢的问题交给「随手记 + 后台批量合并」。分析型数据库从此换了代。</p>
+</div>
+<p class="switch-hint">想看投影、join index、WS/RS 的结构图与实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">C-Store 把关系数据库的物理存储从「按行」翻成「按列」，并围绕这一点重做了整套设计：<strong>重度压缩且尽量在压缩态上直接计算</strong>、<strong>把同一份数据按不同排序键存成若干重叠的「投影」</strong>（用排好序的冗余副本兼任索引与容错副本）、以及<strong>用「写优化小库 + 读优化大库 + 后台搬运工」的混合结构</strong>把列存最怕的写入吸收掉。它是分析型（OLAP）数据库换代的起点，后来商业化为 Vertica。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>关系数据库 / 表 · 行 · 列</strong>：把数据摆成规整二维表的数据库；一行是一条记录（一笔交易），一列是一个字段（如「金额」）。见本站 Codd 关系模型那篇。</li>
+<li><strong>行存（row store）</strong>：传统做法——把一整行的所有字段挨着存在磁盘同一处，读任何一个字段都会顺带把整行读上来。</li>
+<li><strong>OLTP vs OLAP</strong>：OLTP 是交易型负载（下单、改余额，一次碰极少几行、要立刻生效）；OLAP 是分析型负载（报表、汇总，一次扫海量行、但只碰少数几列）。</li>
+<li><strong>数据仓库（data warehouse）</strong>：专门存历史数据供分析的库，典型特征是批量灌入、几乎不改、反复被查。</li>
+<li><strong>索引 / B 树</strong>：为加速查找另建的一套有序结构，代价是占空间、且每次写入都要跟着维护。</li>
+<li><strong>物化视图（materialized view）</strong>：把某个查询的结果预先算好存下来，查得快，但要随原表变化维护。</li>
+<li><strong>事务 / 快照隔离（snapshot isolation）</strong>：事务是「要么全做、要么全不做」的一组操作；快照隔离让读事务看到某个时间点的一致快照，从而不必和写事务抢锁。见本站 SQL 隔离级别批判那篇。</li>
+<li><strong>预写日志（WAL，write-ahead log）</strong>：改数据前先把改动追加进日志，崩溃后靠重放日志恢复。见本站 ARIES 那篇。</li>
+<li><strong>TPC-H</strong>：业界通用的分析型查询基准测试，一套模拟订单业务的表加一组复杂汇总查询。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 Michael Stonebraker（MIT）、Daniel Abadi、Samuel Madden、Mitch Cherniack（Brandeis）、Elizabeth 与 Patrick O'Neil（UMass Boston）、Stan Zdonik（Brown）等十来人，发表于 VLDB 2005。按列存储本身不是它发明的——1985 年的<em>分解存储模型</em>（DSM）、商用的 Sybase IQ、学术界的 MonetDB 都早有先例；C-Store 的贡献是<strong>把列存放进一套完整的、可用的数据库设计里</strong>：压缩、排序冗余、混合读写、副本容错、快照读，环环相扣。它下启 Vertica，并与同期的 Dremel（列存 + 多级执行树，见本站那篇）一起成为今日数据仓库的两条源流。</p>
+<h2>问题与动机</h2>
+<p>2005 年前后的主流关系数据库（Oracle、DB2、SQL Server 等）血统都来自 1970–80 年代的 OLTP 世界，物理存储是<strong>写优化</strong>的：一整行连续摆放，插一条记录只要写一处。可市场的重心已经挪向数据仓库——批量灌入、几乎不改、被反复扫描汇总。</p>
+<p>在这种负载上，行存有个结构性的浪费：<strong>磁盘按块读取，而一个块里塞的是整行</strong>。一条「按年汇总销售额」的查询只碰两三个字段，硬盘却被迫把每行的几十个字段全搬进内存；表越宽，浪费越大。当时的补救是狂建索引和物化视图，但那既要额外空间、又拖慢写入，还只照顾得到预先想到的查询。</p>
+<p>作者的判断很直接：<strong>问题不在于优化得不够，而在于物理布局站错了边。</strong>既然读远多于写，就该从零设计一个<em>读优化</em>的存储——哪怕写入变难，也用别的机制补回来。</p>
+<h2>核心思想 / 方法</h2>
+<h3>一、按列存：只搬要用的那几列</h3>
+<p>C-Store 把每一列单独连续存放。查询要哪几列就只读哪几列，不相干的字段一个字节都不碰。宽表上的分析查询，I/O 量常常因此降一个数量级。</p>
+<p>代价是<strong>重建行</strong>（tuple reconstruction）：查询往往要把几列拼回同一条记录。C-Store 的办法是靠<strong>位置对齐</strong>——同一批列里的第 <code>i</code> 个值天然属于第 <code>i</code> 行，于是拼接只是按序号取值，不需要在每个值上存行号。这个「位置即身份」的约定后来成了所有列式引擎的基本功。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" x="30" y="24">行存：一整行挨着放</text>
+<text fill="#7c8593" font-size="11" x="30" y="46">日期 · 门店 · 商品 · 金额</text>
+<rect fill="rgba(232,121,75,0.10)" height="22" stroke="#e8794b" width="200" x="30" y="56"></rect>
+<rect fill="rgba(232,121,75,0.10)" height="22" stroke="#e8794b" width="200" x="30" y="84"></rect>
+<rect fill="rgba(232,121,75,0.10)" height="22" stroke="#e8794b" width="200" x="30" y="112"></rect>
+<rect fill="rgba(232,121,75,0.10)" height="22" stroke="#e8794b" width="200" x="30" y="140"></rect>
+<g stroke="#7c8593" stroke-dasharray="2 3">
+<line x1="80" x2="80" y1="56" y2="162"></line><line x1="130" x2="130" y1="56" y2="162"></line><line x1="180" x2="180" y1="56" y2="162"></line></g>
+<g fill="rgba(240,180,41,0.55)"><rect height="22" width="50" x="180" y="56"></rect><rect height="22" width="50" x="180" y="84"></rect><rect height="22" width="50" x="180" y="112"></rect><rect height="22" width="50" x="180" y="140"></rect></g>
+<text fill="#f0b429" font-size="11" x="30" y="186">只要金额（金色），整行仍被搬上来</text>
+<text fill="#7c8593" font-size="11" x="30" y="206">→ 大半 I/O 花在没人看的字段上</text>
+<line stroke="rgba(240,180,41,0.25)" x1="278" x2="278" y1="14" y2="230"></line>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" x="312" y="24">列存：一列连续放</text>
+<g fill="rgba(255,255,255,0.03)" stroke="#7c8593">
+<rect height="106" width="44" x="312" y="56"></rect><rect height="106" width="44" x="366" y="56"></rect><rect height="106" width="44" x="420" y="56"></rect></g>
+<rect fill="rgba(240,180,41,0.45)" height="106" stroke="#f0b429" stroke-width="2" width="44" x="474" y="56"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="334" y="48">日期</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="388" y="48">门店</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="442" y="48">商品</text>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="496" y="48">金额</text>
+<text fill="#f0b429" font-size="11" x="312" y="186">只读金额这一条</text>
+<text fill="#7c8593" font-size="11" x="312" y="206">同列同型 → 压缩率高；</text>
+<text fill="#7c8593" font-size="11" x="312" y="224">第 i 个值 = 第 i 行，拼回行靠位置</text>
+</svg>
+<figcaption>图 1 · 同一张表的两种摆法：行存里读一列要拖动整行；列存只读需要的列，且拼回一行靠「第 i 个值属于第 i 行」的位置对齐。</figcaption>
+</figure>
+<h3>二、压缩，而且尽量压着算</h3>
+<p>一列里全是同类型、同语义、常常还有序的值，<strong>重复度远高于一整行</strong>，因此压缩率天生比行存高得多。C-Store 按两个维度挑编码：这一列<strong>是不是它所在那份数据的排序键</strong>（有序 / 无序）× <strong>不同取值多不多</strong>：</p>
+<ul>
+<li><strong>有序 + 取值少</strong>：游程编码（RLE），把一段相同值记成三元组 <code>(值, 起始位置, 连续个数)</code>——几千行压成一行。</li>
+<li><strong>无序 + 取值少</strong>：位图编码，每个取值配一串「哪些行是它」的比特位图，位图本身再做游程压缩。</li>
+<li><strong>有序 + 取值多</strong>：按块存与前一个值的差值（delta），递增的日期、编号能压得很扁。</li>
+<li><strong>无序 + 取值多</strong>：没什么结构可利用，基本不编码。</li>
+</ul>
+<p>真正关键的一步是：<strong>算子尽量直接吃压缩后的表示，不先解压</strong>。统计「某门店的交易笔数」碰上 RLE，只要读出那句「连续 5000 行」，答案就是 5000——省掉的不只是磁盘 I/O，还有解压和逐行处理的 CPU。压缩在这里不再是「省空间、费 CPU」的取舍，而是<strong>两头都省</strong>。</p>
+<h3>三、投影：同一份数据按几种顺序各存一套</h3>
+<p>C-Store 存的不是「表」，而是<em>投影（projection）</em>：从某张表出发、挑出一组列（可以顺着外键把别的表的列也拉进来），整体<strong>按某个排序键（sort key）排好序</strong>。同一列允许出现在多个投影里、各按不同的键排序。只要所有列都至少被某个投影覆盖，任意查询就都能回答。</p>
+<p>为什么这么设计？因为一旦按列存 + 重压缩，<strong>「多存一份排好序的副本」变得很便宜</strong>，而一份排好序的副本同时干三件事：① 当索引用——按该键做范围查询可以直接跳段；② 当压缩加速器用——排序键那一列有序，RLE 压到极致；③ 当容错副本用（见下文 K-safety）。传统数据库里「基表 + 索引 + 物化视图」三样东西，在这里被统一成同一种物件。</p>
+<p>每个投影再按排序键的取值范围<strong>水平切成段（segment）</strong>分布到不同机器；段内每行有一个<em>存储键</em>（storage key），其实就是它在段里的序号，读优化那份根本不落盘、按位置算出来即可。不同投影排序不同，行序自然对不上，于是需要 <em>join index</em>：它为「发送方」投影的每一行记下对应行在「接收方」投影里的 <code>(段号, 存储键)</code>，把两种顺序缝回同一条逻辑记录。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="cs1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="cs2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="cs3" markerheight="9" markerwidth="9" orient="auto" refx="0" refy="3"><path d="M6,0 L0,3 L6,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="6" stroke="#7c8593" width="300" x="130" y="14"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="36">逻辑表 SALES（日期 · 门店 · 商品 · 金额）</text>
+<path d="M220,48 L150,86" fill="none" marker-end="url(#cs1)" stroke="#7c8593"></path>
+<path d="M340,48 L410,86" fill="none" marker-end="url(#cs1)" stroke="#7c8593"></path>
+<rect fill="rgba(240,180,41,0.07)" height="150" rx="8" stroke="#f0b429" width="200" x="26" y="90"></rect>
+<text fill="#f0b429" font-size="11.5" font-weight="700" x="40" y="110">投影 P1（日期, 金额）</text>
+<text fill="#7c8593" font-size="10.5" x="40" y="127">按日期排序</text>
+<g fill="rgba(255,255,255,0.04)" stroke="#7c8593"><rect height="44" width="60" x="40" y="136"></rect><rect height="44" width="60" x="112" y="136"></rect>
+<rect height="44" width="60" x="40" y="186"></rect><rect height="44" width="60" x="112" y="186"></rect></g>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="70" y="162">日期</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="142" y="162">金额</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="70" y="212">日期</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="142" y="212">金额</text>
+<text fill="#7c8593" font-size="9.5" x="180" y="162">段 1</text>
+<text fill="#7c8593" font-size="9.5" x="180" y="212">段 2</text>
+<rect fill="rgba(232,121,75,0.07)" height="150" rx="8" stroke="#e8794b" width="200" x="330" y="90"></rect>
+<text fill="#e8794b" font-size="11.5" font-weight="700" x="344" y="110">投影 P2（门店, 商品, 金额）</text>
+<text fill="#7c8593" font-size="10.5" x="344" y="127">按门店排序</text>
+<g fill="rgba(255,255,255,0.04)" stroke="#7c8593"><rect height="94" width="46" x="344" y="136"></rect><rect height="94" width="46" x="398" y="136"></rect><rect height="94" width="46" x="452" y="136"></rect></g>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="367" y="186">门店</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="421" y="186">商品</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="475" y="186">金额</text>
+<line marker-end="url(#cs2)" marker-start="url(#cs3)" stroke="#f0b429" stroke-dasharray="4 3" x1="232" x2="324" y1="264" y2="264"></line>
+<text fill="#f0b429" font-size="11" text-anchor="middle" x="278" y="256">join index</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="278" y="290">P1 的第 i 行 ↔ P2 里的 (段号, 存储键)</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="278" y="308">同一份数据按几种顺序各存一套：既当索引、又当副本</text>
+</svg>
+<figcaption>图 2 · 投影与 join index：同一批数据按不同排序键存成多份重叠的投影，各自水平切段；排序不同导致行序对不上，用 join index 按位置把它们缝回同一条逻辑记录。</figcaption>
+</figure>
+<h3>四、WS / RS 混合：把「写」从「读」身上剥离</h3>
+<p>列式 + 排序 + 重压缩，等于把数据焊成了一整块——想在中间插一行，几乎要重写一段。C-Store 干脆<strong>把写和读拆成两个库</strong>：</p>
+<ul>
+<li><strong>RS（读优化存储）</strong>：大的那份，列式、压缩、按排序键排好，存储键隐式；只适合成批重写。</li>
+<li><strong>WS（写优化存储）</strong>：小的那份，<strong>逻辑结构与 RS 完全一样</strong>（同样的投影、同样的排序键），但不压缩、用 B 树按排序键组织、存储键显式，因而扛得住零散插入。</li>
+</ul>
+<p>插入只进 WS；删除是在对应行上打一个标记（记进删除向量），更新 = 删除 + 插入。后台的<em>搬运工（tuple mover）</em>周期性做一次批量归并：把 WS 里够「老」的成块数据合进 RS，顺带重写压缩块、更新 join index。查询则同时读 WS 和 RS 再合并结果，所以刚写的数据不会读丢。<strong>「小而快的写区 + 大而齐的读区 + 后台批量合并」这一模式，后来在 LSM 树、ClickHouse 的分区合并、Vertica 的 ROS/WOS 里反复出现。</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 270" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="cs4" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="cs5" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#e7ebf1" font-size="12" x="26" y="60">插入 / 删除 / 更新</text>
+<line marker-end="url(#cs4)" stroke="#7c8593" x1="134" x2="176" y1="55" y2="55"></line>
+<rect fill="rgba(232,121,75,0.10)" height="76" rx="8" stroke="#e8794b" width="150" x="180" y="28"></rect>
+<text fill="#e8794b" font-size="12" font-weight="700" text-anchor="middle" x="255" y="50">WS · 写优化</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="255" y="68">小 · 不压缩 · B 树</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="255" y="84">与 RS 同样的投影与排序</text>
+<line marker-end="url(#cs5)" stroke="#f0b429" stroke-width="1.6" x1="332" x2="386" y1="66" y2="66"></line>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="359" y="56">搬运工</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="359" y="88">批量合并</text>
+<rect fill="rgba(240,180,41,0.10)" height="76" rx="8" stroke="#f0b429" width="160" x="388" y="28"></rect>
+<text fill="#f0b429" font-size="12" font-weight="700" text-anchor="middle" x="468" y="50">RS · 读优化</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="468" y="68">大 · 列式压缩</text>
+<text fill="#b9c0ca" font-size="10" text-anchor="middle" x="468" y="84">按排序键排好 · 隐式存储键</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="8" stroke="#7c8593" width="240" x="160" y="188"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="213">查询：WS + RS 一起读，再合并</text>
+<path d="M240,188 L250,110" fill="none" marker-end="url(#cs4)" stroke="#7c8593" stroke-dasharray="4 3"></path>
+<path d="M330,188 L430,110" fill="none" marker-end="url(#cs4)" stroke="#7c8593" stroke-dasharray="4 3"></path>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="252">只读查询按 epoch 取一个过去时刻的快照：靠插入向量 / 删除向量判断某行当时可见吗，全程不加锁</text>
+</svg>
+<figcaption>图 3 · 混合结构：写只落在小而松散的 WS，后台搬运工成批把它归并进大而压实的 RS；查询两边都读，并按 epoch 的插入 / 删除向量决定哪些行可见。</figcaption>
+</figure>
+<h3>五、只读查询不加锁：epoch 与快照隔离</h3>
+<p>数据仓库的查询又长又重，和写入抢锁会互相拖死。C-Store 让<strong>只读事务跑在稍早的一个时间点上</strong>：系统用粗粒度的 <em>epoch</em>（几秒一格）作时间戳单位，由一个时间戳权威推进「高水位」；只读查询挑一个不晚于高水位的 epoch，靠每行的插入与删除时间判断它在那一刻是否可见——于是<strong>读事务全程不加锁、也不阻塞写</strong>，代价是看到的数据可能旧几秒。读写事务则走常规的两阶段锁。</p>
+<h3>六、不靠日志靠副本：K-safety</h3>
+<p>RS 又大、又是整块重写，给它记预写日志代价高得离谱。C-Store 的取舍是：<strong>只给小小的 WS 记日志，整体容错交给副本</strong>——保证任意 K 台机器同时故障时剩下的投影仍覆盖所有列（称作 <em>K-safety</em>）。某台机器崩溃重启后，它缺的那段数据不靠重放日志补，而是<strong>向其它副本「查」回来</strong>，把结果灌回自己的 WS。妙处在于这些副本本来就为查询性能而存在，容错几乎是白捡的。</p>
+<h2>关键结果</h2>
+<p>论文给出的是一组<strong>初步</strong>实验：TPC-H 派生的仓库式模式上、7 条查询，对手是一个流行的商用行存和一个流行的商用列存（均匿名）。在限定各系统可用磁盘空间的那组配置下，同样的数据 <strong>C-Store 占 1.987 GB，商用行存占 4.480 GB</strong>（约四成），而查询上 <strong>C-Store 平均比商用行存快约 164 倍、比商用列存快约 21 倍</strong>。作者把收益归因于三处叠加：只读需要的列、投影代替全表扫描、以及更好的压缩。</p>
+<p>作者本人对这些数字相当克制：原型只实现了设计的一部分——<strong>WS 与搬运工尚未完整跑通</strong>，所以测的基本是读优化那一半；他们明说要等这些补齐才谈得上详尽评估。把它当成「方向性证据」而非「产品对比」更恰当。</p>
+<h2>为什么重要 / 影响</h2>
+<p>这篇之后，<strong>列式存储从小众选项变成分析型数据库的默认前提</strong>。C-Store 商业化为 Vertica（2011 年被惠普收购），而它那套组合拳——列式布局、按列选编码的重压缩、压缩态上直接计算、排序冗余副本兼任索引、读写分离加后台合并——几乎被后来每一个分析引擎继承：Redshift、ClickHouse、Snowflake、BigQuery，以及 Parquet / ORC 这类列式文件格式。今天「湖仓」里那些扫几十亿行只用几秒的查询，吃的正是这份红利。</p>
+<p>它还坐实了 Stonebraker 的那句主张：<strong>「一种尺码穿不下所有人」</strong>——OLTP 与 OLAP 该用结构不同的引擎，而不是同一个引擎调参数（同一批人随后做的 H-Store／VoltDB 就是这条主张的另一半）。学术上，它把「压缩与执行如何协同」「什么时候把列拼回行（延迟物化）」推成了一整条研究线。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>实验是原型对商用产品，不对等</strong>：调优、成熟度、功能完整度都不在一个量级，作者自称初步结果。威斯康星的 DeWitt 与 Halverson 后来在同一套框架里重做比较，指出差距远没那么悬殊，且相当一部分收益来自物理设计（窄表 / 垂直分区）而非「列存」这个概念本身。</li>
+<li><strong>收益来源当时没拆干净</strong>：Abadi 等 2008 年那篇「列存与行存到底差在哪」进一步说明，在行存里用垂直分区「模拟」列存往往更慢，真正的收益来自压缩、延迟物化、块式迭代等执行层技巧——这些在 2005 年的版本里还只是雏形。</li>
+<li><strong>写入路径最弱、落地最少</strong>：WS 与搬运工正是论文里实现最不完整的部分，而它恰恰是列存能否进生产的关键。</li>
+<li><strong>工程上并非照单全收</strong>：Vertica 团队七年后的复盘坦承，join index 复杂又昂贵，实际产品里基本没用上，改以「预连接投影」等手段替代。</li>
+<li><strong>物理设计成了新负担</strong>：建哪些投影、按什么排序、冗余几份直接决定性能；论文把这件难事推给一个自动设计工具，选型错了就退化成「又占空间又不快」。</li>
+<li><strong>不适合 OLTP</strong>：改一行要触及多个投影与多处编码，只读查询看到的又是几秒前的快照——这是设计的自觉取舍，不是疏漏。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：按列存 + 重压缩 + 排序冗余投影 + 写读分离，为「读远多于写」的分析负载重做一套数据库。</p>
+<p>② 痛点：行存把整行摆在一起，而分析查询只碰少数列，磁盘被迫搬运大量无人查看的字段。</p>
+<p>③ 列存机制：每列连续存放，只读要用的列；拼回一行靠「第 i 个值属于第 i 行」的位置对齐，值上不存行号。</p>
+<p>④ 压缩：按「是否排序键 × 取值多不多」选 RLE / 位图 / 差分 / 不编码；关键在算子直接吃压缩表示，省空间同时省 CPU。</p>
+<p>⑤ 投影：不存表、只存按不同排序键排好的重叠列组，水平切段；排好序的副本同时充当索引、压缩加速器和容错副本，跨投影拼行靠 join index。</p>
+<p>⑥ 写入：新数据进不压缩的 WS，后台搬运工批量归并进压实的 RS，查询两边同读——「小写区 + 大读区 + 后台合并」的祖型之一。</p>
+<p>⑦ 并发与容错：只读查询按 epoch 取过去时刻的快照、全程不加锁；RS 不记日志，靠 K-safety 副本互相「查」回丢失的数据。</p>
+<p>⑧ 结果：7 条 TPC-H 风格查询上比商用行存快约 164 倍、比商用列存快约 21 倍，占空间约为行存四成；但原型的写入侧未完整实现，作者自称初步。</p>
+<p>⑨ 影响与局限：商业化为 Vertica，成为 ClickHouse / Redshift / Snowflake / BigQuery 与 Parquet、ORC 的共同底座；但那组对比不对等、收益来源当时未拆清、join index 在工程上基本没落地、物理设计的难题被转嫁给了设计工具。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的编码细节与查询执行器设计，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
