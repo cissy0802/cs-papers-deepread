@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>A Protocol for Packet Network Intercommunication（TCP/IP 源头）— IT 论文精读 Paper 65</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,48 +36,40 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 65</p>
-<h1>A Protocol for Packet Network Intercommunication（TCP/IP 的源头）</h1>
+<h1 data-tts="3d9e1a942be5ae46">A Protocol for Packet Network Intercommunication（TCP/IP 的源头）</h1>
 <p class="sub">Vinton G. Cerf &amp; Robert E. Kahn · IEEE Transactions on Communications · 1974 年 5 月</p>
 <p class="langbar"><a href="packet-network-intercommunication-paper65.en.html">EN →</a></p>
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="d9668b648a40303a">这篇论文干了什么？</h2>
 <p>1974 年，Vint Cerf 和 Bob Kahn 写了一篇论文，回答一个当时谁都答不好的问题：<strong>几张互不相通的网络，怎么才能拼成一张网？</strong>他们给出的办法后来有了个你一定听过的名字：<strong>TCP/IP</strong>。今天你手机发的每条消息、打开的每个网页，走的还是这篇论文定的规矩。互联网之所以叫「互联」网，源头就在这里。</p>
-
-<h2>先说说旧世界的痛</h2>
+<h2 data-tts="ff33e8b3d9bf3373">先说说旧世界的痛</h2>
 <p>1970 年代初，能用的网络已经不止一张：军方研究用的 ARPANET、用无线电收发的分组无线网、跨大西洋的卫星网……每一张在自己内部都跑得挺好，<strong>但彼此之间一个字也传不过去</strong>。</p>
 <p>像铁路：几个国家各修各的，轨距、票制、信号规则都不一样，火车开到边境就只能停下。网络之间差得更远：一个包能装多大不一样，丢了包管不管不一样，连门牌号写法都各是一套。</p>
-
-<h2>那个点子</h2>
+<h2 data-tts="fb45354f584d9c9c">那个点子</h2>
 <p>最自然的想法是「统一标准」，可这条路走不通——每张网都有自己的主人和设备，谁也没权力让别人推倒重来。</p>
 <p>Cerf 与 Kahn 的点子正好反过来：<strong>谁都不用改。只在两张网的交界处放一个「中转站」（他们叫它<em>网关</em>），再规定一种大家都认的「内层信封」。</strong></p>
 <p>要寄的东西先装进这个内层信封，上面写着全网通用的地址；进了哪张网，这张网就按自己的规矩在外面再套一个本地信封。到了边界，网关拆掉本地信封、按下一张网的规矩换个新的——<strong>内层信封从头到尾没被打开过</strong>。每张网照旧说自己的方言，边界上有人翻译就行。</p>
-
-<h2>那「送到」这件事谁来保证？</h2>
+<h2 data-tts="886636e458804dcf">那「送到」这件事谁来保证？</h2>
 <p>这里还有个更反直觉的决定：<strong>中间的网络和网关，一律不负责把东西送到。</strong>它们只「尽力而为」：能送就送，忙不过来就丢，顺序乱了也不管，网关甚至不记得任何一次通信进行到哪儿——只瞄一眼地址就往下扔。责任全压在两头。</p>
 <p>做法像寄一摞明信片：<strong>发信人给每张编号；收信人回一句「我到第几号为止都齐了」；发信人超时没等到这句回音，就把没被确认的重寄一遍。</strong>收信人还会捎上「我最多还能放下 N 张，别寄太快」——这就是限速。</p>
 <p>为什么这么设计？中间不记事，网关就能做得简单又快，坏掉一个换一个也不影响进行中的通信；而「东西齐没齐」，本来也只有收发两头最清楚。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="bd2b353139ca2223">带来了什么</h2>
 <p>这张「网络的网络」从此能<strong>无限往外长</strong>：新造一张网不必征得谁同意、不必改动任何既有设备，边上接个网关、认那个内层信封就行。今天的 Wi-Fi、4G、光纤、卫星宽带全是后来才有的网络，却都能直接插进 1974 年画好的这张图。</p>
 <p>诚实说一句代价：这套设计把信任全交给两端，<strong>论文里没有任何防冒名顶替、防偷看的机制</strong>——今天大量安全麻烦的根子，就在「当年那批人彼此都认识、没想过防谁」。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="64af1c9f13269a94">一句话记住</h2>
 <div class="tl">
 <p>别妄想统一所有网络，而是在边界放网关做翻译、给数据套一个谁都认的内层信封；中间只尽力而为、不记账，靠两端编号 + 确认 + 重发把「可靠」补齐——于是任何一张新网都能随时接进来。这就是互联网。</p>
 </div>
 <p class="switch-hint">想看网关与封装的结构图、地址格式和它留下的那些坑？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="2c3df58a864359cf">一句话</h2>
 <p class="lead">用<strong>网关（gateway）</strong>把彼此不兼容的分组网络在边界处连起来，并定义一种所有网络都认的<strong>统一内网包格式与全局地址</strong>；中间的网络与网关只做「<strong>尽力而为</strong>」的转发、不保存任何会话状态，而把可靠性（序号、确认、超时重传、窗口限速）<strong>整体推给两端主机上的 TCP</strong>。这套「网关 + 封装 + 端到端可靠」的设计就是 TCP/IP 的源头，也是今天整个互联网的骨架。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="e55e2f0ef6bdb889">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>分组交换（packet switching）</strong>：把信息切成小块（<em>包</em>）各自独立转发、到终点再拼起来；与「先接通一条专线再通话」的电路交换相对。</li>
@@ -89,11 +82,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>校验和（checksum）</strong>：把一段数据算成一个小数字附在包里，收方重算一遍，对不上就说明路上传坏了。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="f257cd8d64539c97">坐标</h2>
 <p>作者是 <strong>Vinton G. Cerf</strong>（时在斯坦福）与 <strong>Robert E. Kahn</strong>（时在 ARPA），论文登在 <em>IEEE Transactions on Communications</em> 1974 年 5 月号。它上承 ARPANET（1969）与 Louis Pouzin 的 <strong>CYCLADES</strong>——后者的纯数据报思想直接塑造了这里「网络不保证送达」的选择；下启 RFC 675（1974 年底第一份 TCP 规范）、1978 年 TCP 与 IP 拆成两层、1983 年 1 月 ARPANET 整体切换到 TCP/IP。两人以此获 2004 年图灵奖。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="db35d84925f4c1c4">问题与动机</h2>
 <p>1974 年的处境是：分组交换<em>本身</em>已经被证明可行——ARPANET 跑了五年，分组无线网、卫星网也各自建起来了。<strong>难题从「一张网怎么建」变成了「几张网怎么互通」。</strong></p>
 <p>而这些网彼此的差异是结构性的，不是调个参数就能抹平的：</p>
 <ul>
@@ -103,29 +94,29 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>延迟差几个数量级</strong>：卫星一跳几百毫秒，地面链路是毫秒级。</li>
 </ul>
 <figure>
-<svg viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
 <text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="24">1970 年代初：几张各自能用、彼此不通的网</text>
-<rect x="12" y="46" width="156" height="124" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<rect fill="rgba(240,180,41,0.06)" height="124" rx="10" stroke="#f0b429" stroke-dasharray="4 3" width="156" x="12" y="46"></rect>
 <text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="90" y="72">ARPANET</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="90" y="95">有线分组交换</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="90" y="115">包较大</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="90" y="135">网内负责送达</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="90" y="155">自己一套编号</text>
-<rect x="202" y="46" width="156" height="124" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<rect fill="rgba(240,180,41,0.06)" height="124" rx="10" stroke="#f0b429" stroke-dasharray="4 3" width="156" x="202" y="46"></rect>
 <text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="72">分组无线网</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="95">共享无线电信道</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="115">包小、易丢</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="135">不保证送达</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="155">又一套编号</text>
-<rect x="392" y="46" width="156" height="124" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<rect fill="rgba(240,180,41,0.06)" height="124" rx="10" stroke="#f0b429" stroke-dasharray="4 3" width="156" x="392" y="46"></rect>
 <text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="470" y="72">卫星网</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="470" y="95">跨洋广播</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="470" y="115">一跳几百毫秒</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="470" y="135">又一种包格式</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="470" y="155">再一套编号</text>
-<line x1="170" x2="200" y1="108" y2="108" stroke="#e8794b" stroke-width="2" stroke-dasharray="5 4"></line>
+<line stroke="#e8794b" stroke-dasharray="5 4" stroke-width="2" x1="170" x2="200" y1="108" y2="108"></line>
 <text fill="#e8794b" font-size="15" font-weight="700" text-anchor="middle" x="185" y="100">✕</text>
-<line x1="360" x2="390" y1="108" y2="108" stroke="#e8794b" stroke-width="2" stroke-dasharray="5 4"></line>
+<line stroke="#e8794b" stroke-dasharray="5 4" stroke-width="2" x1="360" x2="390" y1="108" y2="108"></line>
 <text fill="#e8794b" font-size="15" font-weight="700" text-anchor="middle" x="375" y="100">✕</text>
 <text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="205">包长、地址、可靠性假设、延迟全不一样</text>
 <text fill="#e8794b" font-size="11.5" text-anchor="middle" x="280" y="226">而且没人能命令别人推倒重来</text>
@@ -134,55 +125,51 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </figure>
 <p>当时看得见的两条路都不通。<strong>统一改造</strong>（所有网络换同一套协议）政治上不可能——每张网都有自己的主人、经费与既有设备；<strong>逐对定制翻译</strong>（给每一对网络写一个转换器）则要 n² 量级的转换器，且每接入一张新网都得回头改所有人。</p>
 <p>这篇论文要找的是<strong>第三条路：既不要求任何一张网改变自己，又不必为每一对网络定制</strong>。Kahn 为此立了几条底线（后来叫「开放架构网络」原则）：每张网内部不许被改动；网络之间按<em>尽力而为</em>通信；用一个黑盒子（网关）把它们连起来；整个系统<strong>不设全局控制</strong>。</p>
-
-<h2>核心思想 / 方法</h2>
-
-<h3>一、网关：只在边界翻译，而且它是「两半」</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="1d2db58bf5bdf10a">一、网关：只在边界翻译，而且它是「两半」</h3>
 <p>在两张网的交界处放一台设备，论文叫它 <strong>gateway（网关）</strong>。它的形态很特别：<strong>网关由两半构成，每一半分别属于它所连的一张网</strong>——对网络 1 而言它就是网络 1 里一台普通主机、说网络 1 的方言，对网络 2 亦然；两半在设备内部对接。</p>
 <p><strong>为什么这么设计？</strong>因为这样一来，两张网谁都不必知道对方存在，也不必为「接入互联网」改一行自己的代码——它只是多了个本地邻居。<strong>改动被压缩到边界那一个点上。</strong></p>
-
-<h3>二、统一内网包与全局地址：信封套信封</h3>
+<h3 data-tts="3190de63b70ed756">二、统一内网包与全局地址：信封套信封</h3>
 <p>光有翻译还不够，还得有一样东西是所有网络共同认的。论文规定了一种<strong>统一的「内网包（internetwork packet）」格式</strong>：自带包头，里面是<strong>全局地址</strong>、序号、字节数、标志位与校验和，后面跟着真正要传的数据。</p>
 <p>这个包<strong>不在任何一张网里裸奔</strong>，而是被<em>嵌进</em>当前这张网自己的本地包格式里——像一封信被装进本地邮局的信封。走到边界，网关<strong>剥掉旧信封、按下一张网的规矩换上新的，内层那封信一个字不动</strong>。这个动作今天叫<strong>封装（encapsulation）</strong>，是分层网络最根本的机制。</p>
 <figure>
-<svg viewbox="0 0 560 270" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="p65a" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
-<rect x="14" y="34" width="204" height="72" rx="10" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 270" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="p65a" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.05)" height="72" rx="10" stroke="#f0b429" stroke-dasharray="4 3" width="204" x="14" y="34"></rect>
 <text fill="#f0b429" font-size="11.5" text-anchor="middle" x="116" y="54">网络 1（自己的包格式）</text>
-<rect x="30" y="62" width="66" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
+<rect fill="rgba(255,255,255,0.04)" height="30" rx="6" stroke="#7c8593" width="66" x="30" y="62"></rect>
 <text fill="#e7ebf1" font-size="11" text-anchor="middle" x="63" y="81">主机 A</text>
-<rect x="236" y="34" width="88" height="72" rx="10" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<rect fill="rgba(232,121,75,0.12)" height="72" rx="10" stroke="#e8794b" width="88" x="236" y="34"></rect>
 <text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="280" y="62">网关</text>
 <text fill="#e8794b" font-size="10" text-anchor="middle" x="280" y="80">左半属网络 1</text>
 <text fill="#e8794b" font-size="10" text-anchor="middle" x="280" y="94">右半属网络 2</text>
-<rect x="342" y="34" width="204" height="72" rx="10" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<rect fill="rgba(240,180,41,0.05)" height="72" rx="10" stroke="#f0b429" stroke-dasharray="4 3" width="204" x="342" y="34"></rect>
 <text fill="#f0b429" font-size="11.5" text-anchor="middle" x="444" y="54">网络 2（另一套包格式）</text>
-<rect x="464" y="62" width="66" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
+<rect fill="rgba(255,255,255,0.04)" height="30" rx="6" stroke="#7c8593" width="66" x="464" y="62"></rect>
 <text fill="#e7ebf1" font-size="11" text-anchor="middle" x="497" y="81">主机 B</text>
-<line x1="98" x2="232" y1="77" y2="77" stroke="#7c8593" marker-end="url(#p65a)"></line>
-<line x1="326" x2="460" y1="77" y2="77" stroke="#7c8593" marker-end="url(#p65a)"></line>
-<rect x="18" y="150" width="196" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593" stroke-dasharray="3 3"></rect>
+<line marker-end="url(#p65a)" stroke="#7c8593" x1="98" x2="232" y1="77" y2="77"></line>
+<line marker-end="url(#p65a)" stroke="#7c8593" x1="326" x2="460" y1="77" y2="77"></line>
+<rect fill="rgba(255,255,255,0.03)" height="70" rx="8" stroke="#7c8593" stroke-dasharray="3 3" width="196" x="18" y="150"></rect>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="116" y="168">网络 1 的本地包头</text>
-<rect x="30" y="176" width="172" height="34" rx="6" fill="rgba(240,180,41,0.13)" stroke="#f0b429"></rect>
+<rect fill="rgba(240,180,41,0.13)" height="34" rx="6" stroke="#f0b429" width="172" x="30" y="176"></rect>
 <text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="116" y="191">内网包：全局地址</text>
 <text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="116" y="205">+ 序号 + 校验和 + 数据</text>
-<rect x="240" y="176" width="80" height="34" rx="6" fill="rgba(240,180,41,0.13)" stroke="#f0b429"></rect>
+<rect fill="rgba(240,180,41,0.13)" height="34" rx="6" stroke="#f0b429" width="80" x="240" y="176"></rect>
 <text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="280" y="197">内网包不变</text>
-<rect x="346" y="150" width="196" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593" stroke-dasharray="3 3"></rect>
+<rect fill="rgba(255,255,255,0.03)" height="70" rx="8" stroke="#7c8593" stroke-dasharray="3 3" width="196" x="346" y="150"></rect>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="444" y="168">网络 2 的本地包头</text>
-<rect x="358" y="176" width="172" height="34" rx="6" fill="rgba(240,180,41,0.13)" stroke="#f0b429"></rect>
+<rect fill="rgba(240,180,41,0.13)" height="34" rx="6" stroke="#f0b429" width="172" x="358" y="176"></rect>
 <text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="444" y="191">内网包：全局地址</text>
 <text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="444" y="205">+ 序号 + 校验和 + 数据</text>
-<line x1="216" x2="236" y1="193" y2="193" stroke="#7c8593" marker-end="url(#p65a)"></line>
-<line x1="322" x2="342" y1="193" y2="193" stroke="#7c8593" marker-end="url(#p65a)"></line>
+<line marker-end="url(#p65a)" stroke="#7c8593" x1="216" x2="236" y1="193" y2="193"></line>
+<line marker-end="url(#p65a)" stroke="#7c8593" x1="322" x2="342" y1="193" y2="193"></line>
 <text fill="#e8794b" font-size="11" text-anchor="middle" x="280" y="140">网关：拆旧信封、换新信封</text>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="280" y="248">内层那封信从头到尾没被打开过 → 两张网都不必改动自己</text>
 </svg>
 <figcaption>图 2 · 网关与封装：统一内网包嵌在各网本地包里，网关在边界只换外层信封。</figcaption>
 </figure>
 <p>地址是关键的一步。论文把全局地址设计成<strong>两段式：「网络号 + 该网内的 TCP 标识」</strong>——先说「哪一张网」，再说「那张网里的谁」。网关只看<em>网络号</em>就知道往哪转，不必认识全世界每一台主机。<strong>这是分层寻址的雏形</strong>：今天 IP 的「网络前缀 + 主机部分」与路由器按前缀转发，都是它的直系后代。（论文给网络号只留了 8 位——整个互联网最多 256 张网，这个数字后来成了最常被拿来开玩笑的部分。）</p>
-
-<h3>三、最关键的一刀：可靠性整体搬到两端</h3>
+<h3 data-tts="6aa8f4e54c957acb">三、最关键的一刀：可靠性整体搬到两端</h3>
 <p>接下来是这篇论文<strong>最有影响力、也最反直觉</strong>的决定。既然各网的可靠性保证参差不齐，<strong>互联网就干脆一条都不要求</strong>：中间的网络与网关只负责<em>尽力而为</em>地转发——可以丢包、可以乱序、可以重复，而且<strong>网关不为任何一次通信保存状态</strong>，它只看一眼地址就转发出去。</p>
 <p>那可靠性从哪儿来？<strong>全部由两端主机上的 TCP 补齐</strong>（注意 1974 年的 TCP 是 <em>Transmission Control Program</em>，一个程序，后来才被拆成协议）。四件事凑齐了「可靠」：</p>
 <ul>
@@ -193,28 +180,28 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>再加上<strong>端到端校验和</strong>（由目的地重算，而不信任中间任何一跳），一条不可靠的路上就架起了一条可靠的字节流。</p>
 <figure>
-<svg viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="p65b" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
-<marker id="p65c" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
-<rect x="8" y="52" width="106" height="58" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="p65b" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="p65c" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="58" rx="8" stroke="#f0b429" width="106" x="8" y="52"></rect>
 <text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="61" y="76">TCP A</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="61" y="95">发送端</text>
-<rect x="446" y="52" width="106" height="58" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<rect fill="rgba(240,180,41,0.1)" height="58" rx="8" stroke="#f0b429" width="106" x="446" y="52"></rect>
 <text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="499" y="76">TCP B</text>
 <text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="499" y="95">接收端</text>
-<rect x="186" y="60" width="66" height="30" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<rect fill="rgba(232,121,75,0.12)" height="30" rx="6" stroke="#e8794b" width="66" x="186" y="60"></rect>
 <text fill="#e7ebf1" font-size="11" text-anchor="middle" x="219" y="80">网关</text>
-<rect x="308" y="60" width="66" height="30" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<rect fill="rgba(232,121,75,0.12)" height="30" rx="6" stroke="#e8794b" width="66" x="308" y="60"></rect>
 <text fill="#e7ebf1" font-size="11" text-anchor="middle" x="341" y="80">网关</text>
-<line x1="116" x2="182" y1="70" y2="70" stroke="#f0b429" marker-end="url(#p65b)"></line>
-<line x1="256" x2="304" y1="70" y2="70" stroke="#f0b429" marker-end="url(#p65b)"></line>
-<line x1="378" x2="442" y1="70" y2="70" stroke="#f0b429" marker-end="url(#p65b)"></line>
+<line marker-end="url(#p65b)" stroke="#f0b429" x1="116" x2="182" y1="70" y2="70"></line>
+<line marker-end="url(#p65b)" stroke="#f0b429" x1="256" x2="304" y1="70" y2="70"></line>
+<line marker-end="url(#p65b)" stroke="#f0b429" x1="378" x2="442" y1="70" y2="70"></line>
 <text fill="#f0b429" font-size="10.5" text-anchor="middle" x="149" y="60">#1 #2 #3</text>
 <text fill="#e8794b" font-size="14" font-weight="700" text-anchor="middle" x="280" y="50">✕</text>
 <text fill="#e8794b" font-size="10.5" text-anchor="middle" x="280" y="36">#2 在路上丢了</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="118">尽力而为：可丢、可乱序、可重复、可切片</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="135">网关不保存任何会话状态，只看地址转发</text>
-<path d="M446,168 L118,168" fill="none" stroke="#e8794b" marker-end="url(#p65c)" stroke-width="1.6"></path>
+<path d="M446,168 L118,168" fill="none" marker-end="url(#p65c)" stroke="#e8794b" stroke-width="1.6"></path>
 <text fill="#e8794b" font-size="10.5" text-anchor="middle" x="282" y="160">确认：「到 #1 为止都齐了」 · 窗口：「我还能收 N 字节」</text>
 <text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="280" y="205">A 等不到 #2 的确认 → 超时重发 #2</text>
 <text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="230">中间设备全程不知情，也不需要知情</text>
@@ -223,25 +210,20 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <figcaption>图 3 · 端到端可靠：网络只尽力而为、网关不记账；序号 + 确认 + 重传 + 窗口在两端补齐可靠性。</figcaption>
 </figure>
 <p><strong>为什么是这个分工？</strong>其一，<strong>只有两端才知道「全齐了没有」</strong>——就算每一跳都保证自己那段不出错，网关崩溃、路径切换仍会让数据丢在缝隙里，端上的检查一步也省不掉；既然端上无论如何要做一遍，中间再做就是重复劳动。其二，<strong>不记状态的中间设备便宜、快、好扩展</strong>：不必为每条连接分配内存，崩了重启不影响进行中的通信，路径改道也无所谓。这个论证十年后被 Saltzer、Reed 与 Clark 提炼成著名的<strong>端到端论证</strong>（end-to-end arguments）。</p>
-
-<h3>四、分片：谁来剪、谁来拼</h3>
+<h3 data-tts="123d4827323f3410">四、分片：谁来剪、谁来拼</h3>
 <p>包长上限不同这道坎，论文的答案是<strong>让网关在必要时把内网包切成几片</strong>（fragmentation），每片自带足够的头部信息独立走完剩下的路，<strong>由目的端重新拼装</strong>。</p>
 <p>为什么不在下一个网关就拼回来？那样网关得<strong>攒着半个包等齐才走</strong>——要为每个半成品分配缓冲、设超时、处理永远等不齐的情况，等于把状态又塞回中间。<strong>「目的端重组」是为保住「网关无状态」付的代价。</strong></p>
-
-<h3>五、端口：一台机器上的很多个程序</h3>
+<h3 data-tts="c7844e1367c59c12">五、端口：一台机器上的很多个程序</h3>
 <p>最后一块拼图：一台主机上同时跑着很多程序，数据到了交给谁？论文在 TCP 地址之下再引入<strong>端口（port）</strong>，把一条连接标识为「<em>两端各自的（主机地址，端口）</em>」这一对。于是同一台机器、同一条线上，多个通信互不干扰地并行——你一边开视频会议一边下载文件靠的就是它。</p>
-
-<h2>关键结果</h2>
+<h2 data-tts="63bd98c28ce3ccad">关键结果</h2>
 <p>要诚实地说：<strong>这不是一篇实验论文，没有基准测试，也没有性能数字。</strong>它是一份设计提案——「结果」是它后来被实现出来、并且真的跑通了。</p>
 <p>能算验证的有三步。一是<strong>写成可实现的规范</strong>：1974 年 12 月的 RFC 675 给出第一份完整 TCP 规格说明。二是<strong>多家独立实现并互通</strong>：1970 年代中期斯坦福、BBN 与伦敦大学学院分别实现并成功对接——这证明规范足够清楚，不同的人照着写出来的东西能互相说上话。三是<strong>真正的异构演示</strong>：1977 年数据从一辆行驶中的分组无线车出发，经 ARPANET、再经大西洋卫星网抵达目的主机，<strong>三张性质截然不同的网串成一条通路、端到端没丢一个比特</strong>。</p>
 <p>最终的「结果」是一次全网切换：<strong>1983 年 1 月 1 日，ARPANET 把旧协议 NCP 整体换成 TCP/IP</strong>。此后互联网的增长曲线，就是这篇论文最大的实验数据。</p>
-
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="d5efebe6f93a0b23">为什么重要 / 影响</h2>
 <p><strong>它把网络从「一张网」变成「网络的网络」，并让这张网可以无许可地生长。</strong>新建一张网不需要谁批准、不需要改动任何既有设备，接个网关、认那个统一包格式即可——Wi-Fi、蜂窝、光纤、卫星宽带都是几十年后才有的网络，却全能原样插进 1974 年这张图。</p>
 <p>它也奠定了互联网的<strong>「沙漏细腰」</strong>：中间只有一层薄薄的、谁都认的统一包格式（后来的 IP），上面能跑任何应用，下面能垫任何链路技术。<strong>正因为腰细、腰上不带任何智能，两头才能各自疯长。</strong></p>
 <p>而「智能放在边缘、网络保持愚笨」从此成为互联网与电信网最根本的分野：后者把智能集中在网里、终端只是话机；前者把网络做成哑管道，把创新权交给两端的任何人。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="33bedff59c3e644d">局限与批评</h2>
 <ul>
 <li><strong>地址空间严重低估</strong>：网络号只给了 8 位（256 张网）。即便后来扩到 IPv4 的 32 位也在 1990 年代耗尽，只好靠 CIDR、NAT 续命，至今仍在往 IPv6 迁移——<em>把地址开小</em>大概是网络史上最贵的一次估计失误。</li>
 <li><strong>TCP 与 IP 本是一体，必须拆开</strong>：1974 年的设计把「送到」和「保证可靠」揉在同一个协议里。但实时语音这类应用<strong>宁可丢一点也不要等重传</strong>——迟到的声音比丢掉更糟。1978 年二者拆成两层，才有了 UDP 这条「只送不管」的路。</li>
@@ -251,8 +233,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>路由基本没谈</strong>：网关凭什么知道往哪转？论文只说它有一张表，这张表怎么建、怎么在网关之间同步则留白，后来才由 EGP、BGP 填上——域间路由至今仍是互联网最脆弱的环节之一。</li>
 <li><strong>原创性归属有争议</strong>：纯数据报、可靠性归端点这两个关键思想很大程度来自 Pouzin 的 CYCLADES，Cerf 本人也公开承认受其影响；本文的贡献更在于<strong>把它们整合成一套可实现、可演进的完整方案</strong>。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="fd1128fb91182bca">要点</h2>
 <div class="tl">
 <p>① 一句话：用网关在边界翻译 + 一种谁都认的统一内网包与全局地址，把互不兼容的网络拼成「网络的网络」，可靠性全交给两端。</p>
 <p>② 痛点：1974 年已有多张分组网，但包长、地址、可靠性假设、延迟全不同；统一改造在政治上不可能，逐对翻译是 n² 的死路。</p>
