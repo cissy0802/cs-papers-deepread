@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>A Protocol for Packet Network Intercommunication (the origin of TCP/IP) — CS Papers Deep-Read Paper 65</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 65</p>
+<h1>A Protocol for Packet Network Intercommunication (the origin of TCP/IP)</h1>
+<p class="sub">Vinton G. Cerf &amp; Robert E. Kahn · IEEE Transactions on Communications · May 1974</p>
+<p class="langbar"><a href="packet-network-intercommunication-paper65.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1974 two people — Vint Cerf and Bob Kahn — wrote a paper answering a question nobody then had a good answer to: <strong>how do you stitch several mutually incompatible networks into one network?</strong> Their answer later acquired a name you have certainly heard: <strong>TCP/IP</strong>. Every message you send from your phone and every web page you open still follows the rules laid down in this paper. The reason the internet is an <em>inter</em>-net starts here.</p>
+
+<h2>The pain of the old world</h2>
+<p>By the early 1970s there was more than one working network: the military research network ARPANET, a packet radio network that carried data over the air, a satellite network spanning the Atlantic. Each ran perfectly well inside itself, <strong>and not one byte could pass between them</strong>.</p>
+<p>Think of railways: several countries each built one, but the track gauges differ, the ticketing differs, the signalling differs — so a train reaching the border simply stops. Networks differed even more. One could carry about a thousand bytes per packet, another barely a hundred. One guaranteed that whatever you handed it would arrive; another dropped things and never mentioned it. And each had its own way of writing house numbers.</p>
+
+<h2>The idea</h2>
+<p>The obvious move is to standardize: make every network adopt the same design. That road was closed — each network had its own owner, its own equipment and its own temperament, and nobody had the authority to make everyone start over.</p>
+<p>Cerf and Kahn went the other way: <strong>nobody has to change anything. Just put a relay station at the border between two networks (they called it a <em>gateway</em>), and agree on one inner envelope that everybody recognizes.</strong></p>
+<p>Whatever you are sending goes into that common inner envelope, addressed in a format the whole internet understands. Whichever network it enters then wraps its own local envelope around the outside, in its own style. At the border the gateway strips off the local envelope and puts on a new one in the next network's style — and <strong>the inner envelope is never opened from one end of the journey to the other</strong>. Every network keeps speaking its own dialect; there is simply a translator at the border.</p>
+
+<h2>Then who guarantees delivery?</h2>
+<p>Here comes the stranger decision: <strong>the networks and gateways in the middle are not responsible for delivery at all.</strong></p>
+<p>They only try their best: deliver if they can, drop it when overloaded, never mind the order — and a gateway does not even remember how far along any given conversation is. It glances at the address and throws the packet onward. All responsibility sits at the two ends.</p>
+<p>It works like mailing a stack of postcards: <strong>the sender numbers every card; the receiver writes back "I have everything up to number k"; and if that acknowledgement never comes back in time, the sender simply mails the unacknowledged ones again.</strong> The receiver also adds "I have room for N more, don't send faster than that" — that is the speed limit.</p>
+<p>Why design it this way? Because a middle that remembers nothing can be simple and fast, and if one gateway dies you swap it out without disturbing conversations in flight. And whether everything actually arrived is something only the two ends can really know anyway.</p>
+
+<h2>What it made possible</h2>
+<p>This network of networks can <strong>grow outward without limit</strong>: build a new network and you need nobody's permission and no changes to anyone's existing equipment — hang a gateway off the side, honor that inner envelope, and you are in. Wi-Fi, 4G, fiber, satellite broadband are all networks invented decades later, and every one of them drops straight into the picture drawn in 1974.</p>
+<p>One honest cost: this design places all trust at the two ends, and <strong>the paper contains no mechanism whatsoever against impersonation or eavesdropping</strong> — a great deal of today's internet insecurity traces back to a design written when everyone on the network knew everyone else and nobody was thought of as an adversary.</p>
+
+<h2>The one-line takeaway</h2>
+<div class="tl">
+<p>Don't try to unify the networks. Put a translating gateway at each border, wrap the data in one inner envelope everyone recognizes, let the middle do its best and keep no records, and rebuild reliability at the two ends out of numbering, acknowledgements and retransmission — so any new network can join at any time. That is the internet.</p>
+</div>
+<p class="switch-hint">Want the gateway and encapsulation diagrams, the address format, and the potholes it left behind? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">The paper proposes connecting mutually incompatible packet networks at their borders with <strong>gateways</strong>, and defining one <strong>common internetwork packet format and global address</strong> that every network honors; the networks and gateways in between provide only <strong>best-effort</strong> forwarding and keep <strong>no per-conversation state</strong>, while reliability — sequence numbers, acknowledgements, timeout retransmission, windows — is pushed entirely to the <strong>TCP running on the two end hosts</strong>. This "gateway + encapsulation + end-to-end reliability" design is the origin of TCP/IP and the skeleton of today's internet.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Packet switching</strong>: chopping information into small chunks (<em>packets</em>) that are forwarded independently and reassembled at the destination — as opposed to circuit switching, where you first set up a dedicated line and then talk over it.</li>
+<li><strong>ARPANET</strong>: the packet-switched network built by the US Department of Defense's ARPA in 1969, ancestor of the internet — but by itself just <em>one</em> network.</li>
+<li><strong>Host</strong>: a computer on the network that runs user programs, as opposed to the switching equipment whose job is forwarding.</li>
+<li><strong>Protocol</strong>: the format and rules two parties agree on in advance — what a packet looks like, what each field means, what to do when something goes wrong.</li>
+<li><strong>Datagram</strong>: a self-contained packet carrying its own full destination address, routed independently, with the network guaranteeing neither delivery nor ordering.</li>
+<li><strong>Packet radio / satellite networks</strong>: networks carrying packets over radio or communications satellites; their error rates and delays differ from wired networks by orders of magnitude.</li>
+<li><strong>MTU (maximum packet size)</strong>: the largest packet a given network will carry. Different everywhere, and one of the hard collisions when you interconnect.</li>
+<li><strong>Checksum</strong>: a small number computed from a block of data and carried alongside it; the receiver recomputes it, and a mismatch means the data was corrupted in transit.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are <strong>Vinton G. Cerf</strong> (then at Stanford) and <strong>Robert E. Kahn</strong> (then at ARPA); the paper appeared in <em>IEEE Transactions on Communications</em>, May 1974. It follows ARPANET (1969) and Louis Pouzin's French <strong>CYCLADES</strong> network, whose pure-datagram philosophy directly shaped the choice that the network guarantees nothing. It leads to RFC 675 (the first TCP specification, late 1974), the 1978 split of TCP and IP into two layers, and the January 1983 cutover of ARPANET to TCP/IP. Cerf and Kahn received the 2004 Turing Award for this work.</p>
+
+<h2>Problem and motivation</h2>
+<p>The situation in 1974 was this: packet switching <em>itself</em> had been proven — ARPANET had been running for five years, and packet radio and satellite networks existed too. <strong>The open question had moved from "how do you build a network" to "how do several networks talk".</strong></p>
+<p>And their differences were structural, not the kind you tune away with a parameter:</p>
+<ul>
+<li><strong>Incompatible addressing</strong>: each network numbered its own hosts its own way, with no globally unique house number.</li>
+<li><strong>Different packet size limits</strong>: a thousand-plus bytes here, one or two hundred there — a large packet simply will not fit.</li>
+<li><strong>Different reliability assumptions</strong>: some networks delivered in order and without loss internally; others (radio and satellite especially) dropped packets routinely.</li>
+<li><strong>Delays and rates differing by orders of magnitude</strong>: hundreds of milliseconds for a satellite hop, milliseconds on the ground.</li>
+</ul>
+<figure>
+<svg viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="24">Early 1970s: several working networks, none able to reach the others</text>
+<rect x="12" y="46" width="156" height="124" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="90" y="72">ARPANET</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="90" y="95">wired packet switching</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="90" y="115">larger packets</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="90" y="135">delivery guaranteed</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="90" y="155">its own numbering</text>
+<rect x="202" y="46" width="156" height="124" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="280" y="72">packet radio</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="95">shared radio channel</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="115">small, lossy packets</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="280" y="135">no delivery guarantee</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="155">another numbering</text>
+<rect x="392" y="46" width="156" height="124" rx="10" fill="rgba(240,180,41,0.06)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="470" y="72">satellite network</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="470" y="95">transoceanic broadcast</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="470" y="115">hundreds of ms per hop</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="470" y="135">yet another format</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="470" y="155">yet another numbering</text>
+<line x1="170" x2="200" y1="108" y2="108" stroke="#e8794b" stroke-width="2" stroke-dasharray="5 4"></line>
+<text fill="#e8794b" font-size="15" font-weight="700" text-anchor="middle" x="185" y="100">✕</text>
+<line x1="360" x2="390" y1="108" y2="108" stroke="#e8794b" stroke-width="2" stroke-dasharray="5 4"></line>
+<text fill="#e8794b" font-size="15" font-weight="700" text-anchor="middle" x="375" y="100">✕</text>
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="280" y="205">Packet size, addressing, reliability and delay all differ</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="280" y="226">and nobody could order anyone else to rebuild</text>
+</svg>
+<figcaption>Figure 1 · The problem: three self-sufficient networks that cannot reach each other; the differences are structural, and no authority can force a common design.</figcaption>
+</figure>
+<p>The two visible roads were both dead ends. The first was <strong>unification</strong>: require every network to adopt one protocol — politically impossible, since each had its own owner, budget and installed equipment. The second was <strong>pairwise translation</strong>: write a dedicated converter for every pair of networks — that is on the order of n² converters for n networks, and every newcomer forces everyone else to go back and change something.</p>
+<p>The paper's motivation is to find <strong>a third road: one that requires no network to change itself, and no converter per pair</strong>. Kahn had set out ground rules for this (later known as the principles of open-architecture networking): no internal change to any constituent network; communication between networks on a best-effort basis; a black box (the gateway) to join them; and <strong>no global control</strong> at the operational level.</p>
+
+<h2>Core ideas and method</h2>
+
+<h3>1. The gateway: translate only at the border — and it comes in halves</h3>
+<p>At the junction of two networks you place a device the paper calls a <strong>gateway</strong>. Its shape is unusual: <strong>a gateway is made of two halves, each belonging to one of the networks it joins</strong>. To network 1 it is just an ordinary local host speaking network 1's dialect; to network 2, likewise. The two halves meet inside the box.</p>
+<p><strong>Why design it that way?</strong> Because neither network then has to know the other exists, and neither has to change a line of its own code to "join the internet" — it simply gained one more local neighbor. <strong>All the change is compressed into that single point on the border.</strong></p>
+
+<h3>2. A common internetwork packet and global address: an envelope inside an envelope</h3>
+<p>Translation alone is not enough; something has to be common to everyone. The paper specifies a <strong>common internetwork packet format</strong> with its own header carrying a <strong>global address</strong>, a sequence number, a byte count, flags and a checksum, followed by the actual data.</p>
+<p>This packet <strong>never travels bare inside any network</strong>. It is <em>embedded</em> in whatever local packet format the current network uses — a letter placed inside the local post office's envelope. At each border the gateway <strong>strips the old envelope and applies the next network's, leaving the letter inside completely untouched</strong>. Today we call this <strong>encapsulation</strong>, and it is the most fundamental mechanism of layered networking.</p>
+<figure>
+<svg viewbox="0 0 560 270" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="p65ae" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect x="14" y="34" width="204" height="72" rx="10" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="116" y="54">Network 1 (its own format)</text>
+<rect x="30" y="62" width="66" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="63" y="81">Host A</text>
+<rect x="236" y="34" width="88" height="72" rx="10" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="280" y="62">Gateway</text>
+<text fill="#e8794b" font-size="10" text-anchor="middle" x="280" y="80">left half: network 1</text>
+<text fill="#e8794b" font-size="10" text-anchor="middle" x="280" y="94">right half: network 2</text>
+<rect x="342" y="34" width="204" height="72" rx="10" fill="rgba(240,180,41,0.05)" stroke="#f0b429" stroke-dasharray="4 3"></rect>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="444" y="54">Network 2 (a different format)</text>
+<rect x="464" y="62" width="66" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="#7c8593"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="497" y="81">Host B</text>
+<line x1="98" x2="232" y1="77" y2="77" stroke="#7c8593" marker-end="url(#p65ae)"></line>
+<line x1="326" x2="460" y1="77" y2="77" stroke="#7c8593" marker-end="url(#p65ae)"></line>
+<rect x="18" y="150" width="196" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593" stroke-dasharray="3 3"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="116" y="168">network 1 local header</text>
+<rect x="30" y="176" width="172" height="34" rx="6" fill="rgba(240,180,41,0.13)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="116" y="191">internetwork packet: global address</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="116" y="205">+ sequence + checksum + data</text>
+<rect x="240" y="176" width="80" height="34" rx="6" fill="rgba(240,180,41,0.13)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="280" y="197">unchanged</text>
+<rect x="346" y="150" width="196" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="#7c8593" stroke-dasharray="3 3"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="444" y="168">network 2 local header</text>
+<rect x="358" y="176" width="172" height="34" rx="6" fill="rgba(240,180,41,0.13)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="444" y="191">internetwork packet: global address</text>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="444" y="205">+ sequence + checksum + data</text>
+<line x1="216" x2="236" y1="193" y2="193" stroke="#7c8593" marker-end="url(#p65ae)"></line>
+<line x1="322" x2="342" y1="193" y2="193" stroke="#7c8593" marker-end="url(#p65ae)"></line>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="280" y="140">gateway: old envelope off, new envelope on</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="280" y="248">The letter inside is never opened → neither network has to change</text>
+</svg>
+<figcaption>Figure 2 · Gateway and encapsulation: the common internetwork packet rides inside each network's local packet; the gateway swaps only the outer envelope.</figcaption>
+</figure>
+<p>Addressing is the decisive step. The paper makes the global address <strong>two-part: a network number plus an identifier for the TCP within that network</strong> — first which network, then who inside it. A gateway only has to read the <em>network number</em> to know where to forward; it never needs to know every host in the world. <strong>This is hierarchical addressing in embryo</strong>, and today's IP address structure of "network prefix + host part", along with routers forwarding on prefixes rather than on individual hosts, descends directly from it. (The paper allotted the network number only 8 bits — at most 256 networks in the entire internet — which became the most-mocked number in the design.)</p>
+
+<h3>3. The decisive cut: reliability moves wholesale to the ends</h3>
+<p>Now comes the paper's <strong>most influential and most counterintuitive</strong> decision. Since the constituent networks offer wildly different guarantees, <strong>the internetwork demands none at all</strong>: the networks and gateways in between forward on a <em>best-effort</em> basis — free to drop, reorder and duplicate — and <strong>a gateway holds no state for any conversation</strong>. It reads an address and forwards.</p>
+<p>So where does reliability come from? <strong>Entirely from the TCP on the two end hosts</strong> (note that TCP in 1974 was the <em>Transmission Control Program</em>, a program; the split into protocols came later). Four things together make "reliable":</p>
+<ul>
+<li><strong>Sequence numbers</strong>: data is treated as one continuous stream of bytes, with <em>every byte numbered</em>. Reordering can be undone, duplicates recognized, and gaps spotted at a glance.</li>
+<li><strong>Cumulative acknowledgement</strong>: the receiver replies "<em>I have everything through byte k</em>". That single statement acknowledges everything before it, so losing an acknowledgement costs nothing — the next one supersedes it.</li>
+<li><strong>Timeout and retransmission</strong>: the sender keeps everything sent-but-unacknowledged and sends it again if no acknowledgement arrives in time. <strong>Whatever the network failed to do is covered by this one action.</strong></li>
+<li><strong>Windows</strong>: the receiver piggybacks "I can take N more bytes" onto its acknowledgements, and the sender may not exceed that allowance — flow control, so the fast side cannot drown the slow one.</li>
+</ul>
+<p>Add an <strong>end-to-end checksum</strong>, recomputed at the destination rather than trusted from any intermediate hop, and you have a reliable byte stream built over an unreliable path.</p>
+<figure>
+<svg viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="p65be" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="p65ce" markerwidth="9" markerheight="9" refx="6" refy="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect x="8" y="52" width="106" height="58" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="61" y="76">TCP A</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="61" y="95">sender</text>
+<rect x="446" y="52" width="106" height="58" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text fill="#e7ebf1" font-size="12" font-weight="700" text-anchor="middle" x="499" y="76">TCP B</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="499" y="95">receiver</text>
+<rect x="186" y="60" width="66" height="30" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="219" y="80">gateway</text>
+<rect x="308" y="60" width="66" height="30" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text fill="#e7ebf1" font-size="11" text-anchor="middle" x="341" y="80">gateway</text>
+<line x1="116" x2="182" y1="70" y2="70" stroke="#f0b429" marker-end="url(#p65be)"></line>
+<line x1="256" x2="304" y1="70" y2="70" stroke="#f0b429" marker-end="url(#p65be)"></line>
+<line x1="378" x2="442" y1="70" y2="70" stroke="#f0b429" marker-end="url(#p65be)"></line>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="149" y="60">#1 #2 #3</text>
+<text fill="#e8794b" font-size="14" font-weight="700" text-anchor="middle" x="280" y="50">✕</text>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="280" y="36">#2 lost in transit</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="118">best effort: may drop, reorder, duplicate, fragment</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="135">gateways keep no conversation state, they just read the address</text>
+<path d="M446,168 L118,168" fill="none" stroke="#e8794b" marker-end="url(#p65ce)" stroke-width="1.6"></path>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="282" y="160">ack: "everything through #1" · window: "room for N more bytes"</text>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="280" y="205">no ack for #2 arrives → A times out and resends #2</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="230">the middle never knows, and never needs to</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="248">reliability is manufactured at the ends, not supplied by the network</text>
+</svg>
+<figcaption>Figure 3 · End-to-end reliability: the network is best-effort and gateways keep no records; sequence numbers, acknowledgements, timeouts and windows rebuild reliability at the ends.</figcaption>
+</figure>
+<p><strong>Why this division of labor?</strong> Two reasons. First, <strong>only the ends can know whether everything arrived</strong>: even if every hop guarantees its own leg, a gateway crash or a path change can still lose data in the seams, so the end-to-end check can never be skipped — and if the ends must do it anyway, doing it again in the middle is duplicated work. Second, <strong>stateless intermediaries are cheap, fast and scalable</strong>: a gateway allocates no memory per connection, can crash and restart without disturbing conversations in flight, and does not care if the path reroutes midstream. Ten years later Saltzer, Reed and Clark distilled this reasoning into the famous <strong>end-to-end arguments</strong>.</p>
+
+<h3>4. Fragmentation: who cuts, and who reassembles</h3>
+<p>For the collision of packet-size limits, the answer is to <strong>let a gateway cut an internetwork packet into fragments</strong> when needed, each carrying enough header to travel the rest of the way on its own, <strong>with reassembly at the destination</strong>.</p>
+<p>Why not reassemble at the next gateway? Because then a gateway would have to <strong>hold half a packet and wait</strong> — allocating buffers per partial packet, setting timers, handling the pieces that never arrive. That is state smuggled back into the middle. <strong>Destination reassembly is the price paid to keep gateways stateless.</strong></p>
+
+<h3>5. Ports: many programs on one machine</h3>
+<p>The last piece: a host runs many programs at once, so who gets the arriving data? Beneath the TCP address the paper introduces the <strong>port</strong>, identifying a connection by the pair of (host address, port) at each end. Many conversations then run side by side over one machine and one wire without interfering — the mechanism underneath your video call and your download running at the same time.</p>
+
+<h2>Key results</h2>
+<p>To be honest: <strong>this is not an experimental paper. There are no benchmarks and no performance numbers in it.</strong> It is a design proposal, and its "result" is that it was later implemented and actually worked.</p>
+<p>Three steps count as validation. First, it was <strong>turned into an implementable specification</strong>: RFC 675, in December 1974, gave the first full specification of TCP. Second, <strong>independent implementations interoperated</strong>: in the mid-1970s Stanford, BBN and University College London each built one and connected them successfully — which matters, because it showed the specification was precise enough that separately written code could understand itself. Third, a <strong>genuine heterogeneous demonstration</strong>: in 1977 data left a moving packet radio van, crossed ARPANET, then a transatlantic satellite network, and reached the destination host — <strong>three utterly different networks chained into one path with no bits lost end to end</strong>.</p>
+<p>The final result was a cutover: <strong>on 1 January 1983 ARPANET replaced its old NCP protocol with TCP/IP wholesale</strong>. The internet's growth curve ever since is this paper's real experimental data.</p>
+
+<h2>Why it matters</h2>
+<p><strong>It turned "a network" into "a network of networks", and made that network able to grow without permission.</strong> Building a new network requires nobody's approval and no change to anyone's installed equipment — attach a gateway and honor the common packet format. Wi-Fi, cellular, fiber, satellite broadband all appeared decades later and all slot unchanged into the 1974 picture.</p>
+<p>It also established the internet's <strong>hourglass waist</strong>: a single thin layer in the middle that everyone agrees on (later, IP), with any application above it and any link technology below. <strong>Precisely because the waist is thin and carries no intelligence, both ends were free to explode.</strong></p>
+<p>And the principle of <strong>putting intelligence at the edges and keeping the network dumb</strong> became the deepest dividing line between the internet and the traditional telephone network: the latter concentrates intelligence inside the network with dumb terminals at the edge; the former makes the network a dumb pipe and hands the right to innovate to anyone at either end.</p>
+
+<h2>Limitations and criticisms</h2>
+<ul>
+<li><strong>The address space was badly underestimated</strong>: the paper gave the network number 8 bits — 256 networks. Even the later 32 bits of IPv4 ran out in the 1990s, kept alive by CIDR and NAT, and the migration to IPv6 is still under way. <em>Sizing the address field too small</em> may be the most expensive estimation error in networking history.</li>
+<li><strong>TCP and IP were one thing, and had to be split</strong>: in the 1974 design, "get the packet there" and "make it reliable" lived in one protocol. But applications like real-time voice <strong>would rather lose a little than wait for a retransmission</strong> — late audio is worse than missing audio. Only when TCP and IP were separated into two layers in 1978 did the "send and forget" path (UDP) become possible.</li>
+<li><strong>Gateway fragmentation became a liability</strong>: losing one fragment costs the whole packet a retransmission, and reassembly buffers gave attackers something to aim at. Later practice moved to having the sender discover the largest packet the whole path will carry (Path MTU Discovery), and IPv6 <strong>forbids routers from fragmenting at all</strong>.</li>
+<li><strong>Flow control yes, congestion control no</strong>: the paper's window solves "the receiver cannot keep up", not "the <em>middle of the network</em> is jammed". That gap produced the famous <strong>congestion collapse</strong> of 1986, when throughput fell by orders of magnitude, and was not closed until Van Jacobson's slow start and congestion avoidance in 1988.</li>
+<li><strong>No security design whatsoever</strong>: no authentication, no encryption, and source addresses trivially forged. Today's spoofing, DDoS, traffic interception and BGP hijacking all trace back here. TLS, IPsec and DNSSEC are all retrofits — in a world where participants distrust each other, the design's starting assumption no longer holds.</li>
+<li><strong>Routing is barely addressed</strong>: how does a gateway know which way to forward? The paper says it consults a table, and leaves how that table is built and synchronized between gateways open. EGP, BGP and their successors filled the gap later — and inter-domain routing remains one of the internet's most fragile parts.</li>
+<li><strong>Attribution is contested</strong>: the key ideas of pure datagrams and end-point reliability owe a great deal to Louis Pouzin's CYCLADES, as Cerf himself has publicly acknowledged. This paper's contribution lies in <strong>integrating those ideas into one implementable, evolvable whole</strong>.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: translate at the borders with gateways, plus one internetwork packet format and global address everyone honors, stitching incompatible networks into a network of networks — with reliability handed entirely to the ends.</p>
+<p>② The pain: by 1974 several packet networks existed with different packet sizes, addressing, reliability assumptions and delays; unification was politically impossible and pairwise translation is an n² dead end.</p>
+<p>③ Gateway and encapsulation: a gateway is built in two halves, one belonging to each network, so to each it is merely a local host; the common packet rides inside each network's local packet and only the outer envelope is swapped — so <strong>neither network has to change itself</strong>.</p>
+<p>④ Addressing: two-part "network number + identifier within that network", so a gateway forwards on the network number alone; today's prefix-based IP routing is its direct descendant.</p>
+<p>⑤ The decisive cut: the middle is <em>best-effort</em> and gateways keep no conversation state; a reliable byte stream is built at the ends from <strong>per-byte sequence numbers, cumulative acknowledgements, timeout retransmission, windows and an end-to-end checksum</strong>. Because only the ends know whether everything arrived, and stateless intermediaries are faster and more scalable.</p>
+<p>⑥ Supporting pieces: gateways fragment when needed and the destination reassembles (to keep gateways stateless); ports let many programs on one host communicate in parallel.</p>
+<p>⑦ Validation: not an experimental paper — RFC 675, interoperating implementations from Stanford, BBN and UCL, the 1977 packet-radio / ARPANET / satellite demonstration, and the 1983 ARPANET cutover to TCP/IP.</p>
+<p>⑧ Impact and limits: it created the internet's hourglass waist — thin and unintelligent, so both ends could grow without permission. The costs: an address field far too small (8-bit network number → IPv4 exhaustion → IPv6); TCP and IP fused until the 1978 split made UDP possible; gateway fragmentation as a lasting liability; flow control without congestion control (collapse in 1986, fixed in 1988); no security at all; and routing left open.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Finish this page and you have the paper's core; for the full header fields and state machine, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
