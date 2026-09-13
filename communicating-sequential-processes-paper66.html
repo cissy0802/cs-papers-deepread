@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 66</p>
-<h1>Communicating Sequential Processes（CSP）</h1>
+<h1 data-tts="03038acd6d348d8b">Communicating Sequential Processes（CSP）</h1>
 <p class="sub">C. A. R. Hoare · Communications of the ACM · 1978</p>
 <p class="langbar"><a href="communicating-sequential-processes-paper66.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,32 +44,32 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="d1d5dd8a03487fff">这篇论文干了什么？</h2>
 <p>1978 年，Tony Hoare 提出了 <strong>CSP</strong>：让一个程序同时做好几件事，<strong>不要让这几件事共用同一块内存、再互相拦着</strong>；而要让它们各干各的、彼此之间<strong>只靠递消息</strong>打交道。这不是一篇有实验数字的论文，它给的是一套写法。今天你写 Go 的 <strong>channel</strong>、用 Erlang / Elixir 撑电信级系统，背后的世界观都是这一篇。</p>
-<h2>先说说旧世界的痛</h2>
+<h2 data-tts="1e2f38152f9ddff5">先说说旧世界的痛</h2>
 <p>当时的标准答案是：几条同时在跑的活儿<strong>共用一块内存</strong>，谁都能读、谁都能改；为了不打架，另外再约一套规则——谁先举手谁才能动。</p>
 <p>想象一屋子人共用<strong>一块白板</strong>，上面写着账上还有多少钱。麻烦有两层：一是<strong>规则一破白板就被写花</strong>——一个人把「100 减 30」算完刚要落笔，另一个已经把数改成了 80，最后落在板上的却是 70。二是更折磨人的：<strong>这种错不复现</strong>，跑一百次只有第三次出错，因为出不出错取决于两人是否恰好在同一微秒伸手。</p>
-<h2>那个点子</h2>
+<h2 data-tts="1465c02e9929f7f3">那个点子</h2>
 <p>Hoare 的做法是：<strong>把白板拆掉。</strong></p>
 <p>每人一个小房间，自己一张纸，<strong>谁也看不见别人的纸</strong>；要交换信息，只能<strong>从窗口把纸条递过去</strong>。于是那类 bug 不是被管得更严，而是<strong>无从发生</strong>——没有共享的东西，就没有可抢的东西；每张纸只有一个人碰，纸上的账永远自洽。</p>
-<h2>递纸条怎么就顺带把时间对上了？</h2>
+<h2 data-tts="ea147ffb47e647b5">递纸条怎么就顺带把时间对上了？</h2>
 <p>关键在于<strong>手递手</strong>：递的人把手伸出窗口就得停下来等对方来接，接的人伸手也得等对方来递；<strong>先到的等后到的，碰上了才同时松手，然后各自回去接着干。</strong></p>
 <p>这就省掉了旧世界的另一套机制：以前你得先把数据写上白板、再另外通知一声「喂，我写好了」，bug 正出在两者错配；手递手之后，<strong>纸条递到了就等于通知到了</strong>。</p>
 <p>第二件事同样要紧：<strong>一个人可以同时守着几个窗口，哪个窗口先伸进纸条就先处理哪个</strong>——不预先规定等谁，只等「谁先来」。有了这条，一个人才能当服务窗口轮流招呼好几个人；没有它，你只能写死板的单线流水线。</p>
 <p>就这两下，够搭出原先要语言内置的一切：想要个能攒货的缓冲区，就<strong>请一个人当传递员</strong>，前面来货就收、后面要货就给；想要「同时只准三个人进厨房」，就请个<strong>门房数人头</strong>。以前的内置功能，这里全变成「多请一个人」。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="e4aff77ee849ce53">带来了什么</h2>
 <p>1980 年代真有人照它造了一门语言（occam），还造了一款把「进程」和「窗口」直接做进硬件的芯片（Transputer）——论文变成 CPU，这很少见。今天 Go 的 channel、Erlang 的消息传递，以至「各自守着自己的数据、只走接口」的微服务直觉，都同出一源。</p>
 <p>一句诚实话：这招消灭了「白板被写花」，<strong>却没消灭「互相干等」</strong>——两个人都伸着手等对方先递，就一起僵在那儿。Hoare 那个五位哲学家吃饭的例子，正是得额外请个门房才不卡住。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="81328f9de07924b2">一句话记住</h2>
 <div class="tl">
 <p>别让并行的几件活共用一块内存、再拿锁互相拦；让它们各自私有、只靠「手递手」递消息——递到的那一刻，交数据和对时间一次完成，数据打架于是无从发生。再允许一个人「等几个窗口里谁先来」，缓冲区、许可牌、流水线就都能自己写出来。代价是：它治数据打架，不治互相干等。</p>
 </div>
 <p class="switch-hint">想看会合的时序图、守卫命令的写法，以及它怎么长成 Go 的 channel 与 select？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="03ef2aaf9e9291a0">一句话</h2>
 <p class="lead">CSP 主张把并发程序写成一组<strong>没有任何共享变量</strong>的顺序进程（sequential process），进程之间唯一的交互方式是<strong>一对同时执行的输入 / 输出命令</strong>——即<em>会合</em>（rendezvous）；再借 Dijkstra 的守卫命令（guarded command）允许进程「等多路输入里谁先就绪」。就这两条原语，论文演示了缓冲区、信号量、监视器式模块、协程、子程序调用、流水线全都能<strong>写出来</strong>而无需语言内置。它是 occam 语言与 Transputer 芯片的蓝本，也是 Go 的 channel 与 CSP 进程代数共同的源头。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="5943d5afff4f991f">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>进程（process）</strong>：本文指「一段自己顺着往下跑的程序」，不必是操作系统那种重量级进程——一个线程、一个 Go 的 goroutine 都算；多个进程同时推进就是<strong>并发</strong>。</li>
@@ -81,9 +81,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>阻塞与死锁</strong>：执行到某处走不下去就停在那里等，叫阻塞；一圈活各自等别人先动、谁也动不了，就是死锁（deadlock）。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="2cb22f674a573aa8">坐标</h2>
 <p>作者 C. A. R.（Tony）Hoare，论文 1978 年 8 月发表于 CACM；那几年他正从贝尔法斯特女王大学转往牛津。它上承 Dijkstra：<strong>守卫命令</strong>（1975）被直接借来当骨架，而要取代的靶子——信号量与<strong>监视器</strong>——恰好一个是 Dijkstra 的、一个是 Hoare 四年前自己的，这篇某种意义上是他为共享内存之外<strong>另起的一路</strong>。同期 Milner 的 CCS（1980）是并行的另一支源流。下启：occam 语言与 INMOS Transputer、Ada 的任务会合、Hoare 1985 年的同名专著（把 CSP 变成一套有形式语义的进程代数），以及今天的 Go。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="7560c66e48f10617">问题与动机</h2>
 <p>1978 年，并发编程的标准答案是「共享内存 + 一套同步件」：数据放在大家都能读写的变量里，再用信号量或监视器规定谁什么时候能碰。这套东西能用，但有三处硌人。第一，<strong>它把一件事拆成了两套机制</strong>：「把数据交给对方」用共享变量，「告诉对方数据好了」用信号量——绝大多数并发 bug 恰恰长在两者的缝里（忘了加锁、粒度不对、通知早于写入）。第二，<strong>错误不可复现</strong>：对不对取决于指令恰好怎样交错，同一份代码跑一千次可能只错一次。第三，<strong>推理不可分割</strong>：想读懂一段代码，你不能只看这段代码——别的线程可能在任意一条指令的间隙改掉你的变量，而交错数随线程数爆炸。</p>
 <p>Hoare 的动机就在这里：不是把共享数据管得更严，而是<strong>让共享消失</strong>，从而让每个进程重新变成可以单独读懂、单独证明的顺序程序。</p>
 <figure>
@@ -113,8 +113,8 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 1 · 两个世界：左边用共享变量传数据、另拿锁对时间，bug 长在两者的缝里；右边取消共享，一次会合同时完成交割与同步。</figcaption>
 </figure>
-<h2>核心思想 / 方法</h2>
-<h3>想法一：通信就是同步，于是共享消失了</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="1bac563f16d0aaa9">想法一：通信就是同步，于是共享消失了</h3>
 <p>进程之间不共享任何变量，唯一的交互是一对<strong>输入 / 输出命令</strong>：感叹号发、问号收。<code>east!x</code> 是「把表达式 x 的值交给名叫 east 的进程」，<code>west?c</code> 是「从名叫 west 的进程收一个值放进变量 c」。论文最小的例子就是一句话的转发器 <code>*[west?c → east!c]</code>——反复从西边收一个字符、往东边送出去。</p>
 <p>机制是：两条命令<strong>必须配对才生效</strong>。哪一边先执行到自己那一半，就<strong>停在那里阻塞等待</strong>，直到对面执行到匹配的另一半；此时<strong>两条命令同时执行</strong>，值从发方的表达式拷进收方的变量，然后两边各自继续。这就是<em>会合</em>，它是<strong>同步、无缓冲</strong>的：没有「发完就走」，也没有系统替你攒消息的信箱。</p>
 <p>为什么这样设计？因为它把旧世界那两套机制<strong>合成了一个动作</strong>：交割完成的那一刻两条时间线恰好对齐，于是不需要额外的「我写好了」通知，也就没有错配的余地。更深一层的收益是<strong>推理变回可分割</strong>——一个进程的变量只有它自己碰，不变式（invariant）由它独力维护，你读它时不必设想「别人随时可能改我的状态」。数据竞争不是被管住了，而是<strong>没有可争的东西</strong>。至于缓冲，Hoare 是<strong>刻意</strong>不提供的——想要，自己写个进程当缓冲区。</p>
@@ -141,7 +141,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 2 · 会合的时序：P 先执行到发送命令便阻塞（虚线段），等 Q 执行到匹配的接收命令，两条命令在同一刻完成，随后两边各自继续。</figcaption>
 </figure>
-<h3>想法二：可以等「谁先来」——带输入守卫的不确定选择</h3>
+<h3 data-tts="b05f7fc84b412c18">想法二：可以等「谁先来」——带输入守卫的不确定选择</h3>
 <p>光有配对的收发只能搭死板的单线流水线。让 CSP 真正够用的第二个想法，是把 Dijkstra 的守卫命令拿来，并加一条关键许可：<strong>守卫里可以放一条输入命令</strong>。</p>
 <p>写法是 <code>*[ 左?x → 处理 □ 控制?停 → 退出 ]</code>：方框 <code>□</code> 分隔若干条「守卫 → 语句」，星号表示反复执行。进程<strong>停在这里同时候着所有守卫</strong>，<strong>哪一路的对端先执行到匹配的那一半，就走那一路</strong>；几路同时就绪则<strong>任选一路</strong>——论文刻意不规定选哪条，也不承诺公平轮转。</p>
 <p>这条许可为什么关键？它把进程从「按写死的顺序收发」变成<strong>「按对方的到达顺序服务」</strong>。一个服务型进程要同时招呼多个客户、一个缓冲区要在「有空位就收货」和「有货就发货」之间随机应变，靠的全是它。Go 的 <code>select</code> 就是它的直系后代。</p>
@@ -171,7 +171,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 3 · 带输入守卫的不确定选择：一个进程同时候着多路输入，按对方的到达顺序服务——Go 的 select 的祖先。</figcaption>
 </figure>
-<h3>想法三：把「并发语言该内置什么」这份清单清零</h3>
+<h3 data-tts="bd065f974e34a711">想法三：把「并发语言该内置什么」这份清单清零</h3>
 <p>最后一块拼图是<strong>并行命令</strong> <code>[P1 || P2 || … ]</code>：并列启动这些进程，全部结束它才结束。注意这一版的进程集合是<strong>静态写定</strong>的，没有「来一个请求开一个」那种动态创建。</p>
 <p>接下来论文的主体是一长串编号例子，它们合起来才是真正的论证：</p>
 <ul>
@@ -211,15 +211,15 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 4 · 「一切皆进程」：缓冲区、信号量、流水线都只用同两条原语写出——以前的语言内置特性，在这里是普通程序。</figcaption>
 </figure>
-<h2>关键结果</h2>
+<h2 data-tts="2fff1ada6436fc10">关键结果</h2>
 <p>必须诚实：<strong>这篇论文没有实验、没有基准、没有一个性能数字</strong>，1978 年也还没有实现——Hoare 自称给的是一套原语提案，不是完整语言（没有类型、模块、异常，也没给形式语义）。它的「结果」是另外两种。</p>
 <p>一是<strong>可表达性的演示</strong>：那串例子覆盖了当时并发编程的经典题目，每个都只用两条原语写出、且短到能在一页内读完。对语言设计论文来说这就是实验部分——不是「更快多少」，而是<strong>「本来要靠语言特性给的东西，现在都不必给了」</strong>。二是<strong>它预告的可证明性</strong>，而这张期票后来真被兑现：进程间没有共享状态，每个进程的不变式只由自己维护，推理不必穷举「别人可能在我哪条指令的间隙动我的变量」。七年后 Brookes、Hoare、Roscoe 等把它做成一套带形式语义（traces 与 failures-divergences 模型）的进程代数，配上 FDR 这样的精化检查器，<strong>并发设计真能交给机器穷举验证会不会死锁</strong>——这在共享内存模型里难得多。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="d282b00102f197d8">为什么重要 / 影响</h2>
 <p><strong>它罕见地一路落到了硬件。</strong>1980 年代 INMOS 把 CSP 做成 occam 语言（<code>PAR</code> / <code>SEQ</code> / <code>ALT</code> 与通道是语言一级构造），并设计了 Transputer——一款把进程与通道当硬件概念的芯片。一篇语言设计论文变成一款 CPU 的设计原则，这不多见；Ada 的任务会合（rendezvous）同样直接受它影响。</p>
 <p><strong>它进了今天最主流的语言之一。</strong>从贝尔实验室的 Newsqueak、Alef 到 Plan 9 的 Limbo，这条线最后交汇成 <strong>Go</strong>：goroutine + channel + <code>select</code>，连口号都是它的——「不要通过共享内存来通信，要通过通信来共享内存」。Go 明确在两处偏离原版：<strong>通道是头等值</strong>（不必写死对方进程名，这一步要到 1985 年版才有）、可<strong>带缓冲</strong>，且 <code>select</code> 允许发送分支。</p>
 <p><strong>它还开出了并发验证一整支</strong>：1985 年的同名专著把 CSP 变成进程代数，与 Milner 的 CCS / π 演算并称两大源流，至今是验证并发与通信协议的主流工具之一。</p>
 <p><strong>思想层面，「不要共享、改为传消息」成了并发与分布式的默认建议之一</strong>——Erlang / Elixir 的进程与消息、Akka 等 actor 框架，以至微服务「各自守着自己的数据、只走接口」的直觉，都与它同源。但要讲准一句：actor 那一支是<strong>异步信箱</strong>（发完就走，消息在对方信箱里排队），不是 CSP 的同步会合；共同的祖训只是「不共享状态」。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="79c7accaa1bba527">局限与批评</h2>
 <ul>
 <li><strong>写死对方进程名，不可组合</strong>：这一版没有「通道」这种独立实体，进程代码里写着 <code>west</code> / <code>east</code>，换个拓扑就得改代码，进程没法当零件复用。1985 年版与 occam 把通道升为头等实体才解决。</li>
 <li><strong>守卫的不对称</strong>：只许输入守卫，写不出「要么发给 A、要么从 B 收，看谁先」；根源是双方同时挑选需要分布式提交协议。occam 沿用了这个限制。</li>
@@ -228,7 +228,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>同步无缓冲带来耦合，性能也不普遍占优</strong>：发方必须等收方，跨机器时每次通信要一个来回；而通道通信要走调度与拷贝，在共享内存的多核机器上一把互斥锁常常更快。CSP 卖的是可推理性与纪律，不是速度——Go 社区的经验也常是「能用互斥锁说清的地方别硬上 channel」。</li>
 <li><strong>今天说的 CSP 已不是这篇</strong>：这篇是程序写法提案、没有形式语义；教科书与工具里的「CSP」多指 1985 年那套进程代数。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="e5efb9e9de049e69">要点</h2>
 <div class="tl">
 <p>① 一句话：把并发程序写成一组<strong>无共享变量</strong>的顺序进程，只靠一对同时执行的输入 / 输出命令（会合）交互。</p>
 <p>② 旧世界的痛：共享内存把「传数据」和「对时间」拆成两套机制，bug 长在缝里、且不复现；推理还得穷举所有交错。</p>
