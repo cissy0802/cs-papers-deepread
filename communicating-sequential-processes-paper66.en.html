@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Communicating Sequential Processes (CSP) — CS Papers Deep-Read Paper 66</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 66</p>
+<h1>Communicating Sequential Processes (CSP)</h1>
+<p class="sub">C. A. R. Hoare · Communications of the ACM · 1978</p>
+<p class="langbar"><a href="communicating-sequential-processes-paper66.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1978 Tony Hoare proposed <strong>CSP</strong>: when a program has to do several things at once, <strong>don't let those things share one pot of memory and then fence each other off</strong>; let each run on its own and have them deal with each other <strong>only by handing over messages</strong>. This is not a paper with experimental numbers — what it offers is a way of writing programs. When you write Go <strong>channels</strong> today, or run telecom-grade systems on Erlang / Elixir, you are using this paper's worldview.</p>
+<h2>The pain of the old world</h2>
+<p>The standard answer back then: several simultaneous strands of work <strong>share one pot of memory</strong>, everyone can read it and everyone can change it; to keep them from colliding, you agree on a separate set of rules — raise your hand first, and only then may you touch it.</p>
+<p>Picture a roomful of people sharing <strong>one whiteboard</strong> that says how much money is in the account. There are two kinds of trouble. First, <strong>break the rule once and the board gets scribbled over</strong>: one person works out "100 minus 30" and is about to write it down, but someone else has already changed the number to 80 — and what lands on the board is 70. Second, and far more maddening: <strong>the error does not reproduce</strong>. Run it a hundred times and only the third run is wrong, because whether it breaks depends on whether two people happened to reach out in the very same microsecond.</p>
+<h2>The idea</h2>
+<p>Hoare's move is: <strong>take the whiteboard away.</strong></p>
+<p>Give each person their own small room and their own sheet of paper, where <strong>nobody can see anyone else's sheet</strong>; to exchange anything, you may only <strong>pass a note through the window</strong>. That class of bug is then not policed more strictly — it becomes <strong>impossible to have</strong>: with nothing shared, there is nothing to fight over, and since only one person ever touches a given sheet, the arithmetic on that sheet is always consistent.</p>
+<h2>How does passing a note also get the timing right?</h2>
+<p>The key is that it is <strong>hand to hand</strong>: the person offering the note must hold their arm out and wait for someone to take it, and the person reaching for one must wait for someone to offer it; <strong>whoever arrives first waits for the other, and they let go at the same instant</strong>, then each goes back to their own work.</p>
+<p>That removes the old world's second mechanism: you used to write the data on the board and then separately announce "hey, it's ready" — and the bugs lived precisely in the mismatch between the two. Hand to hand, <strong>the note arriving is the announcement</strong>.</p>
+<p>The second point matters just as much: <strong>one person can watch several windows at once and serve whichever window a note comes through first</strong> — you don't name in advance who you are waiting for, only that you're waiting for whoever is first. That is what lets one person act as a service window, taking several people in turn; without it you can only write a rigid single-file pipeline.</p>
+<p>Those two moves are enough to build everything a language used to have to provide built in. Want a buffer that can hold goods? <strong>Hire someone as a runner</strong> who takes deliveries from the front and hands them out at the back. Want "only three people in the kitchen at a time"? Hire a <strong>doorkeeper who counts heads</strong>. What used to be built-in features all become "hire one more person".</p>
+<h2>What it made possible</h2>
+<p>In the 1980s people really did build a language from it (occam), and even a chip (the Transputer) with "process" and "window" built straight into the hardware — a paper turning into a CPU is rare. Go's channels, Erlang's message passing, even the microservice instinct that everything should guard its own data and expose only an interface, all come from the same source.</p>
+<p>One honest caveat: this trick abolishes "the board got scribbled over", but it does <strong>not</strong> abolish <strong>everyone waiting on everyone else</strong> — if two people both hold their arms out waiting for the other to hand over first, they seize up together. Hoare's own five-philosophers-at-dinner example needs that extra doorkeeper precisely so it doesn't jam.</p>
+<h2>The one-line takeaway</h2>
+<div class="tl">
+<p>Don't let parallel strands of work share one pot of memory and fence each other off with locks; give each its own and let them pass messages hand to hand — the instant the note lands, handing over the data and lining up the timing are both done, so data collisions cannot happen. Then let a process wait on "whichever of these windows comes first", and buffers, permits and pipelines can all be written out rather than built in. The cost: it cures data collisions, not mutual waiting.</p>
+</div>
+<p class="switch-hint">Want the rendezvous timing diagram, the guarded-command notation, and how it grew into Go's channels and select? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">CSP proposes writing a concurrent program as a set of sequential processes with <strong>no shared variables at all</strong>, whose only interaction is a <strong>pair of input / output commands executed simultaneously</strong> — a <em>rendezvous</em> — and then borrows Dijkstra's guarded commands so a process can wait on "whichever of several inputs is ready first". From those two primitives alone, the paper shows that buffers, semaphores, monitor-style modules, coroutines, subroutine calls and pipelines can all be <strong>written out</strong> instead of built into the language. It is the blueprint for the occam language and the Transputer chip, and the common ancestor of Go's channels and of the CSP process algebra.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Process</strong>: here, "a stretch of program that runs along by itself" — not necessarily a heavyweight OS process; a thread or a Go goroutine counts. Several processes advancing at once is <strong>concurrency</strong>.</li>
+<li><strong>Shared memory</strong>: several simultaneous strands of work reading and writing the same region of variables — the dominant way to cooperate then, and still now.</li>
+<li><strong>Race condition</strong>: two strands touch the same data at once, so the outcome depends on who is faster; it is sometimes right, sometimes wrong, and hard to reproduce.</li>
+<li><strong>Lock / mutex and semaphore</strong>: the first is a token only one holder may have at a time, and you must hold it to touch the shared data; the second is Dijkstra's 1960s counting version — take a permit (P, wait if none left) and return one (V).</li>
+<li><strong>Monitor</strong>: the structure Hoare himself proposed in 1974 — wrap shared data and the procedures that operate on it into a module, guaranteeing only one strand is inside at a time.</li>
+<li><strong>Guarded command</strong>: Dijkstra's 1975 notation <code>condition → statement</code>; several are listed side by side, and <strong>any one</strong> of those whose condition holds is executed — which one is deliberately left unspecified (this is nondeterminism).</li>
+<li><strong>Blocking and deadlock</strong>: stopping where you are until a condition is met is blocking; a ring of strands each waiting for another to move first, so none can, is deadlock.</li>
+</ul>
+</div>
+<h2>Where it sits</h2>
+<p>The author is C. A. R. (Tony) Hoare; the paper appeared in CACM in August 1978, around the years he was moving from Queen's University Belfast to Oxford. It builds on Dijkstra: <strong>guarded commands</strong> (1975) are borrowed wholesale as the skeleton, while the targets it means to replace — semaphores and <strong>monitors</strong> — are respectively Dijkstra's and, four years earlier, Hoare's own, which makes this in a sense his <strong>alternative route</strong> around shared memory. Milner's CCS (1980) is the other great source stream of the same era. Downstream: the occam language and the INMOS Transputer, Ada's task rendezvous, Hoare's own 1985 book of the same title (which turns CSP into a process algebra with a formal semantics), and today's Go.</p>
+<h2>Problem and motivation</h2>
+<p>In 1978 the standard answer for concurrency was "shared memory plus a set of synchronisation gadgets": put the data in variables everyone can read and write, then use semaphores or monitors to rule who may touch it when. It works, but it chafes in three places. First, <strong>it splits one act into two mechanisms</strong>: "hand the data to the other side" goes through a shared variable, "tell the other side it's ready" goes through a semaphore — and the vast majority of concurrency bugs live exactly in the seam (a forgotten lock, the wrong granularity, a notification ahead of the write). Second, <strong>errors don't reproduce</strong>: correctness depends on precisely how instructions interleave, so the same code may fail once in a thousand runs. Third, <strong>reasoning isn't separable</strong>: to understand one piece of code you cannot look at that code alone — another thread may change your variables in the gap between any two instructions, and the number of interleavings explodes with the number of threads.</p>
+<p>Hence the motivation: not to police shared data more strictly, but to <strong>make sharing disappear</strong>, so that each process becomes a sequential program you can once again read, and prove, on its own.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 236" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<line stroke="rgba(240,180,41,0.18)" x1="278" x2="278" y1="8" y2="228"></line>
+<text fill="#7c8593" font-size="12" text-anchor="middle" x="138" y="20">Old world: shared memory + locks</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="66" x="14" y="38"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="47" y="55">thread A</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="66" x="90" y="38"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="123" y="55">thread B</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="66" x="166" y="38"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="199" y="55">thread C</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="47" x2="104" y1="66" y2="104"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="123" x2="130" y1="66" y2="104"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="199" x2="158" y1="66" y2="104"></line>
+<rect fill="rgba(232,121,75,0.14)" height="34" rx="6" stroke="#e8794b" width="132" x="65" y="108"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="131" y="130">shared variable</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="131" y="166">data via variables, timing via locks</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="131" y="184">— two mechanisms</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="131" y="210">mismatch → races that don't reproduce</text>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="420" y="20">CSP: private state + messages</text>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="186" x="327" y="38"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="420" y="59">process P (own variables only)</text>
+<line marker-end="url(#a1g)" stroke="#f0b429" x1="404" x2="404" y1="72" y2="104"></line>
+<line marker-end="url(#a1g)" stroke="#f0b429" x1="436" x2="436" y1="104" y2="72"></line>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="186" x="327" y="108"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="420" y="129">process Q (own variables only)</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="166">one rendezvous = data + timing</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="184">whoever arrives first waits</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="420" y="210">nothing shared → nothing to fight over</text>
+</svg>
+<figcaption>Fig 1 · Two worlds: on the left, data moves through shared variables while timing comes from locks, and bugs live in the seam; on the right sharing is abolished, and one rendezvous does hand-over and synchronisation at once.</figcaption>
+</figure>
+<h2>Core ideas and method</h2>
+<h3>Idea one: communication IS synchronisation, so sharing disappears</h3>
+<p>Processes share no variables; their only interaction is a pair of <strong>input / output commands</strong> — bang to send, query to receive. <code>east!x</code> means "hand the value of expression x to the process named east", and <code>west?c</code> means "receive a value from the process named west into variable c". The paper's smallest example is a one-line forwarder, <code>*[west?c → east!c]</code>: repeatedly take a character from the west and pass it east.</p>
+<p>The mechanism: the two commands <strong>only take effect as a matched pair</strong>. Whichever side reaches its half first <strong>stops there and blocks</strong> until the other side reaches the matching half; at that point <strong>both commands execute simultaneously</strong>, the value is copied from the sender's expression into the receiver's variable, and each side carries on. That is the <em>rendezvous</em>, and it is <strong>synchronous and unbuffered</strong>: there is no "fire and forget", and no mailbox in which the system hoards messages for you.</p>
+<p>Why design it this way? Because it <strong>fuses the old world's two mechanisms into one act</strong>: at the instant the hand-over completes, the two timelines are exactly aligned, so no separate "it's ready" notification is needed and there is no room for the two to mismatch. The deeper payoff is that <strong>reasoning becomes separable again</strong> — a process's variables are touched only by itself, its invariant is maintained by itself alone, and reading it requires no assumption that "someone else may change my state at any moment". The race condition isn't policed; there is <strong>nothing to race over</strong>. As for buffering, Hoare <strong>deliberately</strong> doesn't provide it — if you want it, write a process that is a buffer.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 224" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="14" y="76">process P</text>
+<text fill="#7c8593" font-size="11.5" x="14" y="166">process Q</text>
+<line stroke="#f0b429" stroke-width="2" x1="86" x2="196" y1="72" y2="72"></line>
+<line stroke="#f0b429" stroke-dasharray="3,4" stroke-width="2" x1="196" x2="330" y1="72" y2="72"></line>
+<line marker-end="url(#a2)" stroke="#f0b429" stroke-width="2" x1="330" x2="524" y1="72" y2="72"></line>
+<line marker-end="url(#a2)" stroke="#e8794b" stroke-width="2" x1="86" x2="524" y1="162" y2="162"></line>
+<circle cx="196" cy="72" fill="#f0b429" r="4"></circle>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="196" y="56">reaches east!x</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="263" y="92">P blocks, waiting</text>
+<circle cx="330" cy="72" fill="#f0b429" r="4"></circle>
+<circle cx="330" cy="162" fill="#e8794b" r="4"></circle>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="330" y="186">reaches west?y</text>
+<line stroke="#f0b429" stroke-dasharray="4,3" x1="330" x2="330" y1="76" y2="158"></line>
+<text fill="#f0b429" font-size="12" text-anchor="start" x="344" y="112">rendezvous: both at once</text>
+<text fill="#7c8593" font-size="11" text-anchor="start" x="344" y="130">x is copied into y, then both go on</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="524" y="206">time →</text>
+<text fill="#7c8593" font-size="11" x="86" y="34">first to arrive waits; they move together</text>
+</svg>
+<figcaption>Fig 2 · Rendezvous timing: P reaches its send command first and blocks (dashed), until Q reaches the matching receive; both commands complete in the same instant, then each side continues.</figcaption>
+</figure>
+<h3>Idea two: waiting on "whoever is first" — nondeterministic choice with input guards</h3>
+<p>Matched send/receive alone only builds rigid single-file pipelines. What makes CSP actually sufficient is the second idea: take Dijkstra's guarded commands, and add one crucial permission — <strong>a guard may contain an input command</strong>.</p>
+<p>The notation is <code>*[ left?x → handle □ ctl?stop → quit ]</code>: the box <code>□</code> separates several "guard → statement" arms, and the star means repeat. The process <strong>stops here watching all the guards at once</strong>, and <strong>whichever arm's partner first reaches the matching half, that is the arm taken</strong>; if several are ready at once, <strong>any one</strong> is chosen — the paper deliberately does not say which, and promises no fair rotation.</p>
+<p>Why is that permission crucial? It turns a process from "sending and receiving in a hard-wired order" into <strong>"serving in the order partners arrive"</strong>. A server process taking several clients at once, or a buffer improvising between "there's room, so accept from the producer" and "there's stock, so answer the consumer", rests entirely on it. Go's <code>select</code> is its direct descendant.</p>
+<p>There is one honest asymmetry: <strong>this version allows only input guards, never an output command in a guard</strong> — you cannot write "either send to A or receive from B, whichever comes first". Hoare says plainly that this restriction is for ease of implementation.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 226" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="88" x="12" y="40"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="56" y="57">client A</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="88" x="12" y="104"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="56" y="121">client B</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="88" x="12" y="168"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="56" y="185">controller</text>
+<line marker-end="url(#a3)" stroke="#f0b429" x1="102" x2="156" y1="53" y2="64"></line>
+<line marker-end="url(#a3)" stroke="#f0b429" x1="102" x2="156" y1="117" y2="112"></line>
+<line marker-end="url(#a3)" stroke="#f0b429" x1="102" x2="156" y1="181" y2="160"></line>
+<rect fill="rgba(240,180,41,0.07)" height="152" rx="8" stroke="#f0b429" width="204" x="158" y="34"></rect>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="260" y="54">one process, three guards</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="84">*[ A?x → serve</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="112">□ B?y → serve</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="140">□ ctl?stop → quit</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="168">]</text>
+<text fill="#7c8593" font-size="11" x="376" y="84">waits on all</text>
+<text fill="#7c8593" font-size="11" x="376" y="102">three at once;</text>
+<text fill="#f0b429" font-size="11" x="376" y="126">whoever is</text>
+<text fill="#f0b429" font-size="11" x="376" y="144">ready first wins,</text>
+<text fill="#7c8593" font-size="11" x="376" y="168">ties chosen freely</text>
+<text fill="#7c8593" font-size="11" x="376" y="186">(no fairness promised)</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="260" y="212">the 1978 version allows input guards only, never a send in a guard</text>
+</svg>
+<figcaption>Fig 3 · Nondeterministic choice with input guards: one process waits on several inputs and serves in arrival order — the ancestor of Go's select.</figcaption>
+</figure>
+<h3>Idea three: zeroing out the list of what a concurrent language must build in</h3>
+<p>The last piece is the <strong>parallel command</strong> <code>[P1 || P2 || … ]</code>: start these processes side by side; it finishes when all of them do. Note that in this version the set of processes is <strong>statically fixed</strong> — there is no "spawn one per incoming request".</p>
+<p>The body of the paper is then a long run of numbered examples, and together they are the real argument:</p>
+<ul>
+<li>A <strong>bounded buffer</strong> = one process clutching an array, using two input guards to improvise between "there's room, take from the producer" and "there's stock, answer the consumer".</li>
+<li>A <strong>semaphore</strong> = a process that only counts: a V increments it, and the arm that receives a P <strong>holds only while the count is above zero</strong> — so "wait if there's no permit" falls out of the guard for free.</li>
+<li>A <strong>monitor-style data abstraction</strong> (in the paper, a "small set of integers") = one process owning that data outright, reachable only by exchanging requests with it; mutual exclusion needn't be built in, because only that process can touch the data anyway. A <strong>subroutine call</strong> is then an output (arguments) followed by an input (result), and a <strong>coroutine</strong> is two processes passing data back and forth.</li>
+<li><strong>Pipelines and process arrays</strong>: the sieve of Eratosthenes (a chain of processes, each striking out the multiples of one prime), and matrix multiplication (processes in a square, data flowing across and down); the classic <strong>dining philosophers</strong> adds a "doorkeeper" process to cap how many sit down at once.</li>
+</ul>
+<p>What this distils to: <strong>semaphores, monitors, subroutines, coroutines — things previously treated as language primitives or built-in system features — all degenerate in CSP into ordinary programs, "just add another process".</strong> That is where its real force lies: not performance, but <strong>economy of concepts</strong>.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 232" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a4" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#f0b429" font-size="11" x="12" y="24">1 · a bounded buffer = one process</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="74" x="12" y="32"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="49" y="50">producer</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="88" x2="120" y1="46" y2="46"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="112" x="122" y="32"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="178" y="50">buffer (holds array)</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="236" x2="268" y1="46" y2="46"></line>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="74" x="270" y="32"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="307" y="50">consumer</text>
+<text fill="#7c8593" font-size="10.5" x="356" y="42">room → accept,</text>
+<text fill="#7c8593" font-size="10.5" x="356" y="58">stock → hand out</text>
+<text fill="#f0b429" font-size="11" x="12" y="100">2 · a semaphore = a process that only counts</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="74" x="12" y="108"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="49" y="126">clients</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="88" x2="120" y1="122" y2="122"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="112" x="122" y="108"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="178" y="126">count n</text>
+<text fill="#7c8593" font-size="10.5" x="246" y="118">V increments n; the arm taking P</text>
+<text fill="#7c8593" font-size="10.5" x="246" y="134">holds only while n &gt; 0 → no permit, wait</text>
+<text fill="#f0b429" font-size="11" x="12" y="176">3 · a pipeline = processes chained end to end (prime sieve)</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="66" x="12" y="184"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="45" y="202">2,3,4,5…</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="80" x2="106" y1="198" y2="198"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="58" x="108" y="184"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="137" y="202">drop ×2</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="168" x2="194" y1="198" y2="198"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="58" x="196" y="184"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="225" y="202">drop ×3</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="256" x2="282" y1="198" y2="198"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="58" x="284" y="184"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="313" y="202">drop ×5</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="344" x2="370" y1="198" y2="198"></line>
+<text fill="#f0b429" font-size="11" x="376" y="202">… only primes leave</text>
+</svg>
+<figcaption>Fig 4 · "Everything is a process": buffer, semaphore and pipeline are all written with the same two primitives — yesterday's built-in language features are ordinary programs here.</figcaption>
+</figure>
+<h2>Key results</h2>
+<p>To be honest about it: <strong>this paper has no experiments, no benchmarks, not one performance number</strong>, and in 1978 there was no implementation either — Hoare says himself that what he offers is a set of primitives, not a complete language (no types, modules or exceptions, and no formal semantics).  Its "results" are of two other kinds.</p>
+<p>The first is a <strong>demonstration of expressive power</strong>: that run of examples covers the classic problems of concurrent programming of the day, each written with only the two primitives and each short enough to read on one page. For a language-design paper, that is the experimental section — not "how much faster", but <strong>"everything you used to need a language feature for, you no longer need one for"</strong>. The second is the <strong>provability it promises</strong>, and that promissory note was later honoured: with no shared state between processes, each process's invariant is maintained by itself, and reasoning needn't enumerate "who might touch my variables between which two instructions of mine". Seven years later Brookes, Hoare, Roscoe and others turned it into a process algebra with a formal semantics (the traces and failures-divergences models); with a refinement checker like FDR, <strong>a concurrent design really can be handed to a machine to check exhaustively for deadlock</strong> — far harder to do in the shared-memory model.</p>
+<h2>Why it matters</h2>
+<p><strong>It reached hardware, which is rare.</strong> In the 1980s INMOS turned CSP into the occam language (<code>PAR</code> / <code>SEQ</code> / <code>ALT</code> and channels are first-class constructs) and designed the Transputer — a chip treating processes and channels as hardware concepts. A language-design paper becoming the design principle of a CPU is unusual; Ada's task rendezvous was likewise directly influenced by it.</p>
+<p><strong>It entered one of today's most mainstream languages.</strong> From Bell Labs' Newsqueak and Alef to Plan 9's Limbo, that line finally converges on <strong>Go</strong>: goroutines + channels + <code>select</code>, and even the slogan is CSP's — "don't communicate by sharing memory; share memory by communicating". Go departs from the original in two stated ways: <strong>channels are first-class values</strong> (no need to hard-code the partner process's name, a step that arrives only with the 1985 version) and may be <strong>buffered</strong>; and <code>select</code> allows send arms.</p>
+<p><strong>It also opened a whole branch of concurrency verification</strong>: the 1985 book of the same title turns CSP into a process algebra, named alongside Milner's CCS / π-calculus as one of the two source streams, and it remains a mainstream tool for verifying concurrency and communication protocols.</p>
+<p><strong>At the level of ideas, "don't share, pass messages" became one of the default pieces of advice in concurrency and distributed systems</strong> — Erlang / Elixir's processes and messages, actor frameworks like Akka, even the microservice instinct that each service guards its own data and exposes only an interface, all share this ancestry. But one precision is owed: the actor branch uses an <strong>asynchronous mailbox</strong> (fire and forget, messages queue in the recipient's box), not CSP's synchronous rendezvous; the common inheritance is only "share no state".</p>
+<h2>Limitations and criticisms</h2>
+<ul>
+<li><strong>Hard-coded partner names don't compose</strong>: this version has no independent "channel" entity, so process code names <code>west</code> / <code>east</code>; change the topology and you must edit the code, and a process can't be reused as a component. Only the 1985 version and occam fix this, by promoting channels to first-class entities.</li>
+<li><strong>The asymmetry of guards</strong>: input guards only, so you cannot write "either send to A or receive from B, whichever first"; the root cause is that both sides choosing at once needs a distributed commit protocol. occam inherited the restriction.</li>
+<li><strong>The set of processes is static</strong>: no dynamic process creation, whereas "spawn one per incoming request" is exactly today's most common pattern — that waits for Go's goroutines.</li>
+<li><strong>It abolishes races, not deadlock</strong>: a ring of processes each waiting for another to move first seizes up, and the fact that dining philosophers needs an extra doorkeeper makes the point. Sharing nothing is a victory for <em>safety</em>, not for <em>liveness</em>; the choice among guards isn't fair either, so starvation is not among its promises.</li>
+<li><strong>Synchrony without buffering couples the two sides, and performance isn't uniformly better</strong>: the sender must wait for the receiver, and across machines every communication costs a round trip; channel communication also pays scheduling and copying, so on a shared-memory multicore a plain mutex is often faster. CSP sells reasoning and discipline, not speed — the Go community's own experience is often "don't force a channel where a mutex says it clearly".</li>
+<li><strong>The CSP people talk about today isn't this paper</strong>: this is a proposal about how to write programs, with no formal semantics, whereas the "CSP" of textbooks and tools usually means the 1985 process algebra.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1 · In one sentence: write a concurrent program as a set of sequential processes with <strong>no shared variables</strong>, interacting only through a pair of simultaneously executed input / output commands (a rendezvous).</p>
+<p>2 · The old world's pain: shared memory splits "handing over data" and "lining up timing" into two mechanisms, bugs live in the seam and don't reproduce, and reasoning must enumerate every interleaving.</p>
+<p>3 · Idea one: <code>east!x</code> / <code>west?c</code> must pair up; whoever arrives first blocks, and on pairing both execute at once — hand-over and synchronisation in one act, with nothing shared there is nothing to race over. Synchronous and unbuffered is a deliberate choice.</p>
+<p>4 · Idea two: <strong>an input may sit in a guard</strong>, so a process can wait on "whichever of several is ready" and take any one (no fairness promised) — the basis of server processes and buffers, and the ancestor of Go's <code>select</code>. This version forbids output guards.</p>
+<p>5 · Idea three: add the parallel command <code>[P1 || P2]</code> and semaphores, monitors, subroutines, coroutines and pipelines all become "just add another process" — the selling point is economy of concepts.</p>
+<p>6 · Results: no experimental numbers; the evidence is a run of short examples covering the classic concurrency problems, plus the promissory note "no sharing ⇒ reasoning separately", honoured seven years later as a process algebra with machine-checkable verification.</p>
+<p>7 · Influence: occam and the Transputer, Ada's task rendezvous, Newsqueak→Limbo→<strong>Go's channels and select</strong> (Erlang / actors share the ancestry but take asynchronous mailboxes).</p>
+<p>8 · Limitations: hard-coded process names don't compose, input guards only, a static process set, <strong>it cures races but not deadlock</strong>, synchronous coupling, and performance often below a plain mutex.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full example code and notational details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

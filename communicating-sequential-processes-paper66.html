@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Communicating Sequential Processes（CSP）— IT 论文精读 Paper 66</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 66</p>
+<h1>Communicating Sequential Processes（CSP）</h1>
+<p class="sub">C. A. R. Hoare · Communications of the ACM · 1978</p>
+<p class="langbar"><a href="communicating-sequential-processes-paper66.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1978 年，Tony Hoare 提出了 <strong>CSP</strong>：让一个程序同时做好几件事，<strong>不要让这几件事共用同一块内存、再互相拦着</strong>；而要让它们各干各的、彼此之间<strong>只靠递消息</strong>打交道。这不是一篇有实验数字的论文，它给的是一套写法。今天你写 Go 的 <strong>channel</strong>、用 Erlang / Elixir 撑电信级系统，背后的世界观都是这一篇。</p>
+<h2>先说说旧世界的痛</h2>
+<p>当时的标准答案是：几条同时在跑的活儿<strong>共用一块内存</strong>，谁都能读、谁都能改；为了不打架，另外再约一套规则——谁先举手谁才能动。</p>
+<p>想象一屋子人共用<strong>一块白板</strong>，上面写着账上还有多少钱。麻烦有两层：一是<strong>规则一破白板就被写花</strong>——一个人把「100 减 30」算完刚要落笔，另一个已经把数改成了 80，最后落在板上的却是 70。二是更折磨人的：<strong>这种错不复现</strong>，跑一百次只有第三次出错，因为出不出错取决于两人是否恰好在同一微秒伸手。</p>
+<h2>那个点子</h2>
+<p>Hoare 的做法是：<strong>把白板拆掉。</strong></p>
+<p>每人一个小房间，自己一张纸，<strong>谁也看不见别人的纸</strong>；要交换信息，只能<strong>从窗口把纸条递过去</strong>。于是那类 bug 不是被管得更严，而是<strong>无从发生</strong>——没有共享的东西，就没有可抢的东西；每张纸只有一个人碰，纸上的账永远自洽。</p>
+<h2>递纸条怎么就顺带把时间对上了？</h2>
+<p>关键在于<strong>手递手</strong>：递的人把手伸出窗口就得停下来等对方来接，接的人伸手也得等对方来递；<strong>先到的等后到的，碰上了才同时松手，然后各自回去接着干。</strong></p>
+<p>这就省掉了旧世界的另一套机制：以前你得先把数据写上白板、再另外通知一声「喂，我写好了」，bug 正出在两者错配；手递手之后，<strong>纸条递到了就等于通知到了</strong>。</p>
+<p>第二件事同样要紧：<strong>一个人可以同时守着几个窗口，哪个窗口先伸进纸条就先处理哪个</strong>——不预先规定等谁，只等「谁先来」。有了这条，一个人才能当服务窗口轮流招呼好几个人；没有它，你只能写死板的单线流水线。</p>
+<p>就这两下，够搭出原先要语言内置的一切：想要个能攒货的缓冲区，就<strong>请一个人当传递员</strong>，前面来货就收、后面要货就给；想要「同时只准三个人进厨房」，就请个<strong>门房数人头</strong>。以前的内置功能，这里全变成「多请一个人」。</p>
+<h2>带来了什么</h2>
+<p>1980 年代真有人照它造了一门语言（occam），还造了一款把「进程」和「窗口」直接做进硬件的芯片（Transputer）——论文变成 CPU，这很少见。今天 Go 的 channel、Erlang 的消息传递，以至「各自守着自己的数据、只走接口」的微服务直觉，都同出一源。</p>
+<p>一句诚实话：这招消灭了「白板被写花」，<strong>却没消灭「互相干等」</strong>——两个人都伸着手等对方先递，就一起僵在那儿。Hoare 那个五位哲学家吃饭的例子，正是得额外请个门房才不卡住。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>别让并行的几件活共用一块内存、再拿锁互相拦；让它们各自私有、只靠「手递手」递消息——递到的那一刻，交数据和对时间一次完成，数据打架于是无从发生。再允许一个人「等几个窗口里谁先来」，缓冲区、许可牌、流水线就都能自己写出来。代价是：它治数据打架，不治互相干等。</p>
+</div>
+<p class="switch-hint">想看会合的时序图、守卫命令的写法，以及它怎么长成 Go 的 channel 与 select？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">CSP 主张把并发程序写成一组<strong>没有任何共享变量</strong>的顺序进程（sequential process），进程之间唯一的交互方式是<strong>一对同时执行的输入 / 输出命令</strong>——即<em>会合</em>（rendezvous）；再借 Dijkstra 的守卫命令（guarded command）允许进程「等多路输入里谁先就绪」。就这两条原语，论文演示了缓冲区、信号量、监视器式模块、协程、子程序调用、流水线全都能<strong>写出来</strong>而无需语言内置。它是 occam 语言与 Transputer 芯片的蓝本，也是 Go 的 channel 与 CSP 进程代数共同的源头。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>进程（process）</strong>：本文指「一段自己顺着往下跑的程序」，不必是操作系统那种重量级进程——一个线程、一个 Go 的 goroutine 都算；多个进程同时推进就是<strong>并发</strong>。</li>
+<li><strong>共享内存（shared memory）</strong>：几条同时在跑的活读写同一块变量区，当时（也仍是今天）最主流的协作方式。</li>
+<li><strong>数据竞争（race condition）</strong>：两条活同时动同一份数据，结果取决于谁快谁慢，于是时对时错、难以复现。</li>
+<li><strong>互斥锁（lock / mutex）与信号量（semaphore）</strong>：前者是一把「同一时刻只准一人持有」的牌，拿到才准碰共享数据；后者是 Dijkstra 1960 年代的计数版——取一张许可牌（P，没牌就等）、还一张牌（V）。</li>
+<li><strong>监视器（monitor）</strong>：Hoare 本人 1974 年提出的结构——把共享数据和操作它的过程包成模块，保证同一时刻只有一条活在里面。</li>
+<li><strong>守卫命令（guarded command）</strong>：Dijkstra 1975 年的写法 <code>条件 → 语句</code>；若干条并列，在成立的那些里<strong>任选一条</strong>执行，刻意不规定选哪条（即不确定性 nondeterminism）。</li>
+<li><strong>阻塞与死锁</strong>：执行到某处走不下去就停在那里等，叫阻塞；一圈活各自等别人先动、谁也动不了，就是死锁（deadlock）。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者 C. A. R.（Tony）Hoare，论文 1978 年 8 月发表于 CACM；那几年他正从贝尔法斯特女王大学转往牛津。它上承 Dijkstra：<strong>守卫命令</strong>（1975）被直接借来当骨架，而要取代的靶子——信号量与<strong>监视器</strong>——恰好一个是 Dijkstra 的、一个是 Hoare 四年前自己的，这篇某种意义上是他为共享内存之外<strong>另起的一路</strong>。同期 Milner 的 CCS（1980）是并行的另一支源流。下启：occam 语言与 INMOS Transputer、Ada 的任务会合、Hoare 1985 年的同名专著（把 CSP 变成一套有形式语义的进程代数），以及今天的 Go。</p>
+<h2>问题与动机</h2>
+<p>1978 年，并发编程的标准答案是「共享内存 + 一套同步件」：数据放在大家都能读写的变量里，再用信号量或监视器规定谁什么时候能碰。这套东西能用，但有三处硌人。第一，<strong>它把一件事拆成了两套机制</strong>：「把数据交给对方」用共享变量，「告诉对方数据好了」用信号量——绝大多数并发 bug 恰恰长在两者的缝里（忘了加锁、粒度不对、通知早于写入）。第二，<strong>错误不可复现</strong>：对不对取决于指令恰好怎样交错，同一份代码跑一千次可能只错一次。第三，<strong>推理不可分割</strong>：想读懂一段代码，你不能只看这段代码——别的线程可能在任意一条指令的间隙改掉你的变量，而交错数随线程数爆炸。</p>
+<p>Hoare 的动机就在这里：不是把共享数据管得更严，而是<strong>让共享消失</strong>，从而让每个进程重新变成可以单独读懂、单独证明的顺序程序。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 236" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<line stroke="rgba(240,180,41,0.18)" x1="278" x2="278" y1="8" y2="228"></line>
+<text fill="#7c8593" font-size="12" text-anchor="middle" x="138" y="20">旧世界：共享内存 + 锁</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="66" x="14" y="38"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="47" y="55">线程 A</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="66" x="90" y="38"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="123" y="55">线程 B</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="66" x="166" y="38"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="199" y="55">线程 C</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="47" x2="104" y1="66" y2="104"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="123" x2="130" y1="66" y2="104"></line>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="199" x2="158" y1="66" y2="104"></line>
+<rect fill="rgba(232,121,75,0.14)" height="34" rx="6" stroke="#e8794b" width="132" x="65" y="108"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="131" y="130">共享变量</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="131" y="166">传数据靠变量，对时间靠锁</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="131" y="184">——两套机制</text>
+<text fill="#e8794b" font-size="11.5" text-anchor="middle" x="131" y="210">错配 → 数据竞争，且不复现</text>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="420" y="20">CSP：各自私有 + 递消息</text>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="186" x="327" y="38"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="420" y="59">进程 P（只碰自己的变量）</text>
+<line marker-end="url(#a1g)" stroke="#f0b429" x1="404" x2="404" y1="72" y2="104"></line>
+<line marker-end="url(#a1g)" stroke="#f0b429" x1="436" x2="436" y1="104" y2="72"></line>
+<rect fill="rgba(240,180,41,0.1)" height="32" rx="6" stroke="#f0b429" width="186" x="327" y="108"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="420" y="129">进程 Q（只碰自己的变量）</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="166">一次会合 = 交数据 + 对时间</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="420" y="184">先到的一方停下来等</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="420" y="210">没有共享的东西 → 无从争抢</text>
+</svg>
+<figcaption>图 1 · 两个世界：左边用共享变量传数据、另拿锁对时间，bug 长在两者的缝里；右边取消共享，一次会合同时完成交割与同步。</figcaption>
+</figure>
+<h2>核心思想 / 方法</h2>
+<h3>想法一：通信就是同步，于是共享消失了</h3>
+<p>进程之间不共享任何变量，唯一的交互是一对<strong>输入 / 输出命令</strong>：感叹号发、问号收。<code>east!x</code> 是「把表达式 x 的值交给名叫 east 的进程」，<code>west?c</code> 是「从名叫 west 的进程收一个值放进变量 c」。论文最小的例子就是一句话的转发器 <code>*[west?c → east!c]</code>——反复从西边收一个字符、往东边送出去。</p>
+<p>机制是：两条命令<strong>必须配对才生效</strong>。哪一边先执行到自己那一半，就<strong>停在那里阻塞等待</strong>，直到对面执行到匹配的另一半；此时<strong>两条命令同时执行</strong>，值从发方的表达式拷进收方的变量，然后两边各自继续。这就是<em>会合</em>，它是<strong>同步、无缓冲</strong>的：没有「发完就走」，也没有系统替你攒消息的信箱。</p>
+<p>为什么这样设计？因为它把旧世界那两套机制<strong>合成了一个动作</strong>：交割完成的那一刻两条时间线恰好对齐，于是不需要额外的「我写好了」通知，也就没有错配的余地。更深一层的收益是<strong>推理变回可分割</strong>——一个进程的变量只有它自己碰，不变式（invariant）由它独力维护，你读它时不必设想「别人随时可能改我的状态」。数据竞争不是被管住了，而是<strong>没有可争的东西</strong>。至于缓冲，Hoare 是<strong>刻意</strong>不提供的——想要，自己写个进程当缓冲区。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 224" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="14" y="76">进程 P</text>
+<text fill="#7c8593" font-size="11.5" x="14" y="166">进程 Q</text>
+<line stroke="#f0b429" stroke-width="2" x1="70" x2="196" y1="72" y2="72"></line>
+<line stroke="#f0b429" stroke-dasharray="3,4" stroke-width="2" x1="196" x2="330" y1="72" y2="72"></line>
+<line marker-end="url(#a2)" stroke="#f0b429" stroke-width="2" x1="330" x2="524" y1="72" y2="72"></line>
+<line marker-end="url(#a2)" stroke="#e8794b" stroke-width="2" x1="70" x2="524" y1="162" y2="162"></line>
+<circle cx="196" cy="72" fill="#f0b429" r="4"></circle>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="196" y="56">执行到 east!x</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="263" y="92">P 阻塞等待</text>
+<circle cx="330" cy="72" fill="#f0b429" r="4"></circle>
+<circle cx="330" cy="162" fill="#e8794b" r="4"></circle>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="330" y="186">执行到 west?y</text>
+<line stroke="#f0b429" stroke-dasharray="4,3" x1="330" x2="330" y1="76" y2="158"></line>
+<text fill="#f0b429" font-size="12" text-anchor="start" x="344" y="112">会合：两条命令同时执行</text>
+<text fill="#7c8593" font-size="11" text-anchor="start" x="344" y="130">x 的值拷进 y，两边各自继续</text>
+<text fill="#7c8593" font-size="11" text-anchor="end" x="524" y="206">时间 →</text>
+<text fill="#7c8593" font-size="11" x="70" y="34">谁先到谁等，碰上了才一起走</text>
+</svg>
+<figcaption>图 2 · 会合的时序：P 先执行到发送命令便阻塞（虚线段），等 Q 执行到匹配的接收命令，两条命令在同一刻完成，随后两边各自继续。</figcaption>
+</figure>
+<h3>想法二：可以等「谁先来」——带输入守卫的不确定选择</h3>
+<p>光有配对的收发只能搭死板的单线流水线。让 CSP 真正够用的第二个想法，是把 Dijkstra 的守卫命令拿来，并加一条关键许可：<strong>守卫里可以放一条输入命令</strong>。</p>
+<p>写法是 <code>*[ 左?x → 处理 □ 控制?停 → 退出 ]</code>：方框 <code>□</code> 分隔若干条「守卫 → 语句」，星号表示反复执行。进程<strong>停在这里同时候着所有守卫</strong>，<strong>哪一路的对端先执行到匹配的那一半，就走那一路</strong>；几路同时就绪则<strong>任选一路</strong>——论文刻意不规定选哪条，也不承诺公平轮转。</p>
+<p>这条许可为什么关键？它把进程从「按写死的顺序收发」变成<strong>「按对方的到达顺序服务」</strong>。一个服务型进程要同时招呼多个客户、一个缓冲区要在「有空位就收货」和「有货就发货」之间随机应变，靠的全是它。Go 的 <code>select</code> 就是它的直系后代。</p>
+<p>有一处诚实的不对称：<strong>这一版只许输入守卫，不许把输出命令放进守卫</strong>——写不出「要么给 A 发、要么从 B 收，看谁先」；Hoare 明说这是为实现方便设的限制。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 226" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="88" x="12" y="40"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="56" y="57">客户 A</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="88" x="12" y="104"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="56" y="121">客户 B</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="6" stroke="#7c8593" width="88" x="12" y="168"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="56" y="185">控制端</text>
+<line marker-end="url(#a3)" stroke="#f0b429" x1="102" x2="156" y1="53" y2="64"></line>
+<line marker-end="url(#a3)" stroke="#f0b429" x1="102" x2="156" y1="117" y2="112"></line>
+<line marker-end="url(#a3)" stroke="#f0b429" x1="102" x2="156" y1="181" y2="160"></line>
+<rect fill="rgba(240,180,41,0.07)" height="152" rx="8" stroke="#f0b429" width="204" x="158" y="34"></rect>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="260" y="54">一个进程，三条守卫</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="84">*[ A?x → 处理并回复</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="112">□ B?y → 处理并回复</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="140">□ 控制?停 → 结束</text>
+<text fill="#e7ebf1" font-family="Menlo,monospace" font-size="11.5" x="174" y="168">]</text>
+<text fill="#7c8593" font-size="11" x="376" y="84">停在这里同时</text>
+<text fill="#7c8593" font-size="11" x="376" y="102">候着三路；</text>
+<text fill="#f0b429" font-size="11" x="376" y="126">谁先就绪</text>
+<text fill="#f0b429" font-size="11" x="376" y="144">就走谁那一路，</text>
+<text fill="#7c8593" font-size="11" x="376" y="168">都就绪则任选</text>
+<text fill="#7c8593" font-size="11" x="376" y="186">（不承诺公平）</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="260" y="212">1978 年版只许输入守卫，不许把「发送」放进守卫</text>
+</svg>
+<figcaption>图 3 · 带输入守卫的不确定选择：一个进程同时候着多路输入，按对方的到达顺序服务——Go 的 select 的祖先。</figcaption>
+</figure>
+<h3>想法三：把「并发语言该内置什么」这份清单清零</h3>
+<p>最后一块拼图是<strong>并行命令</strong> <code>[P1 || P2 || … ]</code>：并列启动这些进程，全部结束它才结束。注意这一版的进程集合是<strong>静态写定</strong>的，没有「来一个请求开一个」那种动态创建。</p>
+<p>接下来论文的主体是一长串编号例子，它们合起来才是真正的论证：</p>
+<ul>
+<li><strong>有界缓冲区</strong> = 一个攥着数组的进程，用两条输入守卫在「有空位就从生产者收」和「有货就应消费者的取」之间应变。</li>
+<li><strong>信号量</strong> = 一个只会数数的进程：收到 V 就把计数加一；收 P 的那条守卫<strong>只在计数大于零时才成立</strong>——「没牌就等」由守卫天然做到。</li>
+<li><strong>监视器式的数据抽象</strong>（论文里是「小整数集合」）= 一个进程独占那份数据、外界只能收发请求来访问；互斥不必内置，因为数据本来只有它能碰。<strong>子程序调用</strong>则是一次输出（送参数）紧跟一次输入（收结果），<strong>协程</strong>是两个互相递数据、轮流推进的进程。</li>
+<li><strong>流水线与进程阵列</strong>：埃拉托斯特尼筛（一串进程首尾相接，每个剔掉一个质数的倍数）、矩阵乘法（进程排成方阵，数据横竖流过）；经典的<strong>哲学家就餐</strong>则额外加一个「门房」进程限制同时入座的人数。</li>
+</ul>
+<p>要提纯出来的是：<strong>信号量、监视器、子程序、协程——这些此前被当作语言原语或系统内置特性的东西，在 CSP 里全退化成「再加一个进程」的普通程序。</strong>这才是它真正的说服力：不是性能，而是<strong>概念的经济性</strong>。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 232" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a4" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#f0b429" font-size="11" x="12" y="24">① 有界缓冲区 = 一个进程</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="74" x="12" y="32"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="49" y="50">生产者</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="88" x2="120" y1="46" y2="46"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="112" x="122" y="32"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="178" y="50">缓冲进程（攥数组）</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="236" x2="268" y1="46" y2="46"></line>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="74" x="270" y="32"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="307" y="50">消费者</text>
+<text fill="#7c8593" font-size="10.5" x="356" y="42">有空位就收、</text>
+<text fill="#7c8593" font-size="10.5" x="356" y="58">有货就发</text>
+<text fill="#f0b429" font-size="11" x="12" y="100">② 信号量 = 一个只会数数的进程</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="74" x="12" y="108"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="49" y="126">若干客户</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="88" x2="120" y1="122" y2="122"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="112" x="122" y="108"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="178" y="126">计数 n</text>
+<text fill="#7c8593" font-size="10.5" x="246" y="118">收到 V 就 n+1；收 P 的守卫</text>
+<text fill="#7c8593" font-size="10.5" x="246" y="134">只在 n &gt; 0 时成立 → 没牌就等</text>
+<text fill="#f0b429" font-size="11" x="12" y="176">③ 流水线 = 一串首尾相接的进程（筛质数）</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="6" stroke="#7c8593" width="66" x="12" y="184"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="45" y="202">2,3,4,5…</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="80" x2="106" y1="198" y2="198"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="58" x="108" y="184"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="137" y="202">剔 2 的</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="168" x2="194" y1="198" y2="198"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="58" x="196" y="184"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="225" y="202">剔 3 的</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="256" x2="282" y1="198" y2="198"></line>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="6" stroke="#f0b429" width="58" x="284" y="184"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="313" y="202">剔 5 的</text>
+<line marker-end="url(#a4)" stroke="#7c8593" x1="344" x2="370" y1="198" y2="198"></line>
+<text fill="#f0b429" font-size="11" x="376" y="202">… 流出的都是质数</text>
+</svg>
+<figcaption>图 4 · 「一切皆进程」：缓冲区、信号量、流水线都只用同两条原语写出——以前的语言内置特性，在这里是普通程序。</figcaption>
+</figure>
+<h2>关键结果</h2>
+<p>必须诚实：<strong>这篇论文没有实验、没有基准、没有一个性能数字</strong>，1978 年也还没有实现——Hoare 自称给的是一套原语提案，不是完整语言（没有类型、模块、异常，也没给形式语义）。它的「结果」是另外两种。</p>
+<p>一是<strong>可表达性的演示</strong>：那串例子覆盖了当时并发编程的经典题目，每个都只用两条原语写出、且短到能在一页内读完。对语言设计论文来说这就是实验部分——不是「更快多少」，而是<strong>「本来要靠语言特性给的东西，现在都不必给了」</strong>。二是<strong>它预告的可证明性</strong>，而这张期票后来真被兑现：进程间没有共享状态，每个进程的不变式只由自己维护，推理不必穷举「别人可能在我哪条指令的间隙动我的变量」。七年后 Brookes、Hoare、Roscoe 等把它做成一套带形式语义（traces 与 failures-divergences 模型）的进程代数，配上 FDR 这样的精化检查器，<strong>并发设计真能交给机器穷举验证会不会死锁</strong>——这在共享内存模型里难得多。</p>
+<h2>为什么重要 / 影响</h2>
+<p><strong>它罕见地一路落到了硬件。</strong>1980 年代 INMOS 把 CSP 做成 occam 语言（<code>PAR</code> / <code>SEQ</code> / <code>ALT</code> 与通道是语言一级构造），并设计了 Transputer——一款把进程与通道当硬件概念的芯片。一篇语言设计论文变成一款 CPU 的设计原则，这不多见；Ada 的任务会合（rendezvous）同样直接受它影响。</p>
+<p><strong>它进了今天最主流的语言之一。</strong>从贝尔实验室的 Newsqueak、Alef 到 Plan 9 的 Limbo，这条线最后交汇成 <strong>Go</strong>：goroutine + channel + <code>select</code>，连口号都是它的——「不要通过共享内存来通信，要通过通信来共享内存」。Go 明确在两处偏离原版：<strong>通道是头等值</strong>（不必写死对方进程名，这一步要到 1985 年版才有）、可<strong>带缓冲</strong>，且 <code>select</code> 允许发送分支。</p>
+<p><strong>它还开出了并发验证一整支</strong>：1985 年的同名专著把 CSP 变成进程代数，与 Milner 的 CCS / π 演算并称两大源流，至今是验证并发与通信协议的主流工具之一。</p>
+<p><strong>思想层面，「不要共享、改为传消息」成了并发与分布式的默认建议之一</strong>——Erlang / Elixir 的进程与消息、Akka 等 actor 框架，以至微服务「各自守着自己的数据、只走接口」的直觉，都与它同源。但要讲准一句：actor 那一支是<strong>异步信箱</strong>（发完就走，消息在对方信箱里排队），不是 CSP 的同步会合；共同的祖训只是「不共享状态」。</p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>写死对方进程名，不可组合</strong>：这一版没有「通道」这种独立实体，进程代码里写着 <code>west</code> / <code>east</code>，换个拓扑就得改代码，进程没法当零件复用。1985 年版与 occam 把通道升为头等实体才解决。</li>
+<li><strong>守卫的不对称</strong>：只许输入守卫，写不出「要么发给 A、要么从 B 收，看谁先」；根源是双方同时挑选需要分布式提交协议。occam 沿用了这个限制。</li>
+<li><strong>进程集合静态</strong>：不支持动态创建进程，而「每来一个请求开一个」恰是今天最常见的写法——要等 Go 的 goroutine 才补上。</li>
+<li><strong>它消灭数据竞争，但不消灭死锁</strong>：一圈进程各自等对方先动就整体僵住，哲学家就餐必须额外加门房正说明这点。无共享是<em>安全性</em>的胜利，不是<em>活性</em>（liveness）的；守卫的选择也不保证公平，饿死（starvation）不在承诺里。</li>
+<li><strong>同步无缓冲带来耦合，性能也不普遍占优</strong>：发方必须等收方，跨机器时每次通信要一个来回；而通道通信要走调度与拷贝，在共享内存的多核机器上一把互斥锁常常更快。CSP 卖的是可推理性与纪律，不是速度——Go 社区的经验也常是「能用互斥锁说清的地方别硬上 channel」。</li>
+<li><strong>今天说的 CSP 已不是这篇</strong>：这篇是程序写法提案、没有形式语义；教科书与工具里的「CSP」多指 1985 年那套进程代数。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：把并发程序写成一组<strong>无共享变量</strong>的顺序进程，只靠一对同时执行的输入 / 输出命令（会合）交互。</p>
+<p>② 旧世界的痛：共享内存把「传数据」和「对时间」拆成两套机制，bug 长在缝里、且不复现；推理还得穷举所有交错。</p>
+<p>③ 想法一：<code>east!x</code> / <code>west?c</code> 必须配对，先到的阻塞等待，配上就同时执行——交割与同步一次完成，无共享故无从争抢；同步、无缓冲是刻意的选择。</p>
+<p>④ 想法二：<strong>输入可放进守卫</strong>，进程于是能等「多路里谁先就绪」、任选一路（不承诺公平）——服务型进程与缓冲区的基础、Go <code>select</code> 的祖先；这一版不许输出守卫。</p>
+<p>⑤ 想法三：加上并行命令 <code>[P1 || P2]</code>，信号量、监视器、子程序、协程、流水线全成了「再加一个进程」——卖点是概念的经济性。</p>
+<p>⑥ 结果：没有实验数字，证据是一串覆盖经典并发题目的短例子，加上「无共享 ⇒ 可分别推理」这张期票，七年后兑现成进程代数与可上模型检查器的验证工具。</p>
+<p>⑦ 影响：occam 与 Transputer、Ada 的任务会合、Newsqueak→Limbo→<strong>Go 的 channel 与 select</strong>（actor / Erlang 同源但走异步信箱）。</p>
+<p>⑧ 局限：写死进程名不可组合、只许输入守卫、进程静态、<strong>治数据竞争不治死锁</strong>、同步耦合、性能常不如一把锁。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想看完整的例子代码与记号细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
