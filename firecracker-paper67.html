@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 67</p>
-<h1>Firecracker：给 serverless 用的轻量虚拟化</h1>
+<h1 data-tts="1dfa1e0e31f8bb50">Firecracker：给 serverless 用的轻量虚拟化</h1>
 <p class="sub">Agache 等 · Amazon Web Services · NSDI 2020</p>
 <p class="langbar"><a href="firecracker-paper67.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,32 +44,32 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="9c2e391e5ecba664">这篇论文干了什么？</h2>
 <p>现在有一类叫「云函数」的服务：你只上传一小段代码，不用管服务器，有人调用时它才跑起来、按毫秒计费，AWS Lambda 是其中最大的一家。2020 年亚马逊发论文公开了 Lambda 底下真正跑你代码的那个东西——<strong>Firecracker</strong>，一台被削到只剩骨架的虚拟机。它让同一台物理机能同时装下成千上万个互不信任的客户的代码，每一台还能在<strong>八分之一秒</strong>内开机。</p>
-<h2>先说个两难</h2>
+<h2 data-tts="fff6ac8b2fd3b536">先说个两难</h2>
 <p>把陌生人的代码放进自己机器里跑，历来要在<strong>安全</strong>和<strong>快</strong>之间选一个。</p>
 <p>传统虚拟机很安全——它给每位客人发一整台「假电脑」，客人在里面折腾不出来。代价是开机要好几秒、还得占掉几百 MB；为了一个只跑 20 毫秒的函数这么干，太荒谬。</p>
 <p>另一头是<strong>容器</strong>：不发假电脑，所有客人合用同一个操作系统，只是各自关在自己房间里，轻且开机只要毫秒。可房间的墙就是「同一个操作系统」，而它对外开着三百多个入口，历史上被撬开过不止一次。<strong>让互不信任的陌生人合用一个操作系统，亚马逊不敢。</strong>过去大家默认：只能二选一。</p>
-<h2>那个点子</h2>
+<h2 data-tts="6a29db1660e764e7">那个点子</h2>
 <p>Firecracker 的点子是去质问这个默认：<strong>虚拟机慢，到底慢在哪？</strong></p>
 <p>答案是——不慢在「隔离」，而慢在<strong>它太想当一台真电脑</strong>。通用虚拟机为了「装什么系统都能跑」，忠实地伪造了一整台 PC：开机自检、光驱软驱、声卡显卡、USB 口、一整条插槽总线……客人开机时得把这一柜子假硬件逐个点名清查，几秒钟就花在这上头。可云函数要跑的只是「一段代码」，不是「任意一台古董电脑」。<strong>那就把假电脑削成只剩必需的几件。</strong></p>
-<h2>削成了什么样</h2>
+<h2 data-tts="8f835adafdcad32a">削成了什么样</h2>
 <p>Firecracker 发给每位客人的「电脑」上只剩四样：一块网卡、一块硬盘、一根用来吐日志的线，以及一个<strong>只有一个按键的键盘——那个键是关机</strong>。没有开机自检，没有插槽总线，连开机画面都没有：它直接把操作系统搬进内存，从第一条指令开始跑。</p>
 <p>就像胶囊旅馆不再给每间房配厨房、车库和花园，只留床、门锁和水电——<strong>客人要的本来就只是睡一晚</strong>。房间小，一层楼塞得下几千间；打扫得快，退房到下一位入住只要一眨眼。</p>
 <p>还有两件事顺手一起做了。一是<strong>换建材</strong>：这个「发房间」的程序用一门不容易写出漏洞的语言重写，总共约五万行代码，而老牌同类软件有上百万行——<strong>代码少，能被撬的缝就少</strong>。二是<strong>房门外再加一道锁</strong>：万一真有人钻出了房间，落脚处也不是走廊，而是一个提前被剥光权限的小铁笼。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="bfef484469c77822">带来了什么</h2>
 <p>每台这样的「微型虚拟机」额外只多花不到 5 MB 内存，从创建到跑上客户代码约 <strong>125 毫秒</strong>，一台机器每秒能造出 150 台。于是同一台物理机上可以密密麻麻住满不同客户的函数，谁也碰不到谁——<strong>安全和快，不必二选一了</strong>。它 2018 年开源，如今 Lambda 与 Fargate 都跑在上面。</p>
 <p>诚实说一句代价：这台电脑太特化——没有显卡、没有扩展插槽，需要这些的活它干不了。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="47240a40589b54a4">一句话记住</h2>
 <div class="tl">
 <p>虚拟机又慢又重，不是因为隔离贵，而是因为它假装自己是一台什么都有的真电脑。把假硬件削到只剩网卡、硬盘、一根日志线和一个关机键，再用更稳的语言重写、外面套一层铁笼——隔离还是虚拟机级别的，开机却只要八分之一秒、每台只多占几 MB。云函数的「又安全又便宜」，就是这么同时拿到的。</p>
 </div>
 <p class="switch-hint">想看它的结构图、被否决的几条路线和实测数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="f735f93effdffb16">一句话</h2>
 <p class="lead">Firecracker 是 AWS 为 Lambda / Fargate 自研的一个极简<strong>虚拟机监视器</strong>（VMM）：它砍掉传统 VMM 为通用性而模拟的绝大部分硬件，只留 virtio 网卡、virtio 块设备、一个串口和一个只管关机的键盘控制器，用约 5 万行 Rust 写成、跑在 Linux KVM 之上——于是每台「microVM」的 VMM 内存开销 <strong>&lt; 5 MiB</strong>、<strong>约 125 ms</strong> 就能跑到用户代码、单机<strong>每秒可创建 150 台</strong>，第一次把<strong>虚拟机级别的隔离</strong>做进了<strong>容器级别的密度与启动速度</strong>。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="b3a2b7218f2568da">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>虚拟机（VM）／虚拟机监视器（VMM，又叫 hypervisor）</strong>：用软件在一台真机上造出若干台「假电脑」，每台里跑自己的操作系统；负责造和管这些假电脑的那个程序就是 VMM。</li>
@@ -84,9 +84,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>TCB（可信计算基）</strong>：一个系统里「必须假定它没被攻破」的那部分代码的总和；越小越好。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="f950d467415ebaf9">坐标</h2>
 <p>作者是 Alexandru Agache、Marc Brooker 等一队 AWS 工程师，论文发在 <strong>NSDI 2020</strong>；Firecracker 本身 2018 年底就已开源，代码起步时是从 Google 为 Chrome OS 写的 Rust 版 VMM <strong>crosvm</strong> 分叉出来的，此后各自演化。它上承 KVM 与 virtio 这两件把虚拟化做轻的基础设施，下启 rust-vmm 生态与 Cloud Hypervisor 等「用 Rust 拼一个自己的 VMM」的项目。与上一篇 Berkeley View 对读正好成一对：那篇讲 serverless <em>该是什么、缺什么</em>，这篇讲它<em>底下那块砖</em>是怎么烧出来的。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="250d34e091441a8f">问题与动机</h2>
 <p>Lambda 早期的隔离是靠 EC2 实例这条硬边界完成的：<strong>同一个客户账号的函数跑在专属于它的虚拟机上，不同客户之间隔着整台实例</strong>。安全上无可挑剔，但粒度太粗。一个客户哪怕只偶尔跑一个 50 毫秒的函数，也得有一台实例为他站着；实例开机以秒计，于是还要预留、预热。<strong>密度低 = 大量机器空转 = 成本，而 serverless 卖的恰恰是「按毫秒计费」的便宜。</strong></p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
@@ -123,8 +123,8 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>传统虚拟机</strong>：隔离强度正是想要的，但现成的 VMM 为通用性背了太重的包袱——百万行级 C 代码、完整 PC 设备模型、秒级开机、每台几十上百 MB 的常驻开销。</li>
 </ul>
 <p>论文据此列出六条硬需求：<strong>隔离、开销与密度、性能（接近裸机）、兼容性（任意 Linux 二进制）、快速切换（毫秒级创建销毁）、软分配（允许超卖）</strong>。没有现成东西同时满足，于是自己写一个。</p>
-<h2>核心思想 / 方法</h2>
-<h3>想法一：虚拟机慢的不是虚拟化，是设备模型</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="24376af51625e8ad">想法一：虚拟机慢的不是虚拟化，是设备模型</h3>
 <p>全篇最关键的判断是：<strong>硬件虚拟化本身并不慢</strong>。自从 CPU 支持虚拟化指令、KVM 把这部分搬进内核，客机执行指令与访问内存的额外开销已经很小。真正的慢与重来自 VMM 的另一半职责——<strong>伪造一整台 PC</strong>：BIOS 自检、PCI 总线枚举、USB、软驱光驱、显卡、即插即用……客机内核开机时要把这一柜子假硬件逐个探测，秒级的开机时间大半花在这里；而这堆模拟代码同时还是 VMM 最大的一块攻击面。</p>
 <p>而 serverless 的客机是<strong>平台自己提供的一个 Linux</strong>，上面跑客户的函数。它不需要装 Windows，不需要显卡，不需要热插拔 USB。<strong>兼容性要求从「任意操作系统」降成「任意 Linux 二进制」，减法才有下刀的空间。</strong></p>
 <p>于是 Firecracker 的设备模型只剩四件：<strong>virtio 网络设备、virtio 块设备、一个串口（吐日志）</strong>，以及一个<strong>功能残缺的键盘控制器——它唯一的用途是让宿主按下「关机」</strong>。没有 BIOS、没有引导程序：Firecracker 直接把未压缩的 Linux 内核镜像装进客机内存，按 Linux 的启动约定跳进去执行。开机路径短到只剩「搬内核 + 认四个设备」。</p>
@@ -154,7 +154,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <figcaption>图 2 · 开机路径对比：砍掉固件与设备枚举之后，开机只剩「搬内核 + 认四个设备」。</figcaption>
 </figure>
 <p>代价也得说清：客机内核必须是为这套精简设备编译的（开着 virtio 驱动、关掉用不上的一大堆），客户想跑需要 GPU 或 PCI 直通的负载，这里没有。<strong>这是刻意的特化，不是遗漏。</strong></p>
-<h3>想法二：把 VMM 自己也当成攻击面来设计</h3>
+<h3 data-tts="14ae75dcd64176e1">想法二：把 VMM 自己也当成攻击面来设计</h3>
 <p>隔离边界若只有一层，那一层就必须完美。Firecracker 干脆假设它不完美，于是叠了两层。</p>
 <p>第一层是<strong>把 VMM 本身做小做稳</strong>：约 <strong>5 万行 Rust</strong>——对比 QEMU 的百万行 C，代码量与语言两头同时缩小攻击面（Rust 在编译期就排除了缓冲区溢出、释放后使用这类内存错误，而它们恰恰是 VMM 漏洞的主要来源）。一台 microVM 对应<strong>一个独立进程</strong>，客机的每个 vCPU 是这个进程里的一个线程；某台被攻破或崩溃，波及范围就是它自己。</p>
 <p>第二层是 <strong>jailer</strong>：启动 Firecracker 之前先把它关进笼子——<code>chroot</code> 换根、namespace 隔开进程与网络视图、cgroup 限住资源、降权到非 root，最后套上一张 <strong>seccomp 白名单</strong>，只放行跑一台 microVM 真正必需的那几十个系统调用。于是攻击链变成：先要打穿客机内核，再打穿 KVM 这条虚拟机边界，打穿之后落脚的还是一个被提前剥光权限的进程。</p>
@@ -180,22 +180,22 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <figcaption>图 3 · 两层边界：客机先要打穿 KVM 这条窄接口，打穿后落脚的仍是一个被 jailer 剥光权限的进程。</figcaption>
 </figure>
 <p>诚实之处：<strong>KVM 与宿主内核仍在 TCB 里</strong>，这条边界不是零信任，只是被压缩到了很窄的一条接口上——KVM 暴露的那组 <code>ioctl</code>，比整个系统调用面小得多。</p>
-<h3>想法三：为「超卖」与「吵闹邻居」预留旋钮</h3>
+<h3 data-tts="8aec6569005a3c9b">想法三：为「超卖」与「吵闹邻居」预留旋钮</h3>
 <p>密度不只是「塞得下」，还得<strong>塞得起</strong>。函数申请了 2 GB 内存，实际常常只用几十 MB。microVM 的内存来自宿主按需分配的页面：客机没碰过的内存，宿主就不真的拿出来——于是<strong>内存与 CPU 可以超卖</strong>（论文称 <em>soft allocation</em>）。这一步才是把密度换成钱的地方。</p>
 <p>代价是同机的邻居会互抢 IO。Firecracker 因此在块设备与网络设备上内置了<strong>令牌桶限速器</strong>（按固定速率往桶里投令牌，没令牌就等——既能限住长期平均速率，又容许短时突发），让上层给每台 microVM 配额。</p>
 <p>对外则只有一个跑在 Unix socket 上的 <strong>REST API</strong>：配好内核、磁盘、网卡、vCPU 数，然后一句「启动」。Lambda 的每台 worker 上由一个叫 <strong>MicroManager</strong> 的组件调这套 API，维护一批预备好的 microVM「槽位」，请求来了就把槽位派给某个函数——<strong>同一个槽位只服务同一个客户的同一个函数，从不跨客户复用。</strong></p>
-<h2>关键结果</h2>
+<h2 data-tts="793a09c366427142">关键结果</h2>
 <p>论文给出的三个核心数字：<strong>每台 microVM 的 VMM 内存开销小于 5 MiB</strong>、<strong>从创建到跑上用户代码约 125 ms</strong>、<strong>单机每秒可创建 150 台 microVM</strong>。这正是「隔离 + 密度 + 快速切换」三条需求的量化兑现。</p>
 <p>对照实验把 Firecracker 与 QEMU、gVisor 摆在一起，量启动时间、内存开销与 IO 吞吐。启动与内存两项 Firecracker 明显占优——被它削掉的固件与设备模型，正是 QEMU 花时间与内存的地方。<strong>IO 上论文相当诚实：块设备与网络吞吐在当时不如 QEMU</strong>，精简的 virtio 实现让出了一部分性能，作者把它明确列为已知的待改进项，而非粉饰过去。</p>
 <p>不过对一篇工业论文来说，最硬的证据并不是 benchmark：<strong>AWS Lambda 已全量运行在 Firecracker 上，Fargate 随后跟进</strong>。每天数以万亿计的函数调用，跑的就是这套东西——这比任何实验室数字都更能说明它扛得住。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="7c06420043ec1cf8">为什么重要 / 影响</h2>
 <ul>
 <li><strong>它推翻了一条业界共识。</strong>「要安全就得慢、要快就得共用内核」一度被当成物理定律；Firecracker 证明慢的是设备模型而不是虚拟化，这个两难本来就是可以拆开的。此后「轻量虚拟机」成了基础设施里的一类标准零件。</li>
 <li><strong>它把 serverless 的经济模型坐实了。</strong>按毫秒计费要能成立，前提是空闲成本足够低、切换足够快。Firecracker 提供的正是这个前提——没有它，云函数的定价故事讲不圆。</li>
 <li><strong>它带出了一个生态。</strong>开源之后，Kata Containers 可以拿它当底层 runtime，一批「秒起虚拟机」的产品直接建在它上面；rust-vmm 社区把虚拟队列、设备模型这些零件拆成可复用的 Rust crate，Cloud Hypervisor 等项目与它共享这些零件。「用 Rust 拼一个自己的 VMM」从此是个现实选项。</li>
 <li><strong>它示范了一种论文体裁</strong>：把生产系统的真实约束、被否决的方案与踩过的坑一并写出来，比单纯的性能报告有用得多。</li>
 </ul>
-<h2>局限与批评</h2>
+<h2 data-tts="d8e2bf461748d836">局限与批评</h2>
 <ul>
 <li><strong>功能上是刻意的瘸腿</strong>：没有 PCI 直通、没有 GPU 与加速器、设备种类极少，需要特殊硬件的一大类负载（比如许多机器学习推理场景）无法直接跑在上面；论文发表时主要面向 x86。</li>
 <li><strong>IO 性能落后于成熟 VMM</strong>：见上，作者自己承认。把设备模型削薄，削掉的不只是攻击面，也有性能优化的余地。</li>
@@ -204,7 +204,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>作为工业论文不可复现</strong>：Lambda 真实的密度、超卖比例、槽位回收策略这些关键运营参数并未公开，外部研究者只能照论文的定性描述推测。</li>
 <li><strong>它解决的是隔离与密度，不是 serverless 的结构性问题</strong>：Berkeley View 与同年 Hellerstein 那篇指出的「函数之间无法直接通信、必须把数据运到代码那儿」依旧成立——砖烧得再好，也不改变房子的户型。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="012e2633584329ab">要点</h2>
 <div class="tl">
 <p>① 一句话：把虚拟机的设备模型削到只剩 virtio 网卡、块设备、串口和一个关机键，用 5 万行 Rust 重写 VMM，于是虚拟机级别的隔离拿到了容器级别的密度与启动速度。</p>
 <p>② 旧世界的痛：Lambda 早期一个客户账号独占一台实例，隔离干净但粒度太粗——密度低、开机以秒计、机器空转，与「按毫秒计费」的生意直接冲突。</p>
