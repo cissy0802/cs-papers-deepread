@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Firecracker（microVM）— IT 论文精读 Paper 67</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 67</p>
+<h1>Firecracker：给 serverless 用的轻量虚拟化</h1>
+<p class="sub">Agache 等 · Amazon Web Services · NSDI 2020</p>
+<p class="langbar"><a href="firecracker-paper67.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>现在有一类叫「云函数」的服务：你只上传一小段代码，不用管服务器，有人调用时它才跑起来、按毫秒计费，AWS Lambda 是其中最大的一家。2020 年亚马逊发论文公开了 Lambda 底下真正跑你代码的那个东西——<strong>Firecracker</strong>，一台被削到只剩骨架的虚拟机。它让同一台物理机能同时装下成千上万个互不信任的客户的代码，每一台还能在<strong>八分之一秒</strong>内开机。</p>
+<h2>先说个两难</h2>
+<p>把陌生人的代码放进自己机器里跑，历来要在<strong>安全</strong>和<strong>快</strong>之间选一个。</p>
+<p>传统虚拟机很安全——它给每位客人发一整台「假电脑」，客人在里面折腾不出来。代价是开机要好几秒、还得占掉几百 MB；为了一个只跑 20 毫秒的函数这么干，太荒谬。</p>
+<p>另一头是<strong>容器</strong>：不发假电脑，所有客人合用同一个操作系统，只是各自关在自己房间里，轻且开机只要毫秒。可房间的墙就是「同一个操作系统」，而它对外开着三百多个入口，历史上被撬开过不止一次。<strong>让互不信任的陌生人合用一个操作系统，亚马逊不敢。</strong>过去大家默认：只能二选一。</p>
+<h2>那个点子</h2>
+<p>Firecracker 的点子是去质问这个默认：<strong>虚拟机慢，到底慢在哪？</strong></p>
+<p>答案是——不慢在「隔离」，而慢在<strong>它太想当一台真电脑</strong>。通用虚拟机为了「装什么系统都能跑」，忠实地伪造了一整台 PC：开机自检、光驱软驱、声卡显卡、USB 口、一整条插槽总线……客人开机时得把这一柜子假硬件逐个点名清查，几秒钟就花在这上头。可云函数要跑的只是「一段代码」，不是「任意一台古董电脑」。<strong>那就把假电脑削成只剩必需的几件。</strong></p>
+<h2>削成了什么样</h2>
+<p>Firecracker 发给每位客人的「电脑」上只剩四样：一块网卡、一块硬盘、一根用来吐日志的线，以及一个<strong>只有一个按键的键盘——那个键是关机</strong>。没有开机自检，没有插槽总线，连开机画面都没有：它直接把操作系统搬进内存，从第一条指令开始跑。</p>
+<p>就像胶囊旅馆不再给每间房配厨房、车库和花园，只留床、门锁和水电——<strong>客人要的本来就只是睡一晚</strong>。房间小，一层楼塞得下几千间；打扫得快，退房到下一位入住只要一眨眼。</p>
+<p>还有两件事顺手一起做了。一是<strong>换建材</strong>：这个「发房间」的程序用一门不容易写出漏洞的语言重写，总共约五万行代码，而老牌同类软件有上百万行——<strong>代码少，能被撬的缝就少</strong>。二是<strong>房门外再加一道锁</strong>：万一真有人钻出了房间，落脚处也不是走廊，而是一个提前被剥光权限的小铁笼。</p>
+<h2>带来了什么</h2>
+<p>每台这样的「微型虚拟机」额外只多花不到 5 MB 内存，从创建到跑上客户代码约 <strong>125 毫秒</strong>，一台机器每秒能造出 150 台。于是同一台物理机上可以密密麻麻住满不同客户的函数，谁也碰不到谁——<strong>安全和快，不必二选一了</strong>。它 2018 年开源，如今 Lambda 与 Fargate 都跑在上面。</p>
+<p>诚实说一句代价：这台电脑太特化——没有显卡、没有扩展插槽，需要这些的活它干不了。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>虚拟机又慢又重，不是因为隔离贵，而是因为它假装自己是一台什么都有的真电脑。把假硬件削到只剩网卡、硬盘、一根日志线和一个关机键，再用更稳的语言重写、外面套一层铁笼——隔离还是虚拟机级别的，开机却只要八分之一秒、每台只多占几 MB。云函数的「又安全又便宜」，就是这么同时拿到的。</p>
+</div>
+<p class="switch-hint">想看它的结构图、被否决的几条路线和实测数字？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Firecracker 是 AWS 为 Lambda / Fargate 自研的一个极简<strong>虚拟机监视器</strong>（VMM）：它砍掉传统 VMM 为通用性而模拟的绝大部分硬件，只留 virtio 网卡、virtio 块设备、一个串口和一个只管关机的键盘控制器，用约 5 万行 Rust 写成、跑在 Linux KVM 之上——于是每台「microVM」的 VMM 内存开销 <strong>&lt; 5 MiB</strong>、<strong>约 125 ms</strong> 就能跑到用户代码、单机<strong>每秒可创建 150 台</strong>，第一次把<strong>虚拟机级别的隔离</strong>做进了<strong>容器级别的密度与启动速度</strong>。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>虚拟机（VM）／虚拟机监视器（VMM，又叫 hypervisor）</strong>：用软件在一台真机上造出若干台「假电脑」，每台里跑自己的操作系统；负责造和管这些假电脑的那个程序就是 VMM。</li>
+<li><strong>客机／宿主（guest / host）</strong>：虚拟机里面跑的系统叫客机，底下那台真机的系统叫宿主。</li>
+<li><strong>KVM</strong>：Linux 内核里的虚拟化模块，借 CPU 自带的虚拟化指令把「造假电脑」最吃力的部分（CPU、内存）交给硬件完成；VMM 通过它跑客机，自己只负责模拟设备。</li>
+<li><strong>容器（container）</strong>：不造假电脑，多个进程共用宿主的同一个操作系统内核，靠 namespace（隔开它能看见什么）与 cgroup（限制它能用多少）互相隔离；轻且快，但共用内核。</li>
+<li><strong>系统调用（syscall）</strong>：程序向操作系统内核请求服务（读文件、发网络包）的入口；Linux 有三百多个，它们加起来就是内核对外的攻击面。</li>
+<li><strong>seccomp</strong>：Linux 的一道过滤器，能规定某个进程只准调用哪几个系统调用，别的一律拒绝。</li>
+<li><strong>virtio</strong>：专为虚拟机设计的一套「半虚拟化」设备接口——客机明知自己在虚拟机里，就不再假装操作真硬件，而是直接和 VMM 用共享内存的环形队列交换数据，比逐条指令模拟一块真网卡快得多。</li>
+<li><strong>serverless / FaaS</strong>：用户只交一段函数、不管服务器，平台按调用次数与运行毫秒计费；AWS Lambda 是代表。</li>
+<li><strong>冷启动（cold start）</strong>：某个函数眼下没有现成的运行环境，得临时开一个——用户为此多等的那段时间。</li>
+<li><strong>TCB（可信计算基）</strong>：一个系统里「必须假定它没被攻破」的那部分代码的总和；越小越好。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 Alexandru Agache、Marc Brooker 等一队 AWS 工程师，论文发在 <strong>NSDI 2020</strong>；Firecracker 本身 2018 年底就已开源，代码起步时是从 Google 为 Chrome OS 写的 Rust 版 VMM <strong>crosvm</strong> 分叉出来的，此后各自演化。它上承 KVM 与 virtio 这两件把虚拟化做轻的基础设施，下启 rust-vmm 生态与 Cloud Hypervisor 等「用 Rust 拼一个自己的 VMM」的项目。与上一篇 Berkeley View 对读正好成一对：那篇讲 serverless <em>该是什么、缺什么</em>，这篇讲它<em>底下那块砖</em>是怎么烧出来的。</p>
+<h2>问题与动机</h2>
+<p>Lambda 早期的隔离是靠 EC2 实例这条硬边界完成的：<strong>同一个客户账号的函数跑在专属于它的虚拟机上，不同客户之间隔着整台实例</strong>。安全上无可挑剔，但粒度太粗。一个客户哪怕只偶尔跑一个 50 毫秒的函数，也得有一台实例为他站着；实例开机以秒计，于是还要预留、预热。<strong>密度低 = 大量机器空转 = 成本，而 serverless 卖的恰恰是「按毫秒计费」的便宜。</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="145" y="18">早期：一个客户一台实例</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="415" y="18">Firecracker 之后：同机塞满 microVM</text>
+<rect fill="rgba(255,255,255,0.02)" height="50" rx="7" stroke="#7c8593" width="230" x="30" y="34"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="22" x="44" y="48"></rect>
+<text fill="#b9c0ca" font-size="11" x="76" y="64">客户 A 的函数</text>
+<text fill="#5a6069" font-size="10" text-anchor="end" x="248" y="64">其余空着</text>
+<rect fill="rgba(255,255,255,0.02)" height="50" rx="7" stroke="#7c8593" width="230" x="30" y="92"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="22" x="44" y="106"></rect>
+<text fill="#b9c0ca" font-size="11" x="76" y="122">客户 B 的函数</text>
+<text fill="#5a6069" font-size="10" text-anchor="end" x="248" y="122">其余空着</text>
+<rect fill="rgba(255,255,255,0.02)" height="50" rx="7" stroke="#7c8593" width="230" x="30" y="150"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="22" x="44" y="164"></rect>
+<text fill="#b9c0ca" font-size="11" x="76" y="180">客户 C 的函数</text>
+<text fill="#5a6069" font-size="10" text-anchor="end" x="248" y="180">其余空着</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="145" y="222">密度低 · 秒级开机 · 机器空转</text>
+<rect fill="rgba(240,180,41,0.06)" height="168" rx="7" stroke="#f0b429" width="230" x="300" y="34"></rect>
+<rect fill="#f0b429" height="22" rx="3" width="24" x="312" y="46"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="344" y="46"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="376" y="46"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="408" y="46"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="440" y="46"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="472" y="46"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="24" x="312" y="78"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="344" y="78"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="376" y="78"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="408" y="78"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="440" y="78"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="472" y="78"></rect>
+<rect fill="#f0b429" height="22" rx="3" width="24" x="312" y="110"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="344" y="110"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="376" y="110"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="408" y="110"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="440" y="110"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="472" y="110"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="24" x="312" y="142"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="344" y="142"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="376" y="142"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="408" y="142"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="440" y="142"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="472" y="142"></rect>
+<rect fill="#f0b429" height="22" rx="3" width="24" x="312" y="174"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="344" y="174"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="376" y="174"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="408" y="174"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="440" y="174"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="472" y="174"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="415" y="222">每台 &lt; 5 MiB · 125 ms 开机 · 可超卖</text>
+</svg>
+<figcaption>图 1 · 隔离粒度从「一客户一台实例」缩到「一函数一台 microVM」，同一台物理机的密度才涨得上来。</figcaption>
+</figure>
+<p>要提密度，就得让不同客户的负载挤进同一台机器，于是必须回答：<strong>拿什么当隔离边界？</strong>论文把当时的选项摊开评了一遍：</p>
+<ul>
+<li><strong>容器</strong>：密度与启动都理想，但边界是整个 Linux 系统调用接口——三百多个系统调用，外加 <code>ioctl</code>、<code>/proc</code>、<code>/sys</code> 这些庞杂入口，历史上反复出过逃逸漏洞。把互不信任的租户压在同一个内核上，风险不可接受。</li>
+<li><strong>语言级沙箱</strong>（如 JavaScript 引擎里的 isolate：同一个进程内切出多个互不可见的执行环境）：启动能做到毫秒级，但要求用户代码用特定语言与运行时写。Lambda 要支持任意语言、任意二进制、乃至客户自带的原生扩展，兼容性对不上。</li>
+<li><strong>用户态内核</strong>（把客机的系统调用拦下来在用户态自己实现，如 gVisor）：攻击面确实小了，但兼容性要一条条系统调用地补，拦截本身也有性能代价。</li>
+<li><strong>传统虚拟机</strong>：隔离强度正是想要的，但现成的 VMM 为通用性背了太重的包袱——百万行级 C 代码、完整 PC 设备模型、秒级开机、每台几十上百 MB 的常驻开销。</li>
+</ul>
+<p>论文据此列出六条硬需求：<strong>隔离、开销与密度、性能（接近裸机）、兼容性（任意 Linux 二进制）、快速切换（毫秒级创建销毁）、软分配（允许超卖）</strong>。没有现成东西同时满足，于是自己写一个。</p>
+<h2>核心思想 / 方法</h2>
+<h3>想法一：虚拟机慢的不是虚拟化，是设备模型</h3>
+<p>全篇最关键的判断是：<strong>硬件虚拟化本身并不慢</strong>。自从 CPU 支持虚拟化指令、KVM 把这部分搬进内核，客机执行指令与访问内存的额外开销已经很小。真正的慢与重来自 VMM 的另一半职责——<strong>伪造一整台 PC</strong>：BIOS 自检、PCI 总线枚举、USB、软驱光驱、显卡、即插即用……客机内核开机时要把这一柜子假硬件逐个探测，秒级的开机时间大半花在这里；而这堆模拟代码同时还是 VMM 最大的一块攻击面。</p>
+<p>而 serverless 的客机是<strong>平台自己提供的一个 Linux</strong>，上面跑客户的函数。它不需要装 Windows，不需要显卡，不需要热插拔 USB。<strong>兼容性要求从「任意操作系统」降成「任意 Linux 二进制」，减法才有下刀的空间。</strong></p>
+<p>于是 Firecracker 的设备模型只剩四件：<strong>virtio 网络设备、virtio 块设备、一个串口（吐日志）</strong>，以及一个<strong>功能残缺的键盘控制器——它唯一的用途是让宿主按下「关机」</strong>。没有 BIOS、没有引导程序：Firecracker 直接把未压缩的 Linux 内核镜像装进客机内存，按 Linux 的启动约定跳进去执行。开机路径短到只剩「搬内核 + 认四个设备」。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 185" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="fa" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="24" y="32">通用 VMM（如 QEMU）</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="24" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="60" y="59">BIOS 自检</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="96" x2="102" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="104" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="140" y="59">引导程序</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="176" x2="182" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="112" x="184" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="240" y="59">枚举 PCI / USB / 显卡…</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="296" x2="302" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="304" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="340" y="59">客机内核</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="376" x2="382" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="384" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="410" y="59">应用</text>
+<text fill="#e8794b" font-size="12" x="448" y="59">秒级开机</text>
+<text fill="#f0b429" font-size="11.5" x="24" y="100">Firecracker</text>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="140" x="24" y="108"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="94" y="127">直接装入未压缩内核</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="164" x2="170" y1="123" y2="123"></line>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="150" x="172" y="108"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="247" y="127">认 4 个设备（virtio 等）</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="322" x2="328" y1="123" y2="123"></line>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="52" x="330" y="108"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="356" y="127">应用</text>
+<text fill="#f0b429" font-size="12" x="394" y="127">≈ 125 ms</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="168">被省掉的那一段，既是开机时间，也是 VMM 最大的一块攻击面</text>
+</svg>
+<figcaption>图 2 · 开机路径对比：砍掉固件与设备枚举之后，开机只剩「搬内核 + 认四个设备」。</figcaption>
+</figure>
+<p>代价也得说清：客机内核必须是为这套精简设备编译的（开着 virtio 驱动、关掉用不上的一大堆），客户想跑需要 GPU 或 PCI 直通的负载，这里没有。<strong>这是刻意的特化，不是遗漏。</strong></p>
+<h3>想法二：把 VMM 自己也当成攻击面来设计</h3>
+<p>隔离边界若只有一层，那一层就必须完美。Firecracker 干脆假设它不完美，于是叠了两层。</p>
+<p>第一层是<strong>把 VMM 本身做小做稳</strong>：约 <strong>5 万行 Rust</strong>——对比 QEMU 的百万行 C，代码量与语言两头同时缩小攻击面（Rust 在编译期就排除了缓冲区溢出、释放后使用这类内存错误，而它们恰恰是 VMM 漏洞的主要来源）。一台 microVM 对应<strong>一个独立进程</strong>，客机的每个 vCPU 是这个进程里的一个线程；某台被攻破或崩溃，波及范围就是它自己。</p>
+<p>第二层是 <strong>jailer</strong>：启动 Firecracker 之前先把它关进笼子——<code>chroot</code> 换根、namespace 隔开进程与网络视图、cgroup 限住资源、降权到非 root，最后套上一张 <strong>seccomp 白名单</strong>，只放行跑一台 microVM 真正必需的那几十个系统调用。于是攻击链变成：先要打穿客机内核，再打穿 KVM 这条虚拟机边界，打穿之后落脚的还是一个被提前剥光权限的进程。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="fb" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#e8794b" font-size="11" x="36" y="20">jailer 牢笼：chroot · namespace · cgroup · seccomp 白名单 · 非 root</text>
+<rect fill="none" height="196" rx="12" stroke="#e8794b" stroke-dasharray="6 4" width="492" x="34" y="28"></rect>
+<rect fill="rgba(240,180,41,0.1)" height="52" rx="8" stroke="#f0b429" width="448" x="56" y="46"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="68">客机 microVM：平台提供的 Linux 内核 + 客户函数</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="87">只看得见那四个设备，看不见宿主与邻居</text>
+<rect fill="rgba(255,255,255,0.03)" height="96" rx="8" stroke="#7c8593" width="448" x="56" y="112"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="132">Firecracker 进程 · 约 5 万行 Rust · 一台 microVM 一个进程</text>
+<rect fill="rgba(255,255,255,0.04)" height="34" rx="6" stroke="#7c8593" width="110" x="70" y="142"></rect><text fill="#b9c0ca" font-size="10" text-anchor="middle" x="125" y="163">REST API（Unix socket）</text>
+<rect fill="rgba(255,255,255,0.04)" height="34" rx="6" stroke="#7c8593" width="96" x="192" y="142"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="240" y="163">vCPU 线程</text>
+<rect fill="rgba(255,255,255,0.04)" height="34" rx="6" stroke="#f0b429" width="192" x="300" y="142"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="396" y="157">极简设备模型</text><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="396" y="170">virtio 网卡 / 块设备 / 串口 / 关机键</text>
+<text fill="#5a6069" font-size="10" text-anchor="middle" x="280" y="197">被削掉的：BIOS · PCI · USB · 显卡 · 软驱 · 即插即用…</text>
+<line marker-end="url(#fb)" stroke="#7c8593" x1="280" x2="280" y1="224" y2="238"></line>
+<rect fill="rgba(232,121,75,0.12)" height="44" rx="8" stroke="#e8794b" width="492" x="34" y="240"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="261">宿主 Linux 内核 · KVM：CPU 与内存的虚拟化交给硬件做</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="277">仍在 TCB 内 —— 这条边界很窄，但不是零</text>
+</svg>
+<figcaption>图 3 · 两层边界：客机先要打穿 KVM 这条窄接口，打穿后落脚的仍是一个被 jailer 剥光权限的进程。</figcaption>
+</figure>
+<p>诚实之处：<strong>KVM 与宿主内核仍在 TCB 里</strong>，这条边界不是零信任，只是被压缩到了很窄的一条接口上——KVM 暴露的那组 <code>ioctl</code>，比整个系统调用面小得多。</p>
+<h3>想法三：为「超卖」与「吵闹邻居」预留旋钮</h3>
+<p>密度不只是「塞得下」，还得<strong>塞得起</strong>。函数申请了 2 GB 内存，实际常常只用几十 MB。microVM 的内存来自宿主按需分配的页面：客机没碰过的内存，宿主就不真的拿出来——于是<strong>内存与 CPU 可以超卖</strong>（论文称 <em>soft allocation</em>）。这一步才是把密度换成钱的地方。</p>
+<p>代价是同机的邻居会互抢 IO。Firecracker 因此在块设备与网络设备上内置了<strong>令牌桶限速器</strong>（按固定速率往桶里投令牌，没令牌就等——既能限住长期平均速率，又容许短时突发），让上层给每台 microVM 配额。</p>
+<p>对外则只有一个跑在 Unix socket 上的 <strong>REST API</strong>：配好内核、磁盘、网卡、vCPU 数，然后一句「启动」。Lambda 的每台 worker 上由一个叫 <strong>MicroManager</strong> 的组件调这套 API，维护一批预备好的 microVM「槽位」，请求来了就把槽位派给某个函数——<strong>同一个槽位只服务同一个客户的同一个函数，从不跨客户复用。</strong></p>
+<h2>关键结果</h2>
+<p>论文给出的三个核心数字：<strong>每台 microVM 的 VMM 内存开销小于 5 MiB</strong>、<strong>从创建到跑上用户代码约 125 ms</strong>、<strong>单机每秒可创建 150 台 microVM</strong>。这正是「隔离 + 密度 + 快速切换」三条需求的量化兑现。</p>
+<p>对照实验把 Firecracker 与 QEMU、gVisor 摆在一起，量启动时间、内存开销与 IO 吞吐。启动与内存两项 Firecracker 明显占优——被它削掉的固件与设备模型，正是 QEMU 花时间与内存的地方。<strong>IO 上论文相当诚实：块设备与网络吞吐在当时不如 QEMU</strong>，精简的 virtio 实现让出了一部分性能，作者把它明确列为已知的待改进项，而非粉饰过去。</p>
+<p>不过对一篇工业论文来说，最硬的证据并不是 benchmark：<strong>AWS Lambda 已全量运行在 Firecracker 上，Fargate 随后跟进</strong>。每天数以万亿计的函数调用，跑的就是这套东西——这比任何实验室数字都更能说明它扛得住。</p>
+<h2>为什么重要 / 影响</h2>
+<ul>
+<li><strong>它推翻了一条业界共识。</strong>「要安全就得慢、要快就得共用内核」一度被当成物理定律；Firecracker 证明慢的是设备模型而不是虚拟化，这个两难本来就是可以拆开的。此后「轻量虚拟机」成了基础设施里的一类标准零件。</li>
+<li><strong>它把 serverless 的经济模型坐实了。</strong>按毫秒计费要能成立，前提是空闲成本足够低、切换足够快。Firecracker 提供的正是这个前提——没有它，云函数的定价故事讲不圆。</li>
+<li><strong>它带出了一个生态。</strong>开源之后，Kata Containers 可以拿它当底层 runtime，一批「秒起虚拟机」的产品直接建在它上面；rust-vmm 社区把虚拟队列、设备模型这些零件拆成可复用的 Rust crate，Cloud Hypervisor 等项目与它共享这些零件。「用 Rust 拼一个自己的 VMM」从此是个现实选项。</li>
+<li><strong>它示范了一种论文体裁</strong>：把生产系统的真实约束、被否决的方案与踩过的坑一并写出来，比单纯的性能报告有用得多。</li>
+</ul>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>功能上是刻意的瘸腿</strong>：没有 PCI 直通、没有 GPU 与加速器、设备种类极少，需要特殊硬件的一大类负载（比如许多机器学习推理场景）无法直接跑在上面；论文发表时主要面向 x86。</li>
+<li><strong>IO 性能落后于成熟 VMM</strong>：见上，作者自己承认。把设备模型削薄，削掉的不只是攻击面，也有性能优化的余地。</li>
+<li><strong>冷启动只是变便宜，没有消失</strong>：125 ms 说的是 microVM 从创建到跑上用户代码，而真实冷启动的大头往往是客户运行时自己的初始化（JVM 起来、Python 装一堆依赖）。论文之后的主线——把一台已经启动好的 microVM 的内存状态存下来、需要时秒级复活的<strong>快照 / 恢复</strong>——正是冲着这一段去的。</li>
+<li><strong>TCB 并未消失</strong>：KVM 与宿主内核仍然必须可信；而<strong>微架构侧信道</strong>（靠 CPU 内部共享结构泄密的那类攻击）不是虚拟机边界能挡住的，得靠另一套缓解手段。</li>
+<li><strong>作为工业论文不可复现</strong>：Lambda 真实的密度、超卖比例、槽位回收策略这些关键运营参数并未公开，外部研究者只能照论文的定性描述推测。</li>
+<li><strong>它解决的是隔离与密度，不是 serverless 的结构性问题</strong>：Berkeley View 与同年 Hellerstein 那篇指出的「函数之间无法直接通信、必须把数据运到代码那儿」依旧成立——砖烧得再好，也不改变房子的户型。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：把虚拟机的设备模型削到只剩 virtio 网卡、块设备、串口和一个关机键，用 5 万行 Rust 重写 VMM，于是虚拟机级别的隔离拿到了容器级别的密度与启动速度。</p>
+<p>② 旧世界的痛：Lambda 早期一个客户账号独占一台实例，隔离干净但粒度太粗——密度低、开机以秒计、机器空转，与「按毫秒计费」的生意直接冲突。</p>
+<p>③ 被否决的路线：容器（边界是三百多个系统调用，太宽）、语言级沙箱（限定语言，兼容性不够）、用户态内核（兼容与性能双重代价）、通用 VMM（百万行代码、秒级开机、几十 MB 常驻）。</p>
+<p>④ 关键判断：<strong>慢的不是虚拟化，是设备模型</strong>。KVM 把 CPU 与内存虚拟化交给硬件后已经很轻，秒级开机花在 BIOS 自检与 PCI/USB 枚举上；而 serverless 的兼容性要求只是「任意 Linux 二进制」，减法才做得动。</p>
+<p>⑤ 机制：不跑 BIOS、直接装入未压缩内核跳进去；设备只剩四件；一台 microVM 一个进程、vCPU 是线程；外面套 jailer（chroot + namespace + cgroup + seccomp 白名单 + 非 root）做第二层边界。</p>
+<p>⑥ 运营旋钮：内存按需分页支撑<strong>超卖</strong>，块设备与网卡内置令牌桶<strong>限速</strong>治吵闹邻居；控制面是 Unix socket 上的 REST API，上层 MicroManager 管槽位，槽位从不跨客户复用。</p>
+<p>⑦ 结果：VMM 开销 &lt; 5 MiB、约 125 ms 到用户代码、单机每秒 150 台；启动与内存胜过 QEMU，IO 当时不如，论文照实写；最硬的证据是 Lambda 与 Fargate 的生产全量运行。</p>
+<p>⑧ 影响：拆掉了「安全 vs 快」的假两难，坐实了 serverless 的成本模型，并带出 rust-vmm 这一批「用 Rust 拼 VMM」的生态。</p>
+<p>⑨ 局限：没有 GPU / PCI 直通、IO 性能有欠账、冷启动大头在客户运行时（后来靠快照恢复解决）、KVM 仍在 TCB 内、侧信道挡不住、运营参数不公开、也不改变 serverless「把数据运到代码那儿」的结构性缺陷。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想看完整的实验配置与设备实现细节，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

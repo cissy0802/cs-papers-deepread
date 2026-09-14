@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Firecracker (microVMs) — CS Papers Deep-Read Paper 67</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 67</p>
+<h1>Firecracker: Lightweight Virtualization for Serverless</h1>
+<p class="sub">Agache et al. · Amazon Web Services · NSDI 2020</p>
+<p class="langbar"><a href="firecracker-paper67.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>There is a kind of cloud service called "functions": you upload a small piece of code, never think about servers, and it runs only when someone calls it — billed by the millisecond. AWS Lambda is the biggest of them. In 2020 Amazon published the thing that actually runs your code underneath Lambda: <strong>Firecracker</strong>, a virtual machine shaved down to a skeleton. It lets one physical machine hold thousands of mutually distrusting customers' code at once, with each one booting in <strong>an eighth of a second</strong>.</p>
+<h2>First, a dilemma</h2>
+<p>Running a stranger's code on your own machine has always meant choosing between <strong>safe</strong> and <strong>fast</strong>.</p>
+<p>A traditional virtual machine is safe: it hands each guest an entire fake computer, and whatever they do inside, they can't get out. The price is a boot that takes seconds and a few hundred megabytes of overhead — absurd for a function that runs for 20 milliseconds.</p>
+<p>At the other end are <strong>containers</strong>: no fake computer, everyone shares one operating system and is merely shut into their own room. Light, and they start in milliseconds. But the walls of those rooms <em>are</em> that shared operating system, which keeps more than three hundred doors open to the outside — and those doors have been pried open before. <strong>Amazon was not willing to let mutually distrusting strangers share one operating system.</strong> The default assumption was: pick one.</p>
+<h2>The idea</h2>
+<p>Firecracker's idea is to interrogate that default: <strong>what exactly is slow about a virtual machine?</strong></p>
+<p>The answer: not the isolation, but the fact that <strong>it tries so hard to be a real computer</strong>. To be able to run any operating system at all, a general-purpose VM faithfully fakes an entire PC — power-on self test, floppy and optical drives, sound and graphics cards, USB ports, a whole expansion bus. On boot the guest has to walk that cabinet of fake hardware item by item, and that is where the seconds go. But a cloud function only needs to run <em>a piece of code</em>, not <em>any antique PC</em>. <strong>So shave the fake computer down to the few parts that are actually needed.</strong></p>
+<h2>Shaved down to what?</h2>
+<p>The "computer" Firecracker hands each guest has exactly four things on it: a network card, a disk, one wire for printing logs, and a <strong>keyboard with a single key — and that key is power-off</strong>. No self test, no expansion bus, not even a boot screen: it drops the operating system straight into memory and starts at the first instruction.</p>
+<p>Think of a capsule hotel that stops fitting every room with a kitchen, a garage and a garden, and leaves only a bed, a lock and the utilities — <strong>the guest only wanted a night's sleep anyway</strong>. Small rooms mean thousands per floor; quick turnaround means the next guest checks in as fast as the last one leaves.</p>
+<p>Two more things came along with it. First, <strong>new building material</strong>: the program that hands out the rooms was rewritten in a language where security bugs are much harder to write, in about fifty thousand lines — where the veteran equivalent runs to over a million. <strong>Less code, fewer seams to pry at.</strong> Second, <strong>a second lock outside the door</strong>: if someone really did climb out of a room, what they land in is not the corridor but a small cage that was stripped of nearly every privilege in advance.</p>
+<h2>What it bought</h2>
+<p>Each of these "microVMs" costs under 5 MB of extra memory, takes about <strong>125 milliseconds</strong> from creation to running customer code, and one machine can mint 150 of them per second. So a single physical machine can be packed tight with different customers' functions, none of them able to touch the others — <strong>safe and fast, no longer a choice of one</strong>. It was open-sourced in 2018, and both Lambda and Fargate run on it today.</p>
+<p>One honest cost: this computer is deeply specialized — no graphics card, no expansion slots, so work that needs them simply cannot run here.</p>
+<h2>The one-line takeaway</h2>
+<div class="tl">
+<p>Virtual machines are slow and heavy not because isolation is expensive, but because they pretend to be a real computer with everything on it. Shave the fake hardware down to a network card, a disk, a log wire and a power-off key, rewrite the manager in a safer language, and wrap a cage around it — the isolation is still virtual-machine grade, yet boot is an eighth of a second and the overhead is a few megabytes. That is how cloud functions got to be safe and cheap at the same time.</p>
+</div>
+<p class="switch-hint">Want the architecture diagrams, the rejected alternatives, and the measured numbers? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Firecracker is the minimal <strong>virtual machine monitor</strong> (VMM) AWS built for Lambda and Fargate: it throws away almost all of the hardware a general-purpose VMM emulates for the sake of generality, keeping only a virtio network device, a virtio block device, a serial port and a crippled keyboard controller whose sole job is to press "power off". Written in roughly 50,000 lines of Rust on top of Linux KVM, it gives each "microVM" a VMM memory overhead of <strong>under 5 MiB</strong>, <strong>about 125 ms</strong> from creation to user code, and <strong>up to 150 microVM creations per second per host</strong> — putting <strong>virtual-machine-grade isolation</strong> inside <strong>container-grade density and startup time</strong> for the first time.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Virtual machine (VM) / virtual machine monitor (VMM, a.k.a. hypervisor)</strong>: software that carves one real machine into several "fake computers", each running its own operating system; the program that builds and manages them is the VMM.</li>
+<li><strong>Guest / host</strong>: the system running inside the virtual machine is the guest; the system on the real machine underneath is the host.</li>
+<li><strong>KVM</strong>: the virtualization module inside the Linux kernel. It uses the CPU's own virtualization instructions to handle the hardest part of faking a computer — CPU and memory — so a VMM only has to emulate devices.</li>
+<li><strong>Container</strong>: no fake computer at all; several processes share the host's single kernel and are separated by namespaces (limiting what each can see) and cgroups (limiting what each can use). Light and fast, but the kernel is shared.</li>
+<li><strong>System call (syscall)</strong>: the entry point a program uses to ask the kernel for a service (read a file, send a packet). Linux has more than three hundred of them; together they are the kernel's attack surface.</li>
+<li><strong>seccomp</strong>: a Linux filter that restricts a process to a named set of system calls and denies everything else.</li>
+<li><strong>virtio</strong>: a "paravirtualized" device interface designed for VMs — the guest knows it is virtualized, so instead of pretending to drive real hardware it exchanges data with the VMM through shared-memory ring queues, far faster than emulating a physical card instruction by instruction.</li>
+<li><strong>Serverless / FaaS</strong>: the user hands over a function and never manages servers; the platform bills per invocation and per millisecond of runtime. AWS Lambda is the archetype.</li>
+<li><strong>Cold start</strong>: a function has no ready environment right now, so one has to be created — the extra wait the caller pays for.</li>
+<li><strong>TCB (trusted computing base)</strong>: the sum of code in a system that must be assumed not to have been compromised. Smaller is better.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The authors — Alexandru Agache, Marc Brooker and colleagues — are AWS engineers, and the paper appeared at <strong>NSDI 2020</strong>. Firecracker itself had been open source since late 2018; the code started as a fork of <strong>crosvm</strong>, Google's Rust VMM for Chrome OS, and the two diverged afterwards. It stands on KVM and virtio, the two pieces of infrastructure that made virtualization cheap, and it opened the way for the rust-vmm ecosystem and projects like Cloud Hypervisor that assemble a VMM out of Rust parts. Read it against the previous paper, the Berkeley View: that one argues about what serverless <em>should be and what it lacks</em>; this one shows how <em>the brick underneath it</em> was fired.</p>
+<h2>The problem</h2>
+<p>Early Lambda got its isolation from the EC2 instance boundary itself: <strong>one customer account's functions ran on virtual machines dedicated to that account, and different customers were separated by whole instances</strong>. Impeccable security, far too coarse a grain. A customer who only occasionally runs a 50 ms function still needs an instance standing by; instances boot in seconds, so capacity has to be reserved and kept warm. <strong>Low density means idle machines means cost — and cost is exactly what a per-millisecond billing model is selling against.</strong></p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<text fill="#7c8593" font-size="11.5" text-anchor="middle" x="145" y="18">Before: one instance per customer</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="415" y="18">After: one host packed with microVMs</text>
+<rect fill="rgba(255,255,255,0.02)" height="50" rx="7" stroke="#7c8593" width="230" x="30" y="34"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="22" x="44" y="48"></rect>
+<text fill="#b9c0ca" font-size="11" x="76" y="64">customer A's function</text>
+<text fill="#5a6069" font-size="10" text-anchor="end" x="248" y="64">idle</text>
+<rect fill="rgba(255,255,255,0.02)" height="50" rx="7" stroke="#7c8593" width="230" x="30" y="92"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="22" x="44" y="106"></rect>
+<text fill="#b9c0ca" font-size="11" x="76" y="122">customer B's function</text>
+<text fill="#5a6069" font-size="10" text-anchor="end" x="248" y="122">idle</text>
+<rect fill="rgba(255,255,255,0.02)" height="50" rx="7" stroke="#7c8593" width="230" x="30" y="150"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="22" x="44" y="164"></rect>
+<text fill="#b9c0ca" font-size="11" x="76" y="180">customer C's function</text>
+<text fill="#5a6069" font-size="10" text-anchor="end" x="248" y="180">idle</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="145" y="222">low density · boots in seconds · machines idling</text>
+<rect fill="rgba(240,180,41,0.06)" height="168" rx="7" stroke="#f0b429" width="230" x="300" y="34"></rect>
+<rect fill="#f0b429" height="22" rx="3" width="24" x="312" y="46"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="344" y="46"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="376" y="46"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="408" y="46"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="440" y="46"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="472" y="46"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="24" x="312" y="78"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="344" y="78"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="376" y="78"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="408" y="78"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="440" y="78"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="472" y="78"></rect>
+<rect fill="#f0b429" height="22" rx="3" width="24" x="312" y="110"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="344" y="110"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="376" y="110"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="408" y="110"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="440" y="110"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="472" y="110"></rect>
+<rect fill="#e8794b" height="22" rx="3" width="24" x="312" y="142"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="344" y="142"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="376" y="142"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="408" y="142"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="440" y="142"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="472" y="142"></rect>
+<rect fill="#f0b429" height="22" rx="3" width="24" x="312" y="174"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="344" y="174"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="376" y="174"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="408" y="174"></rect><rect fill="#f0b429" height="22" rx="3" width="24" x="440" y="174"></rect><rect fill="#e8794b" height="22" rx="3" width="24" x="472" y="174"></rect>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="415" y="222">&lt; 5 MiB each · 125 ms boot · oversubscribable</text>
+</svg>
+<figcaption>Fig 1 · Shrinking the unit of isolation from "one instance per customer" to "one microVM per function" is what lets density rise.</figcaption>
+</figure>
+<p>Raising density means packing different customers onto the same host, which forces the question: <strong>what serves as the isolation boundary?</strong> The paper lays the options out:</p>
+<ul>
+<li><strong>Containers</strong>: ideal density and startup, but the boundary is the entire Linux system call interface — three hundred-odd calls plus sprawling entry points like <code>ioctl</code>, <code>/proc</code> and <code>/sys</code>, which have produced escape vulnerabilities repeatedly. Stacking mutually distrusting tenants on one kernel was not an acceptable risk.</li>
+<li><strong>Language-level sandboxes</strong> (such as isolates in a JavaScript engine: several mutually invisible execution contexts inside one process): startup in milliseconds, but user code must be written in a particular language and runtime. Lambda has to support arbitrary languages, arbitrary binaries, even customers' own native extensions.</li>
+<li><strong>User-space kernels</strong> (intercept the guest's system calls and implement them in user space, as gVisor does): the attack surface really does shrink, but compatibility has to be rebuilt one syscall at a time and the interception itself costs performance.</li>
+<li><strong>Traditional virtual machines</strong>: exactly the isolation strength wanted, but off-the-shelf VMMs carry generality as dead weight — a million lines of C, a full PC device model, boots measured in seconds, tens to hundreds of megabytes resident per VM.</li>
+</ul>
+<p>From that the paper states six hard requirements: <strong>isolation, overhead and density, performance close to bare metal, compatibility with arbitrary Linux binaries, fast switching (create and destroy in milliseconds), and soft allocation (oversubscription must be possible)</strong>. Nothing available met all six, so they wrote their own.</p>
+<h2>The core ideas</h2>
+<h3>Idea 1: what is slow is not virtualization, it is the device model</h3>
+<p>The pivotal judgement in the paper is that <strong>hardware virtualization itself is not slow</strong>. Since CPUs gained virtualization instructions and KVM moved that work into the kernel, the overhead of a guest executing instructions and touching memory has been small. The weight comes from the VMM's other job — <strong>faking an entire PC</strong>: BIOS self test, PCI bus enumeration, USB, floppy and optical drives, graphics, plug and play. The guest kernel probes that cabinet of fake hardware on boot, and most of those seconds go there — while the same emulation code is also the VMM's largest attack surface.</p>
+<p>But a serverless guest is <strong>a Linux the platform itself supplies</strong>, running a customer's function. It never installs Windows, never needs a GPU, never hot-plugs USB. <strong>Once the compatibility requirement drops from "any operating system" to "any Linux binary", there is finally room to cut.</strong></p>
+<p>So Firecracker's device model retains four things: a <strong>virtio network device, a virtio block device, a serial port</strong> for logs, and a <strong>crippled keyboard controller whose only purpose is to let the host press "power off"</strong>. No BIOS, no bootloader: Firecracker loads an uncompressed Linux kernel image directly into guest memory and jumps in according to the Linux boot protocol. The boot path is down to "load the kernel, find four devices".</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 185" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="fa" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#7c8593" font-size="11.5" x="24" y="32">General-purpose VMM (e.g. QEMU)</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="24" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="60" y="59">BIOS/POST</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="96" x2="102" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="104" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="140" y="59">bootloader</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="176" x2="182" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="112" x="184" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="240" y="59">enumerate PCI / USB / GPU</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="296" x2="302" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="72" x="304" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="340" y="59">guest kernel</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="376" x2="382" y1="55" y2="55"></line>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="52" x="384" y="40"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="410" y="59">app</text>
+<text fill="#e8794b" font-size="12" x="448" y="59">seconds</text>
+<text fill="#f0b429" font-size="11.5" x="24" y="100">Firecracker</text>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="140" x="24" y="108"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="94" y="127">load uncompressed kernel</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="164" x2="170" y1="123" y2="123"></line>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="150" x="172" y="108"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="247" y="127">find 4 devices (virtio etc.)</text>
+<line marker-end="url(#fa)" stroke="#7c8593" x1="322" x2="328" y1="123" y2="123"></line>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="52" x="330" y="108"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="356" y="127">app</text>
+<text fill="#f0b429" font-size="12" x="394" y="127">≈ 125 ms</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="168">what was cut out is both the boot time and the VMM's largest attack surface</text>
+</svg>
+<figcaption>Fig 2 · Boot paths compared: with firmware and device enumeration gone, booting is "load the kernel, find four devices".</figcaption>
+</figure>
+<p>The cost is explicit: the guest kernel has to be built for this stripped device set (virtio drivers on, most everything else off), and a customer who wants a GPU or PCI passthrough will not find one here. <strong>This is deliberate specialization, not an oversight.</strong></p>
+<h3>Idea 2: treat the VMM itself as attack surface</h3>
+<p>If there is only one isolation boundary, that boundary has to be perfect. Firecracker assumes it is not, and stacks two.</p>
+<p>The first is <strong>making the VMM small and sturdy</strong>: about <strong>50,000 lines of Rust</strong> versus QEMU's million-plus lines of C — shrinking the attack surface along two axes at once, since Rust rules out buffer overflows and use-after-free at compile time, and those are precisely where VMM vulnerabilities come from. One microVM is <strong>one process</strong>, and each guest vCPU is a thread in that process, so a compromise or crash is contained to that one VM.</p>
+<p>The second is the <strong>jailer</strong>: before Firecracker starts, it is locked in a cage — <code>chroot</code> for the filesystem root, namespaces for process and network views, cgroups for resources, dropped privileges so it does not run as root, and finally a <strong>seccomp allowlist</strong> permitting only the few dozen system calls a running microVM genuinely needs. The attack chain becomes: break the guest kernel, then break the KVM boundary, and even then land in a process that was stripped of privilege in advance.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="fb" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text fill="#e8794b" font-size="11" x="36" y="20">jailer cage: chroot · namespaces · cgroups · seccomp allowlist · non-root</text>
+<rect fill="none" height="196" rx="12" stroke="#e8794b" stroke-dasharray="6 4" width="492" x="34" y="28"></rect>
+<rect fill="rgba(240,180,41,0.1)" height="52" rx="8" stroke="#f0b429" width="448" x="56" y="46"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="68">guest microVM: platform-supplied Linux kernel + customer function</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="280" y="87">sees only those four devices — not the host, not its neighbours</text>
+<rect fill="rgba(255,255,255,0.03)" height="96" rx="8" stroke="#7c8593" width="448" x="56" y="112"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="132">Firecracker process · ~50k lines of Rust · one process per microVM</text>
+<rect fill="rgba(255,255,255,0.04)" height="34" rx="6" stroke="#7c8593" width="110" x="70" y="142"></rect><text fill="#b9c0ca" font-size="10" text-anchor="middle" x="125" y="163">REST API (Unix socket)</text>
+<rect fill="rgba(255,255,255,0.04)" height="34" rx="6" stroke="#7c8593" width="96" x="192" y="142"></rect><text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="240" y="163">vCPU threads</text>
+<rect fill="rgba(255,255,255,0.04)" height="34" rx="6" stroke="#f0b429" width="192" x="300" y="142"></rect><text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="396" y="157">minimal device model</text><text fill="#7c8593" font-size="9.5" text-anchor="middle" x="396" y="170">virtio net / block / serial / power-off key</text>
+<text fill="#5a6069" font-size="10" text-anchor="middle" x="280" y="197">cut out: BIOS · PCI · USB · GPU · floppy · plug and play</text>
+<line marker-end="url(#fb)" stroke="#7c8593" x1="280" x2="280" y1="224" y2="238"></line>
+<rect fill="rgba(232,121,75,0.12)" height="44" rx="8" stroke="#e8794b" width="492" x="34" y="240"></rect>
+<text fill="#e7ebf1" font-size="12" text-anchor="middle" x="280" y="261">host Linux kernel · KVM: CPU and memory virtualization done by hardware</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="280" y="277">still inside the TCB — this boundary is narrow, but it is not zero</text>
+</svg>
+<figcaption>Fig 3 · Two boundaries: a guest must first break KVM's narrow interface, and what it lands in is still a process the jailer stripped of privilege.</figcaption>
+</figure>
+<p>The honest part: <strong>KVM and the host kernel remain in the TCB</strong>. This boundary is not zero-trust; it has merely been compressed onto a very narrow interface — the set of <code>ioctl</code>s KVM exposes, far smaller than the full syscall surface.</p>
+<h3>Idea 3: knobs for oversubscription and noisy neighbours</h3>
+<p>Density is not only about fitting things in, it is about <strong>affording them</strong>. A function asks for 2 GB of memory and typically uses tens of megabytes. A microVM's memory comes from host pages allocated on demand: memory the guest never touches is never really handed over, so <strong>memory and CPU can be oversubscribed</strong> — what the paper calls <em>soft allocation</em>. That is the step that turns density into money.</p>
+<p>The cost is neighbours competing for I/O. Firecracker therefore builds <strong>token-bucket rate limiters</strong> into the block and network devices (tokens drip into a bucket at a fixed rate and you wait when it is empty — capping the long-run average while still allowing short bursts), so the layer above can give each microVM a quota.</p>
+<p>Its only external interface is a <strong>REST API over a Unix socket</strong>: configure the kernel, disk, network and vCPU count, then say "start". On each Lambda worker a component called the <strong>MicroManager</strong> drives that API, maintaining a pool of prepared microVM "slots" and assigning a slot to a function when a request arrives — <strong>a slot only ever serves one customer's one function, and is never reused across customers.</strong></p>
+<h2>Key results</h2>
+<p>The paper's three headline numbers: <strong>under 5 MiB of VMM memory overhead per microVM</strong>, <strong>about 125 ms from creation to running user code</strong>, and <strong>up to 150 microVM creations per second per host</strong>. Those are the quantitative payoff for isolation, density and fast switching.</p>
+<p>The evaluation puts Firecracker beside QEMU and gVisor on boot time, memory overhead and I/O throughput. Firecracker wins clearly on boot and memory — the firmware and device model it removed are exactly where QEMU spends time and bytes. <strong>On I/O the paper is candid: block and network throughput trailed QEMU's at the time</strong>; the trimmed virtio implementation gives up some performance, and the authors list it explicitly as known work remaining rather than papering over it.</p>
+<p>For an industrial paper, though, the hardest evidence is not a benchmark: <strong>AWS Lambda runs entirely on Firecracker, and Fargate followed</strong>. Trillions of function invocations a day run on this thing — which says more about whether it holds up than any lab number.</p>
+<h2>Why it matters</h2>
+<ul>
+<li><strong>It overturned an industry consensus.</strong> "Safe means slow, fast means sharing a kernel" was treated as a law of physics; Firecracker showed the slowness lives in the device model rather than in virtualization, so the dilemma was separable all along. Lightweight VMs became a standard infrastructure part afterwards.</li>
+<li><strong>It made the serverless economics real.</strong> Billing per millisecond only works if idle cost is low enough and switching is fast enough. Firecracker supplies that precondition — without it the pricing story does not close.</li>
+<li><strong>It seeded an ecosystem.</strong> After open-sourcing, Kata Containers could use it as a runtime and a wave of "VMs that start in a blink" products built on it directly; the rust-vmm community factored virtqueues, device models and the rest into reusable Rust crates that projects such as Cloud Hypervisor share. "Assemble your own VMM in Rust" became a realistic option.</li>
+<li><strong>It models a genre of paper</strong>: publishing a production system's real constraints, the alternatives that were rejected, and the potholes hit, is far more useful than a performance report alone.</li>
+</ul>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The feature set is deliberately lame</strong>: no PCI passthrough, no GPUs or accelerators, very few device types, so a whole class of workloads needing special hardware (much ML inference, for one) cannot run on it directly; at publication it targeted x86.</li>
+<li><strong>I/O performance trailed mature VMMs</strong>, as above and as the authors admit. Thinning the device model removes attack surface, but it also removes room for optimization.</li>
+<li><strong>Cold starts got cheaper, not abolished</strong>: 125 ms covers microVM creation to user code, while the bulk of a real cold start is often the customer's own runtime initializing (a JVM coming up, Python pulling in dependencies). The line of work that followed — <strong>snapshot and restore</strong>, saving the memory state of an already-booted microVM and reviving it in a blink — aims straight at that segment.</li>
+<li><strong>The TCB did not disappear</strong>: KVM and the host kernel still have to be trusted, and <strong>microarchitectural side channels</strong> (attacks that leak through structures shared inside the CPU) are not something a VM boundary stops; they need separate mitigations.</li>
+<li><strong>As an industrial paper it is not reproducible</strong>: Lambda's actual densities, oversubscription ratios and slot-reclamation policies are not published, leaving outside researchers with the paper's qualitative description.</li>
+<li><strong>It solves isolation and density, not serverless's structural problem</strong>: the complaint in the Berkeley View and in Hellerstein's contemporaneous paper — functions cannot talk to each other directly, so data must be shipped to the code — still stands. A better brick does not change the floor plan.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: shave a VM's device model down to a virtio NIC, a block device, a serial port and a power-off key, rewrite the VMM in 50k lines of Rust, and virtual-machine-grade isolation arrives at container-grade density and startup.</p>
+<p>② The old pain: early Lambda gave each customer account its own instance — clean isolation, far too coarse; low density, boots in seconds, machines idling, all in direct conflict with per-millisecond billing.</p>
+<p>③ Rejected alternatives: containers (boundary is 300+ syscalls, too wide), language sandboxes (locks in a language, compatibility fails), user-space kernels (compatibility and performance both cost), general-purpose VMMs (a million lines, second-scale boots, tens of MB resident).</p>
+<p>④ The pivotal judgement: <strong>virtualization is not what is slow, the device model is</strong>. KVM already hands CPU and memory to hardware; the seconds go to BIOS self test and PCI/USB enumeration — and serverless only needs "any Linux binary", which is what makes the cutting possible.</p>
+<p>⑤ The mechanism: no BIOS, load an uncompressed kernel and jump in; four devices only; one process per microVM with vCPUs as threads; a jailer outside (chroot + namespaces + cgroups + seccomp allowlist + non-root) as a second boundary.</p>
+<p>⑥ Operational knobs: demand-paged memory enables <strong>oversubscription</strong>; token-bucket <strong>rate limiters</strong> on block and network devices handle noisy neighbours; the control plane is a REST API on a Unix socket, with a MicroManager owning slots that are never reused across customers.</p>
+<p>⑦ Results: &lt; 5 MiB overhead, ~125 ms to user code, 150 creations per second per host; it beats QEMU on boot and memory, trailed it on I/O at the time, and the paper says so; the hardest evidence is Lambda and Fargate in production.</p>
+<p>⑧ Impact: it dismantled the false "safe vs fast" dilemma, made the serverless cost model real, and seeded the rust-vmm family of "build your own VMM in Rust" projects.</p>
+<p>⑨ Limits: no GPU or PCI passthrough, an I/O performance debt, cold starts still dominated by customer runtimes (later addressed by snapshot/restore), KVM still in the TCB, side channels unstopped, operational parameters undisclosed — and no change to serverless's ship-data-to-code structure.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full experimental setup and device implementation details, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
