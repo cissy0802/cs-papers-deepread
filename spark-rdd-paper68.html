@@ -36,7 +36,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 68</p>
-<h1>Spark RDD（弹性分布式数据集）</h1>
+<h1 data-tts="405259eea8245ace">Spark RDD（弹性分布式数据集）</h1>
 <p class="sub">Zaharia 等 · UC Berkeley AMPLab · NSDI 2012</p>
 <p class="langbar"><a href="spark-rdd-paper68.en.html">EN →</a></p>
 <div class="modebar">
@@ -44,32 +44,32 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <button data-mode="deep">精读版</button>
 </div>
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="a3e3fb2c3ab92bb2">这篇论文干了什么？</h2>
 <p>2012 年，加州大学伯克利分校的一群人提出了 <strong>RDD（弹性分布式数据集）</strong>，并拿它做出了 <strong>Spark</strong>——今天处理海量数据几乎绕不开的那个引擎。在它之前这类活儿要交给 Hadoop MapReduce；RDD 让同样的活儿<strong>快一个数量级</strong>，还顺手让「在上百台机器上敲一句话、几秒出结果」成了日常。</p>
-<h2>先说个怪事</h2>
+<h2 data-tts="502a76443ac3770e">先说个怪事</h2>
 <p>一百台机器凑成集群算大数据，最怕的不是慢，是<strong>中途有机器坏掉</strong>——总有一两台掉线，它手上那份数据和算了一半的结果就没了。老办法的对策很实在：<strong>每做完一步就把中间结果完整写到硬盘、还存三份</strong>，谁坏了就捞回来重来。</p>
 <p>问题出在<strong>要反复算很多遍</strong>的活儿——训练模型、算网页排名，同一批数据得过几十遍，而每遍都要写一次硬盘再读一次。数据明明没变却被搬进搬出几十趟，<strong>时间几乎全花在搬运上。</strong></p>
-<h2>那个点子</h2>
+<h2 data-tts="69b5d54b5f7eb020">那个点子</h2>
 <p>那就把数据<strong>留在内存里</strong>别搬走啊——可机器一坏，内存里的东西是真没了。于是回到老问题：不存三份、不落硬盘，坏了怎么办？</p>
 <p>RDD 的答案很妙：<strong>别存结果，存做法。</strong></p>
 <p>打个比方。后厨备了二十盘半成品，怕丢，常规做法是每盘复制两份进冷库——又占地方又费时间。RDD 说不用：给你一张<strong>菜谱</strong>，写清这盘由哪盘经哪一步做出来、那盘又来自更早的哪盘，一路追到最开始那袋原料。<strong>丢了哪盘就照菜谱重做哪盘</strong>，别的不用动；菜谱几行字，几乎不花钱。论文把它叫<em>血统（lineage）</em>。</p>
-<h2>这张菜谱凭什么写得下</h2>
+<h2 data-tts="d2fa267280c04a0d">这张菜谱凭什么写得下</h2>
 <p>凭一条自我约束：<strong>只允许「整批」的做法</strong>——这盘每样都切一刀、把不辣的都挑出去、这两盘按名字配对；<strong>不允许</strong>「单独给第 37 号土豆加半勺盐」这种零碎改动。</p>
 <p>这条约束才是命门：若允许零碎改动，要记的就不是几行菜谱而是几百万条流水账，那还不如直接存结果；<strong>只记整批动作，菜谱才短到能抄一份放每台机器上</strong>。而大数据的活儿本就绝大多数是「对全部数据做同一件事」，这条约束基本不疼。</p>
 <p>还有一条：一盘做好就<strong>不许再改</strong>。正因为不许改，照菜谱重做的那盘和丢掉的那盘<strong>一定一模一样</strong>——重算才敢算数。</p>
-<h2>带来了什么</h2>
+<h2 data-tts="08a0f0f81f8ef821">带来了什么</h2>
 <p>数据能安心待在内存里反复用，迭代的活儿快出十几倍；机器坏了也不用整个任务重来，只并行重算丢掉的那一小块。它还改变了人和数据的关系：过去在几 TB 数据上问个问题要等几十分钟，现在像用计算器一样一句一问、几秒一答。</p>
 <p>诚实一句代价：这套办法吃内存，也<strong>只对「整批处理」的活儿有效</strong>——要「来一条改一条」的零碎实时更新，它帮不上忙。</p>
-<h2>一句话记住</h2>
+<h2 data-tts="bd20403a4c9a35d6">一句话记住</h2>
 <div class="tl">
 <p>把数据切块摊在集群内存里、只许整批变换、做好就不许改；容错不靠复印三份，而靠记住「它是怎么一步步做出来的」，丢了哪块就重算哪块。于是数据能留在内存里反复用——迭代的活儿快一个数量级，也能几秒钟回答一个 TB 级的问题。</p>
 </div>
 <p class="switch-hint">想看血统图、窄依赖/宽依赖的结构和实验数字？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="ba7ddf8fcb2b797c">一句话</h2>
 <p class="lead">RDD 是一种<strong>只读、分区、只能由「粗粒度变换」生成</strong>的分布式内存数据集：正因为写入被限制成「对整个数据集做同一个变换」，系统只需记下这些变换构成的<em>血统（lineage）</em>图，就能在节点故障时<strong>重算</strong>丢失的分区，而不必像传统内存系统那样跨机器复制数据或记细粒度更新日志。这让数据第一次能安全地常驻集群内存反复使用，使迭代式机器学习、图计算与交互式查询比 Hadoop MapReduce 快<strong>一个数量级</strong>。</p>
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="3fedca3ba9d76424">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>集群 / 节点（cluster / node）</strong>：几十到几千台普通机器联网当一台大机器用，其中一台叫一个节点。规模一大，「总有机器在坏」就是常态而非意外。</li>
@@ -82,77 +82,77 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>分布式共享内存（DSM）</strong>：让集群像读写本地内存一样读写一片全局内存的抽象，允许任意位置的细粒度读写——灵活，却因太灵活而难以容错。</li>
 </ul>
 </div>
-<h2>坐标</h2>
+<h2 data-tts="2b2f231db72022e1">坐标</h2>
 <p>作者是 Matei Zaharia、Mosharaf Chowdhury、Michael Franklin、Scott Shenker、Ion Stoica 等，来自 UC Berkeley AMPLab，论文发在 <strong>NSDI 2012</strong> 并拿下最佳论文。它上承 MapReduce（2004）与 Dryad 的集群批处理范式、以及 Pregel、HaLoop 这类单一负载专用系统，向下长成 <strong>Apache Spark</strong> 整个生态：Spark SQL、MLlib、GraphX、Structured Streaming 全建在这个抽象上。</p>
-<h2>问题与动机</h2>
+<h2 data-tts="77e237d418c1e429">问题与动机</h2>
 <p>MapReduce 把「在上千台会坏的机器上跑作业」变简单了，但有一个硬性设计：<strong>阶段之间必须经稳定存储交接</strong>——每轮输出写进 HDFS（还带三副本），下一轮再读回来。对「扫一遍出份报表」没问题，可两类负载被它卡死：</p>
 <ul>
 <li><strong>迭代式算法</strong>：逻辑回归、k-means、PageRank 要在<em>同一批</em>数据上跑几十轮，而 MapReduce 每轮都要重读硬盘、再把中间结果写回去——<strong>数据没变却被搬几十趟，I/O 与序列化开销盖过真正的计算</strong>。</li>
 <li><strong>交互式数据挖掘</strong>：分析师想在同一份数据上连问十几个问题，可每一问都是新作业、都要重扫硬盘，每问一次等几十分钟——探索式分析没法做。</li>
 </ul>
 <figure>
-<svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<text x="16" y="26" fill="#e8794b" font-size="12.5" font-weight="700">MapReduce：每一轮都经硬盘</text>
-<rect x="16" y="40" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="48" y="64" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
-<line x1="80" y1="59" x2="112" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="114" y="40" width="74" height="38" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="151" y="64" fill="#e7ebf1" font-size="11.5" text-anchor="middle">第 1 轮</text>
-<line x1="188" y1="59" x2="220" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="222" y="40" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="254" y="64" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
-<line x1="286" y1="59" x2="318" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="320" y="40" width="74" height="38" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="357" y="64" fill="#e7ebf1" font-size="11.5" text-anchor="middle">第 2 轮</text>
-<line x1="394" y1="59" x2="426" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="428" y="40" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="460" y="64" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
-<text x="502" y="64" fill="#7c8593" font-size="12">…</text>
-<text x="16" y="100" fill="#7c8593" font-size="11">每轮读写一次硬盘 + 三副本：同一批数据被搬进搬出几十趟</text>
-<line x1="16" y1="118" x2="544" y2="118" stroke="rgba(240,180,41,0.16)"/>
-<text x="16" y="146" fill="#f0b429" font-size="12.5" font-weight="700">RDD / Spark：读一次，之后常驻内存</text>
-<rect x="16" y="160" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="48" y="184" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
-<line x1="80" y1="179" x2="126" y2="179" stroke="#f0b429" marker-end="url(#a1g)"/>
-<text x="84" y="172" fill="#7c8593" font-size="10.5">只读这一次</text>
-<rect x="128" y="154" width="196" height="50" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="226" y="177" fill="#e7ebf1" font-size="12" text-anchor="middle">内存中的 RDD（分区常驻）</text><text x="226" y="194" fill="#7c8593" font-size="10.5" text-anchor="middle">第 1 轮 → 第 2 轮 → … 就地反复用</text>
-<path d="M226,150 C300,124 152,124 226,150" fill="none" stroke="#f0b429" stroke-width="1.5" marker-end="url(#a1g)"/>
-<line x1="324" y1="179" x2="356" y2="179" stroke="#7c8593" marker-end="url(#a1)"/>
-<rect x="358" y="160" width="80" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="398" y="184" fill="#b9c0ca" font-size="11.5" text-anchor="middle">结果</text>
-<text x="452" y="178" fill="#7c8593" font-size="10.5">丢分区 → 照</text><text x="452" y="192" fill="#7c8593" font-size="10.5">血统重算</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a1g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#e8794b" font-size="12.5" font-weight="700" x="16" y="26">MapReduce：每一轮都经硬盘</text>
+<rect fill="rgba(255,255,255,0.03)" height="38" rx="6" stroke="#7c8593" width="64" x="16" y="40"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="48" y="64">HDFS</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="80" x2="112" y1="59" y2="59"></line>
+<rect fill="rgba(232,121,75,0.12)" height="38" rx="6" stroke="#e8794b" width="74" x="114" y="40"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="151" y="64">第 1 轮</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="188" x2="220" y1="59" y2="59"></line>
+<rect fill="rgba(255,255,255,0.03)" height="38" rx="6" stroke="#7c8593" width="64" x="222" y="40"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="254" y="64">HDFS</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="286" x2="318" y1="59" y2="59"></line>
+<rect fill="rgba(232,121,75,0.12)" height="38" rx="6" stroke="#e8794b" width="74" x="320" y="40"></rect><text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="357" y="64">第 2 轮</text>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="394" x2="426" y1="59" y2="59"></line>
+<rect fill="rgba(255,255,255,0.03)" height="38" rx="6" stroke="#7c8593" width="64" x="428" y="40"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="460" y="64">HDFS</text>
+<text fill="#7c8593" font-size="12" x="502" y="64">…</text>
+<text fill="#7c8593" font-size="11" x="16" y="100">每轮读写一次硬盘 + 三副本：同一批数据被搬进搬出几十趟</text>
+<line stroke="rgba(240,180,41,0.16)" x1="16" x2="544" y1="118" y2="118"></line>
+<text fill="#f0b429" font-size="12.5" font-weight="700" x="16" y="146">RDD / Spark：读一次，之后常驻内存</text>
+<rect fill="rgba(255,255,255,0.03)" height="38" rx="6" stroke="#7c8593" width="64" x="16" y="160"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="48" y="184">HDFS</text>
+<line marker-end="url(#a1g)" stroke="#f0b429" x1="80" x2="126" y1="179" y2="179"></line>
+<text fill="#7c8593" font-size="10.5" x="84" y="172">只读这一次</text>
+<rect fill="rgba(240,180,41,0.1)" height="50" rx="8" stroke="#f0b429" width="196" x="128" y="154"></rect><text fill="#e7ebf1" font-size="12" text-anchor="middle" x="226" y="177">内存中的 RDD（分区常驻）</text><text fill="#7c8593" font-size="10.5" text-anchor="middle" x="226" y="194">第 1 轮 → 第 2 轮 → … 就地反复用</text>
+<path d="M226,150 C300,124 152,124 226,150" fill="none" marker-end="url(#a1g)" stroke="#f0b429" stroke-width="1.5"></path>
+<line marker-end="url(#a1)" stroke="#7c8593" x1="324" x2="356" y1="179" y2="179"></line>
+<rect fill="rgba(255,255,255,0.03)" height="38" rx="6" stroke="#7c8593" width="80" x="358" y="160"></rect><text fill="#b9c0ca" font-size="11.5" text-anchor="middle" x="398" y="184">结果</text>
+<text fill="#7c8593" font-size="10.5" x="452" y="178">丢分区 → 照</text><text fill="#7c8593" font-size="10.5" x="452" y="192">血统重算</text>
 </svg>
 <figcaption>图 1 · 旧世界每一轮都要经 HDFS 交接；RDD 把数据读进内存后就地反复使用，容错交给「记住怎么算出来的」。</figcaption>
 </figure>
 <p>那为什么不干脆做个「集群内存」抽象？因为已有的这类系统——<em>分布式共享内存</em>、内存键值存储（如 Piccolo、RAMCloud）——都允许<strong>细粒度更新</strong>：任意进程可改任意一个格子。灵活是灵活，但容错只剩两条路：<strong>跨机器复制数据，或把每次更新记进日志再跨机器同步</strong>，两条都要在网络上搬大量数据，代价能吃掉内存带来的全部好处。<strong>难题从来不是「把数据放内存」，而是「放进去之后怎么便宜地容错」。</strong></p>
-<h2>核心思想 / 方法</h2>
-<h3>一、把写入限制成「粗粒度」，容错就能靠重算</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="bb0dc1ba9ea3515a">一、把写入限制成「粗粒度」，容错就能靠重算</h3>
 <p>RDD 的定义里藏着全部答案：它是<strong>只读的、被切成若干分区的记录集合</strong>，且<strong>只能通过对另一个 RDD（或稳定存储里的数据）施加一个确定性变换来创建</strong>——<code>map</code>、<code>filter</code>、<code>join</code>、<code>groupByKey</code> 这类作用于<em>整个数据集</em>的算子。你不能随手改其中某条记录。</p>
 <p>这看似能力缩水，实际是一次精准的交换：<strong>因为每个 RDD 都只能由「(父 RDD, 变换)」生成，记住这条来历就等于掌握了重造它的完整配方。</strong>这条来历的链就是<em>血统（lineage）</em>——一张「谁由谁、经哪个变换算出来」的 DAG。于是容错的账变成：<strong>平时什么都不用多存</strong>（血统只是几十字节的元数据），<strong>出故障时只重算丢掉的那些分区</strong>，不碰别的分区、不回滚整个作业，多个丢失分区还可<strong>在不同节点上并行重算</strong>。</p>
 <p>这里有个容易被跳过、却决定成败的前提：<strong>RDD 不可变、变换确定</strong>。正因为父 RDD 不会被偷偷改掉、变换又确定，重算出的分区与丢掉的那个<strong>逐字节等价</strong>——重算才算「恢复」而非「换了个结果」。可变状态 + 细粒度更新做不到这点：它既记不住、也重现不了那条路径。</p>
 <figure>
-<svg viewBox="0 0 560 270" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
-<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
-<text x="22" y="26" fill="#b9c0ca" font-size="11.5">lines（读 HDFS）</text>
-<text x="208" y="26" fill="#b9c0ca" font-size="11.5">errors = lines.filter(…)</text>
-<text x="408" y="26" fill="#b9c0ca" font-size="11.5">msgs = errors.map(…)</text>
-<rect x="22" y="44" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="66" fill="#b9c0ca" font-size="11" text-anchor="middle">分区 1</text>
-<rect x="22" y="94" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="116" fill="#b9c0ca" font-size="11" text-anchor="middle">分区 2</text>
-<rect x="22" y="144" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="166" fill="#b9c0ca" font-size="11" text-anchor="middle">分区 3</text>
-<rect x="222" y="44" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="270" y="66" fill="#b9c0ca" font-size="11" text-anchor="middle">分区 1</text>
-<rect x="222" y="94" width="96" height="34" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="270" y="116" fill="#e7ebf1" font-size="11" text-anchor="middle">分区 2</text>
-<rect x="222" y="144" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="270" y="166" fill="#b9c0ca" font-size="11" text-anchor="middle">分区 3</text>
-<rect x="422" y="44" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="470" y="66" fill="#b9c0ca" font-size="11" text-anchor="middle">分区 1</text>
-<rect x="422" y="94" width="96" height="34" rx="5" fill="none" stroke="#e8794b" stroke-dasharray="5 4"/><text x="470" y="116" fill="#e8794b" font-size="11" text-anchor="middle">分区 2 丢失</text>
-<rect x="422" y="144" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="470" y="166" fill="#b9c0ca" font-size="11" text-anchor="middle">分区 3</text>
-<line x1="118" y1="61" x2="218" y2="61" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="118" y1="161" x2="218" y2="161" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="318" y1="61" x2="418" y2="61" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="318" y1="161" x2="418" y2="161" stroke="#7c8593" marker-end="url(#a2)"/>
-<line x1="118" y1="111" x2="218" y2="111" stroke="#f0b429" stroke-width="2" marker-end="url(#a2g)"/>
-<line x1="318" y1="111" x2="418" y2="111" stroke="#f0b429" stroke-width="2" marker-end="url(#a2g)"/>
-<text x="290" y="216" fill="#f0b429" font-size="12" text-anchor="middle">金色这条就是「分区 2 的血统」——只重算它，别的分区不动</text>
-<text x="290" y="240" fill="#7c8593" font-size="11" text-anchor="middle">存的是几十字节的配方，不是数据副本；多个丢失分区可并行重算</text>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 270" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a2g" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<text fill="#b9c0ca" font-size="11.5" x="22" y="26">lines（读 HDFS）</text>
+<text fill="#b9c0ca" font-size="11.5" x="208" y="26">errors = lines.filter(…)</text>
+<text fill="#b9c0ca" font-size="11.5" x="408" y="26">msgs = errors.map(…)</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="5" stroke="#7c8593" width="96" x="22" y="44"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="70" y="66">分区 1</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="5" stroke="#7c8593" width="96" x="22" y="94"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="70" y="116">分区 2</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="5" stroke="#7c8593" width="96" x="22" y="144"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="70" y="166">分区 3</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="5" stroke="#7c8593" width="96" x="222" y="44"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="270" y="66">分区 1</text>
+<rect fill="rgba(240,180,41,0.12)" height="34" rx="5" stroke="#f0b429" width="96" x="222" y="94"></rect><text fill="#e7ebf1" font-size="11" text-anchor="middle" x="270" y="116">分区 2</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="5" stroke="#7c8593" width="96" x="222" y="144"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="270" y="166">分区 3</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="5" stroke="#7c8593" width="96" x="422" y="44"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="470" y="66">分区 1</text>
+<rect fill="none" height="34" rx="5" stroke="#e8794b" stroke-dasharray="5 4" width="96" x="422" y="94"></rect><text fill="#e8794b" font-size="11" text-anchor="middle" x="470" y="116">分区 2 丢失</text>
+<rect fill="rgba(255,255,255,0.03)" height="34" rx="5" stroke="#7c8593" width="96" x="422" y="144"></rect><text fill="#b9c0ca" font-size="11" text-anchor="middle" x="470" y="166">分区 3</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="118" x2="218" y1="61" y2="61"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="118" x2="218" y1="161" y2="161"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="318" x2="418" y1="61" y2="61"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="318" x2="418" y1="161" y2="161"></line>
+<line marker-end="url(#a2g)" stroke="#f0b429" stroke-width="2" x1="118" x2="218" y1="111" y2="111"></line>
+<line marker-end="url(#a2g)" stroke="#f0b429" stroke-width="2" x1="318" x2="418" y1="111" y2="111"></line>
+<text fill="#f0b429" font-size="12" text-anchor="middle" x="290" y="216">金色这条就是「分区 2 的血统」——只重算它，别的分区不动</text>
+<text fill="#7c8593" font-size="11" text-anchor="middle" x="290" y="240">存的是几十字节的配方，不是数据副本；多个丢失分区可并行重算</text>
 </svg>
 <figcaption>图 2 · 血统容错：某个分区随节点一起丢失时，顺着它自己那条祖先链重算这一个分区即可，无需副本、无需回滚整个作业。</figcaption>
 </figure>
-<h3>二、窄依赖与宽依赖：一条线把执行和恢复都讲清楚了</h3>
+<h3 data-tts="24da632af4656bce">二、窄依赖与宽依赖：一条线把执行和恢复都讲清楚了</h3>
 <p>光说「重算」还不够——重算的代价可能天差地别。论文给了一个至今仍是 Spark 心智模型核心的区分：</p>
 <ul>
 <li><strong>窄依赖（narrow dependency）</strong>：父 RDD 的每个分区<strong>最多被一个子分区用到</strong>（<code>map</code>、<code>filter</code>、已同分区的 <code>join</code>）。父子分区一一对应。</li>
@@ -160,44 +160,44 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </ul>
 <p>这条线一画，两件事同时有了答案。<strong>执行上</strong>，连续的窄依赖可在<strong>同一台机器上流水线执行</strong>——读一条记录，map 完接着 filter，不落地、不进网络；调度器正是<strong>在宽依赖处切开「阶段（stage）」</strong>，阶段内部全是窄依赖、尽情流水线，阶段之间才 shuffle 一次。<strong>恢复上</strong>，窄依赖只需重算对应的那几个父分区；宽依赖丢一个分区，却可能要把祖先 RDD 的<strong>所有</strong>分区重算一遍，代价高到值得单独存档。</p>
 <figure>
-<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-<text x="130" y="26" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">窄依赖 · map / filter</text>
-<text x="420" y="26" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">宽依赖 · groupByKey / join</text>
-<rect x="44" y="48" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<rect x="44" y="92" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<rect x="44" y="136" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<rect x="156" y="48" width="62" height="28" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<rect x="156" y="92" width="62" height="28" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<rect x="156" y="136" width="62" height="28" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
-<line x1="106" y1="62" x2="154" y2="62" stroke="#f0b429"/>
-<line x1="106" y1="106" x2="154" y2="106" stroke="#f0b429"/>
-<line x1="106" y1="150" x2="154" y2="150" stroke="#f0b429"/>
-<text x="130" y="190" fill="#b9c0ca" font-size="11" text-anchor="middle">一对一 → 可在本机流水线</text>
-<text x="130" y="210" fill="#7c8593" font-size="10.5" text-anchor="middle">丢一块只重算对应的一块</text>
-<line x1="286" y1="40" x2="286" y2="220" stroke="rgba(240,180,41,0.16)"/>
-<rect x="334" y="48" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<rect x="334" y="92" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<rect x="334" y="136" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
-<rect x="446" y="48" width="62" height="28" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<rect x="446" y="92" width="62" height="28" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<rect x="446" y="136" width="62" height="28" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
-<g stroke="#e8794b" stroke-width="0.9" opacity="0.85">
-<line x1="396" y1="62" x2="444" y2="62"/><line x1="396" y1="62" x2="444" y2="106"/><line x1="396" y1="62" x2="444" y2="150"/>
-<line x1="396" y1="106" x2="444" y2="62"/><line x1="396" y1="106" x2="444" y2="106"/><line x1="396" y1="106" x2="444" y2="150"/>
-<line x1="396" y1="150" x2="444" y2="62"/><line x1="396" y1="150" x2="444" y2="106"/><line x1="396" y1="150" x2="444" y2="150"/>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<text fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle" x="130" y="26">窄依赖 · map / filter</text>
+<text fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle" x="420" y="26">宽依赖 · groupByKey / join</text>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="5" stroke="#7c8593" width="62" x="44" y="48"></rect>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="5" stroke="#7c8593" width="62" x="44" y="92"></rect>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="5" stroke="#7c8593" width="62" x="44" y="136"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="5" stroke="#f0b429" width="62" x="156" y="48"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="5" stroke="#f0b429" width="62" x="156" y="92"></rect>
+<rect fill="rgba(240,180,41,0.12)" height="28" rx="5" stroke="#f0b429" width="62" x="156" y="136"></rect>
+<line stroke="#f0b429" x1="106" x2="154" y1="62" y2="62"></line>
+<line stroke="#f0b429" x1="106" x2="154" y1="106" y2="106"></line>
+<line stroke="#f0b429" x1="106" x2="154" y1="150" y2="150"></line>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="130" y="190">一对一 → 可在本机流水线</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="130" y="210">丢一块只重算对应的一块</text>
+<line stroke="rgba(240,180,41,0.16)" x1="286" x2="286" y1="40" y2="220"></line>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="5" stroke="#7c8593" width="62" x="334" y="48"></rect>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="5" stroke="#7c8593" width="62" x="334" y="92"></rect>
+<rect fill="rgba(255,255,255,0.03)" height="28" rx="5" stroke="#7c8593" width="62" x="334" y="136"></rect>
+<rect fill="rgba(232,121,75,0.12)" height="28" rx="5" stroke="#e8794b" width="62" x="446" y="48"></rect>
+<rect fill="rgba(232,121,75,0.12)" height="28" rx="5" stroke="#e8794b" width="62" x="446" y="92"></rect>
+<rect fill="rgba(232,121,75,0.12)" height="28" rx="5" stroke="#e8794b" width="62" x="446" y="136"></rect>
+<g opacity="0.85" stroke="#e8794b" stroke-width="0.9">
+<line x1="396" x2="444" y1="62" y2="62"></line><line x1="396" x2="444" y1="62" y2="106"></line><line x1="396" x2="444" y1="62" y2="150"></line>
+<line x1="396" x2="444" y1="106" y2="62"></line><line x1="396" x2="444" y1="106" y2="106"></line><line x1="396" x2="444" y1="106" y2="150"></line>
+<line x1="396" x2="444" y1="150" y2="62"></line><line x1="396" x2="444" y1="150" y2="106"></line><line x1="396" x2="444" y1="150" y2="150"></line>
 </g>
-<text x="420" y="190" fill="#b9c0ca" font-size="11" text-anchor="middle">多对多 → 必须跨机器 shuffle</text>
-<text x="420" y="210" fill="#7c8593" font-size="10.5" text-anchor="middle">丢一块可能要重算上游全部</text>
-<text x="280" y="240" fill="#f0b429" font-size="11.5" text-anchor="middle">调度器就在宽依赖处把 DAG 切成「阶段」</text>
+<text fill="#b9c0ca" font-size="11" text-anchor="middle" x="420" y="190">多对多 → 必须跨机器 shuffle</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="420" y="210">丢一块可能要重算上游全部</text>
+<text fill="#f0b429" font-size="11.5" text-anchor="middle" x="280" y="240">调度器就在宽依赖处把 DAG 切成「阶段」</text>
 </svg>
 <figcaption>图 3 · 窄依赖 vs 宽依赖：同一条区分既决定了哪些算子能在本机流水线执行，也决定了故障重算贵不贵。</figcaption>
 </figure>
-<h3>三、编程接口：惰性的变换 + 触发的动作</h3>
+<h3 data-tts="5c73bdc6fa4ebb10">三、编程接口：惰性的变换 + 触发的动作</h3>
 <p>只有两类操作。<strong>变换（transformation）</strong>——<code>map</code>、<code>filter</code>、<code>join</code>——是<em>惰性</em>的：写下去只是往血统图上加一个节点，什么都不算；<strong>动作（action）</strong>——<code>count</code>、<code>collect</code>、<code>save</code>——才真正触发计算。惰性的好处很实在：系统拿到的是<strong>整张图</strong>而非一句句孤立指令，于是能把连续的窄依赖并成流水线、按数据所在位置派发任务。</p>
 <p>用户还可对 RDD 调 <code>persist()</code>（即 cache）说「这个我要反复用」，并选存储级别：内存里的 Java 对象（最快）、内存里的序列化字节（省空间）、或溢写硬盘。内存不够时按 LRU <strong>以分区为单位</strong>淘汰——淘汰了也不会错，下次照血统重算即可。论文的交互式例子正是如此：把过滤出的错误日志 <code>persist</code> 进内存，之后几十个查询都在这份数据上跑。</p>
-<h3>四、什么时候血统不够用：检查点</h3>
+<h3 data-tts="17a9f9464e98961f">四、什么时候血统不够用：检查点</h3>
 <p>血统不是万能的。当血统链<strong>又长又含宽依赖</strong>（如 PageRank 迭代几十轮、轮轮 shuffle），一次故障可能触发近乎全量的重算。这时该退回老办法：<strong>做检查点</strong>，把某一代 RDD 落到 HDFS 存档、在这里截断血统。而 RDD 让检查点格外省心：<strong>因为只读，检查点可以在后台慢慢写，不必停机做一致性快照、也不怕写到一半数据被改。</strong>论文把「何时自动打检查点」留作后续工作，交给用户显式调用。</p>
-<h2>关键结果</h2>
+<h2 data-tts="62e32f8549704559">关键结果</h2>
 <p>论文的 Spark 实现约 <strong>1.4 万行 Scala</strong>，跑在 Mesos 上，并改造 Scala 解释器以支持交互式使用。主要实验多在 100 台 Amazon EC2 机器上：</p>
 <ul>
 <li><strong>迭代式机器学习</strong>：100 GB 数据上跑逻辑回归与 k-means，Spark 比 Hadoop 快<strong>最多约 20 倍</strong>。差距来源很清楚：第一轮两者都读 HDFS、差别不大；<strong>从第二轮起 Spark 直接用内存里的 RDD，Hadoop 仍要重读硬盘</strong>，外加每轮序列化开销。</li>
@@ -206,11 +206,11 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>内存不足时优雅退化</strong>：只给一部分内存做缓存，性能<strong>平滑下降</strong>而非崩塌——放不下的分区回落到重算/读盘。</li>
 <li><strong>表达力</strong>：作者用 RDD 重新实现了 MapReduce 与 Pregel 的模型（取名 Bagel，约 200 行 Scala），说明它足以涵盖此前一批专用系统——<strong>不是又一个专用框架，而是能装下它们的通用底座</strong>。图算法还可借「控制分区」（两张要 join 的表按同一 key 分区，把宽依赖降成窄依赖）再快一截。</li>
 </ul>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="fd34f0de62d7009c">为什么重要 / 影响</h2>
 <p><strong>直接一层</strong>：Apache Spark 成了 MapReduce 的事实继任者、过去十年大数据处理的主力引擎，而 Spark SQL、MLlib、GraphX、Structured Streaming 全是 RDD 之上的库——恰好兑现了论文「一个通用抽象装下多个专用系统」的主张。</p>
 <p><strong>思想一层</strong>：它把<strong>「用血统重算代替数据复制」</strong>确立为分布式容错的一条正统路线。这远超出 Spark——任何「输入不可变 + 计算确定」的系统都能用它，如数据流水线重跑、事件溯源（event sourcing）、不少现代编排工具的重算语义。</p>
 <p><strong>方法论一层</strong>：它演示了系统设计里最值钱的一类动作——<strong>主动放弃能力以换取性质</strong>：砍掉细粒度写，换来容错几乎免费，与 Dynamo 舍强一致换可用同源。</p>
-<h2>局限与批评</h2>
+<h2 data-tts="f5bae1f14ce22a8a">局限与批评</h2>
 <ul>
 <li><strong>天生不适合细粒度更新</strong>：论文自己就坦白，RDD 不适合「来一条改一条」的异步更新，如增量维护网页索引（Google 为此另做了 Percolator）。它是批量分析的抽象，不是数据库。</li>
 <li><strong>长血统 + 宽依赖时恢复很贵</strong>：迭代几十轮又轮轮 shuffle 时，一次故障可能引发巨量重算；而<strong>何时自动打检查点在论文里是未解问题</strong>，实践中长期靠人工判断。</li>
@@ -218,7 +218,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>内存是硬约束</strong>：工作集放不进集群内存时优势迅速消退；JVM 的对象开销与 GC 压力也是长期痛点，这直接催生了后来 Spark 的 Tungsten（堆外内存 + 代码生成）改造。</li>
 <li><strong>RDD 接口对优化器是黑箱</strong>：算子里装的是任意用户函数，引擎看不透语义，做不了谓词下推、列裁剪这类关系式优化。<strong>Spark 自己后来也承认了这点</strong>——2015 年起 DataFrame / Dataset + Catalyst 成为推荐接口，裸 RDD API 退居底层。某种意义上，RDD 的成功正是「通用到足以长出更高层抽象」。</li>
 </ul>
-<h2>要点</h2>
+<h2 data-tts="5a2b3ed1888d4a6d">要点</h2>
 <div class="tl">
 <p>① 一句话：RDD = 只读 + 分区 + 只能由粗粒度确定性变换生成的内存数据集；容错靠记「血统」并重算，而非复制数据。</p>
 <p>② 痛点：MapReduce 每阶段必经 HDFS，迭代算法与交互式查询被反复落盘拖死；而放进内存又撞上「细粒度更新只能靠复制或日志容错」的老墙。</p>
