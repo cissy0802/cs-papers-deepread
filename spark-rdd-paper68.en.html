@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Resilient Distributed Datasets (Spark RDD) — CS Papers Deep-Read Paper 68</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 68</p>
+<h1>Resilient Distributed Datasets (Spark RDD)</h1>
+<p class="sub">Zaharia, Chowdhury, Das, Dave, Franklin, Shenker, Stoica et al. · UC Berkeley AMPLab · NSDI 2012</p>
+<p class="langbar"><a href="spark-rdd-paper68.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 2012 a group at UC Berkeley proposed <strong>RDDs (Resilient Distributed Datasets)</strong> and built <strong>Spark</strong> on top of them — the engine almost every company now reaches for when the data is too big for one machine. Before it, that job went to Hadoop MapReduce. RDDs made the same work <strong>an order of magnitude faster</strong> in a lot of cases, and made "type one line, a hundred machines answer in seconds" an ordinary thing to do.</p>
+<h2>Start with something odd</h2>
+<p>When you gang a hundred machines together to crunch data, the thing to fear is not slowness — it is <strong>a machine dying halfway through</strong>. Run a hundred of them for a few hours and one or two will drop out, taking their slice of data and their half-finished work with them. The old answer was blunt and effective: <strong>after every step, write the intermediate results all the way out to disk, in triplicate</strong>. When a machine dies, fetch the results back and carry on.</p>
+<p>The trouble shows up in work that has to <strong>go over the same data again and again</strong> — training a model, ranking web pages, dozens of passes over one batch. The old way writes to disk and reads back on every single pass. The data never changed, yet it got hauled in and out dozens of times. <strong>Nearly all the time went into hauling, not into computing.</strong></p>
+<h2>The idea</h2>
+<p>So leave the data <strong>in memory</strong> and stop hauling it — except now, when a machine dies, what was in its memory is genuinely gone. Which puts the old question back: no triplicate copies, no disk, so what happens when something breaks?</p>
+<p>The RDD answer is lovely: <strong>don't store the results, store the method.</strong></p>
+<p>Picture a kitchen with twenty trays of prepped ingredients. Afraid of losing them, most people would photograph every tray and stash two spare copies in the walk-in — bulky and slow. RDDs say: no need. Here is a <strong>recipe card</strong> — this tray came from that tray via this one step, that tray came from an earlier one, and the chain runs all the way back to the original sack of produce. <strong>Lose a tray and you remake that one tray from the card</strong>; every other tray is untouched. The card is a few lines of text, so keeping it costs essentially nothing. The paper calls this card the dataset's <em>lineage</em>.</p>
+<h2>Why the recipe card stays short</h2>
+<p>Because of one piece of self-restraint: <strong>only whole-tray steps are allowed</strong> — chop everything on this tray, throw out everything that isn't spicy, pair these two trays up by name. What is <strong>not</strong> allowed is "add half a spoon of salt to potato number 37."</p>
+<p>That restriction is the whole trick. Allow the fiddly per-item edits and what you must record is not a few lines but millions of ledger entries — at which point you may as well have stored the results. <strong>Record only whole-tray moves and the card stays short enough to hand a copy to every machine in the building.</strong> And since big-data work is overwhelmingly "do the same thing to all of it," giving up the fiddly edits barely hurts.</p>
+<p>One more rule: once a tray is made it <strong>may never be altered</strong> — changing it means making a new tray. Precisely because nothing can be altered underneath you, a tray remade from the card is <strong>identical to the one you lost</strong>. That is what makes remaking count as recovery.</p>
+<h2>What it bought</h2>
+<p>Data can now sit in memory and be reused with confidence, so repetitive work got more than ten times faster. A dead machine no longer restarts the whole job — only the lost pieces get remade, and they can be remade on many machines at once. Better still, it changed how people relate to data: a question over a few terabytes used to mean a coffee break; now you can ask one after another like using a calculator, seconds per answer.</p>
+<p>One honest cost: this approach is hungry for memory, and it <strong>only works for whole-batch jobs</strong> — if what you want is to update one record at a time as news arrives, RDDs cannot help you; that is a different kind of system's job.</p>
+<h2>One line to remember</h2>
+<div class="tl">
+<p>Spread the data across cluster memory in blocks, allow only whole-dataset transformations, and never let a block be altered once made. Then fault tolerance needs no triplicate copies — just a record of how each block was produced, so a lost block can be rebuilt from its recipe. That is what lets data stay in memory and be reused: iterative jobs get an order of magnitude faster, and a terabyte can answer a question in seconds.</p>
+</div>
+<p class="switch-hint">Want the lineage graph, the narrow/wide dependency split, and the numbers? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">RDDs are <strong>read-only, partitioned collections that can only be created by coarse-grained transformations</strong> over other RDDs or stable storage. Because writes are restricted to "apply one transformation to the whole dataset," the system only has to log the graph of those transformations — the <em>lineage</em> — and can <strong>recompute</strong> lost partitions after a node failure instead of replicating data across machines or logging fine-grained updates the way earlier in-memory systems had to. That made it safe, for the first time, to keep working data resident in cluster memory and reuse it, and it made iterative machine learning, graph computation, and interactive querying <strong>an order of magnitude faster</strong> than Hadoop MapReduce.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Cluster / node</strong>: tens to thousands of ordinary machines wired together and used as one big machine; each machine is a node. At that scale "some machine is always broken" is the normal state, not an accident.</li>
+<li><strong>MapReduce</strong>: the batch model from Google, implemented by Hadoop — split work into <em>map</em> (do the same thing to every record) and <em>reduce</em> (aggregate everything sharing a key), with intermediate results written to a distributed file system.</li>
+<li><strong>HDFS / distributed file system</strong>: storage that chops a large file into blocks spread over many machines' disks, several copies of each block. Every access goes through disk and network, so it is far slower than memory.</li>
+<li><strong>Partition</strong>: one slice of a large dataset. It is the unit of parallelism and of failure recovery — each machine holds some partitions.</li>
+<li><strong>Replication</strong>: keeping the same data on several machines so a loss is survivable. Safe, but it multiplies storage and pushes data across the network.</li>
+<li><strong>Checkpoint</strong>: deliberately writing the current state out to reliable storage (such as HDFS), so that after a failure you resume from there instead of from the beginning.</li>
+<li><strong>Iterative algorithm</strong>: one that must sweep the same data many times before converging — logistic regression, k-means clustering, PageRank.</li>
+<li><strong>Logistic regression / k-means</strong>: two classic machine-learning algorithms, one learning a yes/no decision boundary, the other sorting points into k groups. Both make dozens of passes over one dataset.</li>
+<li><strong>Shuffle</strong>: regrouping one stage's output by key, which moves records across every machine before the next stage can start. It is the most expensive move in distributed computing.</li>
+<li><strong>DAG (directed acyclic graph)</strong>: a graph of one-way arrows with no cycles; here it records "what was computed from what."</li>
+<li><strong>Distributed shared memory (DSM)</strong>: an abstraction letting machines in a cluster read and write a global memory as if it were local, with fine-grained access anywhere — flexible, and hard to make fault-tolerant precisely because it is so flexible.</li>
+<li><strong>Lazy evaluation</strong>: writing down a chain of transformations computes nothing; the work is planned and run only when a result is actually demanded.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The authors are Matei Zaharia, Mosharaf Chowdhury, Tathagata Das, Ankur Dave, Michael Franklin, Scott Shenker, Ion Stoica and colleagues at UC Berkeley's AMPLab; the paper appeared at <strong>NSDI 2012</strong> and won Best Paper. It follows the cluster batch-processing lineage of MapReduce (2004) and Dryad, plus the wave of purpose-built systems — Pregel, HaLoop, iterative MapReduce — each solving one workload. Downstream it grew into the whole of <strong>Apache Spark</strong>: Spark SQL, MLlib, GraphX and Structured Streaming all sit on this abstraction.</p>
+<h2>The problem</h2>
+<p>MapReduce made "run a job on a thousand unreliable machines" tractable, but it carries one hard design decision: <strong>stages hand off through stable storage</strong>. Each round's output is written to HDFS (replicated three ways) and the next round reads it back. For "sweep the data once, emit a report," that is fine.</p>
+<p>Two increasingly important workloads choke on it:</p>
+<ul>
+<li><strong>Iterative algorithms.</strong> Logistic regression, k-means and PageRank run dozens of rounds over <em>the same</em> data. MapReduce re-reads that data from disk every round and writes the intermediate state back out — <strong>the data never changed, yet it is hauled in and out dozens of times, and the I/O plus serialization cost swamps the actual computation.</strong></li>
+<li><strong>Interactive data mining.</strong> An analyst wants to ask a dozen questions of one dataset. Each question is a fresh job that rescans disk, so each answer takes tens of minutes — which makes exploratory analysis impossible in practice.</li>
+</ul>
+<figure>
+<svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="16" y="26" fill="#e8794b" font-size="12.5" font-weight="700">MapReduce: every round goes through disk</text>
+<rect x="16" y="40" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="48" y="64" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
+<line x1="80" y1="59" x2="112" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="114" y="40" width="74" height="38" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="151" y="64" fill="#e7ebf1" font-size="11.5" text-anchor="middle">round 1</text>
+<line x1="188" y1="59" x2="220" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="222" y="40" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="254" y="64" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
+<line x1="286" y1="59" x2="318" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="320" y="40" width="74" height="38" rx="6" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/><text x="357" y="64" fill="#e7ebf1" font-size="11.5" text-anchor="middle">round 2</text>
+<line x1="394" y1="59" x2="426" y2="59" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="428" y="40" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="460" y="64" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
+<text x="502" y="64" fill="#7c8593" font-size="12">…</text>
+<text x="16" y="100" fill="#7c8593" font-size="11">one disk write + read (and 3 replicas) per round: the same data hauled in and out dozens of times</text>
+<line x1="16" y1="118" x2="544" y2="118" stroke="rgba(240,180,41,0.16)"/>
+<text x="16" y="146" fill="#f0b429" font-size="12.5" font-weight="700">RDD / Spark: read once, then stay in memory</text>
+<rect x="16" y="160" width="64" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="48" y="184" fill="#b9c0ca" font-size="11.5" text-anchor="middle">HDFS</text>
+<line x1="80" y1="179" x2="126" y2="179" stroke="#f0b429" marker-end="url(#a1g)"/>
+<text x="82" y="172" fill="#7c8593" font-size="10.5">read once</text>
+<rect x="128" y="154" width="196" height="50" rx="8" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/><text x="226" y="177" fill="#e7ebf1" font-size="12" text-anchor="middle">RDD resident in memory</text><text x="226" y="194" fill="#7c8593" font-size="10.5" text-anchor="middle">round 1 → round 2 → … reused in place</text>
+<path d="M226,150 C300,124 152,124 226,150" fill="none" stroke="#f0b429" stroke-width="1.5" marker-end="url(#a1g)"/>
+<line x1="324" y1="179" x2="356" y2="179" stroke="#7c8593" marker-end="url(#a1)"/>
+<rect x="358" y="160" width="80" height="38" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="398" y="184" fill="#b9c0ca" font-size="11.5" text-anchor="middle">result</text>
+<text x="452" y="178" fill="#7c8593" font-size="10.5">lost partition →</text><text x="452" y="192" fill="#7c8593" font-size="10.5">rebuild from lineage</text>
+</svg>
+<figcaption>Fig 1 · The old world hands off through HDFS every round; an RDD is read in once and reused in place, with fault tolerance delegated to "remember how it was computed."</figcaption>
+</figure>
+<p>So why not simply build a cluster-memory abstraction? Because the existing ones — <em>distributed shared memory</em> and in-memory key-value stores such as Piccolo and RAMCloud — all permit <strong>fine-grained updates</strong>: any process may write any cell. Flexible, but it leaves exactly two routes to fault tolerance: <strong>replicate the data across machines, or log every update and ship the log across machines.</strong> Both push large volumes over the network, and for data-intensive workloads that cost can eat the entire benefit of being in memory. <strong>The hard part was never "put the data in memory"; it was "make it cheap to survive failure once it is there."</strong></p>
+<h2>Core idea and method</h2>
+<h3>1. Restrict writes to coarse-grained, and recomputation becomes viable</h3>
+<p>The whole answer hides in the definition: an RDD is a <strong>read-only collection of records split into partitions</strong>, and it <strong>can only be created by applying one deterministic transformation to another RDD (or to data in stable storage)</strong> — <code>map</code>, <code>filter</code>, <code>join</code>, <code>groupByKey</code> and friends, all of which act on the <em>entire dataset</em>. You cannot reach in and edit one record.</p>
+<p>That looks like a loss of power. It is a precise trade: <strong>since every RDD can only have come from some (parent RDD, transformation) pair, recording that provenance is the same as holding the complete recipe for rebuilding it.</strong> The chain of provenance is the <em>lineage</em> — a DAG of "who was computed from whom, by which transformation."</p>
+<p>The fault-tolerance arithmetic then reads: <strong>store nothing extra in the normal case</strong> (lineage is tens of bytes of metadata, not data), and <strong>on failure recompute only the lost partitions</strong>, leaving every other partition alone and rolling nothing back. Several lost partitions can be rebuilt <strong>in parallel on different nodes</strong>, so recovery speed scales with the cluster.</p>
+<p>One premise is easy to skip past and decides everything: <strong>RDDs are immutable and transformations are deterministic.</strong> Because no parent can be mutated behind your back and the transformation is a pure function, a recomputed partition is <strong>byte-for-byte what was lost</strong> — which is why recomputation is recovery rather than a different answer. Mutable state with fine-grained updates cannot offer that, because it can neither record nor replay the path that produced a given value.</p>
+<figure>
+<svg viewBox="0 0 560 270" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker>
+<marker id="a2g" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<text x="22" y="26" fill="#b9c0ca" font-size="11.5">lines (read HDFS)</text>
+<text x="208" y="26" fill="#b9c0ca" font-size="11.5">errors = lines.filter(…)</text>
+<text x="408" y="26" fill="#b9c0ca" font-size="11.5">msgs = errors.map(…)</text>
+<rect x="22" y="44" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="66" fill="#b9c0ca" font-size="11" text-anchor="middle">part 1</text>
+<rect x="22" y="94" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="116" fill="#b9c0ca" font-size="11" text-anchor="middle">part 2</text>
+<rect x="22" y="144" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="70" y="166" fill="#b9c0ca" font-size="11" text-anchor="middle">part 3</text>
+<rect x="222" y="44" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="270" y="66" fill="#b9c0ca" font-size="11" text-anchor="middle">part 1</text>
+<rect x="222" y="94" width="96" height="34" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/><text x="270" y="116" fill="#e7ebf1" font-size="11" text-anchor="middle">part 2</text>
+<rect x="222" y="144" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="270" y="166" fill="#b9c0ca" font-size="11" text-anchor="middle">part 3</text>
+<rect x="422" y="44" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="470" y="66" fill="#b9c0ca" font-size="11" text-anchor="middle">part 1</text>
+<rect x="422" y="94" width="96" height="34" rx="5" fill="none" stroke="#e8794b" stroke-dasharray="5 4"/><text x="470" y="116" fill="#e8794b" font-size="11" text-anchor="middle">part 2 lost</text>
+<rect x="422" y="144" width="96" height="34" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/><text x="470" y="166" fill="#b9c0ca" font-size="11" text-anchor="middle">part 3</text>
+<line x1="118" y1="61" x2="218" y2="61" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="118" y1="161" x2="218" y2="161" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="318" y1="61" x2="418" y2="61" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="318" y1="161" x2="418" y2="161" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="118" y1="111" x2="218" y2="111" stroke="#f0b429" stroke-width="2" marker-end="url(#a2g)"/>
+<line x1="318" y1="111" x2="418" y2="111" stroke="#f0b429" stroke-width="2" marker-end="url(#a2g)"/>
+<text x="285" y="216" fill="#f0b429" font-size="12" text-anchor="middle">the gold path is partition 2's lineage — rebuild only that one</text>
+<text x="285" y="240" fill="#7c8593" font-size="11" text-anchor="middle">what is stored is a recipe of tens of bytes, not a replica; lost partitions rebuild in parallel</text>
+</svg>
+<figcaption>Fig 2 · Lineage-based recovery: when a partition dies with its node, follow that partition's own ancestor chain and recompute just it — no replicas, no job-wide rollback.</figcaption>
+</figure>
+<h3>2. Narrow versus wide dependencies: one distinction that explains both execution and recovery</h3>
+<p>"Just recompute it" is not enough on its own, because the cost of recomputing varies enormously. The paper draws a line that is still the core of Spark's mental model:</p>
+<ul>
+<li><strong>Narrow dependency</strong>: each partition of the parent is used by <strong>at most one</strong> child partition (<code>map</code>, <code>filter</code>, a <code>join</code> on already co-partitioned inputs). Parent and child line up one to one.</li>
+<li><strong>Wide dependency</strong>: a child partition draws on <strong>many or all</strong> partitions of the parent (<code>groupByKey</code>, a <code>join</code> that is not co-partitioned), which requires an all-to-all shuffle across machines.</li>
+</ul>
+<p>Drawing that line answers two questions at once. <strong>For execution</strong>, a run of narrow dependencies can be <strong>pipelined on a single machine</strong> — take a record, map it, filter it, never materialize, never touch the network. The scheduler therefore <strong>cuts the DAG into "stages" exactly at wide dependencies</strong>: inside a stage everything is narrow and pipelines freely; between stages there is one shuffle. <strong>For recovery</strong>, a narrow dependency means rebuilding a lost partition needs only the few matching parent partitions — cheap. A wide dependency means losing one partition may force recomputing <strong>all</strong> partitions of an ancestor RDD — expensive enough to be worth checkpointing against.</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="130" y="26" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">Narrow · map / filter</text>
+<text x="420" y="26" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">Wide · groupByKey / join</text>
+<rect x="44" y="48" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<rect x="44" y="92" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<rect x="44" y="136" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<rect x="156" y="48" width="62" height="28" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<rect x="156" y="92" width="62" height="28" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<rect x="156" y="136" width="62" height="28" rx="5" fill="rgba(240,180,41,0.12)" stroke="#f0b429"/>
+<line x1="106" y1="62" x2="154" y2="62" stroke="#f0b429"/>
+<line x1="106" y1="106" x2="154" y2="106" stroke="#f0b429"/>
+<line x1="106" y1="150" x2="154" y2="150" stroke="#f0b429"/>
+<text x="130" y="190" fill="#b9c0ca" font-size="11" text-anchor="middle">one to one → pipeline on one machine</text>
+<text x="130" y="210" fill="#7c8593" font-size="10.5" text-anchor="middle">lose one block, rebuild one block</text>
+<line x1="286" y1="40" x2="286" y2="220" stroke="rgba(240,180,41,0.16)"/>
+<rect x="334" y="48" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<rect x="334" y="92" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<rect x="334" y="136" width="62" height="28" rx="5" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<rect x="446" y="48" width="62" height="28" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<rect x="446" y="92" width="62" height="28" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<rect x="446" y="136" width="62" height="28" rx="5" fill="rgba(232,121,75,0.12)" stroke="#e8794b"/>
+<g stroke="#e8794b" stroke-width="0.9" opacity="0.85">
+<line x1="396" y1="62" x2="444" y2="62"/><line x1="396" y1="62" x2="444" y2="106"/><line x1="396" y1="62" x2="444" y2="150"/>
+<line x1="396" y1="106" x2="444" y2="62"/><line x1="396" y1="106" x2="444" y2="106"/><line x1="396" y1="106" x2="444" y2="150"/>
+<line x1="396" y1="150" x2="444" y2="62"/><line x1="396" y1="150" x2="444" y2="106"/><line x1="396" y1="150" x2="444" y2="150"/>
+</g>
+<text x="420" y="190" fill="#b9c0ca" font-size="11" text-anchor="middle">many to many → shuffle across machines</text>
+<text x="420" y="210" fill="#7c8593" font-size="10.5" text-anchor="middle">lose one block, maybe rebuild all upstream</text>
+<text x="280" y="240" fill="#f0b429" font-size="11.5" text-anchor="middle">the scheduler cuts the DAG into stages exactly here</text>
+</svg>
+<figcaption>Fig 3 · Narrow vs wide: the same distinction decides which operators can pipeline locally and how expensive a failure is to recover from.</figcaption>
+</figure>
+<h3>3. The programming interface: lazy transformations, eager actions</h3>
+<p>There are only two kinds of operation. <strong>Transformations</strong> — <code>map</code>, <code>filter</code>, <code>join</code> — are <em>lazy</em>: writing one down merely adds a node to the lineage graph and computes nothing. <strong>Actions</strong> — <code>count</code>, <code>collect</code>, <code>save</code> — are what trigger execution. Laziness pays off concretely: the system receives <strong>the whole graph</strong> rather than a stream of isolated commands, so it can fuse runs of narrow dependencies into pipelines and place tasks on the nodes that already hold the data.</p>
+<p>A user can also call <code>persist()</code> (cache) on an RDD to say "I will reuse this; keep it in memory," choosing a storage level: deserialized Java objects in memory (fastest), serialized bytes in memory (more compact), or spilled to disk. When memory runs short, partitions are evicted LRU <strong>at partition granularity</strong> — evicting can never produce a wrong answer, only a recomputation from lineage next time. The paper's interactive example is written exactly this way: filter the error lines out of a log, <code>persist</code> them, then run dozens of queries against that in-memory dataset.</p>
+<h3>4. When lineage is not enough: checkpointing</h3>
+<p>Lineage has a limit. When the chain is <strong>both long and full of wide dependencies</strong> — say dozens of PageRank iterations, each with a shuffle — a single node failure can trigger something close to a full recomputation, and recovery time becomes unacceptable. That is when the old method earns its place: <strong>checkpoint</strong> some generation of the RDD to HDFS and truncate the lineage there.</p>
+<p>Worth noting how much easier RDDs make checkpointing: <strong>because RDDs are immutable, a checkpoint can be written lazily in the background — there is no need to pause for a consistent snapshot and no risk of the data changing mid-write.</strong> The paper leaves <em>when</em> to checkpoint automatically as future work and exposes it as an explicit user call.</p>
+<h2>Key results</h2>
+<p>The Spark implementation in the paper is about <strong>14,000 lines of Scala</strong> running on Mesos, with a modified Scala interpreter for interactive use. The main experiments, mostly on 100 Amazon EC2 machines:</p>
+<ul>
+<li><strong>Iterative machine learning.</strong> Logistic regression and k-means over 100 GB ran <strong>up to roughly 20× faster</strong> than Hadoop. The source of the gap is laid out plainly: the first iteration is comparable because both read HDFS; <strong>from the second iteration on, Spark works from the in-memory RDD while Hadoop re-reads the disk</strong>, paying serialization and deserialization every round.</li>
+<li><strong>Interactive queries.</strong> With <strong>1 TB</strong> cached in memory, query latency landed at <strong>5–7 seconds</strong>; the same queries against disk took on the order of a hundred seconds. That is the boundary between "wait half a minute" and "go get coffee."</li>
+<li><strong>Failure recovery.</strong> Killing a node mid-way through k-means slowed only the iteration during which it died — the lost partitions were rebuilt in parallel across nodes — and subsequent iterations returned to normal speed, rather than the job restarting.</li>
+<li><strong>Graceful degradation under memory pressure.</strong> Given only part of the working set's worth of cache, performance <strong>declined smoothly</strong> instead of collapsing; partitions that did not fit fell back to recomputation or disk.</li>
+<li><strong>Expressiveness.</strong> The authors reimplemented MapReduce and Pregel's model (as Bagel, about 200 lines of Scala) on top of RDDs, showing the abstraction subsumes a batch of earlier special-purpose systems — <strong>not one more framework, but a general substrate wide enough to hold them.</strong> Graph algorithms like PageRank gain further by <em>controlled partitioning</em>: co-partitioning the two tables being joined turns a wide dependency into a narrow one and removes a shuffle.</li>
+</ul>
+<h2>Why it mattered</h2>
+<p>Three layers. <strong>Directly</strong>: Apache Spark became MapReduce's de-facto successor and the workhorse of the last decade of large-scale data processing, with Spark SQL, MLlib, GraphX and Structured Streaming all built as libraries over RDDs — which is precisely the "one general abstraction subsuming many specialized systems" claim, cashed in.</p>
+<p><strong>As an idea</strong>: it established <strong>"recompute from lineage instead of replicating data"</strong> as a legitimate route to distributed fault tolerance. That reaches far beyond Spark — any system whose inputs are immutable and whose computation is deterministic can use it, which is why the same reasoning shows up in re-runnable data pipelines, event sourcing, and the recompute semantics of modern orchestration and data-build tooling.</p>
+<p><strong>As method</strong>: it demonstrates the most valuable move in systems design — <strong>deliberately giving up power to gain a property</strong>. RDDs surrender fine-grained writes and get near-free fault tolerance in exchange. It is the same instinct as Dynamo trading strong consistency for availability, or Firecracker trimming the device model to buy boot time.</p>
+<h2>Limits and criticism</h2>
+<ul>
+<li><strong>Structurally wrong for fine-grained updates.</strong> The paper says so itself: RDDs do not suit asynchronous, record-at-a-time updates such as incrementally maintaining a web index (Google built Percolator for that) or implementing a storage system. This is an abstraction for bulk analytics, not a database.</li>
+<li><strong>Recovery is expensive with long lineage plus wide dependencies.</strong> Dozens of iterations each containing a shuffle mean one failure can trigger enormous recomputation — and <strong>deciding when to checkpoint automatically is left open in the paper</strong>, so in practice it stayed a human judgment call for years.</li>
+<li><strong>"N× faster than Hadoop" travelled further than it deserved.</strong> The speedup comes mainly from reusing one dataset and skipping serialization and disk round-trips; for <strong>single-pass</strong> ETL-shaped jobs the advantage is far smaller, and later work noted that the Hadoop side of such comparisons was often under-tuned.</li>
+<li><strong>Memory is a hard constraint.</strong> Once the working set no longer fits in cluster memory the advantage fades fast, and JVM object overhead plus GC pressure remained a chronic pain — which is what motivated Spark's later Tungsten work (off-heap memory and code generation).</li>
+<li><strong>The RDD interface is opaque to an optimizer.</strong> Operators carry arbitrary user functions, so the engine cannot see their semantics and cannot perform relational optimizations such as predicate pushdown or column pruning. <strong>Spark itself conceded this</strong>: from 2015 the DataFrame / Dataset API with the Catalyst optimizer became the recommended interface and the raw RDD API receded to a lower layer. In a sense RDD's success was being general enough that a higher abstraction could grow on top of it.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: an RDD is a read-only, partitioned in-memory dataset creatable only by coarse-grained deterministic transformations; fault tolerance comes from logging lineage and recomputing, not from replicating data.</p>
+<p>② The pain: MapReduce hands off through HDFS at every stage, so iterative algorithms and interactive queries drown in disk round-trips — yet moving into memory hits the old wall that fine-grained-update systems can only survive failure by replication or update logging.</p>
+<p>③ The trade: <strong>deliberately give up fine-grained writes</strong>, and "how this was computed" fits in tens of bytes — fault tolerance shifts from storing data to storing the recipe.</p>
+<p>④ The premise: immutability plus deterministic transformations, which is what makes a recomputed partition byte-for-byte identical to the lost one.</p>
+<p>⑤ Narrow dependencies (one to one) pipeline locally and recover cheaply; wide ones need a shuffle and can drag in every upstream partition — the scheduler cuts stages exactly at the wide ones.</p>
+<p>⑥ Interface: lazy transformations, eager actions, so the engine optimizes over the whole DAG; <code>persist()</code> picks the storage level, and memory pressure evicts partitions LRU — an evicted partition is simply recomputed from lineage.</p>
+<p>⑦ When lineage is too long, checkpoint to truncate it; immutability lets checkpoints be written asynchronously in the background with no stop-the-world snapshot.</p>
+<p>⑧ Results: up to ~20× over Hadoop for iterative ML on 100 machines; 5–7 s interactive queries over 1 TB cached; a node failure slows only the iteration it hits; degradation under low memory is smooth.</p>
+<p>⑨ Impact: the foundation of the whole Spark stack, and "recompute instead of replicate" as a standing route to distributed fault tolerance.</p>
+<p>⑩ Limits: wrong for fine-grained updates; costly recovery on long lineage with wide dependencies and no automatic checkpointing; memory-hungry with JVM overhead; opaque to optimizers, later superseded as the recommended API by DataFrames and Catalyst.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Finish this page and you have the paper's core; for the full scheduler implementation and experimental setup, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
