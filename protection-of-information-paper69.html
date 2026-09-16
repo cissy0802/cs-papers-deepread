@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>The Protection of Information in Computer Systems（安全设计八原则）— IT 论文精读 Paper 69</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,22 +36,19 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 69</p>
-<h1>The Protection of Information in Computer Systems（安全设计八原则）</h1>
+<h1 data-tts="35366934ada39c35">The Protection of Information in Computer Systems（安全设计八原则）</h1>
 <p class="sub">Saltzer &amp; Schroeder · MIT · Proceedings of the IEEE · 1975</p>
 <p class="langbar"><a href="protection-of-information-paper69.en.html">EN →</a></p>
 <div class="modebar">
 <button data-mode="pop">科普版</button>
 <button data-mode="deep">精读版</button>
 </div>
-
 <div class="mode mode-pop">
-<h2>这篇论文干了什么？</h2>
+<h2 data-tts="8f895d825721d0a7">这篇论文干了什么？</h2>
 <p>1975 年，MIT 的 Saltzer 与 Schroeder 把「怎么让共用的计算机不容易被攻破」从零散经验收拢成<strong>八条设计原则</strong>。今天手机弹的「是否允许访问相册」、网银的双重验证、防火墙默认什么都不放行，背后都是它们。</p>
-
-<h2>旧世界的痛</h2>
+<h2 data-tts="f776e2036aa9e557">旧世界的痛</h2>
 <p>更早的计算机一人一台，安全就是把机房门锁上。到了六七十年代，<strong>分时系统</strong>出现——一台大机器同时伺候几十个互不认识的人，程序和数据全挤在一起，<strong>「墙」第一次必须建在机器内部</strong>。当时的做法是打地鼠：出一个洞补一个补丁，补到谁也说不清它究竟防住了什么。</p>
-
-<h2>他们换了个问法</h2>
+<h2 data-tts="031c6cfcbd629298">他们换了个问法</h2>
 <p>两位作者说：别再一个个补洞，先问<strong>「一个安全的系统，设计时该长什么样」</strong>。八条答案全是大白话：</p>
 <ul>
 <li><strong>默认关门</strong>：没明说允许的一律不许。</li>
@@ -62,27 +60,22 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>少用公用的</strong>：共用部件越多，越容易人传人。</li>
 <li><strong>得用着顺手</strong>：机制反人类，人就会绕过它。</li>
 </ul>
-
-<h2>门卫是怎么工作的</h2>
+<h2 data-tts="5fb1be625a91bb4d">门卫是怎么工作的</h2>
 <p>八条拧成一个画面：系统里有个<strong>门卫</strong>，碰任何东西都得先过他这关。他先确认<strong>你是谁</strong>，再查<strong>你能不能</strong>——认出你是张三，不等于张三能进财务室。</p>
 <p>「你能不能」说到底是一张大表格：<strong>行是人、列是东西，格子里写着这人对这东西能干什么。</strong>表太大没人整张存，于是两种拆法——<strong>把名单贴在东西门口</strong>（文件权限走这条），或<strong>把钥匙发到人手上</strong>（门禁卡、登录令牌走这条）：名单能随时划掉一个名字，钥匙发出去就不知道被配了几把。</p>
 <p>而最难的不是门卫本身，是<strong>「有没有哪扇窗户忘了装门卫」</strong>——留一条绕得过去的小路，前面所有功夫都白费。</p>
-
-<h2>带来了什么</h2>
+<h2 data-tts="250bf8f189e357a7">带来了什么</h2>
 <p>这八条给了整行业<strong>一份能照着查的清单</strong>：默认是关还是开？有没有绕过检查的路？说句诚实的：它们是警示牌、不是能打勾验收的清单，没人能证明自己真做到了「只给够用的权限」。</p>
-
-<h2>一句话记住</h2>
+<h2 data-tts="11324153852f855e">一句话记住</h2>
 <div class="tl">
 <p>安全不是出事后补洞，而是设计时守住八条常识：默认关门、每次都查、机制小到能读完、图纸公开钥匙保密、两把钥匙、只给够用的权限、少用公用部件、让人用着顺手。</p>
 </div>
 <p class="switch-hint">想看门卫模型、访问矩阵两种切法与保护环的结构图？ <a data-mode="deep">→ 切到精读版</a></p>
 </div>
-
 <div class="mode mode-deep" hidden="">
-<h2>一句话</h2>
+<h2 data-tts="852f2b3a8340426a">一句话</h2>
 <p class="lead">一篇 1975 年的教程式综述：它把散落在 Multics 等系统的保护经验收拢成一套至今通用的<strong>词汇</strong>（主体与客体、认证与授权、访问矩阵、访问控制表与能力）和<strong>八条设计原则</strong>。它没提出新算法，却定义了「安全地设计一个系统」该怎么谈。</p>
-
-<h2>Glossary · 术语表</h2>
+<h2 data-tts="2ad6f4af5982b604">Glossary · 术语表</h2>
 <div class="glossary">
 <ul>
 <li><strong>分时系统（time-sharing）</strong>：一台计算机把时间切成小片轮流分给多人，几十个用户同时在线用。</li>
@@ -93,11 +86,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>能力（capability）</strong>：发给主体的一张不可伪造的票，既指明对象又携带权限，出示即用，像门禁卡。</li>
 </ul>
 </div>
-
-<h2>坐标</h2>
+<h2 data-tts="4476244dcdea2ab8">坐标</h2>
 <p>Jerome H. Saltzer 与 Michael D. Schroeder，同出自 MIT 的 Project MAC，论文刊于 1975 年 9 月的《Proceedings of the IEEE》。两人都是 <strong>Multics 的亲历者</strong>，全文的实感来自那个真造出来、也真被攻过的系统。它上承 Lampson 1971 年的<em>访问矩阵</em>与 Anderson 1972 年的<em>引用监视器</em>，下启 1983 年的 TCSEC 标准与今天的零信任。</p>
-
-<h2>问题与动机</h2>
+<h2 data-tts="5eabe9c97042f0dd">问题与动机</h2>
 <p>1970 年代初，计算机正从「一人一台、排队上机」变成分时共享，一台机器上同时跑着<strong>互不信任</strong>的用户，机房那把锁不再是边界。当时的保护实践两个毛病：<strong>零散</strong>，各家各发明一套机制，「A 比 B 安全」无从谈起；<strong>事后</strong>，先做功能、被攻破了再补。</p>
 <p>作者先把词分清：<em>隐私</em>是「信息该给谁看」这个社会问题，<em>安全</em>是控制谁能用系统与信息的整套手段，<em>保护</em>是系统内部的具体机制——这篇只谈最后一个。再定义「被攻破」：三类违规，<strong>未授权的泄露、篡改、拒绝使用</strong>，即后来的 CIA 三性。最后把保护能力排成一道阶梯（图 1），并坦白最高一级做不到。</p>
 <figure>
@@ -124,9 +115,8 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 1 · 论文给出的保护能力阶梯，最高一级「给信息拴上绳子」至今未解。</figcaption>
 </figure>
-
-<h2>核心思想 / 方法</h2>
-<h3>一、八条设计原则</h3>
+<h2 data-tts="0442c072938fbeed">核心思想 / 方法</h2>
+<h3 data-tts="8f79fc896b410337">一、八条设计原则</h3>
 <p>这八条不是定理，而是<strong>「你要是违反了它，请停下来想清楚为什么」的警示牌</strong>——作者自己就这么定位。</p>
 <ul>
 <li><strong>机制经济性（economy of mechanism）</strong>：机制尽可能小、尽可能简单。因为安全的错误是<em>沉默</em>的——功能少写一行会报错，权限少查一次毫无症状，只能靠人一行行读过去确认，所以必须小到读得完。</li>
@@ -139,8 +129,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>心理可接受性（psychological acceptability）</strong>：机制要好用到人愿意照做。用户脑子里「我想保护什么」的图景若和机制对不上，他就会把权限设错，且不知道自己设错了。</li>
 </ul>
 <p>另有两条借自物理安全，作者诚实指出都搬不太动：<strong>工作因子</strong>（攻破要花多少资源）——可多数攻击不是穷举而是绕过缺陷；<strong>入侵留痕</strong>（至少事后看得见）——可复制数据不留痕迹。</p>
-
-<h3>二、门卫：认证、授权与完全仲裁</h3>
+<h3 data-tts="3980a692b759b193">二、门卫：认证、授权与完全仲裁</h3>
 <p>把原则落成结构，核心是一个门卫：<strong>认证</strong>问「你是谁」，<strong>授权</strong>问「这身份能不能做这件事」，完全仲裁则要求它<strong>没有旁门</strong>——后来形式化为<em>引用监视器</em>三条：不可绕过、防篡改、小到可验证。</p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 262" xmlns="http://www.w3.org/2000/svg">
@@ -171,8 +160,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <figcaption>图 2 · 门卫模型：认证与授权两步，所有访问必经同一检查点；一条旁路就让整套机制归零。</figcaption>
 </figure>
 <p>硬件怎么托住它？机器分两态，程序不能自己编地址，只能经<em>描述符</em>访问内存，描述符寄存器只有内核态能装填。这里有个常被忽略的精妙处：<strong>把寻址和授权绑在同一条硬件路径上，是让「每次都查」不至于慢到不可接受的关键——查权限成了取地址的顺带动作。</strong></p>
-
-<h3>三、访问矩阵的两种切法：名单 vs 钥匙串</h3>
+<h3 data-tts="85531f32b094ec6b">三、访问矩阵的两种切法：名单 vs 钥匙串</h3>
 <p>权限的全貌是一张矩阵（Lampson 1971）：行是主体、列是客体，格子里是允许的操作。真实系统不存这张稀疏大表，而是切开来存，切的方向不同取舍就完全不同。</p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 254" xmlns="http://www.w3.org/2000/svg">
@@ -219,8 +207,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>按行切 = 能力</strong>：每个主体持一串不可伪造的钥匙，每把既指明对象又携带权限。好处是出示即用、非常快，也天然支持把权限的一小部分转给别人；代价是<strong>撤销极难</strong>。</li>
 </ul>
 <p>这组取舍五十年没变：UNIX 文件权限、云上的访问策略是名单派；OAuth 令牌、预签名链接是钥匙派——钥匙派在分布式系统里流行，正因为「出示即用」不必回中心问一次。</p>
-
-<h3>四、保护子系统：可信的不只有内核</h3>
+<h3 data-tts="7e84f0b5d14ba9a5">四、保护子系统：可信的不只有内核</h3>
 <p>还有个容易被略过的想法：保护不该只有「内核 vs 其余」两级。普通程序也能有私有数据和<strong>受保护的入口（gate）</strong>——外界只能从少数公开入口调进来，碰不到内部数据。这是今天沙箱与对象能力系统的祖型，Multics 用<strong>保护环</strong>落了地。</p>
 <figure>
 <svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
@@ -245,24 +232,21 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 </svg>
 <figcaption>图 4 · Multics 保护环：越内权限越大，外层只能经少数受检的「门」调入内层。</figcaption>
 </figure>
-
-<h2>关键结果</h2>
+<h2 data-tts="9733c3ebbd306129">关键结果</h2>
 <p>诚实地说：<strong>这篇没有实验、没有数据表、没有基线对比</strong>，它是教程综述，该期待的不是数字。</p>
 <p>它的说服力来自<strong>一个真造出来、也真被攻过的系统</strong>。1974 年美国空军对 Multics 的渗透评估（Karger 与 Schell）确实找到了可利用的漏洞，但结论是它明显强于同代系统；两位评估者 2002 年的回顾进一步指出：被攻破处大多正是<strong>违反了上述原则</strong>的实现细节。<strong>原则不是空谈，是复盘出来的</strong>——而后来五十年里，八条没有一条被推翻。</p>
-<h2>为什么重要 / 影响</h2>
+<h2 data-tts="aa3168123f434065">为什么重要 / 影响</h2>
 <p><strong>它给了这门学科一套共同语言</strong>：主体与客体、认证与授权、访问控制表与能力成为常识，很大程度上因为这篇把它们摆在一起给了统一讲法，此后「A 比 B 安全」才是可讨论的命题。</p>
 <p><strong>八条一一活到了今天：</strong>默认拒绝的防火墙与安全组（失败即拒）；零信任「每个请求都重新校验、不因来自内网就放行」（完全仲裁）；把可信计算基压到最小、乃至 seL4 那样约一万行且被完整形式化验证的微内核（机制经济性）；公开征集、公开分析选出的 AES（开放设计）；双因素与多签（权限分离）；IAM 角色、seccomp 白名单（最小权限）；Spectre / Meltdown 这类因共享缓存而跨界泄密的教训（最少公共机制）；默认开启 HTTPS、用密码管理器而不是逼人记口令（心理可接受性）。</p>
 <p>更根本的是，<strong>它立住了「安全是设计属性」</strong>——不是发布前加挂的模块，而是从第一天就约束结构。</p>
-
-<h2>局限与批评</h2>
+<h2 data-tts="cf508f563f26faa9">局限与批评</h2>
 <ul>
 <li><strong>不可度量，也彼此打架</strong>：你没法证明一个系统「做到了最小权限」，也没法给「机制经济性」打分，于是它们容易沦为事后自辩的话术。原则之间还会冲突：最少公共机制与云计算的多租户经济学正面对撞；最小权限与心理可接受性常互斥——权限切得越细、弹窗越多，用户越是一路点「允许」。论文没给取舍方法。</li>
 <li><strong>体系结构那半篇过时得厉害</strong>：文中重点讲的描述符机器、能力硬件与段式保护商业上基本失败（Intel iAPX 432 是著名例子），平坦地址空间加分页赢了；不过这条路线近年由 CHERI 复活。</li>
 <li><strong>时代局限</strong>：1975 年的威胁模型没有互联网规模的匿名对手、没有侧信道，也没有供应链攻击（对读 Thompson 1984《信任的信任》：编译器本身可能带毒，八条没一条能救你）。三类违规里的「拒绝使用」几乎没展开，今天的 DDoS 正落在这片空白。</li>
 <li><strong>它点名的难题至今未解</strong>：阶梯最高一级「给信息拴上绳子」，即 Lampson 1973 的<em>限制问题</em>与隐蔽信道。DRM、数据防泄漏、污点追踪都只是部分答案——数据一旦交出去，你依然管不住。</li>
 </ul>
-
-<h2>要点</h2>
+<h2 data-tts="d8f071e58787ca43">要点</h2>
 <div class="tl">
 <p>① 定位：1975 年的教程综述，不发明算法，发明的是「怎么谈论系统安全」的词汇与框架。</p>
 <p>② 背景：分时系统让互不信任的人共用一台机器，「墙」第一次必须建在机器内部；三类违规（泄露 / 篡改 / 拒绝使用）即 CIA 三性的雏形。</p>
@@ -273,7 +257,6 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <p>⑦ 影响与局限：默认拒绝、零信任、可信计算基最小化、双因素、IAM 一一对应；但原则不可度量、彼此冲突，「给信息拴绳子」至今未解。</p>
 </div>
 </div>
-
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的机制分类与当年的技术前沿讨论，再去翻原文。</footer>
 </div>
 <script>
