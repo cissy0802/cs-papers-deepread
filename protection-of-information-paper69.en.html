@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The Protection of Information in Computer Systems — CS Papers Deep-Read Paper 69</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 69</p>
+<h1>The Protection of Information in Computer Systems</h1>
+<p class="sub">Saltzer &amp; Schroeder · MIT · Proceedings of the IEEE · 1975</p>
+<p class="langbar"><a href="protection-of-information-paper69.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1975, Jerome Saltzer and Michael Schroeder of MIT took the scattered folklore of "how to make a shared computer hard to break into" and distilled it into <strong>eight design principles</strong>. The "Allow this app to access your photos?" prompt on your phone, two-factor banking logins, a firewall that forwards nothing by default — all of it traces back to these eight.</p>
+
+<h2>The pain of the old world</h2>
+<p>Earlier computers were one machine, one person: security meant locking the machine room. Then, in the 1960s and 70s, <strong>time-sharing</strong> arrived — one big machine serving dozens of people who did not know each other, their programs and data all jammed together. <strong>For the first time the walls had to be built inside the machine.</strong> The practice of the day was whack-a-mole: find a hole, patch the hole, until nobody could say what the system actually kept out.</p>
+
+<h2>They changed the question</h2>
+<p>Stop patching holes one at a time, the authors said, and ask instead: <strong>what should a secure system look like by design?</strong> Their eight answers are all plain speech:</p>
+<ul>
+<li><strong>Shut by default</strong>: if it was not explicitly allowed, it is denied.</li>
+<li><strong>Check every time</strong>: not once at the front door — every time you reach for something.</li>
+<li><strong>Small enough to read</strong>: the guarding machinery must be small enough to read line by line.</li>
+<li><strong>Publish the blueprint, not the key</strong>: never bet on the attacker not knowing how you did it.</li>
+<li><strong>Two keys</strong>: anything important needs two separate conditions met before it opens.</li>
+<li><strong>Only what is needed</strong>: hand out just the privilege this one task requires.</li>
+<li><strong>Share less machinery</strong>: the more parts everyone shares, the easier it leaks from person to person.</li>
+<li><strong>It has to be pleasant</strong>: if the mechanism fights people, people route around it.</li>
+</ul>
+
+<h2>How the gatekeeper works</h2>
+<p>Fold the eight into one picture: the system has a <strong>gatekeeper</strong>, and you pass him before you touch anything. He does two things — first confirm <strong>who you are</strong>, then check <strong>whether you may</strong>. Those are different questions: recognising you as Alice does not mean Alice may walk into payroll.</p>
+<p>"Whether you may" is really one enormous table: <strong>people down the side, things across the top, and in each cell what that person may do to that thing.</strong> The table is far too big to store whole, so there are two ways to slice it — <strong>pin the list to the door of the thing</strong> (that is how file permissions work), or <strong>hand out keys to people</strong> (that is a badge, or the token in your browser after login). The difference is concrete: you can strike a name off a list at any moment, but once a key is out you have no idea how many copies exist.</p>
+<p>And the hard part is never the gatekeeper himself — it is <strong>whether some window was left unguarded</strong>. Leave one path around him and all the rest of the work is wasted.</p>
+
+<h2>What it gave us</h2>
+<p>The eight gave the whole industry <strong>a checklist you can actually walk</strong>: is the default open or shut? Is there a path around the check? One honest note: they are warning signs, not a form to tick — nobody can prove they really achieved "only the privilege needed."</p>
+
+<h2>Remember this</h2>
+<div class="tl">
+<p>Security is not patching holes after the breach; it is holding eight pieces of common sense at design time: shut by default, check every time, keep the mechanism small enough to read, publish the design but not the key, require two keys, grant only what is needed, share less machinery, and make it pleasant enough that people comply.</p>
+</div>
+<p class="switch-hint">Want the gatekeeper model, the two ways to slice an access matrix, and the ring diagram? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">A 1975 tutorial survey that gathered the protection experience scattered across systems like Multics into a <strong>vocabulary</strong> still in use (principal and object, authentication and authorization, the access matrix, access control lists and capabilities) and <strong>eight design principles</strong>. It proposed no new algorithm, yet it defined how the field would talk about designing a system securely.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Time-sharing</strong>: one computer slicing its time into small pieces handed round to many people, so dozens of users are logged in at once.</li>
+<li><strong>Multics</strong>: the time-sharing operating system built from the 1960s by MIT and partners, among the first to treat protection as a first-class design goal; UNIX was the stripped-down reaction to it.</li>
+<li><strong>User mode / supervisor mode</strong>: the CPU's two gears. Supervisor mode may run privileged instructions and change protection settings; user mode may not. This is the hardware floor under all in-machine isolation.</li>
+<li><strong>Segment and descriptor</strong>: memory is carved into "segments," each with a <em>descriptor</em> saying where it runs from and to and whether it is readable or writable; a program reaches memory only through one.</li>
+<li><strong>Principal and object</strong>: the principal is the actor (a user, a process); the object is the thing acted on (a file, a memory segment, a device).</li>
+<li><strong>Capability</strong>: an unforgeable ticket handed to a principal that names an object and carries the rights over it — present it and it works, like a door badge.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>Jerome H. Saltzer and Michael D. Schroeder, both of MIT's Project MAC, published this in the Proceedings of the IEEE in September 1975. Both were <strong>Multics insiders</strong>, and the paper's realism comes from a system that was actually built and actually attacked. It builds on Lampson's 1971 <em>access matrix</em> and the <em>reference monitor</em> of Anderson's 1972 report, and leads on to the 1983 TCSEC criteria and to today's zero-trust architectures.</p>
+
+<h2>The problem and the motivation</h2>
+<p>By the early 1970s computers were moving from "one machine, one person, book your hour" to time-shared, with <strong>mutually distrustful</strong> users running on the same machine; the lock on the machine-room door was no longer the boundary. Protection practice had two faults: it was <strong>scattered</strong> — every system invented its own mechanism, with no shared language in which "A is more secure than B" even meant anything — and it was <strong>after the fact</strong>: build the features, patch once breached.</p>
+<p>The authors first separate the words. <em>Privacy</em> is the social question of who should see my information; <em>security</em> is the whole apparatus controlling who may use a system and its information; <em>protection</em> is the concrete machinery inside the system — and only the last is this paper's subject. Then they define what "breached" means: three categories of violation, <strong>unauthorized release, unauthorized modification, and unauthorized denial of use</strong> — what we now call confidentiality, integrity and availability. Finally they arrange protection capability as a ladder (fig. 1), and admit outright that the top rung cannot be reached.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 268" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="p1a" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<line marker-end="url(#p1a)" stroke="#7c8593" stroke-width="1.2" x1="14" x2="14" y1="238" y2="38"></line>
+<text fill="#7c8593" font-size="11" text-anchor="start" x="8" y="28">Protection power</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="100" x="34" y="196"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="84" y="213">No protection</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="84" y="228">anyone may touch</text>
+<rect fill="rgba(240,180,41,0.07)" height="40" rx="6" stroke="#f0b429" width="100" x="142" y="160"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="192" y="177">All-or-nothing</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="192" y="192">mine stays mine</text>
+<rect fill="rgba(240,180,41,0.09)" height="40" rx="6" stroke="#f0b429" width="100" x="250" y="124"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="300" y="141">Controlled sharing</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="300" y="156">you pick who reads</text>
+<rect fill="rgba(240,180,41,0.12)" height="40" rx="6" stroke="#f0b429" width="100" x="358" y="88"></rect>
+<text fill="#e7ebf1" font-size="10.5" text-anchor="middle" x="408" y="105">User-programmed</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="408" y="120">own sharing rules</text>
+<rect fill="rgba(232,121,75,0.10)" height="40" rx="6" stroke="#e8794b" stroke-dasharray="5 3" width="100" x="452" y="52"></rect>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="502" y="69">Strings on data</text>
+<text fill="#7c8593" font-size="9" text-anchor="middle" x="502" y="84">still yours once out</text>
+<text fill="#e8794b" font-size="11" text-anchor="start" x="34" y="258">The dashed rung: out of reach in 1975, still out of reach today</text>
+</svg>
+<figcaption>Fig. 1 · The paper's ladder of protection capability; the top rung, putting strings on information, is still unsolved.</figcaption>
+</figure>
+
+<h2>The core ideas</h2>
+<h3>1. The eight design principles</h3>
+<p>These are not theorems. They are <strong>warning signs that say: if you are violating this one, stop and be sure you know why</strong> — which is exactly how the authors framed them.</p>
+<ul>
+<li><strong>Economy of mechanism</strong>: keep the protection machinery as small and simple as possible. The reason is brutally practical — security bugs are <em>silent</em>. Omit a line of functionality and something breaks loudly; omit a permission check and nothing happens at all, so the only way to find it is a human reading every line. It must therefore be short enough to read.</li>
+<li><strong>Fail-safe defaults</strong>: no access by default; decide from a list of what is permitted, not a list of what is forbidden. This <strong>makes mistakes fall to the safe side</strong>: a case the designer overlooked shows up under permission lists as "this feature doesn't work" (reported immediately, fixed fast), and under exclusion lists as "that hole was never closed" (possibly never noticed).</li>
+<li><strong>Complete mediation</strong>: every access to every object is checked, with no path around the check. This is the hardest to hold in practice: for performance, people always want to cache the result of a check — and the moment a right is revoked, that cache is a back door.</li>
+<li><strong>Open design</strong>: the mechanism may be public; security rests only on a small, <em>replaceable</em> secret. Blueprints leak eventually and cannot be changed; a leaked key can be replaced. This is Kerckhoffs's principle in cryptography.</li>
+<li><strong>Separation of privilege</strong>: require two independent conditions before granting access, because breaking two independent paths is far harder than breaking one. Two-person vault keys, two-factor authentication and multisig wallets all belong here. (What people today call "privilege separation" — splitting a program into high- and low-privilege halves — is really least privilege.)</li>
+<li><strong>Least privilege</strong>: every user and every program holds only the rights the task at hand requires. That squeezes two things at once: the <strong>blast radius</strong> when something goes wrong, and the number of privileged <strong>interactions</strong> that must be audited.</li>
+<li><strong>Least common mechanism</strong>: minimise the machinery shared by many users and depended on by all of them. Shared parts are natural information channels (one person can sense, even influence, another through them), and when one falls everybody falls with it.</li>
+<li><strong>Psychological acceptability</strong>: the mechanism has to be pleasant enough that people apply it willingly. If the user's mental picture of what they want protected does not match what the mechanism offers, they will set the permissions wrong — and will not know they did.</li>
+</ul>
+<p>Two more are borrowed from physical security, and the authors honestly note that neither transfers well: <strong>work factor</strong> (how much it costs to break in) — but most attacks are not brute force, they route around a flaw; and <strong>compromise recording</strong> (at least you can tell afterwards) — but copying data leaves no trace.</p>
+
+<h3>2. The gatekeeper: authentication, authorization, complete mediation</h3>
+<p>Turn the principles into structure and you get a gatekeeper: <strong>authentication</strong> asks who you are, <strong>authorization</strong> asks whether that identity may do this, and complete mediation demands that he have <strong>no side door</strong> — later formalised as the three requirements of a <em>reference monitor</em>: non-bypassable, tamper-proof, small enough to verify.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 262" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="p2a" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="p2b" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.03)" height="46" rx="6" stroke="#7c8593" width="112" x="18" y="112"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="74" y="131">Principal</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="74" y="148">a user or process</text>
+<line marker-end="url(#p2a)" stroke="#7c8593" x1="130" x2="204" y1="135" y2="135"></line>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="167" y="127">read / write X</text>
+<rect fill="rgba(240,180,41,0.10)" height="70" rx="8" stroke="#f0b429" width="146" x="210" y="100"></rect>
+<text fill="#f0b429" font-size="11.5" font-weight="700" text-anchor="middle" x="283" y="121">The guard</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="283" y="139">1 · who are you?</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="283" y="156">2 · may you do this?</text>
+<line marker-end="url(#p2a)" stroke="#7c8593" x1="356" x2="428" y1="135" y2="135"></line>
+<rect fill="rgba(255,255,255,0.03)" height="46" rx="6" stroke="#7c8593" width="112" x="432" y="112"></rect>
+<text fill="#e7ebf1" font-size="11.5" text-anchor="middle" x="488" y="131">Object</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="488" y="148">file / segment / device</text>
+<rect fill="rgba(255,255,255,0.03)" height="40" rx="6" stroke="#7c8593" width="176" x="195" y="206"></rect>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="283" y="222">Authorization data</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="283" y="238">access control list / capability</text>
+<line marker-end="url(#p2a)" stroke="#7c8593" x1="283" x2="283" y1="206" y2="174"></line>
+<path d="M74,112 L74,76 L488,76 L488,112" fill="none" marker-end="url(#p2b)" stroke="#e8794b" stroke-dasharray="5 4" stroke-width="1.4"></path>
+<circle cx="283" cy="76" fill="#0f1216" r="10" stroke="#e8794b"></circle>
+<path d="M278,71 L288,81 M288,71 L278,81" stroke="#e8794b" stroke-width="1.6"></path>
+<text fill="#e8794b" font-size="11" text-anchor="middle" x="283" y="58">not one path may bypass the guard</text>
+</svg>
+<figcaption>Fig. 2 · The gatekeeper: authentication then authorization, every access through one checkpoint; a single bypass zeroes the whole mechanism.</figcaption>
+</figure>
+<p>How does hardware carry this? The machine has two modes; a program cannot compose an address itself but reaches memory through a <em>descriptor</em>, and only supervisor mode may load the descriptor registers. Here is the piece most often missed: <strong>binding addressing and authorization onto the same hardware path is what keeps "check every time" from being unaffordably slow — the permission check becomes a side effect of fetching the address.</strong></p>
+
+<h3>3. Two ways to slice the access matrix: lists or keyrings</h3>
+<p>The whole of permission is one matrix (Lampson 1971): principals down the rows, objects across the columns, permitted operations in the cells. No real system stores that sparse monster; it stores slices of it — and the direction of the cut changes every trade-off.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 254" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="p3a" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="p3b" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.10)" height="102" width="90" x="96" y="66"></rect>
+<rect fill="rgba(232,121,75,0.10)" height="34" width="270" x="96" y="134"></rect>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="141" y="58">Payroll</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="231" y="58">Log</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="middle" x="321" y="58">Printer</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="end" x="90" y="88">Alice</text>
+<text fill="#b9c0ca" font-size="10.5" text-anchor="end" x="90" y="122">Bob</text>
+<text fill="#e8794b" font-size="10.5" text-anchor="end" x="90" y="156">Backup job</text>
+<line stroke="#7c8593" x1="96" x2="366" y1="66" y2="66"></line>
+<line stroke="#7c8593" x1="96" x2="366" y1="100" y2="100"></line>
+<line stroke="#7c8593" x1="96" x2="366" y1="134" y2="134"></line>
+<line stroke="#7c8593" x1="96" x2="366" y1="168" y2="168"></line>
+<line stroke="#7c8593" x1="96" x2="96" y1="66" y2="168"></line>
+<line stroke="#7c8593" x1="186" x2="186" y1="66" y2="168"></line>
+<line stroke="#7c8593" x1="276" x2="276" y1="66" y2="168"></line>
+<line stroke="#7c8593" x1="366" x2="366" y1="66" y2="168"></line>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="141" y="88">read write</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="231" y="88">read</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="321" y="88">use</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="141" y="122">—</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="231" y="122">read</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="321" y="122">use</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="141" y="156">read</text>
+<text fill="#e7ebf1" font-size="10" text-anchor="middle" x="231" y="156">read</text>
+<text fill="#7c8593" font-size="10" text-anchor="middle" x="321" y="156">—</text>
+<line marker-end="url(#p3a)" stroke="#f0b429" x1="141" x2="141" y1="170" y2="196"></line>
+<rect fill="rgba(240,180,41,0.07)" height="40" rx="6" stroke="#f0b429" width="228" x="27" y="198"></rect>
+<text fill="#f0b429" font-size="10.5" text-anchor="middle" x="141" y="215">Slice by column = access control list</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="141" y="230">list sits on the object; easy to revoke</text>
+<line marker-end="url(#p3b)" stroke="#e8794b" x1="368" x2="392" y1="151" y2="142"></line>
+<rect fill="rgba(232,121,75,0.07)" height="40" rx="6" stroke="#e8794b" width="162" x="394" y="118"></rect>
+<text fill="#e8794b" font-size="10.5" text-anchor="middle" x="475" y="135">Slice by row = capability</text>
+<text fill="#7c8593" font-size="9.5" text-anchor="middle" x="475" y="150">keys held by subjects; hard to revoke</text>
+</svg>
+<figcaption>Fig. 3 · One access matrix: slice it by column and you get access control lists, slice it by row and you get capabilities.</figcaption>
+</figure>
+<ul>
+<li><strong>By column = access control list</strong>: each object carries a list of who may do what to it. "Who can read this file" is immediately answerable and revocation is striking out a line; the price is that the reverse question — what can this person touch — means sweeping the whole system.</li>
+<li><strong>By row = capability</strong>: each principal holds a string of unforgeable keys, each naming an object and the rights over it. Presenting one is fast, and delegating a sliver of your authority is natural; the price is that <strong>revocation is very hard</strong>.</li>
+</ul>
+<p>The trade has not moved in fifty years: UNIX file permissions and cloud access policies are the list camp; OAuth tokens and pre-signed URLs are the key camp — popular in distributed systems precisely because "present it and it works" saves a round trip to a central authority.</p>
+
+<h3>4. Protected subsystems: the kernel is not the only trusted thing</h3>
+<p>One idea here is easy to skip past: protection should not be only two-level, kernel versus everything else. An ordinary program can own private data and <strong>protected entry points (gates)</strong> — outsiders call in through a few published entries and never touch what is inside. That is the ancestor of today's sandboxes and object-capability systems, and Multics realised it with <strong>protection rings</strong>.</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<circle cx="150" cy="126" fill="none" r="108" stroke="#7c8593"></circle>
+<circle cx="150" cy="126" fill="rgba(240,180,41,0.05)" r="80" stroke="#f0b429" stroke-opacity="0.5"></circle>
+<circle cx="150" cy="126" fill="rgba(240,180,41,0.09)" r="52" stroke="#f0b429" stroke-opacity="0.7"></circle>
+<circle cx="150" cy="126" fill="rgba(240,180,41,0.18)" r="26" stroke="#f0b429"></circle>
+<text fill="#f0b429" font-size="10" text-anchor="middle" x="150" y="130">Ring 0</text>
+<text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="150" y="86">Rings 1–2</text>
+<text fill="#b9c0ca" font-size="9.5" text-anchor="middle" x="150" y="58">Rings 3+</text>
+<rect fill="#0f1216" height="10" stroke="#e8794b" width="16" x="142" y="21"></rect>
+<rect fill="#0f1216" height="10" stroke="#e8794b" width="16" x="142" y="93"></rect>
+<text fill="#e8794b" font-size="9.5" text-anchor="start" x="163" y="29">gate</text>
+<line stroke="#7c8593" stroke-dasharray="3 3" x1="258" x2="296" y1="126" y2="126"></line>
+<text fill="#f0b429" font-size="10.5" x="300" y="58">Ring 0 · kernel: most privilege</text>
+<text fill="#b9c0ca" font-size="10.5" x="300" y="84">Rings 1–2 · protected subsystems</text>
+<text fill="#b9c0ca" font-size="10.5" x="300" y="110">Rings 3+ · user code: least</text>
+<text fill="#7c8593" font-size="10" x="300" y="142">Outer code reaches inward only</text>
+<text fill="#7c8593" font-size="10" x="300" y="158">through a few checked gates</text>
+<text fill="#e8794b" font-size="10" x="300" y="188">Flattened in practice: x86 has four</text>
+<text fill="#e8794b" font-size="10" x="300" y="204">rings, mainstream systems use two</text>
+</svg>
+<figcaption>Fig. 4 · Multics protection rings: privilege grows inward, and outer code enters inner rings only through a few checked gates.</figcaption>
+</figure>
+
+<h2>The evidence</h2>
+<p>Honestly: <strong>this paper has no experiments, no tables, no baselines</strong>. It is a tutorial survey and numbers are not what to expect from it.</p>
+<p>Its force comes from <strong>a system that was actually built and actually attacked</strong>. The 1974 US Air Force penetration study of Multics (Karger and Schell) did find exploitable flaws, but concluded the system was markedly stronger than its contemporaries; in their 2002 retrospective the same evaluators noted that what they broke was mostly implementation that <strong>violated these very principles</strong>. <strong>The principles are not armchair advice — they are a post-mortem</strong>; and in the fifty years since, not one of the eight has been overturned.</p>
+
+<h2>Why it matters</h2>
+<p><strong>It gave the field a shared language.</strong> Principal and object, authentication and authorization, access control lists and capabilities became common sense largely because this paper set them out together in one telling — after which "A is more secure than B" became a claim one could actually argue about.</p>
+<p><strong>All eight are alive today:</strong> deny-by-default firewalls and security groups (fail-safe defaults); zero trust, where every request is revalidated and nothing is waved through for coming from inside the network (complete mediation); shrinking the trusted computing base, down to a fully verified microkernel like seL4 at roughly ten thousand lines (economy of mechanism); ciphers like AES chosen by open competition and open analysis (open design); two-factor authentication and multisig (separation of privilege); IAM roles and seccomp allowlists (least privilege); multi-tenant isolation, and the Spectre and Meltdown lesson about leaking across tenants through a shared cache (least common mechanism); HTTPS on by default, and password managers instead of demanding people memorise strings (psychological acceptability).</p>
+<p>More fundamentally, it established that <strong>security is a design property</strong> — not a module bolted on before release, but a constraint on the structure from day one.</p>
+
+<h2>Limits and criticism</h2>
+<ul>
+<li><strong>Unmeasurable, and mutually contradictory</strong>: you cannot prove a system "achieved least privilege," nor score it for economy of mechanism, so the principles slide easily into after-the-fact self-justification. They also collide: least common mechanism runs straight into the economics of cloud multi-tenancy; least privilege and psychological acceptability are often at odds — the finer you cut permissions, the more prompts appear, and the more users click "allow" all the way down. The paper offers no way to adjudicate.</li>
+<li><strong>Half the paper has aged badly</strong>: the descriptor machines, capability hardware and segmented protection it dwells on mostly failed commercially (the Intel iAPX 432 is the famous case) and flat address spaces with paging won. That line has been revived lately by CHERI.</li>
+<li><strong>A 1975 threat model</strong>: no internet-scale anonymous adversary, no side channels, and no supply-chain attack — read it against Thompson's 1984 <em>Reflections on Trusting Trust</em>, where the compiler itself is poisoned and not one of the eight can save you. Denial of use is named as one of the three violations and then barely developed; today's denial-of-service attacks sit in exactly that gap.</li>
+<li><strong>The problem it named is still open</strong>: the top rung, putting strings on information, is Lampson's 1973 <em>confinement problem</em> and the covert channels around it. DRM, data-loss prevention and taint tracking are partial answers at best — once data is handed over, you still cannot control it.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1 · What it is: a 1975 tutorial survey that invents no algorithm and instead invents the vocabulary and framework for talking about system security.</p>
+<p>2 · Context: time-sharing put mutually distrustful people on one machine, so the walls had to move inside it; the three violations (release / modification / denial of use) prefigure confidentiality, integrity and availability.</p>
+<p>3 · The eight: economy of mechanism, fail-safe defaults, complete mediation, open design, separation of privilege, least privilege, least common mechanism, psychological acceptability.</p>
+<p>4 · The gatekeeper: authentication and authorization are separate, complete mediation permits no bypass, and hardware — two modes plus descriptors — makes the check a side effect of addressing.</p>
+<p>5 · Two slices of the access matrix: by column gives access control lists (easy revocation, awkward global queries), by row gives capabilities (fast and delegable, painful to revoke).</p>
+<p>6 · The evidence is not an experiment but the Multics penetration post-mortem: what broke was mostly what violated the principles.</p>
+<p>7 · Impact and limits: deny by default, zero trust, a minimal trusted computing base, two-factor, IAM all map onto the eight; yet the principles are unmeasurable, they conflict, and putting strings on information remains unsolved.</p>
+</div>
+</div>
+
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full taxonomy of mechanisms and the state of the art of the day, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
