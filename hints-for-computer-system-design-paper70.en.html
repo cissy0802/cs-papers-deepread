@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Hints for Computer System Design — CS Papers Deep Read Paper 70</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP READ · PAPER 70</p>
+<h1>Hints for Computer System Design</h1>
+<p class="sub">Butler Lampson · Xerox PARC · SOSP 1983</p>
+<p class="langbar"><a href="hints-for-computer-system-design-paper70.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1983 Butler Lampson — one of the people behind the first personal computer (the Alto), Ethernet, and the first what-you-see-is-what-you-get text editor — compressed twenty years of system building into about thirty short, sloganized lines.</p>
+<p>The paper isn't about how to write code. It's about <strong>how to decide when there is no right answer</strong>: should this feature exist, should anyone else be able to see it, what happens when it breaks. Most of the things engineers say to each other today — "don't over-engineer it," "make it right before you make it fast," "shed load when you're drowning" — trace back to this one page.</p>
+
+<h2>First, a curiosity</h2>
+<p>He didn't call them rules, and he didn't call them laws. He called them <strong>hints</strong>. And in this very paper, "hint" is also a precise technical term: <strong>a guess that may be wrong, but whose correctness can be checked very cheaply</strong>.</p>
+<p>So the title is its own instruction manual: <strong>every line here might be wrong for your project, so go check it yourself.</strong> A classic that would go on to be cited thousands of times opens by disclaiming its own authority — which is exactly why it hasn't aged.</p>
+
+<h2>What was new</h2>
+<p>Papers of that era either proved things about algorithms or described a system someone built. Nobody wrote about <strong>judgment</strong> — judgment lived in the heads of old hands and got transmitted by apprenticeship and by wrecking projects. Lampson wrote it down, with examples on both sides, including failures he was part of.</p>
+
+<h2>How it works</h2>
+<p>He first collapses every design argument onto two axes: <strong>what you're worried about</strong> (is it right, is it fast enough, what happens when it breaks) and <strong>where you're deciding</strong> (how much to do at all, what the interface exposes, how the insides work). Three by three, nine boxes, and the hints all find a home. Three of them, for flavor:</p>
+<p><strong>1. Do one thing and do it well; don't rush to generalize.</strong> Making something "general" is a bet on future requirements, and everyone pays for a lost bet: a bloated interface that also runs slower. A handy paring knife turned into a Swiss army knife peels apples worse. Want to reuse a good idea? <strong>Use it again, separately, in each place</strong> — don't build one universal part.</p>
+<p><strong>2. Don't hide power.</strong> Encapsulation exists so you needn't look at what you don't want to see — <strong>not to lock away the capability you actually need</strong>. An automatic transmission shifting for you is great; one that won't let you touch the brake means you'll go build your own car. An interface that hides too much always gets bypassed in the end.</p>
+<p><strong>3. Send the normal case and the worst case down separate paths.</strong> They want opposite things: the everyday path must be <strong>fast</strong>, while the disaster path only has to <strong>make some progress</strong>. Force them into one path and you get neither. It's why hospitals separate the clinic from the emergency room — mixed together, the sore throat and the cardiac arrest drag each other down.</p>
+
+<h2>What it led to</h2>
+<p>This page became required reading in generations of systems courses, common knowledge in interviews, and shorthand in design reviews — <strong>it isn't cited so much as memorized and used</strong>. One honest cost: these are experience, not laws, and they contradict each other, while <strong>the paper gives you no way to arbitrate</strong>. Usually only someone who has already been burned knows which one applies right now.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>A man who helped build the first personal computer wrote down the judgment behind "get it right, make it fast, keep it working" as about thirty memorable lines — and honestly called them hints: they may be wrong, please check. Most of the design common sense engineers repeat today starts on this page.</p>
+</div>
+<p class="switch-hint">Want the 3×3 table, the precise mechanism of a hint, and which lines the decades have rewritten? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Lampson distilled the lessons that kept recurring across a set of real systems he helped design — successes and failures alike — into <strong>about thirty sloganized "hints,"</strong> organized by a <strong>3×3 table</strong> (three questions: functionality / speed / fault-tolerance, against three places: how much to do / the interface / the implementation). It proves no theorem, yet it became the most widely circulated <strong>checklist of judgment</strong> in system design — and he deliberately called them <em>hints</em> rather than rules: they may be wrong, verify for yourself.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Interface</strong>: the contract a module offers outward — what you may ask it to do and what it promises. Users (clients) see only this, never the insides.</li>
+<li><strong>Abstraction</strong>: hiding details behind an interface and leaving a simplified model; "file" abstracts away the sectors on a disk.</li>
+<li><strong>Client vs. implementation</strong>: the two sides of an interface — the caller is the client, the code that actually does the work behind it is the implementation.</li>
+<li><strong>Cache</strong>: keeping results you already computed or fetched so the next identical request is free — space traded for time.</li>
+<li><strong>Atomic action</strong>: one that either completes entirely or appears never to have happened; it never stops half-done.</li>
+<li><strong>Log</strong>: an append-only record of every state change in order; replay it after a crash and the state comes back.</li>
+<li><strong>Throughput</strong>: how many requests finish per unit time. "Useful throughput" counts only real work, not time burned on queueing, timeouts and retries.</li>
+<li><strong>Overload</strong>: demand exceeds capacity, queues grow without bound, and everyone slows down or the system collapses outright.</li>
+<li><strong>SOSP</strong>: the ACM Symposium on Operating Systems Principles, one of the top venues in systems.</li>
+</ul>
+</div>
+
+<h2>Coordinates</h2>
+<p>Butler Lampson wrote this at Xerox PARC, where he had a hand in the Alto personal computer, Ethernet, the Bravo WYSIWYG editor, the Dover laser printer, the Grapevine distributed mail and naming service, and the Mesa/Cedar programming environment. He received the Turing Award in 1992. The paper was presented at the <strong>9th SOSP in 1983</strong> and reprinted the following year in the first issue of <em>IEEE Software</em>, which is part of why it travelled so far.</p>
+<p>It follows Brooks's tradition of written engineering experience, Parnas on information hiding, and Saltzer's end-to-end argument (both deep-read on this site). What follows it isn't another paper so much as <strong>a whole body of engineering common sense passed along by word of mouth</strong>.</p>
+
+<h2>The problem and the motivation</h2>
+<p>System design had (and has) an awkward property: <strong>there is no computable right answer</strong>. You can prove an algorithm's complexity and a protocol's correctness, but real systems rarely fail on algorithms — they fail on judgment: where to cut the interface, what to hide and what to expose, when performance starts to matter, which layer catches errors. Worse is how this knowledge travels: <strong>it lives only in the heads of people who have built a few large systems</strong>, passed on by apprenticeship and by failed projects. It can't go in a textbook and it can't go in a paper, because it can't be proved — so every generation of engineers repeats the previous one's mistakes.</p>
+<p>Lampson's aim was to break that loop. But he understood what kind of knowledge this is, so the form is deliberately modest: <strong>not laws, hints</strong> — each with a slogan to make it memorable, each backed by real systems on both sides, and each openly admitted to conflict with the others, leaving the judgment to you. That self-limitation is exactly why the paper survived forty years.</p>
+
+<h2>Core ideas</h2>
+
+<h3>Turning design arguments into a 3×3 table</h3>
+<p>The paper's most underrated contribution is its <strong>organizing scheme</strong>. Lampson noticed that nearly every design argument lands on two axes: <strong>what you're worried about</strong> (functionality: is it right? speed: is it fast enough? fault-tolerance: what happens when it breaks?) and <strong>where you're deciding</strong> (completeness: how much should this do at all? interface: what does it expose? implementation: how do the insides work?). Three by three, nine boxes, and thirty-odd hints each find their place.</p>
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="10" y="18" fill="#7c8593" font-size="11">↓ where you decide　　→ what you worry about</text>
+<rect x="118" y="26" width="140" height="28" fill="rgba(240,180,41,0.12)" stroke="rgba(240,180,41,0.35)"></rect>
+<rect x="258" y="26" width="140" height="28" fill="rgba(240,180,41,0.12)" stroke="rgba(240,180,41,0.35)"></rect>
+<rect x="398" y="26" width="140" height="28" fill="rgba(240,180,41,0.12)" stroke="rgba(240,180,41,0.35)"></rect>
+<text x="188" y="45" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">Is it right?</text>
+<text x="328" y="45" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">Is it fast?</text>
+<text x="468" y="45" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">Does it survive?</text>
+<rect x="10" y="58" width="108" height="84" fill="rgba(232,121,75,0.10)" stroke="rgba(232,121,75,0.35)"></rect>
+<text x="64" y="94" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">Completeness</text>
+<text x="64" y="112" fill="#7c8593" font-size="11" text-anchor="middle">how much to do</text>
+<rect x="10" y="146" width="108" height="84" fill="rgba(232,121,75,0.10)" stroke="rgba(232,121,75,0.35)"></rect>
+<text x="64" y="182" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">Interface</text>
+<text x="64" y="200" fill="#7c8593" font-size="11" text-anchor="middle">what to expose</text>
+<rect x="10" y="234" width="108" height="84" fill="rgba(232,121,75,0.10)" stroke="rgba(232,121,75,0.35)"></rect>
+<text x="64" y="270" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">Implementation</text>
+<text x="64" y="288" fill="#7c8593" font-size="11" text-anchor="middle">how the insides work</text>
+<rect x="118" y="58" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="188" y="92" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Do one thing well</text>
+<text x="188" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">don't generalize</text>
+<rect x="258" y="58" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="328" y="92" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Fast beats general</text>
+<text x="328" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">split rather than share</text>
+<rect x="398" y="58" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="468" y="92" fill="#e7ebf1" font-size="11.5" text-anchor="middle">End-to-end: app catches it</text>
+<text x="468" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">normal vs worst case</text>
+<rect x="118" y="146" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="188" y="180" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Don't hide power</text>
+<text x="188" y="198" fill="#b9c0ca" font-size="11" text-anchor="middle">leave it to the client</text>
+<rect x="258" y="146" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="328" y="180" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Ship fast primitives</text>
+<text x="328" y="198" fill="#b9c0ca" font-size="11" text-anchor="middle">clients compose them</text>
+<rect x="398" y="146" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="468" y="180" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Make actions atomic</text>
+<text x="468" y="198" fill="#b9c0ca" font-size="11" text-anchor="middle">or restartable</text>
+<rect x="118" y="234" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="188" y="268" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Use a good idea again</text>
+<text x="188" y="286" fill="#b9c0ca" font-size="11" text-anchor="middle">don't generalize it</text>
+<rect x="258" y="234" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="328" y="268" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Cache · hints · batch</text>
+<text x="328" y="286" fill="#b9c0ca" font-size="11" text-anchor="middle">background · brute force</text>
+<rect x="398" y="234" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="468" y="268" fill="#e7ebf1" font-size="11.5" text-anchor="middle">Log updates · safety first</text>
+<text x="468" y="286" fill="#b9c0ca" font-size="11" text-anchor="middle">shed load when swamped</text>
+</svg>
+<figcaption>Fig. 1 · Three questions by three places: how the paper files its thirty-odd hints. (Cells grouped by theme here, not copied box-for-box from the original table.)</figcaption>
+</figure>
+
+<h3>Interfaces: simple, complete, small and fast — pick fewer than three</h3>
+<p>Lampson frames interface design as a trade-off: a good interface should be <strong>simple</strong>, <strong>complete</strong> (nothing essential missing), and admit <strong>a small, fast implementation</strong> — and satisfying all three at once is essentially impossible, so design is deciding what to give up. Out of that grow a cluster of hints:</p>
+<ul>
+<li><strong>"Do one thing at a time, and do it well." "Don't generalize; generalizations are generally wrong."</strong> Making an interface general is betting present certainty against future requirements, and when the bet loses, every client pays — in a bloated interface and a slower implementation.</li>
+<li><strong>"Use a good idea again rather than generalizing it."</strong> Often misread as a contradiction, this is actually the resolution: implement address translation <strong>separately</strong> in the cache, in virtual memory, and in the file system, each one direct and simple, rather than forcing a "universal mapping subsystem" to serve three different performance requirements. <strong>Reuse the idea, not the part.</strong></li>
+<li><strong>"Don't hide power."</strong> An abstraction's job is to conceal properties you <em>don't want</em>, not to lock away capability you <em>need</em>. If the layer below can prefetch sequentially and the interface won't let you say so, clients simply route around your abstraction — this is the cause of nearly every "our encapsulation got bypassed."</li>
+<li><strong>"Leave it to the client," implemented by passing a procedure as an argument.</strong> Rather than making the policy decision inside (which page to evict, how to merge a conflict), expose it as a function the caller supplies. Today's callbacks and pluggable policies are descendants of this line.</li>
+<li><strong>"Keep basic interfaces stable," and "keep a place to stand."</strong> An interface is a contract, and changing it costs far more than changing an implementation; when you truly must, emulate the old interface on the new implementation so existing clients still have a path.</li>
+</ul>
+
+<h3>Speed: better fast than general</h3>
+<p>The most-quoted line here is <strong>"Make it fast, rather than general or powerful."</strong> <strong>Small fast primitives can be composed by clients into whatever they actually need; a large slow feature cannot be decomposed into something fast.</strong> Performance is the one property clients can't add from outside — so give less, but give it fast.</p>
+<p>The rest is an acceleration toolkit: <strong>cache</strong> the answers to expensive computations; <strong>batch when you can</strong>; <strong>move work off the critical path into the background</strong>; <strong>analyze statically instead of at run time</strong>; and the wonderfully unacademic <strong>"when in doubt, use brute force"</strong> — hardware keeps getting cheaper, and a dumb correct algorithm often beats a clever fragile heuristic, besides being easier to debug. <strong>"Split resources in a fixed way if in doubt, rather than sharing them"</strong> belongs here too: you give up utilization and buy back predictable performance and debuggable failures.</p>
+
+<h3>Hints: guesses allowed to be wrong, required to be cheap to check</h3>
+<p>This is the cleverest line in the paper, and the title's pun. <strong>A hint is a guess that may be stale or wrong, but whose correctness can be checked cheaply on the spot</strong>; if every hint is wrong the system is <strong>still correct</strong>, merely slower. That's precisely how it differs from a cache: a cache assumes its contents are valid (hence all the coherence machinery), while a hint assumes nothing — <strong>it leaves "being correct" to the authoritative source and only takes the "usually saves a round trip" winnings</strong>.</p>
+<figure>
+<svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="h1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="h2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="h3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect x="14" y="60" width="86" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
+<text x="57" y="82" fill="#b9c0ca" font-size="12" text-anchor="middle">request</text>
+<line x1="100" y1="77" x2="132" y2="77" stroke="#7c8593" marker-end="url(#h1)"></line>
+<rect x="136" y="52" width="120" height="50" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="196" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">consult the hint:</text>
+<text x="196" y="90" fill="#b9c0ca" font-size="11" text-anchor="middle">guess an answer</text>
+<line x1="256" y1="77" x2="288" y2="77" stroke="#7c8593" marker-end="url(#h1)"></line>
+<rect x="292" y="52" width="122" height="50" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="353" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">check it cheaply</text>
+<text x="353" y="90" fill="#b9c0ca" font-size="11" text-anchor="middle">was the guess right?</text>
+<line x1="414" y1="77" x2="446" y2="77" stroke="#f0b429" marker-end="url(#h2)"></line>
+<text x="430" y="66" fill="#f0b429" font-size="10.5" text-anchor="middle">yes</text>
+<rect x="450" y="52" width="96" height="50" rx="6" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<text x="498" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">fast path</text>
+<text x="498" y="90" fill="#b9c0ca" font-size="11" text-anchor="middle">return now</text>
+<path d="M353,102 L353,146" fill="none" stroke="#e8794b" marker-end="url(#h3)"></path>
+<text x="372" y="126" fill="#e8794b" font-size="10.5">no / missing</text>
+<rect x="236" y="150" width="234" height="48" rx="6" fill="rgba(232,121,75,0.10)" stroke="#e8794b"></rect>
+<text x="353" y="170" fill="#e7ebf1" font-size="11.5" text-anchor="middle">go to the authority: slow, always right</text>
+<text x="353" y="188" fill="#b9c0ca" font-size="11" text-anchor="middle">correctness rests on this path alone</text>
+<path d="M236,174 L150,174 L150,106" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#h1)"></path>
+<text x="24" y="170" fill="#7c8593" font-size="10.5">refresh the hint in passing</text>
+<text x="24" y="186" fill="#7c8593" font-size="10.5">(skipping it changes nothing)</text>
+</svg>
+<figcaption>Fig. 2 · How a hint works: guess, check cheaply, take the fast path if right, fall back to the authority if wrong. With every hint wrong the system is still correct, just slow.</figcaption>
+</figure>
+<p>The paper's canonical examples are local tables of network addresses and names: the table may be stale, but each use is <strong>validated by the response itself</strong>. A hit saves a broadcast or a lookup; a miss falls back to the slow path and refreshes the entry on the way. The pattern is everywhere now — branch prediction, optimistic concurrency control, DNS and routing caches are all "verifiable guesses."</p>
+
+<h3>Fault tolerance: avoid disaster before you chase the optimum</h3>
+<ul>
+<li><strong>End-to-end</strong>: Lampson's phrasing is stronger than the original — <strong>only the application's own checks and recovery are logically necessary</strong>; error detection and recovery at any other level is not required for correctness and exists strictly for performance. A lower layer checks errors to avoid retransmission, not to guarantee correctness.</li>
+<li><strong>"Log updates" and "make actions atomic or restartable"</strong>: the truth about state lives in an append-only log you replay after a crash, and every action either leaves no half-finished residue or is harmless to repeat. Together these are the skeleton of database crash recovery (see <em>ARIES</em> on this site) and of all idempotent retry.</li>
+<li><strong>"Safety first"</strong>: when allocating resources, first make sure you avoid disaster rather than attain an optimum — because the optimum usually sits right next to a cliff.</li>
+<li><strong>"Shed load"</strong>: when demand exceeds capacity, actively reject some requests instead of sliding into overload. An overloaded system doesn't just get slower — <strong>its useful throughput falls</strong>, because queueing, timeouts and retries eat the resources that should have done the work.</li>
+</ul>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="30" x2="70" y2="205" stroke="#7c8593"></line>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"></line>
+<text x="70" y="22" fill="#7c8593" font-size="11.5" text-anchor="middle">useful throughput</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">offered load →</text>
+<path d="M78,200 C160,120 200,80 250,74 C320,72 380,150 508,196" fill="none" stroke="#e8794b" stroke-width="2.2"></path>
+<path d="M78,200 C160,120 200,80 250,74 C330,72 420,72 508,72" fill="none" stroke="#f0b429" stroke-width="2.2"></path>
+<text x="504" y="62" fill="#f0b429" font-size="12" text-anchor="end">shedding load: refuse the excess, hold throughput</text>
+<text x="504" y="188" fill="#e8794b" font-size="12" text-anchor="end">no shedding: everyone jams, throughput collapses</text>
+<line x1="250" y1="66" x2="250" y2="205" stroke="#7c8593" stroke-dasharray="4 4"></line>
+<text x="250" y="222" fill="#7c8593" font-size="11" text-anchor="middle">capacity</text>
+</svg>
+<figcaption>Fig. 3 · Why you shed load: past capacity, queueing and retries consume the resources that should be doing work, so useful throughput doesn't plateau — it collapses.</figcaption>
+</figure>
+<p>Cutting across the whole table is <strong>"handle normal and worst case separately."</strong> Their requirements genuinely differ — the normal case must be <em>fast</em>, the worst case need only <em>make progress</em>. Cram both into one code path and you typically end up slow in the common case and shaky in the rare one.</p>
+
+<h3>Three lines of ballast</h3>
+<p>Finally, the maxims that run through everything: <strong>"keep it simple"</strong>; <strong>"get it right — neither abstraction nor simplicity is a substitute for getting it right"</strong> (elegant layering cannot rescue semantics that are wrong to begin with); and, quoting Brooks, <strong>"plan to throw one away"</strong> — the main output of a first system is knowledge, not product.</p>
+
+<h2>Key results</h2>
+<p>It has to be said plainly: <strong>this paper has no experiments, no data, no baselines</strong>. Its "results" are cases. Lampson argues hint by hint from real systems — Alto, Bravo, Ethernet, Grapevine, Pilot, Star, Mesa and others — with examples where a hint paid off and examples where violating it hurt, and a good share of the negative examples come from <strong>systems he worked on himself</strong>. The persuasiveness comes not from statistics but from "the witness was there, and is willing to write down his own failures" — which is also exactly where the methodological weakness lies.</p>
+
+<h2>Why it matters</h2>
+<p>Its mode of influence is unusual: <strong>it isn't cited into later research so much as memorized and used.</strong> "Don't over-engineer it," "leave the decision to the caller," "a hint is allowed to go stale," "shed load," "get it right before you make it fast" — a large share of what's written into company design guidelines and interview questions today starts on this page.</p>
+<p>It also became a standard teaching text, and it gave engineers a <strong>shared vocabulary</strong>: say "that one hides power" in a review and the other person instantly knows what you're worried about. In 2020 Lampson wrote a successor, <em>Hints and Principles for Computer System Design</em>, reorganized into goals / techniques / process with the mnemonics STEADY, AID and ART (AID = approximate, incremental, divide and conquer) — evidence that the list is still evolving.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The evidence is anecdotal, with survivorship bias.</strong> The cases come almost entirely from one lab (Xerox PARC), one era, and projects the author was personally part of. We never see the systems that followed the hints and failed anyway — which would be the decisive sample.</li>
+<li><strong>The hints conflict, with no rule for arbitrating.</strong> "Don't generalize" versus "use a good idea again"; "leave it to the client" versus "keep the interface simple." The paper admits this, but admitting isn't solving: <strong>usually only someone already burned knows which applies now</strong>, so its practical value to beginners is far smaller than it looks.</li>
+<li><strong>Some lines have been rewritten by time.</strong> The clearest is "split resources in a fixed way if in doubt." In the cloud, fixed partitioning means paying for idle capacity, and modern practice does the opposite: statistical multiplexing plus automatic quota setting (see <em>Borg</em> and <em>Autopilot</em> on this site — the latter measured that a large share of waste comes from humans setting their requests far too conservatively).</li>
+<li><strong>Period-bound omissions.</strong> There is essentially nothing on distributed consensus, consistency models, Byzantine failure, or adversarial security — use it to guide a modern distributed system and you'll miss an entire dimension.</li>
+<li><strong>The end-to-end phrasing is too hard-edged.</strong> "Recovery below the application is only performance optimization" becomes nearly vacuous over a bad link: past some retransmission rate, that "pure optimization" is what decides whether the system is usable at all.</li>
+<li><strong>It is unfalsifiable.</strong> There's no way to measure whether following these hints actually raises a project's odds. It is closer to an excellent engineer's testimony and teaching material than to a verifiable conclusion — which is precisely why he called them hints rather than rules: <strong>the paper is itself a hint. It may be wrong. Please check.</strong></li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1. In one line: Lampson distilled system-building judgment into about thirty sloganized "hints," organized by a 3×3 table, and said outright that they may be wrong and must be verified.</p>
+<p>2. The pain: system design has no computable right answer; failures come from judgment rather than algorithms, and that knowledge lived only in veterans' heads, transmitted by failed projects.</p>
+<p>3. The scheme: three questions (functionality / speed / fault-tolerance) by three places (how much to do / interface / implementation) file nearly every design argument into nine boxes.</p>
+<p>4. Interfaces: simple, complete, and cheap to implement can't all be had — hence "do one thing well, don't generalize," "don't hide power," "leave the decision to the client," "keep basic interfaces stable."</p>
+<p>5. Speed: "fast beats general" — small fast primitives compose, large slow features don't decompose; plus caching, batching, background work, static analysis, and "when in doubt, use brute force."</p>
+<p>6. Hints: guesses that may be wrong but are cheap to verify, leaving the system correct (only slower) when they all fail — branch prediction, optimistic concurrency and name caches are all this, and so is the title.</p>
+<p>7. Fault tolerance: end-to-end (only application-level recovery is logically necessary), log updates, atomic or restartable actions, safety first, shed load, and separate paths for normal and worst case.</p>
+<p>8. Results and influence: no experiments; the argument rests on real systems including the author's own failures — and it spread by being memorized, becoming course material and shared engineering vocabulary.</p>
+<p>9. Limits: anecdotal evidence and survivorship bias; hints that conflict with no arbitration rule; lines like "split resources rather than share" rewritten by cloud economics; nothing on consensus or security; unfalsifiable overall.</p>
+</div>
+</div>
+<footer>CS Papers Deep Read · Reading this page ≈ getting the core of the paper; for the original table of slogans and the case-by-case argument, go read the source.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

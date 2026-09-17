@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Hints for Computer System Design（系统设计箴言）— IT 论文精读 Paper 70</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 70</p>
+<h1>Hints for Computer System Design（系统设计箴言）</h1>
+<p class="sub">Butler Lampson · Xerox PARC · SOSP 1983</p>
+<p class="langbar"><a href="hints-for-computer-system-design-paper70.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1983 年，Butler Lampson——参与造出世界上第一台个人电脑（Alto）、以太网、第一个「所见即所得」文字编辑器的那个人——把自己二十年造系统的经验，压成了三十来条带口号的短句。</p>
+<p>这篇讲的不是怎么写代码，而是<strong>在没有标准答案的地方怎么做决定</strong>：这功能该不该做、该不该让别人看见、出事了怎么办。今天工程师嘴边那些话——「别过度设计」「先做对再做快」「扛不住就限流」——大半能在这一页纸上找到出处。</p>
+
+<h2>先说个怪事</h2>
+<p>他没管它们叫「规则」，也没叫「定律」，叫 <strong>hints——「提示」</strong>。而「提示」在他这篇文章里恰好还是个专门的技术词：指<strong>一个可能是错的、但能很便宜地查明真假的猜测</strong>。</p>
+<p>所以标题本身就是说明书：<strong>我给你的每一条都可能在你的项目里是错的，你得自己验一验。</strong>一篇被引用成千上万次的经典，开头先声明自己可能不对——这也正是它没过时的原因。</p>
+
+<h2>新在哪</h2>
+<p>那个年代的论文要么讲算法与证明，要么讲「我们造了个什么系统」。没人写<strong>判断力</strong>——它向来只存在于老师傅脑子里，靠带徒弟和搞砸项目来传。Lampson 把它写了下来，还配上正反例，包括他自己参与的失败。</p>
+
+<h2>怎么做到的</h2>
+<p>他先把所有设计争论收拢成两个维度：<strong>你在担心什么</strong>（对不对、够不够快、坏了会怎样），和<strong>你在哪儿做决定</strong>（做多少、接口露出什么、里面怎么实现）。三乘三，九个格子，箴言各就各位。挑三条尝尝味道：</p>
+<p><strong>① 只做一件事，做好它；别急着泛化。</strong>把功能做「通用」是在赌未来的需求，赌输的代价所有人一起付：接口臃肿、还变慢。好比一把顺手的水果刀，改成瑞士军刀后削苹果反而不利索了。想复用好点子？<strong>把它在几个地方各用一次</strong>，别造万能零件。</p>
+<p><strong>② 别把能力藏起来。</strong>封装是为了让你不必看你不想看的东西，<strong>不是把你真正需要的能力锁上</strong>。自动挡替你换挡很好，可要是连刹车都不让你踩，你就只能自己造车了——藏得太死的接口最后总会被绕过去。</p>
+<p><strong>③ 正常情况和最坏情况，分两条路走。</strong>两者要的根本不同：平常那条要<strong>快</strong>，出事那条只要<strong>还能往前挪一点</strong>就行；硬塞进一条路则两头落空。就像医院把门诊和急诊分开——混在一起，看感冒的和抢救的会互相拖死。</p>
+<h2>带来了什么</h2>
+<p>这页纸后来成了几代系统课的必读、面试里的常识、设计评审上的暗语——<strong>它不是被引用去做研究的，是被当口诀背下来用的</strong>。诚实说一句代价：它是经验不是定律，条与条之间还会互相打架，而<strong>论文没给你仲裁的办法</strong>，往往只有踩过坑的人才知道此刻该听哪条。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>一位造过第一台个人电脑的人，把「怎么做对、怎么做快、怎么不出事」的判断力写成三十来条口诀，还诚实地叫它们「提示」——可能是错的，请自行查验。今天工程师挂在嘴边的设计常识，大半源头在这一页。</p>
+</div>
+<p class="switch-hint">想看那张 3×3 的箴言表、hint 的准确机制和哪几条已经被时代改写？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Lampson 把自己参与设计的一批真实系统（成功的与失败的都有）中反复出现的经验，提炼成<strong>三十来条带口号的「箴言」</strong>，并用一张 <strong>3×3 的表</strong>（三问：功能 / 速度 / 容错 × 三处：做多少 / 接口 / 实现）把它们组织成可检索的结构。它不证明任何定理，却成了系统设计领域流传最广的一份<strong>判断力清单</strong>——并且作者刻意把它们叫作 <em>hints</em>（提示）而非 rules：可能错，须自行验证。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>接口（interface）</strong>：一个模块对外承诺「你能让我干什么、我保证什么」的那层约定；用的人（客户）只看接口，不看里面怎么实现。</li>
+<li><strong>抽象（abstraction）</strong>：把细节藏在接口后面，只留一个简化的模型给使用者，比如「文件」抽象掉了磁盘上的扇区。</li>
+<li><strong>客户（client）与实现（implementation）</strong>：接口的两侧——调用方叫客户，接口背后真正干活的代码叫实现。</li>
+<li><strong>缓存（cache）</strong>：把算过／取过的结果先存起来，下次同样的请求直接拿，用空间换时间。</li>
+<li><strong>原子操作（atomic action）</strong>：要么全做完、要么就像没发生过，不会停在做了一半的状态。</li>
+<li><strong>日志（log）</strong>：按顺序追加记下每次状态改动的流水账；崩溃后照着重放就能恢复状态。</li>
+<li><strong>吞吐量（throughput）</strong>：单位时间能处理完多少请求；「有效吞吐」指真正干完的活，不含白白排队与超时重试的部分。</li>
+<li><strong>过载（overload）</strong>：请求量超过系统处理能力，排队越积越长，所有人一起变慢甚至整体崩塌。</li>
+<li><strong>SOSP</strong>：ACM Symposium on Operating Systems Principles，系统领域最顶级的会议之一。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者 Butler Lampson，写作时在施乐帕洛阿尔托研究中心（Xerox PARC）——他是 Alto 个人计算机、以太网（Ethernet）、Bravo 所见即所得编辑器、Dover 激光打印机、Grapevine 分布式邮件与命名服务、Mesa/Cedar 编程环境等一串系统的参与者，1992 年图灵奖得主。本文在 <strong>1983 年第九届 SOSP</strong> 宣读，次年又在《IEEE Software》创刊号重刊，因此流传极广。</p>
+<p>它上承 Brooks《人月神话》的工程经验传统、Parnas 的信息隐藏与 Saltzer 等人的端到端论证（两篇本站都精读过）；下启的不是某篇论文，而是<strong>一整套被口头传承的工程常识</strong>。</p>
+
+<h2>问题与动机</h2>
+<p>系统设计当时（今天也）有一个尴尬处境：<strong>它没有可计算的正确答案</strong>。算法能证明复杂度，协议能证明正确性，但真实系统翻车极少翻在算法上，多半翻在判断上——接口切在哪、什么该藏什么该露、性能什么时候开始管、错误在哪一层兜底。更麻烦的是这类知识的传播方式：<strong>它只存在于做过几个大系统的人脑子里</strong>，靠带徒弟、靠项目失败传递，写不进教科书也进不了论文（因为无法证明），于是每一代工程师都在重犯上一代的错误。</p>
+<p>Lampson 的动机就是打破这个循环。但他很清楚这种知识的性质，所以形式给得极其克制——<strong>不是定律，是 hints</strong>：每条配一句口号便于记忆、配真实系统的正反例，而且明说它们互相冲突、需要你自己判断。这个自我限定，正是本文能活过四十年的原因。</p>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>把设计争论编成一张 3×3 的表</h3>
+<p>本文最被低估的贡献其实是<strong>组织方式</strong>。Lampson 发现，几乎所有设计争论都能落到两个维度上：<strong>你在担心什么</strong>（功能：对不对？速度：够快吗？容错：坏了会怎样？）和<strong>你在哪儿做决定</strong>（完备性：这功能做多少？接口：露出什么？实现：里面怎么做？）。三乘三、九个格子，三十来条箴言各自归位。</p>
+<figure>
+<svg viewBox="0 0 560 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="10" y="18" fill="#7c8593" font-size="11">↓ 在哪儿做决定　　→ 你在担心什么</text>
+<rect x="118" y="26" width="140" height="28" fill="rgba(240,180,41,0.12)" stroke="rgba(240,180,41,0.35)"></rect>
+<rect x="258" y="26" width="140" height="28" fill="rgba(240,180,41,0.12)" stroke="rgba(240,180,41,0.35)"></rect>
+<rect x="398" y="26" width="140" height="28" fill="rgba(240,180,41,0.12)" stroke="rgba(240,180,41,0.35)"></rect>
+<text x="188" y="45" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">功能：对不对</text>
+<text x="328" y="45" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">速度：够快吗</text>
+<text x="468" y="45" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">容错：坏了呢</text>
+<rect x="10" y="58" width="108" height="84" fill="rgba(232,121,75,0.10)" stroke="rgba(232,121,75,0.35)"></rect>
+<text x="64" y="94" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">完备性</text>
+<text x="64" y="112" fill="#7c8593" font-size="11" text-anchor="middle">这功能做多少</text>
+<rect x="10" y="146" width="108" height="84" fill="rgba(232,121,75,0.10)" stroke="rgba(232,121,75,0.35)"></rect>
+<text x="64" y="182" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">接口</text>
+<text x="64" y="200" fill="#7c8593" font-size="11" text-anchor="middle">向外露出什么</text>
+<rect x="10" y="234" width="108" height="84" fill="rgba(232,121,75,0.10)" stroke="rgba(232,121,75,0.35)"></rect>
+<text x="64" y="270" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">实现</text>
+<text x="64" y="288" fill="#7c8593" font-size="11" text-anchor="middle">里面怎么做</text>
+<rect x="118" y="58" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="188" y="92" fill="#e7ebf1" font-size="11.5" text-anchor="middle">只做一件事</text>
+<text x="188" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">别泛化</text>
+<rect x="258" y="58" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="328" y="92" fill="#e7ebf1" font-size="11.5" text-anchor="middle">先快，别先通用</text>
+<text x="328" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">拿不准就固定切分</text>
+<rect x="398" y="58" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="468" y="92" fill="#e7ebf1" font-size="11.5" text-anchor="middle">端到端：应用层兜底</text>
+<text x="468" y="110" fill="#b9c0ca" font-size="11" text-anchor="middle">正常/最坏分开走</text>
+<rect x="118" y="146" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="188" y="180" fill="#e7ebf1" font-size="11.5" text-anchor="middle">别藏起底层能力</text>
+<text x="188" y="198" fill="#b9c0ca" font-size="11" text-anchor="middle">决定权留给客户</text>
+<rect x="258" y="146" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="328" y="180" fill="#e7ebf1" font-size="11.5" text-anchor="middle">给快的小原语</text>
+<text x="328" y="198" fill="#b9c0ca" font-size="11" text-anchor="middle">让客户自己拼</text>
+<rect x="398" y="146" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="468" y="180" fill="#e7ebf1" font-size="11.5" text-anchor="middle">操作要原子</text>
+<text x="468" y="198" fill="#b9c0ca" font-size="11" text-anchor="middle">或者可重启</text>
+<rect x="118" y="234" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="188" y="268" fill="#e7ebf1" font-size="11.5" text-anchor="middle">好点子多用几次</text>
+<text x="188" y="286" fill="#b9c0ca" font-size="11" text-anchor="middle">别硬做成通用件</text>
+<rect x="258" y="234" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="328" y="268" fill="#e7ebf1" font-size="11.5" text-anchor="middle">缓存 · hint · 批处理</text>
+<text x="328" y="286" fill="#b9c0ca" font-size="11" text-anchor="middle">后台算 · 蛮力</text>
+<rect x="398" y="234" width="140" height="84" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.16)"></rect>
+<text x="468" y="268" fill="#e7ebf1" font-size="11.5" text-anchor="middle">记日志 · 安全第一</text>
+<text x="468" y="286" fill="#b9c0ca" font-size="11" text-anchor="middle">过载就卸载</text>
+</svg>
+<figcaption>图 1 · 「三问 × 三处」：论文用这样一张表把三十来条箴言分门别类（此处按主题归纳填格，非逐格照抄原表）。</figcaption>
+</figure>
+
+<h3>接口组：简单、完备、实现得又小又快——你挑不满三样</h3>
+<p>Lampson 把接口设计定义成一场取舍：好接口应当<strong>简单</strong>、<strong>完备</strong>（该有的能力不缺）、而且<strong>存在一个又小又快的实现</strong>——三者同时满足基本不可能，设计就是决定牺牲哪个。由此长出一串箴言：</p>
+<ul>
+<li><strong>「只做一件事，把它做好」「别泛化——泛化通常是错的」。</strong>把接口做通用，等于拿当下的确定性去赌未来的需求；赌输了，臃肿的接口和变慢的实现由所有客户一起买单。</li>
+<li><strong>「把一个好点子多用几次，而不是把它泛化。」</strong>这条常被误读成矛盾，其实是上一条的正解：地址翻译这个想法在缓存、虚拟内存、文件系统里<strong>各实现一次</strong>，每次都简单直接——好过硬造一个「通用映射子系统」去同时伺候三种性能要求。<strong>复用想法，别复用零件。</strong></li>
+<li><strong>「别藏起能力（Don't hide power）。」</strong>抽象的职责是遮住你<em>不想要</em>的性质，不是锁住你<em>需要</em>的能力。底层能做顺序预取而接口不给，客户只会绕过抽象自己干——这几乎是所有「封装被绕过去了」的病因。</li>
+<li><strong>「拿不准就留给客户」，做法是把过程当参数传进去。</strong>与其在实现里替客户做策略决定（换页淘汰谁、冲突怎么合并），不如把它做成一个可传入的函数。今天的回调与可插拔策略都是这条的后代。</li>
+<li><strong>「基本接口要稳定」，同时「给自己留一块立足之地」。</strong>接口是契约，改它远贵于改实现；真到必须改那天，用新实现把旧接口模拟出来，让老客户有路可走。</li>
+</ul>
+
+<h3>速度组：与其做得通用，不如做得快</h3>
+<p>最常被引用的那条是 <strong>「Make it fast, rather than general or powerful」</strong>：<strong>快而小的原语能被客户拼装成他真正要的东西；慢而大的功能却没法被拆快。</strong>性能是不能靠外部组合补回来的属性——所以宁可少给，也要给快的。</p>
+<p>其余几条是一套加速工具箱：<strong>缓存</strong>昂贵计算的结果；<strong>能批处理就批处理</strong>；<strong>能挪到后台就别放在关键路径上</strong>；<strong>能静态分析就别等到运行时</strong>；以及那句很反学术的 <strong>「拿不准就用蛮力」</strong>——硬件越来越便宜，笨而正确的算法常常比聪明而脆弱的启发式更值，还好调试。<strong>「拿不准就把资源固定切分，别共享」</strong>也属这组：牺牲利用率，换来可预测的性能和好查的故障。</p>
+
+<h3>hint：可以错、但必须便宜可验的猜测</h3>
+<p>这是全文最精巧的一条，也是标题的双关。<strong>hint 是一个可能过期、可能出错的猜测，但它的对错能被便宜地当场验证</strong>；所有 hint 全错时系统<strong>依然正确</strong>，只是慢。它和缓存的区别正在这里：缓存假设内容有效（所以要维护一致性），hint 从不假设——<strong>「保证正确」的责任留给权威来源，它只拿走「大多数时候省一趟」的收益</strong>。</p>
+<figure>
+<svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="h1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="h2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="h3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"></path></marker></defs>
+<rect x="14" y="60" width="86" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect>
+<text x="57" y="82" fill="#b9c0ca" font-size="12" text-anchor="middle">请求</text>
+<line x1="100" y1="77" x2="132" y2="77" stroke="#7c8593" marker-end="url(#h1)"></line>
+<rect x="136" y="52" width="120" height="50" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="196" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">查 hint：先猜</text>
+<text x="196" y="90" fill="#b9c0ca" font-size="11" text-anchor="middle">一个答案</text>
+<line x1="256" y1="77" x2="288" y2="77" stroke="#7c8593" marker-end="url(#h1)"></line>
+<rect x="292" y="52" width="122" height="50" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect>
+<text x="353" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">便宜地验证</text>
+<text x="353" y="90" fill="#b9c0ca" font-size="11" text-anchor="middle">猜得对吗</text>
+<line x1="414" y1="77" x2="446" y2="77" stroke="#f0b429" marker-end="url(#h2)"></line>
+<text x="430" y="66" fill="#f0b429" font-size="10.5" text-anchor="middle">对</text>
+<rect x="450" y="52" width="96" height="50" rx="6" fill="rgba(240,180,41,0.16)" stroke="#f0b429"></rect>
+<text x="498" y="72" fill="#e7ebf1" font-size="11.5" text-anchor="middle">快路径</text>
+<text x="498" y="90" fill="#b9c0ca" font-size="11" text-anchor="middle">直接返回</text>
+<path d="M353,102 L353,146" fill="none" stroke="#e8794b" marker-end="url(#h3)"></path>
+<text x="372" y="126" fill="#e8794b" font-size="10.5">错 / 没有</text>
+<rect x="236" y="150" width="234" height="48" rx="6" fill="rgba(232,121,75,0.10)" stroke="#e8794b"></rect>
+<text x="353" y="170" fill="#e7ebf1" font-size="11.5" text-anchor="middle">走权威来源：慢，但永远对</text>
+<text x="353" y="188" fill="#b9c0ca" font-size="11" text-anchor="middle">系统的正确性只靠这条路</text>
+<path d="M236,174 L150,174 L150,106" fill="none" stroke="#7c8593" stroke-dasharray="4 3" marker-end="url(#h1)"></path>
+<text x="24" y="170" fill="#7c8593" font-size="10.5">顺手更新 hint</text>
+<text x="24" y="186" fill="#7c8593" font-size="10.5">（不更新也不影响对错）</text>
+</svg>
+<figcaption>图 2 · hint 的机制：猜一个答案 → 便宜地验一下 → 对就走快路径，错就退回权威来源。hint 全错时系统仍然正确，只是变慢。</figcaption>
+</figure>
+<p>典型例子是网络地址与名字的本地缓存表：表可能陈旧，但每次使用时对方的回应就<strong>顺带验证</strong>了它；猜中省一次广播或查询，猜错就退回慢路径并顺手更新。这个模式今天无处不在——分支预测、乐观并发控制、DNS 与路由缓存，本质都是「可验证的猜测」。</p>
+
+<h3>容错组：先别出灾难，再谈最优</h3>
+<ul>
+<li><strong>端到端（end-to-end）</strong>：Lampson 的表述比原版更硬——<strong>只有应用层自己的检查与恢复在逻辑上是必需的</strong>，中间各层做的错误检测与恢复都不是正确性所必需，纯属性能优化。中间层查错是为了少重传，不是为了保正确。</li>
+<li><strong>「把更新记进日志」「让操作要么原子、要么可重启」</strong>：状态的真相放在顺序追加的日志里，崩溃后重放即可；每个操作要么不留半成品，要么重来一遍无害——这两条合起来就是后来数据库崩溃恢复（见本站《ARIES》）与一切幂等重试的骨架。</li>
+<li><strong>「安全第一」</strong>：分配资源时先保证不出灾难，而不是追求最优——因为最优点的旁边通常就是悬崖。</li>
+<li><strong>「卸载负载（shed load）」</strong>：需求超过能力时主动拒掉一部分请求，别让系统滑进过载。过载不只是变慢，而是<strong>有效吞吐会掉下来</strong>——排队、超时、重试会吃掉本该用于干活的资源。</li>
+</ul>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<line x1="70" y1="30" x2="70" y2="205" stroke="#7c8593"></line>
+<line x1="70" y1="205" x2="522" y2="205" stroke="#7c8593"></line>
+<text x="70" y="22" fill="#7c8593" font-size="11.5" text-anchor="middle">有效吞吐</text>
+<text x="524" y="223" fill="#7c8593" font-size="11.5" text-anchor="end">涌进来的请求量 →</text>
+<path d="M78,200 C160,120 200,80 250,74 C320,72 380,150 508,196" fill="none" stroke="#e8794b" stroke-width="2.2"></path>
+<path d="M78,200 C160,120 200,80 250,74 C330,72 420,72 508,72" fill="none" stroke="#f0b429" stroke-width="2.2"></path>
+<text x="504" y="62" fill="#f0b429" font-size="12" text-anchor="end">主动卸载：吃不下就拒，吞吐保住</text>
+<text x="504" y="188" fill="#e8794b" font-size="12" text-anchor="end">不卸载：一起卡死，吞吐反而塌了</text>
+<line x1="250" y1="66" x2="250" y2="205" stroke="#7c8593" stroke-dasharray="4 4"></line>
+<text x="250" y="222" fill="#7c8593" font-size="11" text-anchor="middle">系统能力上限</text>
+</svg>
+<figcaption>图 3 · 为什么要主动卸载负载：越过能力上限后，排队与重试会吃掉本该干活的资源，有效吞吐不是走平、而是塌下来。</figcaption>
+</figure>
+<p>还有一条横跨全表的 <strong>「正常情况与最坏情况分开处理」</strong>：两者的要求根本不同——正常路径必须<em>快</em>，最坏路径只要<em>有进展</em>。硬塞进一条代码路径，结果往往是平时不快、出事也不稳。</p>
+
+<h3>压舱的三句</h3>
+<p>最后是贯穿全文的三句元箴言：<strong>「保持简单」</strong>；<strong>「把它做对——抽象和简洁都不能代替把它做对」</strong>（漂亮的分层救不了语义本身就错的设计）；以及引自 Brooks 的 <strong>「计划好扔掉一个」</strong>——第一版系统的主要产出是知识，不是产品。</p>
+
+<h2>关键结果</h2>
+<p>必须诚实地说：<strong>这篇论文没有实验、没有数据、没有基线</strong>，它的「结果」全是案例。Lampson 逐条用真实系统举证——Alto、Bravo、以太网、Grapevine、Pilot、Star、Mesa 等，既有箴言奏效的例子，也有违反之后出问题的例子，而且相当一部分反例来自<strong>他自己参与的系统</strong>。它的说服力不来自统计，而来自「举证者就是当事人，且愿意写下自己的失败」——方法论上的弱点也正在这里。</p>
+
+<h2>为什么重要 / 影响</h2>
+<p>它的影响方式很罕见：<strong>不是被后人引用去做研究，而是被后人当口诀背下来用。</strong>「别过度设计」「把决定留给调用者」「hint 可以过期」「过载就限流」「先做对再做快」——今天写在无数公司设计规范和面试题里的话，源头相当一部分在这一页纸上。</p>
+<p>它也成了系统课的标准文本，并给了工程师一套<strong>共享词汇</strong>——评审上一句「这违反了 don't hide power」，对方立刻知道你在担心什么。2020 年作者自己写了续作《Hints and Principles for Computer System Design》，重组为「目标 / 技术 / 过程」三组并配了 STEADY、AID、ART 三个助记词（AID = 近似、增量、分而治之），说明这份清单仍在演化。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>证据是轶事，且有幸存者偏差。</strong>案例几乎全来自一个实验室（Xerox PARC）、一个时代、作者亲身参与的项目。我们看不到「遵守了箴言却依然失败」的系统——而那才是检验它的关键样本。</li>
+<li><strong>箴言彼此冲突，却没有仲裁规则。</strong>「别泛化」对上「好点子多用几次」，「留给客户」对上「接口要简单」。论文坦承这点，但坦承不等于解决：<strong>往往只有踩过坑的人才知道此刻该听哪条</strong>，于是它对新手的实际帮助远小于看上去。</li>
+<li><strong>有些条目已被时代改写。</strong>最明显的是「拿不准就固定切分资源」——在云上，固定切分意味着为闲置付钱，现代做法恰恰相反：统计复用加自动调配额（见本站《Borg》《Autopilot》，后者量到的浪费有相当部分正来自人把配额填得过于保守）。</li>
+<li><strong>时代性缺席。</strong>文中几乎没有分布式共识、一致性模型、拜占庭故障、对抗性安全威胁——用它指导今天的分布式系统，会漏掉一整个维度。</li>
+<li><strong>端到端那条表述偏硬。</strong>「中间层的错误恢复只是性能优化」在链路质量极差时近乎空话——重传率高到一定程度，「纯性能优化」实际上决定了系统能不能用。</li>
+<li><strong>不可证伪。</strong>没法度量「遵守这些箴言」是否真的提高了成功率。它更接近一位优秀工程师的自述与教学材料，而非可验证的结论——这正是作者叫它 hints 而非 rules 的原因：<strong>它自己就是一条 hint，可能是错的，请自行查验。</strong></li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：Lampson 把造系统的判断力提炼成三十来条带口号的「提示」，用 3×3 的表组织，并明说它们可能错、需自验。</p>
+<p>② 痛点：系统设计没有可计算的正确答案，翻车多半翻在判断而非算法上，而这类知识只在老手脑子里、靠项目失败传递。</p>
+<p>③ 组织法：三问（功能 / 速度 / 容错）× 三处（做多少 / 接口 / 实现），几乎所有设计争论都能归位到这九格里。</p>
+<p>④ 接口：简单、完备、实现得又小又快，三者不可兼得；于是「只做一件事、别泛化」「别藏起底层能力」「拿不准就把决定权交给客户」「基本接口要稳定」。</p>
+<p>⑤ 速度：「与其通用，不如做快」——快的小原语能被拼装，慢的大功能拆不快；配套是缓存、批处理、后台计算与「拿不准就用蛮力」。</p>
+<p>⑥ hint：可能错、但能便宜验证的猜测，全错时系统仍正确只是变慢；分支预测、乐观并发、路由与名字缓存都是它，也是标题的双关。</p>
+<p>⑦ 容错：端到端（只有应用层的恢复是逻辑必需）、记日志、操作原子或可重启、安全第一、过载就主动卸载、正常与最坏情况分两条路。</p>
+<p>⑧ 结果与影响：没有实验，靠真实系统的正反例（含作者自己的失败）立论；后来以「被当口诀背」的方式流传，成了系统课教材与工程师的共享词汇。</p>
+<p>⑨ 局限：轶事式证据与幸存者偏差；箴言互相冲突却无仲裁规则；「固定切分资源」等已被云计算改写；缺席分布式共识与安全；整体不可证伪。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的箴言原表与逐条案例，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
