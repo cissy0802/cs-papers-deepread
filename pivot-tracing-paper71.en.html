@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Pivot Tracing — CS Papers Deep Read Paper 71</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+.q{background:#171b21;border:1px solid rgba(240,180,41,0.18);border-radius:8px;padding:12px 16px;margin:14px 0;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:0.86rem;color:#f5c451;line-height:1.85;overflow-x:auto}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP READ · PAPER 71</p>
+<h1>Pivot Tracing</h1>
+<p class="sub">Mace, Roelke &amp; Fonseca · Brown University · SOSP 2015 (Best Paper)</p>
+<p class="langbar"><a href="pivot-tracing-paper71.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What this paper did</h2>
+<p>An app you use is slow today. The engineer who has to explain why can only read the <strong>logs</strong> — the running tally the program happened to keep. The catch: that tally records whatever whoever wrote the code <strong>thought to record</strong>, and the thing you want to ask about today is probably not in it.</p>
+<p>In 2015, three researchers at Brown proposed <strong>Pivot Tracing</strong>, which turns this around: <strong>you can put a question to a live system that cannot be stopped</strong>, watch answers stream back seconds later, and take the question away when you are done. And it can answer a kind of question nobody could answer before — such as "who, right now, is eating this machine's disk?"</p>
+
+<h2>First, something strange</h2>
+<p>A big system is layers stacked on layers: user jobs on top, a database in the middle, storage at the bottom. The disks at the bottom are saturated and everything is queueing. You ask: <strong>who is doing this?</strong> Nobody can tell you. Storage only knows "the database asked me to read." The database only knows "some job asked me to." The job only knows it submitted work. <strong>Every layer recognizes only the station immediately above it.</strong></p>
+<p>It is like a parcel depot that knows only which depot a package came from. Ask it which shopper placed the order and it genuinely does not know. The maddening part is that the answer is not missing — it is <strong>shredded across several systems, and no one holds all the pieces</strong>.</p>
+
+<h2>The idea</h2>
+<p>The old rule was: <strong>you must decide, while writing the code, what you will one day want to look up</strong>. Guess right and you can check afterwards. Guess wrong and you must edit the code, redeploy, and wait for the failure to happen again — which is how the expensive outages get away. Pivot Tracing changes the rule: <strong>don't record it up front; ask when you want to know.</strong></p>
+
+<h2>How it pulls that off</h2>
+<p><strong>First: the probes are temporary.</strong> The program is rewritten in place while it runs; a probe goes in, does its job, and comes back out — like hanging a counter in a shop that is still open for business, with no closing for renovation.</p>
+<p><strong>Second, and this is the genuinely new part: let the information ride along with the request.</strong> Give every request a <strong>small backpack</strong>. As it passes through the upper layer, that layer writes in "who I am and who I am running this errand for." The request is handed on and on, and when it finally reaches storage at the bottom, the probe there <strong>opens the backpack and sees where it came from</strong> — so "this read was N bytes" and "this was ordered by that job" are matched up on the spot.</p>
+<p>Think of a hospital: the patient carries their own chart, so the blood lab never has to run back to reception to find out who this is. What matters is that <strong>the matching is not done by time</strong> — ten thousand things happen in the same millisecond across a datacenter, so guessing by clock is guessing wrong — <strong>but by "these two were on the same journey, one before the other."</strong></p>
+<p>One more thing makes it cheap: the backpack carries no ledger, just a line saying "this trip belongs to job X," and the arithmetic is <strong>done along the way</strong>, with only the result sent out at the end. The cost is real too: this only works if <strong>every component on the path faithfully passes the backpack along</strong>, and if one of them drops it, the thread of causality snaps right there.</p>
+
+<h2>What it changed</h2>
+<p>It changed how the question is posed: <strong>from "decide before shipping what to record" to "ask whenever you want."</strong> The word everyone now uses, <em>observability</em>, is measured by exactly this — can you answer a question <strong>you did not anticipate</strong>. And that small backpack now sits, under the name <strong>baggage</strong>, in the standard interfaces of mainstream tracing.</p>
+
+<h2>One line to remember</h2>
+<div class="tl">
+<p>Give each request a backpack so the top layer can write in "who I am" and the bottom layer can open it and match — and "who is eating this disk right now" gets an answer for the first time; add probes that can be installed into and removed from a running system, and monitoring turns from bookkeeping-in-advance into asking-afterwards.</p>
+</div>
+<p class="switch-hint">Want the causal join operator, how a query compiles into probes, and the measured overhead? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">Pivot Tracing lets you ask ad-hoc questions of a <strong>running</strong> distributed system: it introduces a new relational operator — the <strong>happened-before join</strong> (written <code>⋈→</code>) — that pairs "a number produced here" with "an identity known only over there" <strong>along the causal path of a request</strong>, answering attribution questions that cross component and machine boundaries; and it uses <strong>dynamic instrumentation</strong> to compile the query into code and weave it into live processes, to be removed when you are done. It won Best Paper at SOSP 2015.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Distributed system</strong>: one job done by many programs on many machines; a single user request runs through several components like a relay.</li>
+<li><strong>Instrumentation</strong>: measurement code buried in a program so it emits numbers or events as it runs. Logs and metric counters are instrumentation.</li>
+<li><strong>Dynamic instrumentation</strong>: inserting or removing that measurement code in a <em>running</em> process, with no source change and no restart. Solaris DTrace is the classic example.</li>
+<li><strong>Distributed tracing</strong>: stitching one request's calls across components into a tree, so you can see where it went and how long each hop took. Google's Dapper (2010) is the industry blueprint.</li>
+<li><strong>Sampling</strong>: recording only a small fraction of requests to keep the cost down — at the price that the one you need to inspect probably was not kept.</li>
+<li><strong>Happened-before</strong>: the causal order Lamport defined in 1978 — if a could have influenced b (a precedes b in one thread, or a sent a message that b received), then a happened before b. It needs no clock.</li>
+<li><strong>Relational algebra / join</strong>: the database operation that pairs rows of two tables on some condition, as in "join orders to users on user ID."</li>
+<li><strong>Tuple</strong>: one record, e.g. <code>(procName=MRsort, bytesRead=4096)</code>.</li>
+<li><strong>RPC (remote procedure call)</strong>: calling a function on another machine as if it were local; the usual way components talk.</li>
+<li><strong>Bytecode rewriting</strong>: Java compiles to "bytecode" run by the JVM, and that bytecode can be swapped out while the program runs — which is how dynamic instrumentation is done on the JVM.</li>
+<li><strong>The Hadoop stack</strong>: <strong>HDFS</strong> is the distributed file system (where bytes actually hit disk), <strong>HBase</strong> a wide-table database built on it, <strong>MapReduce</strong> a batch framework, <strong>YARN</strong> the resource scheduler. The prototype and experiments all run on this stack.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>By Jonathan Mace, Ryan Roelke and Rodrigo Fonseca at Brown University, published at <strong>SOSP 2015, where it won Best Paper</strong>; later extended into an ACM TOCS journal article and selected as a <em>Communications of the ACM</em> Research Highlight (March 2020). It continues two lines at once: end-to-end tracing — Fonseca's own X-Trace (2007) and Google's Dapper (2010) — and dynamic instrumentation — DTrace and Microsoft's Fay. Downstream, Facebook's Canopy (SOSP 2017, with Mace as a co-author) took the approach to industrial scale, and the <em>baggage</em> abstraction it isolated now appears in the standard OpenTracing / OpenTelemetry APIs.</p>
+
+<h2>The problem and the motivation</h2>
+<p>Before this paper, production debugging rested on three things: logs, metrics, traces. They share one hard flaw — <strong>what gets recorded is frozen at development time</strong>. You can only look up what somebody thought to record; to ask something new you must edit code, pass review, redeploy, and wait for the failure to recur. The most expensive failures recur exactly once.</p>
+<p>Worse is the second point: <strong>information is carved up along component boundaries</strong>. The paper's opening example is concrete: a cluster of eight machines running HBase, MapReduce jobs and direct HDFS clients all at once. Now ask the question an operator asks every day — <strong>for each HDFS DataNode, how much of the current disk read throughput belongs to which high-level client?</strong></p>
+<p>HDFS cannot answer. It sees only its <strong>direct</strong> clients — "all of HBase," "all of MapReduce" — and has no idea which table scan or which job's task sits behind them. HBase and MapReduce know their own job names but not how many bytes each one ultimately pressed onto which disk. <strong>The two halves of the answer live in two different systems and neither can assemble them.</strong> The paper cites real issues such as HBASE-4145 to show this is not an academic invention: engineers are asking for exactly this in bug trackers.</p>
+<p>"Then just record everything and join it afterwards" does not work either: full-fidelity recording is too voluminous to store and too expensive to produce, and cutting the cost means sampling, which means the occurrence you care about is probably not in the sample. <strong>Under the old framing, "record it all" and "afford to record" are opposites.</strong></p>
+<figure>
+<svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text x="20" y="24" fill="#7c8593" font-size="11.5">1. The unit you actually care about (high-level clients)</text>
+<rect x="20" y="34" width="150" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="95" y="58" fill="#e7ebf1" font-size="12" text-anchor="middle">MapReduce sort job</text>
+<rect x="190" y="34" width="150" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="265" y="58" fill="#e7ebf1" font-size="12" text-anchor="middle">HBase table scan</text>
+<rect x="360" y="34" width="180" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="450" y="58" fill="#e7ebf1" font-size="12" text-anchor="middle">direct HDFS client</text>
+<line x1="95" y1="72" x2="95" y2="120" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="265" y1="72" x2="265" y2="120" stroke="#7c8593" marker-end="url(#a1)"></line>
+<path d="M450,72 L450,210" fill="none" stroke="#7c8593" marker-end="url(#a1)"></path>
+<text x="20" y="140" fill="#7c8593" font-size="11.5">2. Middle components</text>
+<rect x="35" y="122" width="120" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="95" y="144" fill="#b9c0ca" font-size="12" text-anchor="middle">MapReduce</text>
+<rect x="205" y="122" width="120" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="265" y="144" fill="#b9c0ca" font-size="12" text-anchor="middle">HBase</text>
+<line x1="95" y1="156" x2="160" y2="210" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="265" y1="156" x2="265" y2="210" stroke="#7c8593" marker-end="url(#a1)"></line>
+<text x="20" y="206" fill="#7c8593" font-size="11.5">3. Where the disk is actually spent</text>
+<rect x="60" y="214" width="440" height="44" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="280" y="241" fill="#e7ebf1" font-size="12.5" text-anchor="middle">HDFS DataNode · only it knows how many bytes were read</text>
+<text x="280" y="282" fill="#e8794b" font-size="12" text-anchor="middle">but it recognizes only direct clients: "from HBase", "from MapReduce"</text>
+<text x="280" y="302" fill="#f0b429" font-size="12.5" text-anchor="middle">the attribution gap: numbers at the bottom, identity at the top</text>
+</svg>
+<figcaption>Fig. 1 · The attribution gap: the cost is incurred at the bottom, but "on whose behalf" is known only at the top; each layer recognizes only the station above it.</figcaption>
+</figure>
+
+<h2>Core ideas and method</h2>
+<h3>Idea one: the happened-before join — pair by causality, not by value</h3>
+<p>This is what is genuinely new. <strong>What it is</strong>: a new relational operator, written <code>a ⋈→ b</code>. For each record in b, it pairs in <strong>every</strong> a-record that <strong>causally precedes</strong> it.</p>
+<p><strong>Why a new operator is needed</strong>: an ordinary database join pairs <em>by value</em> — the two tables need a shared field (the same user ID). Here there is no shared field at all: the upper layer holds a job name, the bottom layer holds a byte count, and the only thing relating them is that <strong>both happened on the same execution path of the same request, one before the other</strong>. So the pairing condition cannot be equality; it has to be Lamport's <em>happened-before</em>.</p>
+<p><strong>Why not pair on timestamps</strong>: tens of thousands of events share any given millisecond in a datacenter, and the machines' clocks do not agree anyway; matching by time is matching wrongly. Happened-before needs no clock at all — it only requires that information travel along the execution path. <strong>It is the one reliable relation a distributed system gives you for free.</strong></p>
+<p>So "who ate my disk" becomes a query. Roughly (simplified):</p>
+<div class="q">From incr In DataNodeMetrics.incrBytesRead<br/>
+Join cl In First(ClientProtocols) On cl -&gt; incr<br/>
+GroupBy cl.procName<br/>
+Select cl.procName, SUM(incr.delta)</div>
+<p>Line by line: start <strong>from</strong> the DataNode event "just read N more bytes"; <strong>join</strong> it to the client-protocol record that <em>causally precedes</em> it (<code>-&gt;</code> is happened-before, and <code>First</code> takes only the earliest such record, i.e. the outermost originator); <strong>group by</strong> that originator's process name; <strong>sum</strong> to get the bytes attributable to each high-level client. The number comes from the very bottom, the grouping key from the very top — which is precisely the table no single system can produce. The name <em>Pivot</em> comes from here: rows by machine, columns by source, and swapping the grouping key gives you another view.</p>
+
+<h3>Idea two: baggage — run the join on the request, not at a central node</h3>
+<p>Defining the operator is the easy half; <strong>evaluating</strong> it is the hard one. To complete this join at the bottom, the bottom must know the upper record. The naive approach ships both sides to one central machine to be matched — which is the "record everything" road again: voluminous, expensive, slow.</p>
+<p>The paper's answer is <em>baggage</em>: <strong>pack the handful of fields the join needs into a small container the request itself carries, and let it travel with the request across thread handoffs, work queues and RPCs.</strong> The downstream probe pulls the upstream tuple straight out of the baggage, completes the pairing and the aggregation <strong>in place</strong>, and emits only the result.</p>
+<p>The elegance is that causality is <em>defined</em> by where the request went, so the baggage's propagation path <strong>is the happened-before relation itself</strong> — no graph and no clock has to be maintained on the side.</p>
+<p>It is also cheap. Queries are rearranged at compile time so that <strong>filtering, projection and aggregation are pushed toward the source</strong>, and the baggage carries only the fields the downstream side truly needs. Measured: with no query running, baggage is empty and serializes to <strong>0 bytes</strong>; the heaviest query in the evaluation carried <strong>4 tuples, about 137 bytes per request</strong>.</p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a2g" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="18" y="30" width="200" height="150" rx="10" fill="rgba(255,255,255,0.02)" stroke="#7c8593" stroke-dasharray="4 3"></rect>
+<text x="118" y="50" fill="#7c8593" font-size="11.5" text-anchor="middle">Machine A · upper component</text>
+<rect x="36" y="62" width="164" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="118" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">Tracepoint 1: client protocol</text>
+<text x="118" y="118" fill="#f0b429" font-size="11.5" text-anchor="middle">Observe: read local variables</text>
+<text x="118" y="136" fill="#f0b429" font-size="11.5" text-anchor="middle">Pack: put (job name) in baggage</text>
+<text x="118" y="164" fill="#7c8593" font-size="11" text-anchor="middle">bytes to be read: not known yet</text>
+<rect x="342" y="30" width="200" height="150" rx="10" fill="rgba(255,255,255,0.02)" stroke="#7c8593" stroke-dasharray="4 3"></rect>
+<text x="442" y="50" fill="#7c8593" font-size="11.5" text-anchor="middle">Machine B · HDFS DataNode</text>
+<rect x="360" y="62" width="164" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect><text x="442" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">Tracepoint 2: disk read counter</text>
+<text x="442" y="118" fill="#e8794b" font-size="11.5" text-anchor="middle">Unpack: take (job name) out</text>
+<text x="442" y="136" fill="#e8794b" font-size="11.5" text-anchor="middle">pair + aggregate in place → Emit</text>
+<text x="442" y="164" fill="#7c8593" font-size="11" text-anchor="middle">bytes known here, origin already in hand</text>
+<path d="M204,79 L356,79" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#a2g)"></path>
+<rect x="238" y="196" width="84" height="30" rx="8" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect>
+<text x="280" y="216" fill="#f0b429" font-size="11.5" text-anchor="middle">baggage</text>
+<path d="M256,196 C256,150 210,120 210,90" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="3 3"></path>
+<path d="M306,196 C306,150 352,120 352,90" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="3 3"></path>
+<text x="280" y="248" fill="#b9c0ca" font-size="12" text-anchor="middle">rides the same request across threads / queues / RPCs</text>
+<text x="280" y="270" fill="#e7ebf1" font-size="12.5" text-anchor="middle">paired by causal order, not by timestamp</text>
+<text x="280" y="292" fill="#7c8593" font-size="11" text-anchor="middle">only results are emitted; raw events never leave the machine</text>
+</svg>
+<figcaption>Fig. 2 · Evaluating the happened-before join: upstream packs identity into the baggage, which rides the request down; downstream unpacks, pairs and aggregates in place, emitting only results.</figcaption>
+</figure>
+
+<h3>Idea three: query → advice → woven into a live process</h3>
+<p>Finally, the machinery. Three concepts:</p>
+<ul>
+<li><strong>Tracepoint</strong>: a place in the code where a probe <em>can</em> go — a method entry or exit, an existing log site — from which local variables are visible. A tracepoint is a possibility, and costs nothing while unused.</li>
+<li><strong>Advice</strong>: the short instruction sequence a query compiles into. The instruction set is <strong>deliberately tiny and restricted</strong> (no loops, no arbitrary calls), so each piece of advice has a predictable cost and cannot take the host process down. There are five kinds: <code>Observe</code> (turn tracepoint variables into a tuple), <code>Unpack</code> (take upstream tuples from the baggage), <code>Filter</code>, <code>Pack</code> (put tuples into the baggage to travel on) and <code>Emit</code> (send a result to the user).</li>
+<li><strong>Agent</strong>: a resident process on each machine that weaves advice into the matching tracepoints by bytecode rewriting, and unweaves it again.</li>
+</ul>
+<p>The whole path: the user writes a query in the front end → it compiles to advice → a <strong>publish-subscribe</strong> channel broadcasts it to agents across the cluster → each agent weaves it in locally → tuples emitted by tracepoints travel back over a message bus → the front end aggregates them into a pivot table, <strong>streaming, so you watch it fill in</strong>. Retract the query and the weaving is undone; the system is as it was.</p>
+<p>The engineering cost is stated plainly: the prototype is Java, and making baggage actually propagate required changes at thread and RPC boundaries in each system — HDFS, HBase, MapReduce and YARN each took roughly <strong>50 to 200 lines of manual modification</strong> (common interfaces such as Thread, Runnable, Callable and Queue were handled automatically with AspectJ, while RPC protocol definitions had to be extended by hand).</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a3" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect x="18" y="30" width="112" height="40" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="74" y="55" fill="#e7ebf1" font-size="12" text-anchor="middle">user writes a query</text>
+<line x1="130" y1="50" x2="168" y2="50" stroke="#7c8593" marker-end="url(#a3)"></line>
+<rect x="172" y="30" width="126" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="235" y="48" fill="#b9c0ca" font-size="12" text-anchor="middle">compiled to advice</text><text x="235" y="63" fill="#7c8593" font-size="10.5" text-anchor="middle">aggregation pushed down</text>
+<line x1="298" y1="50" x2="336" y2="50" stroke="#7c8593" marker-end="url(#a3)"></line>
+<rect x="340" y="30" width="126" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="403" y="55" fill="#b9c0ca" font-size="12" text-anchor="middle">pub-sub to the cluster</text>
+<path d="M403,70 L403,96" fill="none" stroke="#7c8593" marker-end="url(#a3)"></path>
+<rect x="150" y="100" width="316" height="62" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"></rect>
+<text x="308" y="120" fill="#e7ebf1" font-size="12" text-anchor="middle">agent on each machine weaves advice into tracepoints</text>
+<text x="308" y="139" fill="#e8794b" font-size="11" text-anchor="middle">Observe · Unpack · Filter · Pack · Emit</text>
+<text x="308" y="155" fill="#7c8593" font-size="10.5" text-anchor="middle">bytecode rewritten live; retract the query and cost returns to zero</text>
+<path d="M150,131 L96,131 L96,190" fill="none" stroke="#f0b429" marker-end="url(#a3)"></path>
+<rect x="18" y="194" width="156" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="96" y="218" fill="#e7ebf1" font-size="12" text-anchor="middle">results stream into a pivot table</text>
+<text x="330" y="200" fill="#7c8593" font-size="11" text-anchor="middle">only aggregated results go on the wire</text>
+<text x="330" y="220" fill="#7c8593" font-size="11" text-anchor="middle">raw events stay local and are consumed there</text>
+</svg>
+<figcaption>Fig. 3 · From one query to a live process: compiled into restricted advice, broadcast to per-machine agents that weave it in, with only aggregates flowing back.</figcaption>
+</figure>
+
+<h2>Key results</h2>
+<p><strong>The motivating question does get answered.</strong> On a cluster of eight machines running HBase, MapReduce and direct HDFS clients simultaneously, Pivot Tracing breaks down DataNode disk reads and writes <strong>by the high-level client process name</strong>, presented as a pivot table of rows-by-machine and columns-by-source with sparklines — exactly the view HDFS cannot produce for itself.</p>
+<p><strong>The case studies found three classes of root cause.</strong> Working on that Hadoop cluster with a sequence of progressively narrower queries, the authors located <strong>a software bug, a misconfiguration, and limping hardware</strong> (a disk that had slowed down without failing). Those three are precisely what logs are worst at: nothing crashes and nothing raises an error, things are merely slow — there is no exception to catch, only attribution to do.</p>
+<p><strong>Overhead.</strong> With no query running the cost is negligible (baggage is empty and serializes to 0 bytes), so the machinery can sit enabled and idle. With queries running, the cost is dominated by packing, unpacking and transmitting tuples: the worst case reported is a stress test driving HDFS to its limit, where throughput drops by about <strong>16%</strong> — an upper bound under deliberate saturation, offered to show the order of the cost rather than a typical figure.</p>
+
+<h2>Why it matters</h2>
+<p><strong>First, it changed how the question is posed.</strong> The old paradigm was "decide in advance what to record," the new one is "ask afterwards." The line people now draw between <em>observability</em> and <em>monitoring</em> — <strong>can you answer a question you did not anticipate</strong> — has one of its clearest sources in this paper.</p>
+<p><strong>Second, it formalized cross-layer attribution.</strong> Before this, engineers did the job by stuffing a request ID into their logs and grepping the pieces back together by script. Pivot Tracing points out that this is fundamentally <strong>a join along causal order</strong>, and gives it an executable definition and implementation. Turning a chore everyone was doing by hand into an operator is the most valuable kind of systems contribution.</p>
+<p><strong>Third, baggage escaped the paper.</strong> Mace and Fonseca went on to isolate it as a "tracing plane"; and the notion of carrying a small bag of key-values with a request across process boundaries — under that very name, <em>baggage</em> — is now written into the standard OpenTracing / OpenTelemetry APIs. The baggage you propagate in a modern microservice traces its lineage here. Facebook's Canopy (SOSP 2017) carried the approach to industrial scale.</p>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>Baggage must survive the whole path, and breaks are silent.</strong> This is the practical obstacle: if any link — a thread pool, an async queue, a third-party library, a cross-language boundary — fails to propagate the baggage, causality snaps there and the join <strong>quietly under-matches</strong> rather than erroring. What you get is a table that looks fine and is missing a piece. The effort OpenTelemetry has since poured into standardizing context propagation is an attack on exactly this.</li>
+<li><strong>It only sees causality along the path.</strong> What it captures is the happened-before chain the request itself traversed. <strong>Interference through shared resources</strong> — two entirely unrelated requests contending for the same disk or the same lock — lies on no such chain: you can compute who consumed what, but why they slow each other down still has to be inferred another way. By the same token it cannot answer counterfactuals ("why did this <em>not</em> happen").</li>
+<li><strong>It requires a rewritable runtime.</strong> The prototype rests on JVM bytecode rewriting; ecosystems like C++ and Go offer no equally convenient mechanism, and real datacenters are usually a patchwork of languages.</li>
+<li><strong>Injecting executable code into production processes makes operators and security teams wince.</strong> The paper manages the risk with a restricted, loop-free, cost-predictable instruction set, but who may issue queries, how that is audited, and how tenants are isolated are questions it does not settle.</li>
+<li><strong>"Ask anything" still has a boundary.</strong> The tracepoint has to exist, and what you can ask is ultimately bounded by which local variables are visible there. It enlarges the space of questions; it does not abolish its edges.</li>
+<li><strong>Adoption is the most honest criticism.</strong> A decade on, the industry mainstream is still Dapper-style sampled tracing plus metrics and logs; the <em>complete</em> form of Pivot Tracing — issuing queries at runtime and weaving them in dynamically — has not been widely deployed. What spread was its abstraction (baggage, causal propagation), not its product form.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1. In one line: use a happened-before join to pair "the number at the bottom" with "the identity at the top" along the causal path, and dynamic instrumentation to install the query into a running system — monitoring moves from bookkeeping-in-advance to asking-afterwards.</p>
+<p>2. Pain one: what gets recorded is frozen at development time; a new question means editing code, redeploying, and waiting for a recurrence.</p>
+<p>3. Pain two: information is carved along component boundaries — HDFS recognizes only direct clients and cannot say which high-level job ate the disk; the two halves live in two systems.</p>
+<p>4. The operator: <code>a ⋈→ b</code>, pairing not by equal values and not by timestamps (clocks disagree) but by Lamport's causal order — the one reliable relation a distributed system gives you for free.</p>
+<p>5. The implementation key: baggage — pack the join's fields into a container the request carries through threads, queues and RPCs; downstream unpacks and pairs <strong>in place</strong>, emitting only results instead of shipping raw events to a central node.</p>
+<p>6. Why it is cheap: aggregation and filtering are pushed to the source and the baggage carries only what is needed — 0 bytes with no query, about 137 bytes per request for the heaviest one evaluated.</p>
+<p>7. The machinery: query → restricted advice (Observe / Unpack / Filter / Pack / Emit) → pub-sub to agents → bytecode weaving at tracepoints → results stream back; retraction returns the cost to zero.</p>
+<p>8. Results: DataNode disk bandwidth decomposed by high-level client on a Hadoop cluster; a software bug, a misconfiguration and a limping disk located; 50–200 lines per system to add baggage propagation; about 16% worst-case overhead under a stress test.</p>
+<p>9. Impact: cross-layer attribution formalized as an operator; one of the sources of "observability = answering what you did not anticipate"; baggage now in the OpenTelemetry standard interfaces.</p>
+<p>10. Limits: a broken baggage chain fails silently; only path causality is visible, not contention over shared resources; it depends on runtime rewriting and raises injection-security concerns; the complete form is still not widely adopted in industry.</p>
+</div>
+</div>
+
+<footer>CS Papers Deep Read · Reading this page ≈ getting the core of the paper; for the full query language and the per-query measurements, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Pivot Tracing（动态因果监控）— IT 论文精读 Paper 71</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+.q{background:#171b21;border:1px solid rgba(240,180,41,0.18);border-radius:8px;padding:12px 16px;margin:14px 0;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:0.86rem;color:#f5c451;line-height:1.85;overflow-x:auto}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 71</p>
+<h1>Pivot Tracing（动态因果监控）</h1>
+<p class="sub">Mace, Roelke, Fonseca · Brown University · SOSP 2015（最佳论文）</p>
+<p class="langbar"><a href="pivot-tracing-paper71.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>你打开一个 app，它今天特别卡。工程师想弄明白为什么，能翻的只有<strong>日志</strong>——程序顺手记下的流水账。麻烦在于：流水账记的是当初写代码的人<strong>想到要记</strong>的东西，你现在想问的那件事，多半不在里面。</p>
+<p>2015 年布朗大学的三个人提出 <strong>Pivot Tracing</strong>，把这件事反了过来：<strong>你可以对着一个正在运行、不能停机的系统当场提问</strong>，几秒后答案就流回来，问完撤掉。而且它能问出一类以前谁也答不了的问题——比如「机房这块硬盘此刻被谁吃掉了」。</p>
+
+<h2>先说个怪事</h2>
+<p>一个大系统是很多层叠起来的：最上面是用户的任务，中间是数据库，最下面是存储。现在存储层的磁盘被榨干了，大家都在排队。你问：<strong>到底是谁干的？</strong>结果所有人都答不上来。存储层只知道「是数据库来读的」；数据库只知道「是某个任务让我读的」；那个任务只知道自己交了活儿。<strong>每一层都只认得自己的上一站。</strong></p>
+<p>就像快递中转站只知道包裹来自上一站，问它「是哪个买家下的单」——它是真不知道。要命的是，答案并非不存在，而是<strong>被切碎分散在几个系统里，谁手上都不全</strong>。</p>
+
+<h2>那个点子</h2>
+<p>旧世界的规矩是：<strong>你必须在写代码时就想好日后要查什么</strong>。想得到，事后能查；想不到，就得改代码、重新上线、干等它再犯一次——生产事故往往就这样错过。Pivot Tracing 换了个规矩：<strong>先别记，等你想问的时候再问。</strong></p>
+
+<h2>它怎么做到的</h2>
+<p><strong>第一件事：探头是临时装的。</strong>程序跑着的时候被就地改写，探头装上去、用完撤掉——像给正在营业的店临时挂个计数器，不用打烊装修。</p>
+<p><strong>第二件事，也是真正的新东西：让信息跟着请求走。</strong>给每个请求配一个<strong>随身小背包</strong>。它经过上层时，上层把「我是谁、我为谁跑这一趟」写进背包；一路穿过各种转手，到了最底层的存储，那里的探头<strong>打开背包就看见了来路</strong>，于是「这次读了多少字节」和「这是谁点的」当场对上号。</p>
+<p>比喻是医院：病人自己带着病历本走，抽血处不必跑回挂号处查这人是谁。关键在于<strong>配对的依据不是时间</strong>——同一毫秒里全机房有上万件事，按时间猜必然猜错——<strong>而是「它俩本就在同一趟旅程上，一个在前、一个在后」</strong>。</p>
+<p>还有一点让它便宜：背包里不塞流水账，只塞一句「这一趟属于某某任务」，剩下的<strong>边走边算</strong>，到底层算完只把结果发出去。代价也实打实：这一套要求沿途<strong>每个组件都老实地把背包传下去</strong>，中间有一环弄丢了，那条线就在那儿断掉。</p>
+
+<h2>带来了什么</h2>
+<p>它把「监控」的问法改了：<strong>从「上线前决定记什么」，变成「想问就问」。</strong>今天大家挂在嘴边的「可观测性」，衡量标准正是这一条——能不能回答一个<strong>事先没想到</strong>的问题。而那个「随身背包」，如今以 <strong>baggage</strong> 之名写进了主流追踪标准的接口。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>给每个请求配一个随身背包，让上层把「我是谁」写进去、底层打开就能对上号——于是「这块盘现在被谁吃掉了」这种跨系统的问题第一次有了答案；再加上探头能对着运行中的系统随装随撤，监控就从「事前记账」变成了「事后提问」。</p>
+</div>
+<p class="switch-hint">想看它的因果连接算子、查询怎么编译成探头、以及实测开销？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Pivot Tracing 让你对<strong>正在运行</strong>的分布式系统即席提问：它提出一个新的关系算子——<strong>happened-before join（因果先后连接，记作 <code>⋈→</code>）</strong>，把「系统这一处产生的数字」与「只有另一处才知道的身份信息」<strong>沿着请求的因果路径</strong>配对起来，从而回答跨组件、跨机器的归因问题；再用<strong>动态插桩（dynamic instrumentation）</strong>把查询现场编译成代码、织进运行中的进程，问完即撤。它拿下 SOSP 2015 最佳论文。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>分布式系统</strong>：一个功能由许多台机器上的许多个程序协作完成；用户的一次请求会像接力一样穿过好几个组件。</li>
+<li><strong>插桩（instrumentation）</strong>：在程序里埋下测量代码，让它在运行时吐出数字或事件。日志、打点都属于插桩。</li>
+<li><strong>动态插桩（dynamic instrumentation）</strong>：不改源码、不重启，直接在<em>运行中</em>的进程里插入或撤走测量代码。经典代表是 Solaris 的 DTrace。</li>
+<li><strong>分布式追踪（distributed tracing）</strong>：把一次请求在各组件间的调用串成一棵树，看清它走过哪里、每段花了多久。Google 的 Dapper（2010）是工业界蓝本。</li>
+<li><strong>采样（sampling）</strong>：只记录千分之一之类的一小撮请求以省开销——代价是你要查的那一次很可能没被记下。</li>
+<li><strong>happened-before（发生在先）</strong>：Lamport 1978 年定义的因果序——如果 a 有可能影响 b（同一线程里 a 在 b 前，或 a 发了条消息被 b 收到），就说 a 发生在 b 之先。它不依赖时钟。</li>
+<li><strong>关系代数 / join（连接）</strong>：数据库里把两张表按某个条件配对、拼成一张表的操作，如「订单表按用户 ID 连接用户表」。</li>
+<li><strong>元组（tuple）</strong>：一行记录，比如 <code>(进程名=MRsort, 读取字节=4096)</code>。</li>
+<li><strong>RPC（远程过程调用）</strong>：一台机器上的程序像调本地函数一样调另一台机器上的函数，是组件间交谈的常见方式。</li>
+<li><strong>字节码改写</strong>：Java 程序编译成「字节码」后由 JVM 执行，运行期间可以被替换成另一段字节码——动态插桩在 Java 世界就是靠它实现的。</li>
+<li><strong>Hadoop 那一套</strong>：<strong>HDFS</strong> 是分布式文件系统（数据真正落盘的地方），<strong>HBase</strong> 是建在它上面的宽表数据库，<strong>MapReduce</strong> 是批处理框架，<strong>YARN</strong> 是资源调度器。论文的原型与实验都在这套系统上做。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者是 Jonathan Mace、Ryan Roelke、Rodrigo Fonseca，来自布朗大学，论文发在 <strong>SOSP 2015 并获最佳论文奖</strong>，后来扩展为 ACM TOCS 期刊长文，并被《Communications of the ACM》选为 Research Highlight（2020 年 3 月）。它同时接续两条线：一条是端到端追踪——Fonseca 自己的 X-Trace（2007）与 Google 的 Dapper（2010）；另一条是动态插桩——DTrace 与微软的 Fay。往下，它被 Facebook 的 Canopy（SOSP 2017，Mace 是作者之一）带进工业规模，而它抽出来的 <em>baggage</em> 概念，今天写在 OpenTracing / OpenTelemetry 的标准接口里。</p>
+
+<h2>问题与动机</h2>
+<p>在这篇之前，线上排查基本靠三样东西：日志、指标、追踪。它们有一个共同的硬伤——<strong>记什么，在开发期就被冻死了</strong>。你只能翻到当初有人想到要记的东西；想问一个新问题，就得改代码、过评审、重新部署、再等故障复现一次。而线上最贵的那类故障，往往只复现一次。</p>
+<p>更麻烦的是第二点：<strong>信息按组件边界被切开了</strong>。论文开篇给的例子很具体：一个 8 台机器的集群上同时跑着 HBase、MapReduce 作业，以及直接读写 HDFS 的客户端。现在问一个运维每天都在问的问题——<strong>HDFS 各个 DataNode 此刻的磁盘读带宽，分别是被哪个高层客户端吃掉的？</strong></p>
+<p>HDFS 答不出来。它只看得见自己的<strong>直接</strong>客户端，也就是「HBase 这一整坨」「MapReduce 这一整坨」；至于背后是哪张表的扫描、哪个作业的哪个 task，它一无所知。而 HBase 和 MapReduce 虽然知道自己的作业名，却不知道每个作业最终在哪块盘上压出了多少字节。<strong>答案需要的两半信息分处两个系统，谁也拼不起来。</strong>论文还援引 HBASE-4145 这类真实 issue 说明：这不是学术臆想的问题，是工程师在 bug 跟踪系统里真的在要的东西。</p>
+<p>「那就把什么都记下来、事后拼」也不行：全量记录的量大到存不起、开销也高；而降低开销要靠采样，采样又意味着你要的那一次多半不在样本里。<strong>「记全」和「记得起」在旧框架下是对立的。</strong></p>
+<figure>
+<svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<text x="20" y="24" fill="#7c8593" font-size="11.5">① 用户真正关心的单位（高层客户端）</text>
+<rect x="20" y="34" width="150" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="95" y="58" fill="#e7ebf1" font-size="12" text-anchor="middle">MapReduce 排序作业</text>
+<rect x="190" y="34" width="150" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="265" y="58" fill="#e7ebf1" font-size="12" text-anchor="middle">HBase 表扫描</text>
+<rect x="360" y="34" width="180" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="450" y="58" fill="#e7ebf1" font-size="12" text-anchor="middle">直接读 HDFS 的客户端</text>
+<line x1="95" y1="72" x2="95" y2="120" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="265" y1="72" x2="265" y2="120" stroke="#7c8593" marker-end="url(#a1)"></line>
+<path d="M450,72 L450,210" fill="none" stroke="#7c8593" marker-end="url(#a1)"></path>
+<text x="20" y="140" fill="#7c8593" font-size="11.5">② 中间组件</text>
+<rect x="35" y="122" width="120" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="95" y="144" fill="#b9c0ca" font-size="12" text-anchor="middle">MapReduce</text>
+<rect x="205" y="122" width="120" height="34" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="265" y="144" fill="#b9c0ca" font-size="12" text-anchor="middle">HBase</text>
+<line x1="95" y1="156" x2="160" y2="210" stroke="#7c8593" marker-end="url(#a1)"></line>
+<line x1="265" y1="156" x2="265" y2="210" stroke="#7c8593" marker-end="url(#a1)"></line>
+<text x="20" y="206" fill="#7c8593" font-size="11.5">③ 磁盘真正被消耗的地方</text>
+<rect x="60" y="214" width="440" height="44" rx="8" fill="rgba(232,121,75,0.12)" stroke="#e8794b"></rect>
+<text x="280" y="241" fill="#e7ebf1" font-size="12.5" text-anchor="middle">HDFS DataNode · 读了多少字节，只有这里知道</text>
+<text x="280" y="282" fill="#e8794b" font-size="12" text-anchor="middle">但 DataNode 只认得直接客户端：「HBase 来的」「MapReduce 来的」</text>
+<text x="280" y="302" fill="#f0b429" font-size="12.5" text-anchor="middle">→ 归因缺口：数字在底层，身份在顶层，两半拼不起来</text>
+</svg>
+<figcaption>图 1 · 归因缺口：消耗发生在最底层，而「为谁消耗」只有最上层知道；每一层都只认得自己的上一站。</figcaption>
+</figure>
+
+<h2>核心思想 / 方法</h2>
+<h3>想法一：happened-before join —— 按「因果」配对，而不是按值配对</h3>
+<p>这是全文真正新的东西。<strong>它是什么</strong>：一个新的关系算子，写作 <code>a ⋈→ b</code>。对 b 里的每一条记录，它把<strong>所有在因果上发生在这条记录之先</strong>的 a 记录配给它。</p>
+<p><strong>为什么非要造个新算子</strong>：数据库里的普通 join 是<em>按值配对</em>——两张表要有个共同字段（同一个用户 ID）才连得起来。可这里两头根本没有共同字段：上层手里只有作业名，底层手里只有字节数，它们之间唯一的联系是——<strong>这两件事发生在同一次请求的同一条执行路径上，一个在前、一个在后</strong>。所以配对条件不能是「值相等」，只能是 Lamport 的 <em>happened-before</em>。</p>
+<p><strong>为什么不用时间戳配对</strong>：机房里同一毫秒发生上万件事，且各机器的时钟本来就对不齐；按时间凑必然凑错。而 happened-before 不需要任何时钟——它只要求信息沿着执行路径传下去。<strong>这是分布式系统里唯一能白拿的、可靠的关系。</strong></p>
+<p>于是那个「谁吃了我的磁盘」就能写成一句查询了，大意如下（简化）：</p>
+<div class="q">From incr In DataNodeMetrics.incrBytesRead<br/>
+Join cl In First(ClientProtocols) On cl -&gt; incr<br/>
+GroupBy cl.procName<br/>
+Select cl.procName, SUM(incr.delta)</div>
+<p>白话逐句：<strong>从</strong> DataNode「又读了 N 个字节」这个事件出发；<strong>连接</strong>到<em>因果上排在它前面</em>的那条客户端协议记录（<code>-&gt;</code> 就是 happened-before，<code>First</code> 表示只要最早的那条，也就是最外层的发起者）；<strong>按</strong>发起者的进程名<strong>分组</strong>；<strong>求和</strong>得到每个高层客户端各自吃掉多少字节。数字取自最底层、分组键取自最顶层——这正是单个系统给不出的那张表。论文的名字 <em>Pivot</em>（数据透视表）就来自这里：行按机器、列按来源，随手换个分组键就换一个视角。</p>
+
+<h3>想法二：baggage —— 把 join 做在请求身上，而不是做在中心节点上</h3>
+<p>算子定义清楚了，接下来是真正难的：<strong>怎么算</strong>。要在底层那一端完成这个 join，底层就得知道上层那条记录。最笨的办法是把两头的记录统统发到一台中心机器上去对——那就绕回「全量记录」的老路：量大、贵、还慢。</p>
+<p>论文的答案是<em>baggage</em>（随身包裹）：<strong>把 join 要用的那几个字段塞进请求自己携带的一个小容器里，让它随请求穿过线程切换、任务队列、RPC 调用一路走下去。</strong>下游的探头直接从 baggage 里取出上游的元组，<strong>就地</strong>完成配对与聚合，只把结果吐出去。</p>
+<p>这样做的妙处是：因果关系本来就靠「请求走到哪里、信息就跟到哪里」来定义，所以 baggage 传播路径<strong>天然就是 happened-before 关系本身</strong>——不需要额外维护任何图或时钟。</p>
+<p>它还便宜。查询在编译时会被重排，<strong>过滤、投影、聚合尽量下推到源头</strong>，baggage 里只装下游真正要用的那几个字段。实测里：不跑查询时 baggage 默认为空、序列化后 <strong>0 字节</strong>；评测中最重的那个查询也只带 <strong>4 个元组、约 137 字节/请求</strong>。</p>
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="a2g" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="18" y="30" width="200" height="150" rx="10" fill="rgba(255,255,255,0.02)" stroke="#7c8593" stroke-dasharray="4 3"></rect>
+<text x="118" y="50" fill="#7c8593" font-size="11.5" text-anchor="middle">机器 A · 上层组件</text>
+<rect x="36" y="62" width="164" height="34" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="118" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">探点①：客户端协议入口</text>
+<text x="118" y="118" fill="#f0b429" font-size="11.5" text-anchor="middle">Observe：取出本地变量</text>
+<text x="118" y="136" fill="#f0b429" font-size="11.5" text-anchor="middle">Pack：把 (作业名) 放进背包</text>
+<text x="118" y="164" fill="#7c8593" font-size="11" text-anchor="middle">此时还不知道会读多少字节</text>
+<rect x="342" y="30" width="200" height="150" rx="10" fill="rgba(255,255,255,0.02)" stroke="#7c8593" stroke-dasharray="4 3"></rect>
+<text x="442" y="50" fill="#7c8593" font-size="11.5" text-anchor="middle">机器 B · HDFS DataNode</text>
+<rect x="360" y="62" width="164" height="34" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"></rect><text x="442" y="84" fill="#e7ebf1" font-size="12" text-anchor="middle">探点②：磁盘读计数处</text>
+<text x="442" y="118" fill="#e8794b" font-size="11.5" text-anchor="middle">Unpack：打开背包拿到 (作业名)</text>
+<text x="442" y="136" fill="#e8794b" font-size="11.5" text-anchor="middle">就地配对 + 聚合 → Emit</text>
+<text x="442" y="164" fill="#7c8593" font-size="11" text-anchor="middle">此时才知道字节数，但来路已在手</text>
+<path d="M204,79 L356,79" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#a2g)"></path>
+<rect x="238" y="196" width="84" height="30" rx="8" fill="rgba(240,180,41,0.12)" stroke="#f0b429"></rect>
+<text x="280" y="216" fill="#f0b429" font-size="11.5" text-anchor="middle">baggage</text>
+<path d="M256,196 C256,150 210,120 210,90" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="3 3"></path>
+<path d="M306,196 C306,150 352,120 352,90" fill="none" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="3 3"></path>
+<text x="280" y="248" fill="#b9c0ca" font-size="12" text-anchor="middle">随同一个请求穿过线程 / 队列 / RPC</text>
+<text x="280" y="270" fill="#e7ebf1" font-size="12.5" text-anchor="middle">配对依据 = 因果先后，不是时间戳</text>
+<text x="280" y="292" fill="#7c8593" font-size="11" text-anchor="middle">只有结果被发出，原始事件不离开本机</text>
+</svg>
+<figcaption>图 2 · happened-before join 的算法：上游把身份打包进 baggage，随请求下行；下游打开背包，就地完成配对与聚合，只发出结果。</figcaption>
+</figure>
+
+<h3>想法三：查询 → advice → 织进运行中的进程</h3>
+<p>最后是落地机制。三个概念：</p>
+<ul>
+<li><strong>tracepoint（探点）</strong>：代码里<em>可以</em>装探头的位置——方法的出入口、已有的日志点等；探点能看到当地的局部变量。探点是「可能性」，平时不产生任何开销。</li>
+<li><strong>advice（织入指令）</strong>：查询被编译成的一小串指令。指令集<strong>故意设计得很小、很受限</strong>（没有循环、不能任意调用），因此每段 advice 的开销可估、也不至于把宿主进程搞挂。共五类：<code>Observe</code>（从探点取变量做成元组）、<code>Unpack</code>（从 baggage 取上游元组）、<code>Filter</code>（筛）、<code>Pack</code>（把元组放进 baggage 带走）、<code>Emit</code>（把结果吐给用户）。</li>
+<li><strong>agent（代理）</strong>：每台机器上的常驻代理，负责把 advice 用字节码改写<em>织进</em>对应探点，以及撤销。</li>
+</ul>
+<p>整条路是：用户在前端写查询 → 编译成 advice → 经<strong>发布订阅</strong>广播到全集群的 agent → agent 就地织入探点 → 探点吐出的元组走消息总线回到前端 → 聚合成透视表，<strong>结果是流式的，边跑边看</strong>。撤销查询就把织入撤掉，系统回到原样。</p>
+<p>工程代价也说清楚了：原型是 Java 的；要让 baggage 真的能一路传下去，得给每个系统在线程与 RPC 边界上做改造——HDFS、HBase、MapReduce、YARN <strong>每个系统手工改了大约 50–200 行代码</strong>（Thread、Runnable、Callable、Queue 这类常见接口用 AspectJ 自动处理，RPC 的协议定义则要手工扩展）。</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a3" markerWidth="9" markerHeight="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect x="18" y="30" width="112" height="40" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="74" y="55" fill="#e7ebf1" font-size="12" text-anchor="middle">用户写一句查询</text>
+<line x1="130" y1="50" x2="168" y2="50" stroke="#7c8593" marker-end="url(#a3)"></line>
+<rect x="172" y="30" width="126" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="235" y="48" fill="#b9c0ca" font-size="12" text-anchor="middle">前端编译成 advice</text><text x="235" y="63" fill="#7c8593" font-size="10.5" text-anchor="middle">聚合下推、字段裁剪</text>
+<line x1="298" y1="50" x2="336" y2="50" stroke="#7c8593" marker-end="url(#a3)"></line>
+<rect x="340" y="30" width="126" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></rect><text x="403" y="55" fill="#b9c0ca" font-size="12" text-anchor="middle">发布订阅广播全集群</text>
+<path d="M403,70 L403,96" fill="none" stroke="#7c8593" marker-end="url(#a3)"></path>
+<rect x="150" y="100" width="316" height="62" rx="8" fill="rgba(232,121,75,0.1)" stroke="#e8794b"></rect>
+<text x="308" y="120" fill="#e7ebf1" font-size="12" text-anchor="middle">每台机器的 agent：把 advice 织进探点</text>
+<text x="308" y="139" fill="#e8794b" font-size="11" text-anchor="middle">Observe · Unpack · Filter · Pack · Emit</text>
+<text x="308" y="155" fill="#7c8593" font-size="10.5" text-anchor="middle">运行中改写字节码，不停机、撤销即归零</text>
+<path d="M150,131 L96,131 L96,190" fill="none" stroke="#f0b429" marker-end="url(#a3)"></path>
+<rect x="18" y="194" width="156" height="38" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></rect><text x="96" y="218" fill="#e7ebf1" font-size="12" text-anchor="middle">结果流回前端 · 汇成透视表</text>
+<text x="330" y="200" fill="#7c8593" font-size="11" text-anchor="middle">只有聚合后的结果上网</text>
+<text x="330" y="220" fill="#7c8593" font-size="11" text-anchor="middle">原始事件留在本机、就地算掉</text>
+</svg>
+<figcaption>图 3 · 从一句查询到运行中的进程：编译为受限指令 advice，广播给各机器的 agent 动态织入，只有聚合结果流回。</figcaption>
+</figure>
+
+<h2>关键结果</h2>
+<p><strong>动机问题真的答出来了。</strong>在 8 台机器同时跑 HBase、MapReduce 与直接 HDFS 客户端的集群上，Pivot Tracing 把 DataNode 的磁盘读写<strong>按高层客户端进程名</strong>分组，呈现成一张「行=机器、列=来源进程」的透视表配走势图——这正是 HDFS 自己无论如何都给不出的视图。</p>
+<p><strong>案例研究定位了三类根因。</strong>作者在这套 Hadoop 集群上用一串逐步收窄的查询，分别定位出<strong>软件 bug、配置错误、以及「腿瘸的硬件」（limping hardware，一块慢下来但没坏掉的盘）</strong>。这三类恰好是日志最不擅长的：系统不崩、不报错，只是慢——没有异常可抓，只有归因可做。</p>
+<p><strong>开销。</strong>不跑查询时开销可忽略（baggage 为空、序列化 0 字节），所以这套东西可以常开着待命。跑查询时的成本主要来自打包、解包与传输元组：最坏情况是把 HDFS 压到极限的压力测试，吞吐下降约 <strong>16%</strong>——这是刻意压满时的上界数字，作者用它来说明代价的量级，而不是典型值。</p>
+
+<h2>为什么重要 / 影响</h2>
+<p><strong>第一，它改了「监控」这件事的提法。</strong>旧范式是「事前决定记什么」，新范式是「事后提问」。今天「可观测性（observability）」与「监控（monitoring）」的那条分界线——<strong>你能不能回答一个事先没想到的问题</strong>——这篇论文是把它讲得最清楚的源头之一。</p>
+<p><strong>第二，它把「跨层归因」形式化了。</strong>在此之前，工程师做这件事靠在日志里塞一个 request ID、事后用脚本 grep 着拼接。Pivot Tracing 指出：这件事本质上是<strong>一个沿因果序做的 join</strong>，并给出了可执行的定义与实现。把一个人人在手工做的苦活抽象成一个算子——这是系统论文最有价值的那类贡献。</p>
+<p><strong>第三，baggage 走出了论文。</strong>后续 Mace 与 Fonseca 把它单独抽象成「追踪平面」一系工作；而「随请求携带一小袋键值、跨进程传播」这个概念与 <em>baggage</em> 这个名字，如今就写在 OpenTracing / OpenTelemetry 的标准 API 里。你在现代微服务里传的 baggage，血缘在此。Facebook 的 Canopy（SOSP 2017）则把这套思路带到了工业级规模。</p>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>baggage 必须全链路不丢，而断链是静默的。</strong>这是最实际的障碍：只要某个环节——一个线程池、一个异步队列、一个第三方库、一处跨语言边界——没有传播 baggage，因果链就在那里断掉，join 会<strong>悄悄地少配对</strong>，而不是报错。你得到的是一张看起来正常、其实缺了一块的表。后来 OpenTelemetry 花那么大力气标准化上下文传播，正是在啃这块硬骨头。</li>
+<li><strong>只能看见「路径上的因果」。</strong>它捕捉的是请求自己走过的那条 happened-before 链。<strong>通过共享资源发生的干扰</strong>（两个毫不相干的请求抢同一块盘、同一把锁）并不在任何一条链上——你能算出「谁消耗了多少」，但「他们为什么互相拖慢」仍要靠别的手段推断。同理，它也回答不了反事实问题（「这件事为什么<em>没</em>发生」）。</li>
+<li><strong>要求运行时可改写。</strong>原型建立在 JVM 的字节码改写之上；C++ / Go 这类生态没有同等便利的机制，而真实机房往往是多语言拼起来的。</li>
+<li><strong>往生产进程里注入可执行代码，运维与安全上会让人皱眉。</strong>论文用「受限指令集、无循环、开销可估」来控制风险，但谁有权下发查询、如何审计、多租户下如何隔离，这些论文没有解决。</li>
+<li><strong>「随口提问」仍有边界。</strong>探点得先存在，能问什么最终受限于那个位置能拿到哪些局部变量——它扩大的是提问空间，不是取消了边界。</li>
+<li><strong>采纳度是最诚实的那条批评。</strong>十年过去，工业界主流依然是 Dapper 式的采样追踪加指标、日志；Pivot Tracing 的<em>完整形态</em>——运行时下发查询、动态织入——并没有被广泛落地。真正扩散出去的是它的抽象（baggage、因果传播），而不是它的产品形态。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：用 happened-before join 把「底层的数字」与「顶层的身份」沿因果路径配对，再用动态插桩把查询装进运行中的系统——监控从「事前记账」变成「事后提问」。</p>
+<p>② 痛点一：记什么在开发期就冻死了，想问新问题得改代码、重新部署、等它再犯。</p>
+<p>③ 痛点二：信息按组件边界切开——HDFS 只认得直接客户端，答不出「这块盘被哪个高层作业吃掉了」；两半信息分处两个系统。</p>
+<p>④ 核心算子：<code>a ⋈→ b</code>，配对条件不是「值相等」也不是时间戳（时钟对不齐），而是 Lamport 的因果先后——分布式系统里唯一能白拿的可靠关系。</p>
+<p>⑤ 实现关键：baggage——把要 join 的字段塞进请求的随身容器，随线程 / 队列 / RPC 走；下游 Unpack 后<strong>就地</strong>配对聚合，只发结果，不把原始事件运到中心。</p>
+<p>⑥ 便宜的原因：聚合与过滤下推到源头，baggage 只装真正要用的字段——空查询 0 字节，最重的评测查询约 137 字节/请求。</p>
+<p>⑦ 落地机制：查询 → 受限指令 advice（Observe / Unpack / Filter / Pack / Emit）→ 发布订阅下发 → agent 字节码织入探点 → 结果流式回流；撤销即归零。</p>
+<p>⑧ 结果：Hadoop 集群上按高层客户端分解 DataNode 磁盘带宽，定位出软件 bug、配置错误、腿瘸的硬盘三类根因；每个系统改 50–200 行加 baggage 传播；压力测试最坏开销约 16%。</p>
+<p>⑨ 影响：把「跨层归因」形式化成一个算子；「可观测性 = 能回答没想到的问题」这条分界线的源头之一；baggage 进了 OpenTelemetry 的标准接口。</p>
+<p>⑩ 局限：baggage 断链是静默的；只看得见路径上的因果、看不见共享资源上的互相干扰；依赖运行时改写、注入生产进程有安全顾虑；完整形态至今未被工业界广泛采用。</p>
+</div>
+</div>
+
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的查询语言定义与逐条评测数据，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
