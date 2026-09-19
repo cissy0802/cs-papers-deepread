@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Distributed Snapshots — CS Papers Deep Read Paper 72</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP READ · PAPER 72</p>
+<h1>Distributed Snapshots</h1>
+<p class="sub">K. Mani Chandy &amp; Leslie Lamport · ACM TOCS · 1985</p>
+<p class="langbar"><a href="chandy-lamport-snapshots-paper72.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1985, Chandy and Lamport gave a way to take a <strong>coherent photograph of an entire distributed system</strong> — without stopping it, and without any clock that every machine agrees on. When a stream engine like Flink saves its progress every few seconds and resumes from the last save after a crash, it is running this paper's idea.</p>
+
+<h2>Start with something odd</h2>
+<p>Say the system holds just two accounts, A and B, with 100 dollars between them, and you want to check the total. You ask A: "how much do you have?" — A says 100. But right after you hang up, A wires 50 to B. You ask B — B says 50. That adds up to 150. <strong>Fifty dollars appeared out of nowhere.</strong></p>
+<p>Reversing the order is just as bad: ask A first (already wired, 50 left), then B (the money is still in flight, still 0) — a total of 50, and <strong>money has vanished</strong>. You did not miscount. The problem is that <strong>your two questions did not happen at the same instant</strong>. And in a distributed system there is no such thing as "the same instant": no two clocks agree, and you cannot make the world hold still while you take a picture.</p>
+
+<h2>What is new here</h2>
+<p>The older options were to <strong>stop the system</strong> (which stops the business with it) or to <strong>synchronize clocks</strong> (which never gets accurate enough). This paper changed the goal instead: <strong>stop chasing "the same instant" and settle for "not self-contradictory."</strong> As long as the photo never shows "B received money that A has not sent yet" — an effect arriving before its cause — it is a legitimate photo, even if the system never actually looked like that at any single moment. For a great many questions, that is enough.</p>
+
+<h2>How it works</h2>
+<p>The trick is embarrassingly simple. It needs one thing: a <strong>red card</strong>.</p>
+<ul>
+<li><strong>Step one</strong>: any machine that wants a photo first writes down what it looks like right now (how much is in its account), then <strong>drops one red card onto every outgoing line</strong>, and carries on working. Nothing pauses.</li>
+<li><strong>Step two</strong>: when another machine sees a red card for the <strong>first</strong> time, it immediately writes down its own state and drops red cards onto all of its own outgoing lines. The cards spread across the whole network by themselves, and each machine photographs itself exactly once.</li>
+<li><strong>Step three</strong>, the clever one — <strong>record the money in transit too</strong>. Everything a machine receives on a line after writing down its own state but before the red card arrives on that line was "still on the road" at photo time, so it goes into the photo as well.</li>
+</ul>
+<p>Why can't this contradict itself? Because <strong>a line is a queue: what is sent first arrives first</strong>. So the red card becomes a divider on that line: <strong>everything ahead of it was sent before the photo, everything behind it was sent after.</strong> The "after" messages can never get into the photo (no money appears from nowhere), and any "before" message not yet delivered is guaranteed to land inside the window between "I recorded myself" and "the card arrived" (no money vanishes). There is <strong>no conductor and nobody is paused</strong> — each machine watches only its own few lines and makes a local decision, and a globally coherent photo assembles itself.</p>
+
+<h2>What it bought us</h2>
+<p>With a photo in hand, a pile of questions that only make sense from outside the system become judgements about one static picture: <strong>is it deadlocked? is the work finished? is anyone still using this memory?</strong> Plus the most practical use of all — <strong>the save point</strong>: store the photo, and after a crash restart from it instead of from the beginning.</p>
+<p>One honest caveat: the photo may describe a moment that <strong>never actually happened</strong> — it is merely coherent. So it cannot answer fleeting questions like "how long is the queue right now."</p>
+
+<h2>Remember this</h2>
+<div class="tl">
+<p>You cannot capture "the same instant," so settle for a photo that is merely self-consistent: whoever wants a snapshot records itself first, then drops a marker onto every outgoing line; whoever receives a marker does the same and passes it on; and whatever arrives between "I recorded myself" and "the marker got here" was in flight at photo time and is recorded too. Nobody stops, nobody synchronizes clocks, and a globally consistent picture assembles itself.</p>
+</div>
+<p class="switch-hint">Want the marker rules as the paper states them, the space-time picture of a consistent cut, and the theorem that the snapshot may never have existed? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>In one sentence</h2>
+<p class="lead">The Chandy–Lamport snapshot algorithm: any process may spontaneously record its own state and then, before sending any further ordinary message, send a <strong>marker</strong> down each outgoing channel; every other process records its state the first time a marker reaches it and forwards markers in turn. Because channels are <strong>FIFO</strong>, the marker draws a clean line on each channel between "sent before the snapshot" and "sent after it," and each process records as the <strong>channel state</strong> whatever arrived between recording itself and receiving that channel's marker. With <strong>no pause, no locking and no global clock</strong>, the system assembles a <strong>causally consistent</strong> global state — one the system may never actually have passed through, yet good enough to decide any <strong>stable property</strong> (deadlock, termination, garbage).</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Process</strong>: an independently running unit with its own memory — a machine or a service instance.</li>
+<li><strong>Channel</strong>: a one-way link between processes. The paper assumes it <strong>never loses or corrupts messages</strong>, with arbitrary but finite delay.</li>
+<li><strong>FIFO</strong>: on one channel, messages arrive in the order they were sent; nothing overtakes anything else. A TCP connection has this property.</li>
+<li><strong>Local vs. global state</strong>: a process's own memory is its local state; the <strong>global state is all local states plus every message still in flight in every channel</strong>. That second half is routinely forgotten, and it is the crux of this paper.</li>
+<li><strong>Event</strong>: one step a process takes — sending a message, receiving one, or computing internally — each of which may change its state.</li>
+<li><strong>Happens-before</strong>: the causal order Lamport defined in 1978 — earlier steps in a process precede later ones, a message's send precedes its receive, plus transitivity. It is the only reliable ordering a distributed system gets for free.</li>
+<li><strong>Cut</strong>: one slice through each process's event sequence; everything "before the slice" forms a candidate photograph.</li>
+<li><strong>Stable property</strong>: one that stays true forever once it becomes true — "the system is deadlocked," "the computation has terminated," "this object is garbage." The opposite is a fleeting predicate like "queue length &gt; 10."</li>
+<li><strong>Deadlock / termination detection / garbage collection</strong>: respectively "a group of processes all waiting on each other," "every process idle and no messages in flight," and "nothing can reach this memory any more." All three are stable properties.</li>
+<li><strong>Checkpoint</strong>: a saved system state to restart from after a failure instead of starting over.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>K. Mani Chandy (then at the University of Texas at Austin) and Leslie Lamport (then at SRI International) published "Distributed Snapshots: Determining Global States of Distributed Systems" in <strong>ACM Transactions on Computer Systems, February 1985</strong>. It is built directly on Lamport's own 1978 "Time, Clocks, and the Ordering of Events" — <em>happens-before</em> is the whole foundation here. Downstream it leads to the theory of consistent global states (Mattern's and Fidge's vector clocks), to FIFO-free variants (Lai–Yang), and to distributed checkpointing in industry. Lamport's own account is that Chandy posed the problem to him over dinner, that he worked out the solution in the shower the next morning, and that when he reached Chandy's office Chandy already had the same answer.</p>
+
+<h2>The problem and the motivation</h2>
+<p>The motivation was never "I would like a photograph." It was <strong>a very practical class of question: how do you tell that the system has entered some global state?</strong> Deadlock detection, termination detection and distributed garbage collection look unrelated, but they are the same thing underneath — <strong>step outside the system, look at the current global state, and decide whether a predicate holds</strong>.</p>
+<p>Except "look at it" is exactly what a distributed system forbids. Two hard constraints: <strong>no shared memory</strong> (nobody can see anyone else's memory; you can only ask by message) and <strong>no global clock</strong> (no two clocks agree, and you cannot arrange for everyone to record "at 3 o'clock sharp"). So you must ask one at a time, and asking one at a time necessarily spans an interval during which the system keeps running — with the consequence shown by the bank example above. The paper's own opening image: a group of photographers must capture a sky filled with migrating birds; the scene is too large for one shot, so they shoot separately and combine, but <strong>the birds are flying and the shutters are not synchronized, so the composite may show some birds twice and miss others entirely</strong>. The hard part was never taking the picture; it was making the composite mean something.</p>
+<p>And there is a half that is easy to miss: <strong>the global state is not merely the sum of the process states, it also includes every message in flight in every channel.</strong> Record only the processes, forget what is on the wire, and that is precisely how the missing 50 dollars goes missing. That half is half of this paper's contribution.</p>
+
+<h2>Core idea and method</h2>
+
+<h3>Step one: swap "simultaneous" for "consistent"</h3>
+<p>Since "the same instant" is unobtainable, the paper adopts a different test: a photograph (a <em>cut</em>) is acceptable as long as it contains no <strong>causal inversion</strong>. A causal inversion is a message that appears in the photo as <strong>received although it was never sent</strong> — the receiver has recorded "I got it" while the sender has recorded "I have not sent it." Such a cut is <strong>inconsistent</strong>; otherwise it is a <strong>consistent cut</strong>.</p>
+<p>In happens-before terms, a consistent cut is a <strong>causally closed prefix</strong>: if event b is in the cut and a happens before b, then a must be in the cut too. Note the asymmetry: <strong>"sent but not yet received" is perfectly legal</strong> — that is just a message in flight, to be recorded faithfully — whereas <strong>"received but not yet sent" describes a world that cannot exist</strong> and must be ruled out. The algorithm's whole job is to guarantee the latter never happens.</p>
+<figure>
+<svg viewBox="0 0 600 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="c1a" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#b9c0ca"></path></marker></defs>
+<text x="150" y="28" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">Inconsistent cut ✗</text>
+<line x1="50" x2="280" y1="80" y2="80" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="50" x2="280" y1="170" y2="170" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="40" y="84" fill="#b9c0ca" font-size="12" text-anchor="end">A</text>
+<text x="40" y="174" fill="#b9c0ca" font-size="12" text-anchor="end">B</text>
+<line x1="130" x2="200" y1="80" y2="170" stroke="#b9c0ca" stroke-width="1.5" marker-end="url(#c1a)"></line>
+<text x="176" y="122" fill="#b9c0ca" font-size="11">wire 50</text>
+<path d="M100,52 V125 H240 V198" fill="none" stroke="#e8794b" stroke-width="1.8" stroke-dasharray="5,4"></path>
+<circle cx="100" cy="80" r="3.5" fill="#e8794b"></circle>
+<circle cx="240" cy="170" r="3.5" fill="#e8794b"></circle>
+<text x="150" y="225" fill="#e8794b" font-size="11" text-anchor="middle">B holds money A has not sent</text>
+<text x="150" y="241" fill="#7c8593" font-size="11" text-anchor="middle">total 150: money from nowhere</text>
+<text x="450" y="28" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">Consistent cut ✓</text>
+<line x1="330" x2="570" y1="80" y2="80" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="330" x2="570" y1="170" y2="170" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="320" y="84" fill="#b9c0ca" font-size="12" text-anchor="end">A</text>
+<text x="320" y="174" fill="#b9c0ca" font-size="12" text-anchor="end">B</text>
+<line x1="400" x2="500" y1="80" y2="170" stroke="#b9c0ca" stroke-width="1.5" marker-end="url(#c1a)"></line>
+<text x="466" y="118" fill="#b9c0ca" font-size="11">wire 50</text>
+<path d="M440,52 V125 H428 V198" fill="none" stroke="#f0b429" stroke-width="1.8" stroke-dasharray="5,4"></path>
+<circle cx="440" cy="80" r="3.5" fill="#f0b429"></circle>
+<circle cx="428" cy="170" r="3.5" fill="#f0b429"></circle>
+<text x="450" y="225" fill="#f0b429" font-size="11" text-anchor="middle">money in flight → channel state</text>
+<text x="450" y="241" fill="#7c8593" font-size="11" text-anchor="middle">total 100: it balances</text>
+</svg>
+<figcaption>Fig. 1 · Horizontal lines are process timelines, diagonal arrows are messages, dashed lines are cuts. Left: the cut falls before A's send but after B's receive, producing money the receiver has and the sender never sent. Right: the cut catches the message in flight, which is simply recorded as channel state.</figcaption>
+</figure>
+
+<h3>Step two: two rules, and there is no third</h3>
+<p>The algorithm introduces one special message, the <strong>marker</strong>. It takes no part in the computation; its only job is to <strong>draw a line on each channel</strong>. The entire algorithm is these two rules:</p>
+<ul>
+<li><strong>Marker-sending rule</strong>: process p first records its own state; then, before sending any <em>further</em> ordinary message along a channel c, it sends one marker down every outgoing channel. (The ordering — record first, marker next, ordinary messages last — is the whole key.)</li>
+<li><strong>Marker-receiving rule</strong>: when process q receives a marker along channel c — if q has <strong>not yet</strong> recorded its state, it records its state immediately, records the state of c as the <strong>empty sequence</strong>, and then follows the sending rule; if q <strong>has already</strong> recorded its state, it records the state of c as <strong>the sequence of messages received on c after q recorded its state and before this marker arrived</strong>.</li>
+</ul>
+<p>A snapshot is initiated <strong>spontaneously</strong> by any process (it simply executes the sending rule); no permission is needed. Several initiators at once do no harm — each process records itself only on the <strong>first</strong> marker it sees, and later markers merely close off their own channels.</p>
+<figure>
+<svg viewBox="0 0 600 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="c2a" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#b9c0ca"></path></marker>
+<marker id="c2g" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="290" y="232" width="70" height="16" fill="rgba(240,180,41,0.16)"></rect>
+<line x1="70" x2="560" y1="70" y2="70" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="70" x2="560" y1="155" y2="155" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="70" x2="560" y1="240" y2="240" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="60" y="74" fill="#b9c0ca" font-size="12" text-anchor="end">P</text>
+<text x="60" y="159" fill="#b9c0ca" font-size="12" text-anchor="end">Q</text>
+<text x="60" y="244" fill="#b9c0ca" font-size="12" text-anchor="end">R</text>
+<line x1="120" x2="320" y1="70" y2="240" stroke="#b9c0ca" stroke-width="1.5" marker-end="url(#c2a)"></line>
+<text x="146" y="112" fill="#b9c0ca" font-size="11">m (sent pre-snapshot)</text>
+<line x1="155" x2="225" y1="70" y2="155" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#c2g)"></line>
+<line x1="165" x2="360" y1="70" y2="240" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#c2g)"></line>
+<line x1="235" x2="290" y1="155" y2="240" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#c2g)"></line>
+<circle cx="150" cy="70" r="5" fill="#e8794b"></circle>
+<circle cx="225" cy="155" r="5" fill="#e8794b"></circle>
+<circle cx="290" cy="240" r="5" fill="#e8794b"></circle>
+<text x="150" y="58" fill="#e8794b" font-size="11" text-anchor="middle">records self</text>
+<text x="232" y="143" fill="#e8794b" font-size="11">records self</text>
+<text x="280" y="272" fill="#e8794b" font-size="11" text-anchor="middle">records self</text>
+<text x="404" y="150" fill="#f0b429" font-size="11">dashed = marker</text>
+<text x="404" y="166" fill="#7c8593" font-size="11">one per outgoing channel</text>
+<text x="404" y="272" fill="#f0b429" font-size="11">state of channel P→R = { m }</text>
+<line x1="290" x2="360" y1="252" y2="252" stroke="#f0b429" stroke-width="1"></line>
+<line x1="290" x2="290" y1="248" y2="256" stroke="#f0b429" stroke-width="1"></line>
+<line x1="360" x2="360" y1="248" y2="256" stroke="#f0b429" stroke-width="1"></line>
+<circle cx="320" cy="240" r="3.5" fill="#b9c0ca"></circle>
+</svg>
+<figcaption>Fig. 2 · P initiates: it records itself, then sends a marker on every outgoing channel. Q and R record themselves on their first marker and forward. Message m, which reaches R after R records itself (290) but before P's marker arrives (360), is exactly what was still travelling on channel P→R at snapshot time, and is recorded as that channel's state. Some markers are omitted for clarity.</figcaption>
+</figure>
+
+<h3>Step three: why this is guaranteed to be consistent</h3>
+<p>Think of "recording my state" as a process <strong>turning from white to red</strong>: messages sent before the recording are white (pre-snapshot), messages sent after are red. The two rules together guarantee one thing — <strong>on any channel, every white message sits ahead of the marker and every red message sits behind it.</strong></p>
+<p>Why? Two conditions mesh. The sending rule dictates <strong>record first, marker next, only then a red message</strong>, so the marker necessarily precedes every red message on that channel; and the channel is <strong>FIFO</strong>, so the order is not scrambled and the receiver sees exactly the order the sender produced. The marker is therefore a clean pair of scissors on the channel:</p>
+<ul>
+<li><strong>No red message can enter the photo</strong> — the receiver's window for recording channel state closes when the marker arrives, and every red message is behind it. (No money from nowhere; causal inversion is ruled out.)</li>
+<li><strong>Every white message is accounted for</strong> — either it arrived <em>before</em> the receiver recorded itself, in which case it is already reflected in the receiver's local state, or it falls inside the window between "receiver recorded itself" and "marker arrived," in which case it is recorded as channel state. (No money vanishes.)</li>
+</ul>
+<p>The white/red boundary is exactly that cut, and the first bullet shows the cut is consistent. <strong>The argument needs no global coordination whatsoever: each process looks only at what it received, and global consistency falls out of FIFO plus the rule ordering.</strong></p>
+
+<h3>Step four: cost and termination</h3>
+<p>Exactly <strong>one marker</strong> traverses each channel, so the message overhead is <code>|E|</code> (the number of channels), independent of application traffic. The ordinary computation <strong>never stops</strong>: recording your state is an instantaneous local act, after which you send and receive as usual. Provided one process initiates and the topology reaches all processes, the algorithm finishes in finite time (message delays are finite). One step remains — gathering the scattered fragments into one place to form the complete snapshot — and the paper leaves that to the application.</p>
+
+<h3>Step five: the photograph may never have existed</h3>
+<p>This is the most misunderstood and most worth-remembering point. The recorded global state <code>S*</code> <strong>need not be any instant the system actually passed through</strong> — it is stitched together from fragments recorded at different physical times.</p>
+<p>What the paper proves is weaker and exactly sufficient: let <code>S_i</code> be the actual state when the algorithm started and <code>S_φ</code> the actual state when it finished; then <strong><code>S*</code> is reachable from <code>S_i</code>, and <code>S_φ</code> is reachable from <code>S*</code></strong>. Equivalently, there is a <strong>causally equivalent reordering</strong> of the real execution (concurrent events permuted) along which <code>S*</code> genuinely did occur. In plain terms: <strong>the snapshot depicts a world that could perfectly well have happened — it just happens not to be the one that did.</strong></p>
+<p>That is exactly enough to decide a stable property <code>y</code>: if <code>y(S*)</code> is true then, since <code>S_φ</code> is reachable from <code>S*</code>, <strong>the system really is y now</strong>; if <code>y(S*)</code> is false then, since <code>S*</code> is reachable from <code>S_i</code> and y is stable, <strong>the system was not yet y when the algorithm began</strong>. Both directions yield a statement about the real system.</p>
+<figure>
+<svg viewBox="0 0 560 210" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="c3a" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="c3g" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<circle cx="90" cy="70" r="26" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></circle>
+<text x="90" y="75" fill="#e7ebf1" font-size="13" text-anchor="middle">S i</text>
+<circle cx="470" cy="70" r="26" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></circle>
+<text x="470" y="75" fill="#e7ebf1" font-size="13" text-anchor="middle">S φ</text>
+<path d="M118,62 C220,26 340,26 442,62" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#c3a)"></path>
+<text x="280" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">the real execution, while the algorithm runs</text>
+<circle cx="280" cy="152" r="30" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></circle>
+<text x="280" y="157" fill="#f0b429" font-size="13" text-anchor="middle">S *</text>
+<path d="M108,94 C160,132 200,146 246,151" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#c3g)"></path>
+<path d="M312,150 C360,145 400,131 452,94" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#c3g)"></path>
+<text x="146" y="132" fill="#f0b429" font-size="11.5">reachable</text>
+<text x="368" y="132" fill="#f0b429" font-size="11.5">reachable</text>
+<text x="280" y="200" fill="#7c8593" font-size="11.5" text-anchor="middle">the recorded S* need not lie on the real execution</text>
+</svg>
+<figcaption>Fig. 3 · The snapshot S* need not lie on the actual execution path, yet it is reachable from the starting state S_i and can reach the finishing state S_φ — which is all a stable property needs in order to be decided.</figcaption>
+</figure>
+
+<h2>Key results</h2>
+<p>This is a <strong>theory paper: no experimental tables, no benchmark numbers</strong>. Honestly stated, its "results" are the algorithm, the correctness proof and an application framework, not performance curves. Three quantifiable claims:</p>
+<ul>
+<li><strong>Cost</strong>: exactly one marker per channel, <code>|E|</code> extra messages in total, <strong>independent of application traffic</strong>; one local state recording per process.</li>
+<li><strong>Non-intrusiveness</strong>: <strong>fully concurrent</strong> with the underlying computation — no process is paused, no channel is frozen, no clock synchronization is required.</li>
+<li><strong>Correctness</strong>: <code>S*</code> satisfies the reachability chain <code>S_i</code> → <code>S*</code> → <code>S_φ</code>, which yields the two directions of stable-property detection above. The paper reduces deadlock detection and termination detection to "take a snapshot, then run a centralized decision on it" — and that reduction is itself part of the result.</li>
+</ul>
+
+<h2>Why it matters</h2>
+<p><strong>It turned "the global state of a distributed system" from a vague intuition into a computable, reasonable-about object.</strong> Before it, "what does the system look like right now" was barely a discussable question; after it, <em>consistent cut</em> and <em>consistent global snapshot</em> became standard vocabulary.</p>
+<ul>
+<li><strong>In theory</strong>: together with Lamport's 1978 happens-before, it grounds what can be observed in a distributed system at all. Vector clocks (Mattern, Fidge, 1988) were devised precisely to characterize consistent global states, and the whole line of distributed debugging and predicate detection grows from here.</li>
+<li><strong>Unifying the problems</strong>: deadlock detection, termination detection and distributed garbage collection — previously separate algorithms — were absorbed into a single template, "stable-property detection."</li>
+<li><strong>In industry</strong>: the most direct descendant is <strong>Apache Flink's Asynchronous Barrier Snapshotting</strong>, where the <em>barriers</em> injected periodically into the dataflow are markers and an operator "aligning" barriers across its inputs is the marker-receiving rule; that is what supports exactly-once semantics and failure recovery. More broadly, <strong>"save the state of a running distributed system without stopping it"</strong> is still done within this paper's reach.</li>
+</ul>
+
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>It leans hard on FIFO channels</strong>: the marker works as scissors only because nothing overtakes it. On non-FIFO channels the algorithm simply fails. Lai–Yang (1987) and others give FIFO-free variants at the price of colouring messages and recording send/receive histories — <strong>trading extra information for the lost ordering guarantee</strong>.</li>
+<li><strong>It is not fault-tolerant</strong>: the paper assumes processes do not crash and messages are not lost. But if a process dies mid-snapshot, markers stop propagating and the snapshot hangs — and fault tolerance is exactly what people most want snapshots for. Real checkpointing systems must add timeouts, retries and coordination.</li>
+<li><strong>Only stable properties</strong>: since <code>S*</code> may never have really occurred, conclusions drawn on the photo about unstable predicates ("queue length right now," "is an invariant violated right now") carry no guarantee about the real system.</li>
+<li><strong>Every process must be modified</strong>: each participant has to understand the marker rules and be able to buffer channel state. In a system assembled from heterogeneous components written by other people, that "everyone cooperates" premise is not cheap.</li>
+<li><strong>States and channels can be huge</strong>: the paper does not care what one recording costs, but in engineering that is the dominant cost — a high-throughput channel may hold enormous numbers of in-flight messages, and a large stateful operator's snapshot can run to gigabytes. Flink's later incremental snapshots and <em>unaligned checkpoints</em> (abandoning barrier alignment and recording in-flight data instead) are both repayments on this debt.</li>
+<li><strong>Topology assumptions</strong>: markers must reach every process along channels (the paper argues over strongly connected graphs); in modern systems with members joining and leaving, that premise takes extra work to maintain.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>1. In one line: using a special message called a marker, photograph a running distributed system in a <strong>causally consistent</strong> way — without stopping it and without synchronized clocks.</p>
+<p>2. The pain: with no shared memory and no global clock, "look at the current global state" means asking one process at a time, and that makes money appear or vanish — which is where deadlock detection, termination detection and distributed GC all got stuck.</p>
+<p>3. The conceptual swap: give up "the same instant" and aim for a <strong>consistent cut</strong> — the photo must never show a message received that was never sent; "sent but not received" is entirely legal.</p>
+<p>4. Global state = all process states <strong>plus every message in flight in every channel</strong>. That second half is the one people forget, and it is where the money goes missing.</p>
+<p>5. The algorithm is two rules: send — "record yourself, then send a marker on every outgoing channel, and only then any further ordinary message"; receive — "on your first marker, record yourself and forward (that channel's state is empty); otherwise record as that channel's state whatever arrived between recording yourself and this marker."</p>
+<p>6. Why it is correct: treat "recording state" as turning from white to red. The rule ordering puts the marker ahead of every red message, and FIFO keeps the order intact — so the marker is clean scissors: no red message enters the photo, and no white message is lost.</p>
+<p>7. Cost: one marker per channel, <code>|E|</code> in total; fully concurrent with the computation — no pause, no locks, no clock synchronization.</p>
+<p>8. The subtle part: <code>S*</code> may never have really happened, but <code>S_i</code> → <code>S*</code> → <code>S_φ</code> are reachable in order — it is a world that could have happened, which suffices for deciding <strong>stable properties</strong>.</p>
+<p>9. Impact and limits: consistent cuts became standard vocabulary and Flink's barrier snapshots are a direct descendant; but the algorithm needs FIFO, tolerates no failures, covers only stable properties, requires every process to cooperate, and can produce very large states.</p>
+</div>
+</div>
+
+<footer>CS Papers Deep Read · Finish this page and you have the core of the paper; for the full formal model and the correctness proof, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

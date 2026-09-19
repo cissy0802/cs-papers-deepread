@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Distributed Snapshots（分布式快照）— IT 论文精读 Paper 72</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 72</p>
+<h1>Distributed Snapshots（分布式快照）</h1>
+<p class="sub">K. Mani Chandy &amp; Leslie Lamport · ACM TOCS · 1985</p>
+<p class="langbar"><a href="chandy-lamport-snapshots-paper72.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1985 年，Chandy 与 Lamport 给出一个办法：一大群各干各的机器，在<strong>不停机、也没有一块大家都信的表</strong>的前提下，给整个系统拍出一张「讲得通」的全局照片。今天 Flink 这类流计算引擎每隔几秒存一次进度、崩了就从上一张照片接着跑——用的就是这篇的点子。</p>
+
+<h2>先说个怪事</h2>
+<p>假设系统里只有两个账户 A 和 B，一共 100 块，你想核对总额。先问 A：「你账上多少？」——A 说 100。可挂电话之后，A 把 50 块汇给了 B。再问 B——B 说 50。加起来 150，<strong>钱凭空多了 50</strong>。</p>
+<p>换个顺序也一样糟：先问 A（已汇出，剩 50）、再问 B（钱还在路上，仍是 0）——总共 50，<strong>钱凭空少了</strong>。你并没算错，问题出在：<strong>两次「问」不在同一个时刻</strong>。而分布式系统里压根没有「同一个时刻」这回事——每台机器的表都对不齐，你也不可能让整个世界停下来等你拍。</p>
+
+<h2>新在哪</h2>
+<p>以前的办法要么<strong>停机</strong>（业务跟着停），要么<strong>对表</strong>（时钟永远精确不到那份上）。这篇论文换了个目标：<strong>别追求「同一瞬间」，只追求「不自相矛盾」</strong>——只要照片上不出现「B 收到了一笔 A 还没汇出的钱」这种因果倒错，它就是一张合法的照片，哪怕现实中从没有哪一瞬间系统真长成那样。对很多问题来说，这就够用了。</p>
+
+<h2>怎么做到的</h2>
+<p>办法简单得令人发指，只靠一张<strong>「红卡片」</strong>：</p>
+<ul>
+<li><strong>第一步</strong>：任意一台机器想拍照，就先把自己此刻的样子抄下来（账上多少钱），再<strong>往自己发出去的每条线路各丢一张红卡片</strong>，然后继续该干嘛干嘛，不用停。</li>
+<li><strong>第二步</strong>：别的机器<strong>第一次</strong>收到红卡片时，立刻抄下自己此刻的样子，也往自己每条出线各丢一张红卡片。红卡片就这样自己传遍全网，每台机器只拍一次。</li>
+<li><strong>第三步</strong>：最妙的一步——<strong>把路上的钱也记下来</strong>。一台机器抄完自己之后、在某条线上收到红卡片之前，从这条线收到的每一笔，都是「拍照那刻还在路上」的，统统抄进照片。</li>
+</ul>
+<p>为什么这样就不会矛盾？因为<strong>线路是排队的、先发的先到</strong>，那张红卡片于是成了线上的一道分界：<strong>排它前面的全是「拍照前发出的」，排它后面的全是「拍照后发出的」。</strong>后者永远进不了照片（钱不会凭空多），前者里还没送到的，一定落在「我抄完自己」到「红卡片到达」这段窗口里被逮住（钱不会凭空少）。整件事<strong>没有指挥官、没有人被暂停</strong>——每台机器只盯自己那几条线做本地决定，全局一致的照片自己就拼好了。</p>
+
+<h2>带来了什么</h2>
+<p>有了照片，一堆「站在系统外面才看得清」的问题就变成了在一张静态图上做判断：<strong>系统死锁了吗？活干完了吗？这块内存还有人用吗？</strong>还有最实用的一条——<strong>存档点</strong>：把照片存下来，崩了就从照片重启，不用从头再来。</p>
+<p>诚实的一句：这张照片可能<strong>从来没有真的发生过</strong>，它只是「讲得通」；所以问「此刻队列有多长」这种转瞬即逝的事，它答不了。</p>
+
+<h2>一句话记住</h2>
+<div class="tl">
+<p>拍不到「同一瞬间」，就退而求其次拍一张「不自相矛盾」的：谁想拍照就先记下自己、再往每条出线丢一张红卡片；别人收到卡片就照做并转发；从记完自己到收到卡片这段时间里收到的东西，就是「当时还在路上的」，一并记下。没人需要停机、没人需要对表，一张全局一致的照片自己就拼好了。</p>
+</div>
+<p class="switch-hint">想看 marker 规则的原文形式、一致割的时空图和那条「照片未必真实存在」的定理？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">Chandy–Lamport 快照算法：任一进程可自发记录自身状态，并在此后发出任何普通消息之前，向每条出边发一枚 <strong>marker（标记消息）</strong>；其余进程首次收到 marker 时立即记录自身状态并同样转发。靠通道的 <strong>FIFO（先进先出）</strong>性质，marker 在每条通道上划出「拍照前 / 拍照后」的分界线，各进程把「记完自身之后、收到该通道 marker 之前」收到的消息记为<strong>通道状态</strong>。系统<strong>不停机、不加锁、不需要全局时钟</strong>，就拼出一张<strong>因果一致</strong>的全局状态——它未必是系统真正经历过的某个瞬间，但足以判定一切<strong>稳定性质</strong>（死锁、终止、垃圾对象）。</p>
+
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>进程（process）</strong>：这里指系统里一个独立运行、有自己内存的计算单元——一台机器、一个服务实例都算。</li>
+<li><strong>通道（channel）</strong>：进程之间的单向传输线路。论文假设它<strong>不丢不错、延迟任意但有限</strong>。</li>
+<li><strong>FIFO（先进先出）</strong>：同一条通道上，先发出的消息先被收到，不会互相超车。TCP 连接就有这个性质。</li>
+<li><strong>局部状态 / 全局状态</strong>：一个进程自己的内存内容叫局部状态；<strong>所有进程的局部状态 + 所有通道里在途消息</strong>，合起来才叫全局状态。后半截常被忽略，却是这篇的关键。</li>
+<li><strong>事件（event）</strong>：进程做的一步动作——发一条消息、收一条消息、或做一次内部计算，每步都可能改变自己的状态。</li>
+<li><strong>happens-before（先于发生）</strong>：Lamport 1978 年定义的因果顺序：同一进程内先做的先于后做的；一条消息的「发」先于它的「收」；再加传递性。分布式系统里唯一能白拿的可靠顺序关系。</li>
+<li><strong>割（cut）</strong>：在每个进程的事件序列上各切一刀，「刀之前」的所有事件合起来就是一张候选照片。</li>
+<li><strong>稳定性质（stable property）</strong>：一旦为真就永远为真的性质，如「系统死锁了」「计算已终止」「这个对象已成垃圾」。与之相对的是「队列长度 &gt; 10」这类转瞬即逝的性质。</li>
+<li><strong>死锁 / 终止检测 / 垃圾回收</strong>：分别是「一组进程互相等对方、谁都动不了」「所有进程都闲着且路上没有消息」「没有任何人还能引用到这块内存」——三者都是稳定性质。</li>
+<li><strong>checkpoint（检查点 / 存档点）</strong>：把系统状态存下来，故障后从这里重启而不是从头算。</li>
+</ul>
+</div>
+
+<h2>坐标</h2>
+<p>作者是 K. Mani Chandy（当时在德州大学奥斯汀分校）与 Leslie Lamport（当时在 SRI International），论文《Distributed Snapshots: Determining Global States of Distributed Systems》发表于 <strong>ACM Transactions on Computer Systems，1985 年 2 月</strong>。它直接建在 Lamport 自己 1978 年的《Time, Clocks, and the Ordering of Events》之上——<em>happens-before</em> 是这篇的全部地基；往下则接出了一致全局状态的理论（Mattern、Fidge 的向量时钟）、免 FIFO 的变体（Lai–Yang），以及工业界的分布式 checkpoint。Lamport 自述这个问题是 Chandy 在一次晚饭时抛给他的，他第二天早上在淋浴时想出了解法，赶到 Chandy 办公室时发现对方已经有了同样的答案。</p>
+
+<h2>问题与动机</h2>
+<p>动机不是「我想要一张照片」，而是<strong>一类很实际的问题：怎么判断系统进入了某种全局状态？</strong>死锁检测、终止检测、分布式垃圾回收，表面上八竿子打不着，本质是同一件事——<strong>站在系统外面看一眼当前全局状态，判断某个谓词成不成立</strong>。</p>
+<p>可「看一眼」恰恰是分布式系统里做不到的事。两条硬约束：<strong>没有共享内存</strong>（谁也看不见别人的内存，只能靠消息问），<strong>没有全局时钟</strong>（各机器的表对不齐，也没法约好「3 点整一起记」）。于是只能挨个问，而挨个问必然跨越一段时间，期间系统还在跑——科普版那个账本例子就是后果。论文开篇的自况是：一群摄影师要拍一片迁徙鸟群铺满的天空，景太大，只能分头拍再拼；<strong>可鸟在飞、快门又不同步，拼出来很可能有的鸟拍了两次、有的一次没拍到</strong>。难点从来不是拍，是让拼出来的东西有意义。</p>
+<p>还有半截容易被漏掉：<strong>全局状态不只是各进程状态之和，还包括所有通道里的在途消息。</strong>只记进程、忘了路上的东西，「钱凭空少了 50」正是这么丢的。这半截是这篇论文一半的功劳。</p>
+
+<h2>核心思想 / 方法</h2>
+
+<h3>第一步：把目标从「同时」换成「一致」</h3>
+<p>既然「同一瞬间」拿不到，论文换了个判据：一张照片（一个<em>割</em>）只要不出现<strong>因果倒错</strong>就算合格。所谓因果倒错，就是照片里<strong>收到了一条还没被发出的消息</strong>——收方记了「我收到了」，发方却记着「我还没发」。这样的割叫<strong>不一致割</strong>，反之叫<strong>一致割（consistent cut）</strong>。</p>
+<p>用 happens-before 说就是：一致割是一个<strong>对因果封闭的前缀</strong>——若事件 b 在割里、且 a 先于 b 发生，那 a 也必须在割里。注意这里的不对称：<strong>「已发未收」完全合法</strong>（它就是在途消息，如实记下即可），<strong>「已收未发」才是不可能存在的世界</strong>，必须杜绝。算法要做的正是保证后者不发生。</p>
+<figure>
+<svg viewBox="0 0 600 250" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="c1a" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#b9c0ca"></path></marker></defs>
+<text x="150" y="28" fill="#e8794b" font-size="12.5" font-weight="700" text-anchor="middle">不一致割 ✗</text>
+<line x1="50" x2="280" y1="80" y2="80" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="50" x2="280" y1="170" y2="170" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="40" y="84" fill="#b9c0ca" font-size="12" text-anchor="end">A</text>
+<text x="40" y="174" fill="#b9c0ca" font-size="12" text-anchor="end">B</text>
+<line x1="130" x2="200" y1="80" y2="170" stroke="#b9c0ca" stroke-width="1.5" marker-end="url(#c1a)"></line>
+<text x="176" y="122" fill="#b9c0ca" font-size="11">汇 50</text>
+<path d="M100,52 V125 H240 V198" fill="none" stroke="#e8794b" stroke-width="1.8" stroke-dasharray="5,4"></path>
+<circle cx="100" cy="80" r="3.5" fill="#e8794b"></circle>
+<circle cx="240" cy="170" r="3.5" fill="#e8794b"></circle>
+<text x="150" y="225" fill="#e8794b" font-size="11" text-anchor="middle">B 已收到 A 还没发的钱</text>
+<text x="150" y="241" fill="#7c8593" font-size="11" text-anchor="middle">总额 150：钱凭空多了</text>
+<text x="450" y="28" fill="#f0b429" font-size="12.5" font-weight="700" text-anchor="middle">一致割 ✓</text>
+<line x1="330" x2="570" y1="80" y2="80" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="330" x2="570" y1="170" y2="170" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="320" y="84" fill="#b9c0ca" font-size="12" text-anchor="end">A</text>
+<text x="320" y="174" fill="#b9c0ca" font-size="12" text-anchor="end">B</text>
+<line x1="400" x2="500" y1="80" y2="170" stroke="#b9c0ca" stroke-width="1.5" marker-end="url(#c1a)"></line>
+<text x="466" y="118" fill="#b9c0ca" font-size="11">汇 50</text>
+<path d="M440,52 V125 H428 V198" fill="none" stroke="#f0b429" stroke-width="1.8" stroke-dasharray="5,4"></path>
+<circle cx="440" cy="80" r="3.5" fill="#f0b429"></circle>
+<circle cx="428" cy="170" r="3.5" fill="#f0b429"></circle>
+<text x="450" y="225" fill="#f0b429" font-size="11" text-anchor="middle">钱正在路上 → 记为通道状态</text>
+<text x="450" y="241" fill="#7c8593" font-size="11" text-anchor="middle">总额 100：对上了</text>
+</svg>
+<figcaption>图 1 · 横线是进程的时间轴，斜箭头是消息，虚线是割。左：割切在「A 发出」之前、却切在「B 收到」之后，出现了收方有、发方无的钱。右：割把消息切成「已发未收」，把它如实记进通道状态即可。</figcaption>
+</figure>
+
+<h3>第二步：两条规则，没有第三条</h3>
+<p>算法引入一种特殊消息 <strong>marker</strong>（标记）。它不参与业务计算，唯一作用是<strong>在每条通道上划一道线</strong>。全文的算法就是下面两条规则：</p>
+<ul>
+<li><strong>marker 发送规则</strong>：进程 p 先记录自身状态；然后在沿通道 c 发出任何<em>后继</em>普通消息之前，沿每条出边各发一枚 marker。（「先记录、再 marker、最后才是普通消息」这个次序是全部的关键。）</li>
+<li><strong>marker 接收规则</strong>：进程 q 沿通道 c 收到一枚 marker 时——若 q <strong>尚未</strong>记录自身状态：立即记录自身状态，并把通道 c 的状态记为<strong>空序列</strong>，随后执行上面的发送规则；若 q <strong>已经</strong>记录过自身状态：把通道 c 的状态记为「<strong>q 记录自身状态之后、收到这枚 marker 之前，从 c 上收到的消息序列</strong>」。</li>
+</ul>
+<p>拍照由任意进程<strong>自发</strong>发起（直接执行发送规则即可），无需谁批准；多个进程同时发起也不出错——每个进程只在<strong>第一次</strong>收到 marker 时记录自己，后到的 marker 只用来封掉它那条通道。</p>
+<figure>
+<svg viewBox="0 0 600 300" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="c2a" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#b9c0ca"></path></marker>
+<marker id="c2g" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect x="290" y="232" width="70" height="16" fill="rgba(240,180,41,0.16)"></rect>
+<line x1="70" x2="560" y1="70" y2="70" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="70" x2="560" y1="155" y2="155" stroke="#7c8593" stroke-width="1.4"></line>
+<line x1="70" x2="560" y1="240" y2="240" stroke="#7c8593" stroke-width="1.4"></line>
+<text x="60" y="74" fill="#b9c0ca" font-size="12" text-anchor="end">P</text>
+<text x="60" y="159" fill="#b9c0ca" font-size="12" text-anchor="end">Q</text>
+<text x="60" y="244" fill="#b9c0ca" font-size="12" text-anchor="end">R</text>
+<line x1="120" x2="320" y1="70" y2="240" stroke="#b9c0ca" stroke-width="1.5" marker-end="url(#c2a)"></line>
+<text x="150" y="112" fill="#b9c0ca" font-size="11">m（拍照前发出）</text>
+<line x1="155" x2="225" y1="70" y2="155" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#c2g)"></line>
+<line x1="165" x2="360" y1="70" y2="240" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#c2g)"></line>
+<line x1="235" x2="290" y1="155" y2="240" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#c2g)"></line>
+<circle cx="150" cy="70" r="5" fill="#e8794b"></circle>
+<circle cx="225" cy="155" r="5" fill="#e8794b"></circle>
+<circle cx="290" cy="240" r="5" fill="#e8794b"></circle>
+<text x="150" y="58" fill="#e8794b" font-size="11" text-anchor="middle">记录自身</text>
+<text x="232" y="143" fill="#e8794b" font-size="11">记录自身</text>
+<text x="284" y="272" fill="#e8794b" font-size="11" text-anchor="middle">记录自身</text>
+<text x="404" y="150" fill="#f0b429" font-size="11">虚线 = marker</text>
+<text x="404" y="166" fill="#7c8593" font-size="11">沿每条出边各发一枚</text>
+<text x="404" y="272" fill="#f0b429" font-size="11">通道 P→R 的状态 = { m }</text>
+<line x1="290" x2="360" y1="252" y2="252" stroke="#f0b429" stroke-width="1"></line>
+<line x1="290" x2="290" y1="248" y2="256" stroke="#f0b429" stroke-width="1"></line>
+<line x1="360" x2="360" y1="248" y2="256" stroke="#f0b429" stroke-width="1"></line>
+<circle cx="320" cy="240" r="3.5" fill="#b9c0ca"></circle>
+</svg>
+<figcaption>图 2 · P 自发拍照：记录自身后向每条出边发 marker；Q、R 首次收到 marker 时记录自身并转发。R 在记录自身（290）之后、P 的 marker 到达（360）之前收到的 m，正是「拍照时仍在 P→R 通道上」的消息，被记为该通道的状态。为清晰起见省略了部分 marker。</figcaption>
+</figure>
+
+<h3>第三步：为什么这样就一定一致</h3>
+<p>把「记录自身状态」想成<strong>进程由白变红</strong>：记录之前发出的是白消息（拍照前发出），之后发出的是红消息。两条规则合起来保证了一件事——<strong>任意一条通道上，白消息全排在 marker 前面，红消息全排在后面。</strong></p>
+<p>凭什么？靠两个条件咬合：发送规则规定<strong>「先记录、再发 marker、然后才可能发红消息」</strong>，故 marker 一定排在该通道所有红消息之前；而通道 <strong>FIFO</strong>，次序不会被打乱，收方看到的就是发方发出的次序。于是 marker 成了通道上一把干净的剪刀：</p>
+<ul>
+<li><strong>红消息绝不会进照片</strong>——收方记录通道状态的窗口在 marker 到达时就关上了，而红消息全在 marker 后面。（「钱不会凭空多」，即杜绝因果倒错。）</li>
+<li><strong>每条白消息都有着落</strong>——要么在收方记录自身状态<em>之前</em>就已被收到、体现在收方局部状态里；要么落在「收方记完自己」到「marker 到达」这段窗口里，被记成通道状态。（「钱不会凭空少」。）</li>
+</ul>
+<p>白红消息的分界正好就是那个割，而第一条说明了它是一致的。<strong>整个论证不需要任何全局协调：每个进程只看自己收到了什么，全局一致性是 FIFO 加规则次序自动挤出来的。</strong></p>
+
+<h3>第四步：代价与终止</h3>
+<p>每条通道恰好流过<strong>一枚 marker</strong>，消息开销是 <code>|E|</code>（通道总数），与业务流量无关。正常计算<strong>全程不停</strong>：记录自身状态是本地的瞬时动作，之后照常收发。只要有一个进程发起、且拓扑能连通到所有进程，算法在有限时间内结束（消息延迟有限）。最后还需把各处记录的碎片汇总到一处才成完整快照——这步论文留给具体应用。</p>
+
+<h3>第五步：那张照片可能从未真的出现过</h3>
+<p>这是全文最容易被误解、也最值得记住的一点：记录下来的全局状态 <code>S*</code> <strong>未必是系统实际经历过的任何一个瞬间</strong>——它由各进程在不同物理时刻记录的片段拼成。</p>
+<p>论文证明的是一个更弱、却恰好够用的结论：设 <code>S_i</code> 是算法启动时的实际状态、<code>S_φ</code> 是结束时的实际状态，则 <strong><code>S*</code> 从 <code>S_i</code> 可达，且 <code>S_φ</code> 从 <code>S*</code> 可达</strong>。也就是说，存在一个与实际执行<strong>因果等价的重排</strong>（把并发事件换个顺序），在那条路径上 <code>S*</code> 确实出现过。白话讲：<strong>照片拍到的是一个「本来完全可能发生」的世界，只是碰巧不是实际发生的那个。</strong></p>
+<p>这正好够判定稳定性质 <code>y</code>：若 <code>y(S*)</code> 为真，由 <code>S*</code> 可达 <code>S_φ</code> 知<strong>系统现在确实已经 y 了</strong>；若 <code>y(S*)</code> 为假，由 <code>S_i</code> 可达 <code>S*</code> 且 y 稳定，知<strong>算法启动时系统还没 y</strong>。两头都给出了对真实系统有意义的结论。</p>
+<figure>
+<svg viewBox="0 0 560 210" font-family="-apple-system,sans-serif" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="c3a" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker>
+<marker id="c3g" markerHeight="9" markerWidth="9" orient="auto" refX="6" refY="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<circle cx="90" cy="70" r="26" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></circle>
+<text x="90" y="75" fill="#e7ebf1" font-size="13" text-anchor="middle">S i</text>
+<circle cx="470" cy="70" r="26" fill="rgba(255,255,255,0.03)" stroke="#7c8593"></circle>
+<text x="470" y="75" fill="#e7ebf1" font-size="13" text-anchor="middle">S φ</text>
+<path d="M118,62 C220,26 340,26 442,62" fill="none" stroke="#7c8593" stroke-width="1.6" marker-end="url(#c3a)"></path>
+<text x="280" y="26" fill="#7c8593" font-size="11.5" text-anchor="middle">实际执行（算法运行期间）</text>
+<circle cx="280" cy="152" r="30" fill="rgba(240,180,41,0.1)" stroke="#f0b429"></circle>
+<text x="280" y="157" fill="#f0b429" font-size="13" text-anchor="middle">S *</text>
+<path d="M108,94 C160,132 200,146 246,151" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#c3g)"></path>
+<path d="M312,150 C360,145 400,131 452,94" fill="none" stroke="#f0b429" stroke-width="1.6" marker-end="url(#c3g)"></path>
+<text x="150" y="132" fill="#f0b429" font-size="11.5">可达</text>
+<text x="392" y="132" fill="#f0b429" font-size="11.5">可达</text>
+<text x="280" y="200" fill="#7c8593" font-size="11.5" text-anchor="middle">记录到的 S* 未必在实际执行中出现过</text>
+</svg>
+<figcaption>图 3 · 快照 S* 未必落在实际执行路径上，但它从起始状态 S_i 可达、且能到达结束状态 S_φ——对「一旦为真就永远为真」的稳定性质而言，这就够下结论了。</figcaption>
+</figure>
+
+<h2>关键结果</h2>
+<p>这是一篇<strong>理论论文，没有实验表格、没有 benchmark 数字</strong>——诚实地说，它的「结果」是算法、正确性证明和一个应用框架，而非性能曲线。可量化的结论有三条：</p>
+<ul>
+<li><strong>开销</strong>：每条通道恰好一枚 marker，总计 <code>|E|</code> 条额外消息，<strong>与业务消息量无关</strong>；每个进程一次本地状态记录。</li>
+<li><strong>不侵扰</strong>：与底层计算<strong>完全并发</strong>——不暂停进程、不冻结通道、不要求时钟同步。</li>
+<li><strong>正确性</strong>：<code>S*</code> 满足「<code>S_i</code> → <code>S*</code> → <code>S_φ</code> 可达链」，据此得到稳定性质检测两个方向的推论。论文把死锁检测、终止检测统一成「拍一张照片，再在照片上跑集中式判定」——这个归约本身就是结果的一部分。</li>
+</ul>
+
+<h2>为什么重要 / 影响</h2>
+<p><strong>它把「分布式系统的全局状态」从含糊的直觉变成了可计算、可推理的对象。</strong>在这之前，「系统现在是什么样」几乎没法严肃讨论；这之后，<em>一致割</em>、<em>一致全局快照</em>成了分布式系统的通用词汇。</p>
+<ul>
+<li><strong>理论上</strong>：它与 Lamport 1978 的 happens-before 一起，构成了「分布式系统里可观察什么」的基础；后来的向量时钟（Mattern、Fidge 1988）正是为刻画一致全局状态而生，分布式调试与谓词检测整条线都从这里长出来。</li>
+<li><strong>问题的统一</strong>：死锁检测、终止检测、分布式垃圾回收这些曾各自为战的算法，被收编成「稳定性质检测」的同一套模板。</li>
+<li><strong>工业落地</strong>：最直接的后代是 <strong>Apache Flink 的异步屏障快照（Asynchronous Barrier Snapshotting）</strong>——数据流里周期插入的 <em>barrier</em> 就是 marker，算子在多条输入上「对齐」barrier 就是 marker 接收规则，由此支撑 exactly-once 与故障恢复。更广义地说，<strong>「不停机地给一个跑着的分布式系统存个档」</strong>，今天的做法都在这篇的射程内。</li>
+</ul>
+
+<h2>局限与批评</h2>
+<ul>
+<li><strong>强依赖 FIFO 通道</strong>：marker 能当剪刀用全靠「不超车」，通道若非 FIFO 算法直接失效。Lai–Yang（1987）等给出免 FIFO 的变体，代价是改用消息染色并记录收发历史——<strong>用额外信息换掉了对顺序的依赖</strong>。</li>
+<li><strong>不容错</strong>：论文假设进程不崩溃、消息不丢失。可一旦有进程崩在拍照中途，marker 传不下去，快照就悬在那里——而「容错」恰恰是人们最想拿快照解决的事。真实的 checkpoint 系统必须另加超时、重试与协调。</li>
+<li><strong>只对稳定性质有效</strong>：<code>S*</code> 可能从未真实出现，所以「此刻队列长度」「此刻有没有违反不变量」这类非稳定谓词，在照片上得到的结论对真实系统没有保证。</li>
+<li><strong>需要改造每个进程</strong>：每个参与者都得懂 marker 规则、都得能暂存通道状态。在由别人写的异构组件拼起来的系统里，这个「全员配合」的前提并不便宜。</li>
+<li><strong>状态与通道可能很大</strong>：论文不关心记录一次状态要花多少钱，而工程上这正是主要成本——高吞吐通道的在途消息可能极多，大状态算子的快照可以是 GB 级。Flink 后来的增量快照与 <em>unaligned checkpoint</em>（放弃 barrier 对齐、把在途数据一并记下）都是在偿还这笔账。</li>
+<li><strong>拓扑假设</strong>：要求 marker 能沿边到达所有进程（论文按强连通图讨论）；成员动态进出的现代系统里，这个前提要额外维护。</li>
+</ul>
+
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：不停机、不对表，靠一种叫 marker 的特殊消息，给运行中的分布式系统拍一张<strong>因果一致</strong>的全局照片。</p>
+<p>② 痛点：没有共享内存、没有全局时钟，「看一眼当前全局状态」只能挨个问，而挨个问会让钱凭空多或凭空少——死锁检测、终止检测、分布式 GC 全卡在这。</p>
+<p>③ 概念转换：放弃「同一瞬间」，改追求「<strong>一致割</strong>」——照片里绝不能出现「收到了还没发出的消息」；而「已发未收」完全合法。</p>
+<p>④ 全局状态 = 所有进程状态 <strong>+ 所有通道里的在途消息</strong>。后半截最易被忘，也正是钱丢失的地方。</p>
+<p>⑤ 算法只有两条规则：发送规则「先记录自身、再向每条出边发 marker、然后才发后继消息」；接收规则「首次收到 marker 就记录自身并转发（该通道记空），否则把『记录自身之后到这枚 marker 之前』收到的消息记为该通道状态」。</p>
+<p>⑥ 为什么对：把「记录状态」看作由白变红。规则次序保证 marker 排在所有红消息之前，FIFO 保证次序不被打乱——marker 于是成了干净的剪刀：红消息进不了照片，白消息一条不漏。</p>
+<p>⑦ 代价：每条通道一枚 marker，共 <code>|E|</code> 条；与业务计算完全并发，不停机、不加锁、不需时钟同步。</p>
+<p>⑧ 最微妙处：<code>S*</code> 可能从未真实发生，但 <code>S_i</code> → <code>S*</code> → <code>S_φ</code> 可达——它是一个「本可能发生」的世界，这对<strong>稳定性质</strong>的判定已经足够。</p>
+<p>⑨ 影响与局限：一致割成为标准词汇，Flink 的 barrier 快照是它的直系变体；但它依赖 FIFO、不容错、只管稳定性质、要求全员改造，状态还可能很大。</p>
+</div>
+</div>
+
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式化模型与正确性证明，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
