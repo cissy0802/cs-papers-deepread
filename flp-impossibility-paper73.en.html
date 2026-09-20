@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FLP Impossibility (Impossibility of Distributed Consensus with One Faulty Process) — CS Papers Deep-Read Paper 73</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 73</p>
+<h1>FLP Impossibility (Impossibility of Distributed Consensus with One Faulty Process)</h1>
+<p class="sub">Fischer, Lynch &amp; Paterson · PODS 1983 / JACM 1985</p>
+<p class="langbar"><a href="flp-impossibility-paper73.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1985 three theorists — Fischer, Lynch and Paterson — proved something that made the whole distributed-systems field go quiet for a moment: <strong>in a network like the internet, if even one machine might crash, there is no set of rules that can guarantee all the machines will end up picking the same answer.</strong> The load-bearing word is "guarantee." Paxos, Raft and blockchain consensus all live by going around this result.</p>
+<h2>First, the job to be done</h2>
+<p>Picture five machines that must take a position on one thing — say, whether a transfer counts as committed or aborted. They can only talk by sending messages, and three rules apply: <strong>①</strong> everyone must end up on the same answer; <strong>②</strong> both answers must be genuinely possible (otherwise hard-coding "always abort" would count as agreement, which is cheating); <strong>③</strong> every machine that hasn't broken must actually pick, not dither forever. As soon as messages can be arbitrarily slow, and <strong>even one</strong> machine might crash partway, those three <strong>cannot all be met</strong>.</p>
+<h2>The hard part: you can't tell "dead" from "slow"</h2>
+<p>It all comes down to one sentence: <strong>in a network with no upper bound on delay, a machine that has gone silent and a machine that already spoke but whose message is still in flight look exactly the same.</strong></p>
+<p>In real life we use timeouts — no reply in ten seconds, call it dead. But that rests on a premise: "normally it won't take more than ten seconds." Here there is no such premise. So you have only two moves: wait forever (possibly forever, breaking ③); or declare it dead and move on — and if it was merely slow, it may wake up already holding a different answer, breaking ①.</p>
+<h2>How the paper proves it really can't be done</h2>
+<p>This isn't "nobody has found it yet." It's a proof that <strong>nobody can</strong>. The idea is lovely: label every momentary state of the system. Some states are <strong>already settled</strong> — however things go from here the answer must be "commit," or must be "abort." Others still allow both; call those <strong>"hanging."</strong></p>
+<p>The paper then proves two things: <strong>there must be a hanging state right at the start</strong>; and <strong>as long as the system is hanging, you can always pick one message, slide its delivery slightly later, and have the system still be hanging after that step</strong>. Apply that trick forever and the system circles inside "hanging" and never settles.</p>
+<p>And the harassment is entirely fair play: it <strong>withholds no message</strong> and <strong>breaks no machine</strong>. It only arranges an awkward delivery order. The algorithm has this gap for one reason only — it <strong>must be prepared in advance</strong> to tolerate one machine crashing, and that readiness is the crack.</p>
+<h2>So what do engineers do?</h2>
+<p>If the three can't all hold, you must give one up on purpose, and which one matters. Paxos, Raft and the other algorithms actually in production <strong>defend the first two</strong>: never two contradictory answers, ever. What they give up is the "guarantee" inside ③ — they don't promise to produce a result within any fixed time. When the network is healthy they almost always settle fast; when it is a mess they would rather stall than be wrong. The other route is <strong>rolling dice</strong>: pick at random when stuck, and the chance of hanging forever falls to zero.</p>
+<p>One honest note: the result says the worst case <strong>may drag on forever</strong>, not that this is unachievable in practice — real networks don't cooperate with that devious ordering indefinitely, which is exactly why the Paxos family works fine.</p>
+<h2>Remember this one thing</h2>
+<div class="tl">
+<p>In a network where messages can be arbitrarily slow, "crashed" and "very slow" look identical; so once even one machine may fail, no algorithm can guarantee both "never two answers" and "an answer always comes out." Every usable consensus algorithm picks between them — keep correctness, give up any promise about how fast.</p>
+</div>
+<p class="switch-hint">Want bivalent configurations, the commutativity lemma and the four ways around it? <a data-mode="deep">→ Switch to the deep read</a></p>
+</div>
+<div class="mode mode-deep" hidden>
+<h2>In one sentence</h2>
+<p class="lead">FLP draws a ceiling over consensus: in an <strong>asynchronous</strong> message-passing system, if even <strong>one</strong> process may crash, no <strong>deterministic</strong> algorithm can simultaneously guarantee "everyone decides the same value," "both values are possible decisions," and "a decision eventually happens." In other words, in an asynchronous world <strong>safety can be kept, liveness cannot be guaranteed</strong> — a sentence that became the starting point for every consensus system since.</p>
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Consensus</strong>: a group of processes each hold an initial value and, by exchanging messages, must all "decide" the same value. Transaction commit, replica leader election and blockchain block production are all instances of it.</li>
+<li><strong>Asynchronous system</strong>: a model that assumes <strong>no upper bound</strong> on how long a message takes or how long a process takes to execute a step; messages are eventually delivered, never lost or forged, but may be arbitrarily slow and arbitrarily reordered. Its opposite is the synchronous model, where known time bounds make a timeout a valid verdict.</li>
+<li><strong>Crash fault (fail-stop)</strong>: a process halts at some moment and never moves again; it never sends false messages. Far milder than a "Byzantine fault," where a process may lie — FLP uses this weakest kind of fault, which makes the result stronger.</li>
+<li><strong>Deterministic algorithm</strong>: given the current state and the message received, the next step is uniquely determined — no dice. FLP constrains only this class.</li>
+<li><strong>Safety / liveness</strong>: safety is "nothing bad ever happens" (no two contradictory decisions); liveness is "something good eventually happens" (a decision really is made). Almost every distributed-systems trade-off lives between these two.</li>
+</ul>
+</div>
+<h2>Coordinates</h2>
+<p>The authors are Michael J. Fischer, Nancy Lynch and Michael S. Paterson; the conference version appeared at PODS in 1983 and the final version in <em>JACM</em> in 1985. It follows Lamport et al.'s 1982 <strong>Byzantine Generals Problem</strong>, which solved fault-tolerant agreement in a <strong>synchronous</strong> round model — making "can it be done asynchronously?" the natural next question. What it opened up is larger still: Ben-Or's randomized consensus (1983), Dwork-Lynch-Stockmeyer's <strong>partial synchrony</strong> model (1988), Chandra-Toueg's <strong>failure detectors</strong> (1996), and the entire design posture of Paxos and Raft. It received the Dijkstra Prize in Distributed Computing in 2001.</p>
+<h2>The problem and the motivation</h2>
+<p>By the early 1980s plenty of protocols for distributed transactions, reliable broadcast and replica agreement were already running, but their correctness arguments almost all hid one unspoken premise: <strong>timeouts are trustworthy</strong> — wait long enough with no reply and the other side is dead. Practical in engineering, indefensible in theory, because nobody can name a delay bound that will "definitely never be exceeded." Remove it and the old ailment of <strong>two-phase commit</strong> (the coordinator asks "are you all ready?", then announces commit or abort) resurfaces: the coordinator vanishes at the critical moment and the rest dare neither commit nor abort, so they <strong>block indefinitely</strong>.</p>
+<p>So the real question becomes: <strong>with no timing assumptions at all, can fault-tolerant agreement be built?</strong> FLP casts it in an extremely clean setting: N deterministic processes communicating only by messages, which may be arbitrarily delayed and reordered but are <strong>never lost or forged and always eventually delivered</strong>; at most <strong>one</strong> process crashes, and a crash is permanent. Three requirements — <em>agreement</em> (no two distinct decision values), <em>non-triviality</em> (both 0 and 1 are <strong>possible</strong> decisions), and <em>termination</em> (every non-crashed process eventually decides). Note that the middle one is <strong>weaker</strong> than the usual "validity," and the weaker the requirement, the stronger the impossibility.</p>
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+<rect x="14" y="16" width="250" height="150" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.2)"/>
+<rect x="296" y="16" width="250" height="150" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(240,180,41,0.2)"/>
+<text x="139" y="38" fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle">Case A: p has crashed</text>
+<text x="421" y="38" fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle">Case B: p is alive, just slow</text>
+<text x="26" y="74" fill="#7c8593" font-size="11">p</text><text x="26" y="134" fill="#7c8593" font-size="11">q</text>
+<line x1="40" y1="70" x2="150" y2="70" stroke="#4a5058"/>
+<line x1="150" y1="70" x2="252" y2="70" stroke="#4a5058" stroke-dasharray="3 4"/>
+<line x1="40" y1="130" x2="252" y2="130" stroke="#4a5058"/>
+<path d="M144,64 L156,76 M156,64 L144,76" stroke="#e8794b" stroke-width="2.4"/>
+<text x="162" y="60" fill="#e8794b" font-size="11">never moves again</text>
+<text x="60" y="150" fill="#7c8593" font-size="11">q waits for p's message…</text>
+<text x="308" y="74" fill="#7c8593" font-size="11">p</text><text x="308" y="134" fill="#7c8593" font-size="11">q</text>
+<line x1="322" y1="70" x2="534" y2="70" stroke="#4a5058"/>
+<line x1="322" y1="130" x2="534" y2="130" stroke="#4a5058"/>
+<circle cx="426" cy="70" r="3.5" fill="#f0b429"/>
+<path d="M430,73 C480,92 510,118 545,150" fill="none" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#a1)"/>
+<text x="352" y="60" fill="#f0b429" font-size="11">p sent a message</text>
+<text x="534" y="112" fill="#f0b429" font-size="11" text-anchor="end">…still in flight (arbitrarily long)</text>
+<text x="342" y="150" fill="#7c8593" font-size="11">q waits for p's message…</text>
+<rect x="14" y="182" width="532" height="46" rx="8" fill="rgba(240,180,41,0.07)" stroke="rgba(240,180,41,0.3)"/>
+<text x="280" y="202" fill="#e7ebf1" font-size="12.5" text-anchor="middle">Up to this instant q has seen exactly the same thing: nothing.</text>
+<text x="280" y="220" fill="#b9c0ca" font-size="12" text-anchor="middle">With no time bound there is no way to tell A from B.</text>
+</svg>
+<figcaption>Fig. 1 · Indistinguishability: in an asynchronous network "crashed" and "extremely slow" are identical to everyone else, so a timeout is no longer a valid verdict.</figcaption>
+</figure>
+<h2>Core idea and method</h2>
+<h3>Step one: label every configuration with a valence</h3>
+<p>The proof's first move is to treat execution as movement between <strong>configurations</strong>: a configuration = the internal states of all processes + the messages still sitting undelivered in the buffer. An <strong>event</strong> is "some process receives one message, changes state, and sends some new messages."</p>
+<p>Then label each configuration with its <strong>valence</strong>: which decision values can still appear in any continuation from here. If only 0 can, it is <em>0-valent</em>; if only 1 can, <em>1-valent</em> — jointly <strong>univalent</strong>, meaning already settled. If both remain possible it is <strong>bivalent</strong>: still hanging.</p>
+<p>In this language, "the algorithm terminates" is equivalent to "<strong>the system cannot stay bivalent forever</strong>"; to refute it, one need only construct a single infinite execution that is bivalent throughout.</p>
+<h3>Step two: a bivalent initial configuration must exist</h3>
+<p>Line up every possible initial configuration: all-0 at the far left, all-1 at the far right, with neighbours <strong>differing in exactly one process's initial value</strong>. If no initial configuration were bivalent, the line would have to contain an adjacent pair, 0-valent on the left and 1-valent on the right, differing only in process p's input.</p>
+<p>Now spend the one permitted crash: let <strong>p be dead from the very beginning</strong>. The remaining processes must still decide on their own, and <strong>what they hold is identical in both configurations</strong> — p never uttered a word. So the same execution must yield the same decision, yet the left is doomed to 0 and the right to 1. Contradiction. <strong>A bivalent initial configuration must exist.</strong></p>
+<h3>Step three: bivalence can be preserved forever (the crucial step)</h3>
+<p>What remains: from any bivalent configuration, for any pending message e, <strong>one can always walk a little way first, then deliver e, and still land bivalent</strong>. This is what lets the adversary keep the system undecided while <strong>never permanently withholding any message</strong>.</p>
+<p>By contradiction: suppose that however you walk first, delivering e always turns the configuration univalent. Following that assumption, one can always find two configurations <strong>one step apart</strong> — delivering e at C is doomed to 0, while taking one step e′ first and then delivering e is doomed to 1. Only two cases remain:</p>
+<ul>
+<li><strong>e and e′ land on different processes</strong>: the two events do not interfere — one process receives its own message and changes its own state, regardless of what the other does. So the two steps <strong>commute</strong>: e-then-e′ and e′-then-e reach <strong>the same configuration</strong>, which is then doomed to 0 and doomed to 1 at once. Contradiction.</li>
+<li><strong>e and e′ both go to the same process p</strong>: then hold p still — the algorithm must tolerate p crashing, so the rest must eventually reach a decision by themselves. Let them run to a univalent configuration A, then put the two held steps back in either order and you can reach both 0 and 1 from A. Contradiction again.</li>
+</ul>
+<p>Neither case survives, so a walk that leaves the system bivalent after e must exist.</p>
+<figure>
+<svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="248" y="20" width="64" height="30" rx="6" fill="rgba(240,180,41,0.1)" stroke="#f0b429"/>
+<text x="280" y="40" fill="#e7ebf1" font-size="13" text-anchor="middle">C</text>
+<line x1="256" y1="50" x2="176" y2="92" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="304" y1="50" x2="384" y2="92" stroke="#7c8593" marker-end="url(#a2)"/>
+<text x="242" y="74" fill="#f0b429" font-size="11.5" text-anchor="end">e: a message for p</text>
+<text x="318" y="74" fill="#f0b429" font-size="11.5">e′: a message for q</text>
+<rect x="118" y="96" width="96" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="166" y="116" fill="#b9c0ca" font-size="12" text-anchor="middle">e(C)</text>
+<rect x="346" y="96" width="96" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="#7c8593"/>
+<text x="394" y="116" fill="#b9c0ca" font-size="12" text-anchor="middle">e′(C)</text>
+<line x1="180" y1="126" x2="252" y2="164" stroke="#7c8593" marker-end="url(#a2)"/>
+<line x1="380" y1="126" x2="308" y2="164" stroke="#7c8593" marker-end="url(#a2)"/>
+<text x="238" y="152" fill="#f0b429" font-size="11.5" text-anchor="end">then e′</text>
+<text x="322" y="152" fill="#f0b429" font-size="11.5">then e</text>
+<rect x="224" y="168" width="112" height="32" rx="6" fill="rgba(232,121,75,0.14)" stroke="#e8794b"/>
+<text x="280" y="189" fill="#e7ebf1" font-size="12.5" text-anchor="middle">the same D</text>
+<text x="280" y="224" fill="#b9c0ca" font-size="12" text-anchor="middle">when p ≠ q the steps commute → D cannot be doomed to both 0 and 1</text>
+</svg>
+<figcaption>Fig. 2 · The commuting diamond: two events on different processes can be reordered into the same configuration — the blade that drives "delivering e must settle it" into contradiction.</figcaption>
+</figure>
+<h3>Step four: assembling the infinite run</h3>
+<p>The adversary's strategy now falls out: start from a bivalent initial configuration, <strong>each round fix on the message that has waited longest</strong> in the buffer, use step three to find a walk that delivers it and stays bivalent, take it, then fix on the next oldest, and repeat. The infinite execution so constructed is perfectly legal — <strong>every message is eventually delivered and every process takes infinitely many steps</strong> — yet the system is bivalent throughout, so <strong>no process ever decides</strong>.</p>
+<p>One sharp detail often missed: in this run <strong>no process actually crashes at all</strong>. The algorithm exposes a gap solely because it <strong>must keep an escape route ready in advance</strong> for one possible crash, and that readiness is what forces it, in certain configurations, to stop waiting.</p>
+<figure>
+<svg viewBox="0 0 560 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker>
+<marker id="a3b" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a5058"/></marker></defs>
+<text x="16" y="44" fill="#7c8593" font-size="11">bivalent (still hanging)</text>
+<circle cx="70" cy="76" r="17" fill="rgba(240,180,41,0.16)" stroke="#f0b429"/>
+<circle cx="190" cy="76" r="17" fill="rgba(240,180,41,0.16)" stroke="#f0b429"/>
+<circle cx="310" cy="76" r="17" fill="rgba(240,180,41,0.16)" stroke="#f0b429"/>
+<circle cx="430" cy="76" r="17" fill="rgba(240,180,41,0.16)" stroke="#f0b429"/>
+<line x1="88" y1="76" x2="170" y2="76" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a3)"/>
+<line x1="208" y1="76" x2="290" y2="76" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a3)"/>
+<line x1="328" y1="76" x2="410" y2="76" stroke="#f0b429" stroke-width="1.8" marker-end="url(#a3)"/>
+<line x1="448" y1="76" x2="520" y2="76" stroke="#f0b429" stroke-width="1.8" stroke-dasharray="5 5" marker-end="url(#a3)"/>
+<text x="524" y="81" fill="#f0b429" font-size="15">∞</text>
+<text x="129" y="66" fill="#7c8593" font-size="10.5" text-anchor="middle">deliver the oldest</text>
+<text x="249" y="66" fill="#7c8593" font-size="10.5" text-anchor="middle">then the next</text>
+<text x="369" y="66" fill="#7c8593" font-size="10.5" text-anchor="middle">and the next</text>
+<line x1="70" y1="94" x2="70" y2="132" stroke="#4a5058" stroke-dasharray="3 4" marker-end="url(#a3b)"/>
+<line x1="310" y1="94" x2="310" y2="132" stroke="#4a5058" stroke-dasharray="3 4" marker-end="url(#a3b)"/>
+<rect x="32" y="136" width="86" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#4a5058"/>
+<text x="75" y="154" fill="#6b7280" font-size="11.5" text-anchor="middle">doomed to 0</text>
+<rect x="272" y="136" width="86" height="26" rx="5" fill="rgba(255,255,255,0.03)" stroke="#4a5058"/>
+<text x="315" y="154" fill="#6b7280" font-size="11.5" text-anchor="middle">doomed to 1</text>
+<text x="128" y="154" fill="#6b7280" font-size="10.5">(branches the adversary avoids)</text>
+<text x="280" y="196" fill="#e7ebf1" font-size="12.5" text-anchor="middle">Every message is eventually delivered, every process keeps taking steps — a legal run</text>
+<text x="280" y="216" fill="#b9c0ca" font-size="12" text-anchor="middle">yet the system stays bivalent and no process ever decides</text>
+</svg>
+<figcaption>Fig. 3 · The adversary's strategy: consume the oldest pending message each round while always sliding from one bivalent configuration to the next — a fair run that never decides.</figcaption>
+</figure>
+<h2>Key results</h2>
+<p>This is a paper <strong>with no experiments</strong>; its "results" are the theorem itself, and how tightly the boundary is drawn:</p>
+<ul>
+<li><strong>The boundary is pushed to the limit</strong>: there is only <strong>one</strong> fault and it is the mildest kind, a crash; messages are <strong>guaranteed delivered</strong>; the requirement is only the weakest "both values are possible"; and it fails even if only <strong>one</strong> process is required to decide eventually. Relax any of these further and the conclusion does not weaken.</li>
+<li><strong>A revealing counterpoint</strong>: the paper itself shows that if the faulty processes are the "never started" kind (initially dead) and a majority are alive, consensus <strong>is</strong> solvable. The hard part isn't "a node is absent" — it's that <strong>a node may fail midway and you cannot tell</strong>.</li>
+</ul>
+<h2>Why it matters</h2>
+<p>It turned consensus from "how do we do it" into "<strong>what do we give up</strong>": ever since, every consensus system has had to answer one question — what assumption is your liveness hanging on? Four legitimate detours grew out of it, and they remain the whole map of consensus design:</p>
+<ul>
+<li><strong>Partial synchrony</strong>: Dwork-Lynch-Stockmeyer (1988) assume a delay bound that <em>eventually</em> holds, though you never know from when. Paxos and Raft take this road — <strong>safety holds unconditionally</strong>, liveness is redeemed only during stable periods, and timeouts only trigger a leader change rather than declaring who died.</li>
+<li><strong>Randomization</strong>: Ben-Or (1983) and others let processes roll dice when deadlocked, achieving <strong>termination with probability 1</strong> — the adversary cannot foresee the coin flips and so cannot schedule the deadlock out forever.</li>
+<li><strong>Failure detectors</strong>: Chandra-Toueg (1996) abstract "guessing who died" into an external, fallible module and characterize the <strong>weakest</strong> one that still solves consensus (◇W) — timing assumptions become a separable component.</li>
+<li><strong>Weakening the problem</strong>: approximate agreement and k-set agreement relax "everyone must agree exactly," buying back solvability.</li>
+</ul>
+<p>And one rule of thumb that still serves engineers well: <strong>any system claiming to guarantee fast agreement under arbitrary network conditions is either hiding a timing assumption or is wrong.</strong></p>
+<h2>Limitations and criticism</h2>
+<ul>
+<li><strong>The model is extreme, and covers only deterministic algorithms</strong>: the adversary in pure asynchrony is unrealistically strong — it can foresee every step of a deterministic algorithm and always schedule the worst order; switch to a randomized algorithm and it is out of range entirely. Real network delays mostly follow statistical regularities, and in practice Paxos almost always converges quickly. FLP says "cannot be guaranteed," not "cannot be done."</li>
+<li><strong>A pure worst-case result</strong>: it offers no probabilistic characterization — nothing about how likely stalling is or how long a decision is expected to take.</li>
+<li><strong>Very easily misquoted</strong>: the common misreading is "consensus is impossible in asynchronous systems" (the correct statement is that <strong>termination cannot be guaranteed</strong>), as is conflating it with CAP — CAP is about trading consistency against availability under a partition, FLP is about liveness being unguaranteeable without timing assumptions. Adjacent concerns, different propositions.</li>
+</ul>
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: in an asynchronous network, if even one process may crash, no deterministic algorithm can guarantee agreement, non-triviality and termination together.</p>
+<p>② The pain: protocols broadly assumed "timeouts are trustworthy" while real networks give no delay bound; 2PC blocking forever when the coordinator vanishes is the symptom.</p>
+<p>③ The core intuition: <strong>a crash and extreme slowness look identical from outside</strong> — wait forever and you may never terminate; stop waiting and you may produce two answers.</p>
+<p>④ Mechanism one: label configurations by valence — univalent (settled) versus bivalent (still hanging); termination is equivalent to "cannot stay bivalent forever."</p>
+<p>⑤ Mechanism two: a bivalent initial configuration must exist — adjacent initial configurations differ in one process's value, and killing that process yields a contradiction.</p>
+<p>⑥ Mechanism three: bivalence can be preserved indefinitely — two events on different processes commute into the same configuration (the diamond), and for events on the same process you hold it still and let the others decide first; both branches end in contradiction.</p>
+<p>⑦ The resulting infinite run is perfectly legal: every message delivered, every process stepping, yet never deciding — and <strong>no process actually crashes in it</strong>; the gap comes from the algorithm having to keep an escape route ready.</p>
+<p>⑧ The boundary is tight: mildest crash fault, guaranteed delivery, only "both values possible" required, failing even if only one process must decide; conversely, if faulty processes are dead from the start and a majority live, it is solvable.</p>
+<p>⑨ Impact and limits: consensus design now runs on "safety unconditional, liveness on assumptions," with four detours — partial synchrony (Paxos / Raft), randomization, failure detectors, weakened problems; but the model is extreme, it binds only deterministic algorithms, and it is often misquoted as "asynchronous consensus is impossible" or conflated with CAP.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full formal model and the step-by-step proof, go read the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>

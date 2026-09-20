@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>FLP 不可能性（Impossibility of Distributed Consensus）— IT 论文精读 Paper 73</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">IT 论文精读 · PAPER 73</p>
+<h1>FLP 不可能性（Impossibility of Distributed Consensus with One Faulty Process）</h1>
+<p class="sub">Fischer, Lynch &amp; Paterson · PODS 1983 / JACM 1985</p>
+<p class="langbar"><a href="flp-impossibility-paper73.en.html">EN →</a></p>
+<div class="modebar">
+<button data-mode="pop">科普版</button>
+<button data-mode="deep">精读版</button>
+</div>
+<div class="mode mode-pop">
+<h2>这篇论文干了什么？</h2>
+<p>1985 年，三位理论学者 Fischer、Lynch、Paterson 证明了一件让整个分布式领域安静了一下的事：<strong>在互联网这样的网络里，只要有一台机器可能宕机，就不存在任何一套规则，能保证所有机器最后一定都选出同一个答案。</strong>要害在「保证」二字。今天的 Paxos、Raft 和区块链共识，都是在绕开这个结论活着。</p>
+<h2>先说清楚要办的事</h2>
+<p>想象五台机器要就一件事表态，比如「这笔转账算成功还是失败」。它们只能互发消息商量，规矩三条：<strong>①</strong> 最后大家必须选同一个答案；<strong>②</strong> 两种答案都得有可能被选出来（否则把「永远选失败」写死也算达成一致，那是耍赖）；<strong>③</strong> 没坏的机器最后都得真的选出来，不能永远举棋不定。只要消息可能慢得没有上限，而且<strong>哪怕只有一台</strong>机器可能中途宕机，这三条就<strong>凑不齐</strong>。</p>
+<h2>难在哪：你分不清「死了」还是「慢」</h2>
+<p>要害只有一句：<strong>在没有时间上限的网络里，一台不吭声的机器，和一台已经发了话、消息还在路上的机器，看起来一模一样。</strong></p>
+<p>现实里我们靠超时判断——等十秒没回就当它死了，可这背后有个前提：「正常不会超过十秒」。这里恰恰<strong>没有这个前提</strong>。于是只剩两条路：一直等（可能永远等下去，违反 ③）；或者当它死了往下走——万一它只是慢，醒来时手里已有另一个答案，① 就破了。</p>
+<h2>论文怎么证明「真的做不到」</h2>
+<p>这不是「还没人想出来」，而是<strong>证明了谁都想不出来</strong>。思路很漂亮：先给系统的每个瞬间状态贴标签。有的<strong>大局已定</strong>——不管后面怎么走，结果必然是「成功」，或必然是「失败」；还有一种两边都有可能，姑且叫<strong>「悬着」</strong>。</p>
+<p>论文接着证两件事：<strong>开局就必然存在一个「悬着」的状态</strong>；而且<strong>只要系统还悬着，总能挑一条消息把送达往后挪一挪，让它走完这一步之后仍然悬着</strong>。把这招无限用下去，系统就永远在「悬着」里打转。</p>
+<p>这个刁难一点不赖皮：它<strong>不扣押任何消息</strong>，也<strong>不弄坏任何一台机器</strong>，只是排了个特别别扭的送信顺序。算法之所以露出这个洞，仅仅因为它<strong>必须事先准备好</strong>容忍一台机器宕机——这份准备本身就是那条缝。</p>
+<h2>那工程上怎么办</h2>
+<p>三条凑不齐，就得主动放掉一条，放哪条很有讲究。Paxos、Raft 这类真在用的算法<strong>死守前两条</strong>：绝不给出两个互相矛盾的答案；让掉的是 ③ 里的「保证」——不承诺多久之内一定出结果。网络正常时几乎总能飞快定下来，一团糟时宁可卡住也不出错。另一条路是<strong>掷骰子</strong>：拿不定主意时随机选，「永远卡住」的概率就趋近于零。</p>
+<p>也说句诚实的：这个结论说的是<strong>最坏情况下可能永远拖着</strong>，不是「实践中办不到」——真实网络不会永远配合那种刁钻的顺序，这正是 Paxos 们照样好用的原因。</p>
+<h2>一句话记住</h2>
+<div class="tl">
+<p>在消息可能任意慢的网络里，「宕机」和「很慢」长得一模一样；于是只要允许一台机器出事，就没有算法能同时保证「不出两个答案」和「一定出得了答案」。能用的共识算法都在这两者间做了取舍——保住不出错，让掉「一定多快出结果」。</p>
+</div>
+<p class="switch-hint">想看双价配置、菱形交换引理与四条绕行路线？ <a data-mode="deep">→ 切到精读版</a></p>
+</div>
+<div class="mode mode-deep" hidden="">
+<h2>一句话</h2>
+<p class="lead">FLP 给共识（consensus）划了一条天花板：在<strong>异步</strong>消息传递系统里，只要允许<strong>一个</strong>进程崩溃，就不存在任何<strong>确定性</strong>算法能同时保证「所有人决定同一个值」「两个值都可能被决定」和「最终真的决定出来」。换句话说，异步世界里<strong>安全性可以保住、活性无法被保证</strong>——这句话此后成了每个共识系统的设计起点。</p>
+<h2>Glossary · 术语表</h2>
+<div class="glossary">
+<ul>
+<li><strong>共识（consensus）</strong>：一群进程各持一个初始值，靠互发消息最终都「决定」同一个值；事务提交、副本选主、区块链出块本质都是它。</li>
+<li><strong>异步系统（asynchronous system）</strong>：对「消息走多久」「进程执行一步多久」<strong>不做任何上限假设</strong>；消息最终必达、不丢不伪造，但可任意慢、任意乱序。相对的是同步模型——有已知时间上界，超时因而可当判据。</li>
+<li><strong>崩溃故障（crash fault / fail-stop）</strong>：进程在某刻停下、此后永不再动，也不发假消息；比会说谎的「拜占庭故障」温和得多——FLP 用的正是这种最弱故障，结论因而更强。</li>
+<li><strong>确定性算法（deterministic）</strong>：给定当前状态和收到的消息，下一步唯一确定，不掷骰子。FLP 只约束这一类。</li>
+<li><strong>安全性 / 活性（safety / liveness）</strong>：安全性是「坏事永不发生」（不出现两个互相矛盾的决定），活性是「好事最终发生」（最终真的决定出来）——分布式系统的取舍几乎都在这两者之间。</li>
+</ul>
+</div>
+<h2>坐标</h2>
+<p>作者是 Michael J. Fischer、Nancy Lynch、Michael S. Paterson，会议版 1983 年发于 PODS，定稿 1985 年刊于 <em>JACM</em>。它上承 Lamport 等人 1982 年的<strong>拜占庭将军问题</strong>——那篇在<strong>同步</strong>回合模型里解决了容错一致，于是「异步能不能行」成了自然的下一问。下启的更多：Ben-Or 的随机化共识（1983）、Dwork-Lynch-Stockmeyer 的<strong>部分同步</strong>模型（1988）、Chandra-Toueg 的<strong>失效检测器</strong>（1996），以及 Paxos 与 Raft 的整个设计取向。2001 年获 Dijkstra 分布式计算奖。</p>
+<h2>问题与动机</h2>
+<p>1980 年代初，分布式事务、可靠广播、副本一致已有一大堆协议在跑，但它们的正确性论证里普遍藏着一个心照不宣的前提：<strong>超时是可信的</strong>——等够久还没回话就当对方死了。工程上实用，理论上却站不住，因为没人能给出「绝对不会被超过」的延迟上界。抽掉它，<strong>两阶段提交</strong>（协调者先问「都准备好了吗」、再宣布提交或回滚）的老毛病就露出来：协调者在关键时刻失联，其余节点不敢提交也不敢回滚，只能<strong>无限阻塞</strong>。</p>
+<p>于是真问题变成：<strong>完全不做时间假设，容错的一致性还能不能做出来？</strong>FLP 把它写成一个极干净的设定：N 个确定性进程只靠消息通信，消息可任意延迟、任意乱序，但<strong>不丢不伪造、最终必达</strong>；最多<strong>一个</strong>进程崩溃，崩溃即永久停止。要求三条——<em>一致性</em>（不存在两个不同的决定值）、<em>非平凡性</em>（0 和 1 都<strong>有可能</strong>被决定）、<em>终止性</em>（每个不崩溃的进程最终都决定）。中间那条比通常的「有效性」<strong>更弱</strong>，而要求越弱、不可能性越强。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 250" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker></defs>
+<rect fill="rgba(255,255,255,0.02)" height="150" rx="8" stroke="rgba(240,180,41,0.2)" width="250" x="14" y="16"></rect>
+<rect fill="rgba(255,255,255,0.02)" height="150" rx="8" stroke="rgba(240,180,41,0.2)" width="250" x="296" y="16"></rect>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="139" y="38">情形 A：p 崩溃了</text>
+<text fill="#e7ebf1" font-size="12.5" font-weight="700" text-anchor="middle" x="421" y="38">情形 B：p 活着，只是慢</text>
+<text fill="#7c8593" font-size="11" x="26" y="74">p</text><text fill="#7c8593" font-size="11" x="26" y="134">q</text>
+<line stroke="#4a5058" x1="40" x2="150" y1="70" y2="70"></line>
+<line stroke="#4a5058" stroke-dasharray="3 4" x1="150" x2="252" y1="70" y2="70"></line>
+<line stroke="#4a5058" x1="40" x2="252" y1="130" y2="130"></line>
+<path d="M144,64 L156,76 M156,64 L144,76" stroke="#e8794b" stroke-width="2.4"></path>
+<text fill="#e8794b" font-size="11" x="162" y="60">此后永不再动</text>
+<text fill="#7c8593" font-size="11" x="60" y="150">q 在等 p 的消息…</text>
+<text fill="#7c8593" font-size="11" x="308" y="74">p</text><text fill="#7c8593" font-size="11" x="308" y="134">q</text>
+<line stroke="#4a5058" x1="322" x2="534" y1="70" y2="70"></line>
+<line stroke="#4a5058" x1="322" x2="534" y1="130" y2="130"></line>
+<circle cx="426" cy="70" fill="#f0b429" r="3.5"></circle>
+<path d="M430,73 C480,92 510,118 545,150" fill="none" marker-end="url(#a1)" stroke="#f0b429" stroke-dasharray="4 4" stroke-width="1.6"></path>
+<text fill="#f0b429" font-size="11" x="352" y="60">p 发了消息</text>
+<text fill="#f0b429" font-size="11" text-anchor="end" x="534" y="112">…还在路上（可以任意久）</text>
+<text fill="#7c8593" font-size="11" x="342" y="150">q 在等 p 的消息…</text>
+<rect fill="rgba(240,180,41,0.07)" height="46" rx="8" stroke="rgba(240,180,41,0.3)" width="532" x="14" y="182"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="202">到此刻为止，q 看到的一模一样：什么都没收到。</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="280" y="220">没有时间上界，就没有任何办法把 A 和 B 分开。</text>
+</svg>
+<figcaption>图 1 · 不可区分性：异步网络里「崩溃」与「极慢」在其他进程眼中完全一致，超时不再是可信的判据。</figcaption>
+</figure>
+<h2>核心思想 / 方法</h2>
+<h3>第一步：给每个局面贴上「价」</h3>
+<p>证明的第一个关键动作，是把执行过程看成在<strong>配置（configuration）</strong>之间的移动：一个配置 = 所有进程的内部状态 + 消息缓冲里还没送达的消息；一次<strong>事件</strong>就是「某进程收下某条消息、改状态、再发出若干新消息」。</p>
+<p>然后给配置贴标签，叫<strong>价（valence）</strong>：从这个配置出发，后续所有可能的执行中还能出现哪些决定值。只能出现 0 的叫 <em>0-价</em>、只能出现 1 的叫 <em>1-价</em>，统称<strong>单价</strong>（大局已定）；两个都还可能的叫<strong>双价（bivalent）</strong>，即「还悬着」。</p>
+<p>用这套语言，「算法能终止」就等价于<strong>系统不可能永远停在双价里</strong>；要推翻它，只需造出一条永远双价的无限执行。</p>
+<h3>第二步：开局就一定有一个双价配置</h3>
+<p>把所有可能的初始配置排成一排：最左是「所有人初始值都是 0」，最右是「都是 1」，相邻两个<strong>只差一个进程的初始值</strong>。若没有一个初始配置是双价的，那这排里必然存在相邻的一对：左边 0-价、右边 1-价，而它们只在进程 p 的初始值上不同。</p>
+<p>现在用上「允许一个进程崩溃」：让 <strong>p 从一开始就崩溃</strong>。剩下的进程必须自己决定出来，而<strong>它们手里的信息在这两个配置里完全相同</strong>——p 一个字也没发过。于是同一段执行必然给出同一个决定值，可左边注定 0、右边注定 1。矛盾。<strong>双价初始配置一定存在。</strong></p>
+<h3>第三步：双价可以被无限维持（最关键的一步）</h3>
+<p>剩下要证：从任一双价配置出发，对任何一条待送达的消息 e，<strong>总能先走一段路再送 e，落地时系统仍然双价</strong>。这保证对手能一直把系统留在悬而未决里，同时<strong>不永久扣押任何消息</strong>。</p>
+<p>反证：假设无论先怎么走，送 e 之后都必变单价。沿这条假设摸下去，一定能找到两个<strong>只差一步</strong>的配置——在 C 上送 e 注定 0，先走一步 e′ 再送 e 则注定 1。只有两种情况：</p>
+<ul>
+<li><strong>e 与 e′ 落在不同进程上</strong>：两个事件互不干涉——一个进程收自己的消息、改自己的状态，与另一个进程做什么无关。于是两步<strong>可以换序</strong>，先 e 后 e′ 与先 e′ 后 e 走到<strong>同一个配置</strong>，而它一边「注定 0」、一边「注定 1」。矛盾。</li>
+<li><strong>e 与 e′ 都发给同一个进程 p</strong>：那就把 p 按住不动——算法必须容忍 p 崩溃，剩下的进程终究得自己走到一个决定。让它们走完得到一个已单价的配置 A，再把被按住的两步按不同顺序补回去，就能从 A 分别通向 0 和 1。同样矛盾。</li>
+</ul>
+<p>两种情况都不成立，所以那个「送 e 之后仍然双价」的走法一定存在。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"></path></marker></defs>
+<rect fill="rgba(240,180,41,0.1)" height="30" rx="6" stroke="#f0b429" width="64" x="248" y="20"></rect>
+<text fill="#e7ebf1" font-size="13" text-anchor="middle" x="280" y="40">C</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="256" x2="176" y1="50" y2="92"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="304" x2="384" y1="50" y2="92"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="end" x="242" y="74">e：发给 p 的消息</text>
+<text fill="#f0b429" font-size="11.5" x="318" y="74">e′：发给 q 的消息</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="96" x="118" y="96"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="166" y="116">e(C)</text>
+<rect fill="rgba(255,255,255,0.03)" height="30" rx="6" stroke="#7c8593" width="96" x="346" y="96"></rect>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="394" y="116">e′(C)</text>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="180" x2="252" y1="126" y2="164"></line>
+<line marker-end="url(#a2)" stroke="#7c8593" x1="380" x2="308" y1="126" y2="164"></line>
+<text fill="#f0b429" font-size="11.5" text-anchor="end" x="238" y="152">再送 e′</text>
+<text fill="#f0b429" font-size="11.5" x="322" y="152">再送 e</text>
+<rect fill="rgba(232,121,75,0.14)" height="32" rx="6" stroke="#e8794b" width="112" x="224" y="168"></rect>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="189">同一个配置 D</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="280" y="224">p ≠ q 时两步互不干涉，换序结果相同 → D 不可能既注定 0 又注定 1</text>
+</svg>
+<figcaption>图 2 · 菱形交换：作用在不同进程上的两个事件可以换序，走到同一个配置——这正是把「送 e 必然定局」推向矛盾的那把刀。</figcaption>
+</figure>
+<h3>第四步：把无限运行拼出来</h3>
+<p>对手的策略于是成形：从双价初始配置出发，<strong>每轮盯住消息缓冲里等得最久的那条</strong>，按第三步找出一段「送完它仍然双价」的走法走过去，再盯下一条最老的，如此反复。这样构造出的无限执行完全合法——<strong>每条消息最终都被送达、每个进程都无限次执行了步骤</strong>，可系统始终双价，<strong>从头到尾没有任何进程做出决定</strong>。</p>
+<p>还有一处常被忽略的锋利：这条运行里<strong>其实没有任何进程真的崩溃</strong>。算法露出破绽，仅仅因为它<strong>必须事先为一次可能的崩溃留好退路</strong>，而这份准备逼它在某些局面里不敢再等。</p>
+<figure>
+<svg font-family="-apple-system,sans-serif" viewbox="0 0 560 230" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"></path></marker>
+<marker id="a3b" markerheight="9" markerwidth="9" orient="auto" refx="6" refy="3"><path d="M0,0 L6,3 L0,6 Z" fill="#4a5058"></path></marker></defs>
+<text fill="#7c8593" font-size="11" x="16" y="44">双价（还悬着）</text>
+<circle cx="70" cy="76" fill="rgba(240,180,41,0.16)" r="17" stroke="#f0b429"></circle>
+<circle cx="190" cy="76" fill="rgba(240,180,41,0.16)" r="17" stroke="#f0b429"></circle>
+<circle cx="310" cy="76" fill="rgba(240,180,41,0.16)" r="17" stroke="#f0b429"></circle>
+<circle cx="430" cy="76" fill="rgba(240,180,41,0.16)" r="17" stroke="#f0b429"></circle>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-width="1.8" x1="88" x2="170" y1="76" y2="76"></line>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-width="1.8" x1="208" x2="290" y1="76" y2="76"></line>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-width="1.8" x1="328" x2="410" y1="76" y2="76"></line>
+<line marker-end="url(#a3)" stroke="#f0b429" stroke-dasharray="5 5" stroke-width="1.8" x1="448" x2="520" y1="76" y2="76"></line>
+<text fill="#f0b429" font-size="15" x="524" y="81">∞</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="129" y="66">送最老的消息</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="249" y="66">送下一条</text>
+<text fill="#7c8593" font-size="10.5" text-anchor="middle" x="369" y="66">再下一条</text>
+<line marker-end="url(#a3b)" stroke="#4a5058" stroke-dasharray="3 4" x1="70" x2="70" y1="94" y2="132"></line>
+<line marker-end="url(#a3b)" stroke="#4a5058" stroke-dasharray="3 4" x1="310" x2="310" y1="94" y2="132"></line>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#4a5058" width="76" x="32" y="136"></rect>
+<text fill="#6b7280" font-size="11.5" text-anchor="middle" x="70" y="154">注定 0</text>
+<rect fill="rgba(255,255,255,0.03)" height="26" rx="5" stroke="#4a5058" width="76" x="272" y="136"></rect>
+<text fill="#6b7280" font-size="11.5" text-anchor="middle" x="310" y="154">注定 1</text>
+<text fill="#6b7280" font-size="10.5" x="118" y="154">（对手不走的岔路）</text>
+<text fill="#e7ebf1" font-size="12.5" text-anchor="middle" x="280" y="196">每条消息最终都送到、每个进程都不断在动——运行完全合法</text>
+<text fill="#b9c0ca" font-size="12" text-anchor="middle" x="280" y="216">但系统始终停在双价里，没有任何进程做出决定</text>
+</svg>
+<figcaption>图 3 · 对手的策略：每轮消化最老的一条消息，却始终从一个双价配置滑到下一个双价配置，拼出一条公平却永不决定的无限运行。</figcaption>
+</figure>
+<h2>关键结果</h2>
+<p>这是一篇<strong>没有实验的论文</strong>，它的「结果」就是定理本身，以及边界被划得有多紧：</p>
+<ul>
+<li><strong>边界被推到极限</strong>：故障只有<strong>一个</strong>且是最温和的崩溃；消息<strong>保证送达</strong>；要求只是最弱的「两种值都有可能」；甚至只要求<strong>有一个</strong>进程最终决定也做不到。任何一处再放宽，结论都不会变弱。</li>
+<li><strong>一个反衬</strong>：论文自己给出，若故障进程属于「一开始就没起来」那种（initially dead）、且活着的占多数，共识<strong>是可解的</strong>。难的不是「有节点缺席」，而是<strong>节点可能中途出事、你却无从判断</strong>。</li>
+</ul>
+<h2>为什么重要 / 影响</h2>
+<p>它把共识从「怎么做」变成了「<strong>让掉什么</strong>」：此后任何共识系统都得回答——你的活性挂在什么假设上？由此长出四条绕行路线，至今仍是共识设计的全部地图：</p>
+<ul>
+<li><strong>部分同步（partial synchrony）</strong>：Dwork-Lynch-Stockmeyer（1988）假设延迟上界<em>最终</em>会成立，只是不知从何时起。Paxos、Raft 走的就是这条——<strong>安全性无条件成立</strong>，活性只在网络稳定期兑现；超时只用来触发换主，不用来判定谁死了。</li>
+<li><strong>随机化</strong>：Ben-Or（1983）等让进程在僵持时掷骰子，做到<strong>以概率 1 终止</strong>——对手无法预知随机数，也就无法把僵持无限排下去。</li>
+<li><strong>失效检测器（failure detector）</strong>：Chandra-Toueg（1996）把「猜谁死了」抽象成一个可能出错的外部模块，并刻画出能解共识的<strong>最弱</strong>那一档（◇W）——时间假设就此被剥离成独立部件。</li>
+<li><strong>弱化问题本身</strong>：近似一致、k-集合一致放松「所有人必须完全一致」，换回可解性。</li>
+</ul>
+<p>还有一条至今好用的硬经验：<strong>任何号称「在任意网络条件下都保证快速达成一致」的系统，要么偷偷藏了时间假设，要么就是错的。</strong></p>
+<h2>局限与批评</h2>
+<ul>
+<li><strong>模型过于极端、且只管确定性算法</strong>：纯异步里的对手强得不真实——它能预知确定性算法的每一步，永远排出最坏顺序；换成随机化算法就完全不在射程内。真实网络延迟大多有统计规律，实践中 Paxos 几乎总能很快收敛。FLP 说的是「不能保证」，不是「做不到」。</li>
+<li><strong>纯粹的最坏情况结论</strong>：不给任何概率刻画——不告诉你卡住的可能性多大、预期多久能决定。</li>
+<li><strong>极易被误引</strong>：常见误读是「异步系统无法达成共识」（正确说法是无法<strong>保证终止</strong>），以及与 CAP 混为一谈——CAP 讲分区时一致性与可用性的取舍，FLP 讲无时间假设下活性无法保证，关切相近但命题不同。</li>
+</ul>
+<h2>要点</h2>
+<div class="tl">
+<p>① 一句话：异步网络中只要允许一个进程崩溃，就没有确定性算法能同时保证一致、非平凡与终止。</p>
+<p>② 痛点：协议普遍默认「超时可信」，真实网络却给不出延迟上界；2PC 在协调者失联时无限阻塞即是症状。</p>
+<p>③ 核心直觉：<strong>崩溃与极慢在旁人眼中完全相同</strong>——一直等可能不终止，不等则可能出两个答案。</p>
+<p>④ 机制一：给配置贴「价」——单价（大局已定）与双价（还悬着）；终止等价于「不可能永远双价」。</p>
+<p>⑤ 机制二：双价的初始配置必然存在——相邻初始配置只差一个进程的值，把它杀掉即得矛盾。</p>
+<p>⑥ 机制三：双价可无限维持——不同进程上的两事件可换序走到同一配置（菱形交换），同一进程上的则按住它、让其余人先决定；两路都出矛盾。</p>
+<p>⑦ 拼出的无限运行完全合法：消息都送达、进程都在动，却永不决定；其中<strong>没有进程真的崩溃</strong>——洞来自算法必须为崩溃留退路。</p>
+<p>⑧ 边界极紧：最温和的崩溃、消息保证送达、只要求「两值都有可能」，甚至只要一个进程决定也不行；反之故障进程若一开始就死、活者过半则可解。</p>
+<p>⑨ 影响与局限：共识设计从此以「安全无条件、活性靠假设」为纲，四条绕路是部分同步（Paxos / Raft）、随机化、失效检测器、弱化问题；但模型极端、只管确定性算法，也常被误引为「异步不能达成共识」或与 CAP 混为一谈。</p>
+</div>
+</div>
+<footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式化模型与逐步证明，再去翻原文。</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
