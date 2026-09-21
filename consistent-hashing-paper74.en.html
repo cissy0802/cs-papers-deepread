@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Consistent Hashing and Random Trees — CS Papers Deep-Read Paper 74</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Display","Noto Sans SC",sans-serif;background:#0f1216;color:#b9c0ca;line-height:1.8}
+.container{max-width:740px;margin:0 auto;padding:30px 22px 80px}
+.top{font-size:0.8rem;color:#f0b429;letter-spacing:1px;margin-bottom:8px;font-family:"SF Mono",Menlo,monospace}
+h1{font-size:1.7rem;font-weight:800;line-height:1.35;margin-bottom:8px;background:linear-gradient(135deg,#f0b429 0%,#e8794b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:#7c8593;font-size:0.9rem;margin-bottom:6px;font-family:"SF Mono",Menlo,monospace}
+.langbar{margin:14px 0 0;font-size:0.85rem}
+.langbar a{color:#f0b429;text-decoration:none;border:1px solid rgba(240,180,41,0.4);border-radius:14px;padding:3px 12px}
+h2{font-size:1.2rem;color:#f0b429;margin:38px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(240,180,41,0.16)}
+h3{font-size:1.03rem;color:#d9dee5;margin:22px 0 4px}
+p{margin:11px 0}
+strong{color:#e7ebf1;font-weight:700}
+.lead{color:#ccd2da;font-size:1.05rem}
+em{color:#f5c451;font-style:normal}
+code{background:#171b21;color:#f5c451;padding:1px 6px;border-radius:4px;font-size:0.9em;font-family:"SF Mono",Menlo,Consolas,monospace}
+ul{margin:8px 0 8px 1.2em}
+li{margin:7px 0}
+figure{margin:22px 0;padding:16px 16px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(240,180,41,0.14);border-radius:10px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;font-family:"SF Mono",Menlo,monospace;line-height:1.5}
+.modebar{display:inline-flex;margin:16px 0 4px;border:1px solid rgba(240,180,41,0.4);border-radius:20px;padding:3px;font-family:"SF Mono",Menlo,monospace}
+.modebar button{background:transparent;border:none;cursor:pointer;color:#b9c0ca;font-size:0.85rem;font-weight:700;padding:5px 16px;border-radius:16px;transition:all .15s}
+.modebar button.active{background:linear-gradient(135deg,#f0b429,#e8794b);color:#0f1216}
+.mode[hidden]{display:none}
+.switch-hint{margin-top:26px;color:#7c8593;font-size:0.95rem}
+.switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
+.glossary{background:rgba(255,255,255,0.02);border:1px dashed rgba(240,180,41,0.32);border-radius:10px;padding:14px 18px;margin:18px 0}
+.glossary ul{margin:6px 0 0 1.1em}
+.glossary li{margin:5px 0;font-size:0.96rem}
+.tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+</style></head><body>
+<div class="container">
+<p class="top">CS PAPERS DEEP-READ · PAPER 74</p>
+<h1>Consistent Hashing and Random Trees</h1>
+<p class="sub">Karger, Lehman, Leighton, Levine, Lewin &amp; Panigrahy · MIT · STOC 1997</p>
+<p class="langbar"><a href="consistent-hashing-paper74.html">中文 →</a></p>
+<div class="modebar">
+<button data-mode="pop">Plain</button>
+<button data-mode="deep">Deep</button>
+</div>
+
+<div class="mode mode-pop">
+<h2>What did this paper do?</h2>
+<p>In 1997 a group of theorists at MIT (Karger and colleagues) set out to cure a plague of the early web — a page suddenly goes viral and the server buckles. Their answer was <strong>consistent hashing</strong>: a rule for deciding which machine holds which thing, whose virtue is that <strong>adding or removing machines almost never reshuffles everything</strong>. A year later two of the authors founded Akamai on it. The videos you stream, your Amazon cart, databases like Cassandra — when they decide which machine a piece of data lives on, they still use this idea.</p>
+
+<h2>The old pain: add one machine, everybody moves</h2>
+<p>To split many things across a few machines, the natural move is to <strong>divide by the count and take the remainder</strong>: turn the name into a number, divide by how many machines you have, and whoever owns that remainder owns the item. With ten machines everyone gets a share, fairly evenly.</p>
+<p>The trouble starts when the count changes. Add an eleventh machine and the divisor goes from 10 to 11, so <strong>nearly every item changes hands</strong> — the whole cluster shuffles data at each other, the network saturates, and nobody gets any real work done. All you wanted was one more machine.</p>
+
+<h2>The idea: put machines and data on the same clock face</h2>
+<p>Consistent hashing lays things out differently. Picture a <strong>clock face</strong>. Every machine computes a position from its own name and is pinned there; every piece of data computes a position from its own name too. One rule: <strong>a piece of data belongs to "the first machine you meet walking clockwise from its position."</strong></p>
+
+<h2>Why that stops the mass migration</h2>
+<p>The key is that positions are computed independently: where an item lands on the clock face depends only on its own name and <strong>not at all on how many machines exist</strong>. So adding a machine just means <strong>driving a new pin into the face</strong>: it takes over only the items in the short stretch immediately behind it, from the neighbour clockwise of it, and nothing anywhere else on the face changes by a single character. Losing a machine is the mirror image — its stretch passes to the next pin along. <strong>Every change is confined to one small arc.</strong></p>
+<p>There was another benefit that mattered even more at the time: different browsers knew about different sets of caches. Under "divide and take the remainder," a list that differs by one machine gives completely different answers; under the clock-face rule, lists can disagree slightly and almost all data still lands on the same machine — <strong>so nobody has to agree in advance to end up agreeing.</strong></p>
+
+<h2>One machine needs many pins</h2>
+<p>A single pin per machine has a side effect: the arcs the face gets cut into vary wildly, so an unlucky machine minds a huge stretch while a lucky one minds a sliver. Uneven work.</p>
+<p>The fix is crude: give <strong>every machine dozens or hundreds of pins</strong> (many "alter egos" on the face). With that many slices, long and short cancel out and each machine's total comes out about the same. A bonus: when a machine goes offline, its dozens of stretches are <strong>picked up by many different machines</strong> rather than dumped whole onto one unlucky neighbour.</p>
+<p>One honest caveat: what it evens out is the <em>number</em> of items, not how often they're wanted — a single record the whole internet is hammering still lives on exactly one machine, and can still flatten it.</p>
+
+<h2>Remember one thing</h2>
+<div class="tl">
+<p>Don't assign by "divide by the machine count and take the remainder." Pin both machines and data onto one clock face by name, and give each item to the first machine clockwise. Adding or removing a machine then disturbs only a small arc — migration drops from "nearly everything" to "about one machine's worth" — and scattering many pins per machine evens out the load.</p>
+</div>
+<p class="switch-hint">Want the ring diagram, the four properties, and the guarantees? <a data-mode="deep">→ switch to the deep read</a></p>
+</div>
+
+<div class="mode mode-deep" hidden>
+<h2>In one sentence</h2>
+<p class="lead">The paper first formalizes what "a good assignment" even means — four properties (<strong>balance, monotonicity, spread, load</strong>) — and then gives a minimal construction that satisfies them: <strong>hash both machines and items onto the same ring, and give each item to the first machine clockwise</strong>. Adding or removing a machine then migrates only about 1/n of the data, and clients holding slightly different lists of machines still agree on where things go. The other half of the paper uses <strong>random trees</strong> to spread the traffic of a single hot page across many caches. Consistent hashing went on to become a shared component of Akamai, Chord, Dynamo, Cassandra and modern load balancers.</p>
+
+<h2>Glossary</h2>
+<div class="glossary">
+<ul>
+<li><strong>Hash function</strong>: turns a name of any length (a URL, a key) into a number that looks random but is always the same for the same name.</li>
+<li><strong>Modulo bucketing (<code>hash mod n</code>)</strong>: the most common assignment rule — hash the name to a number, divide by the machine count, and the remainder picks the machine.</li>
+<li><strong>Bucket / item</strong>: the paper's words for "a machine / a cache" and for "the thing being assigned" (a web page, a key).</li>
+<li><strong>Cache / proxy cache</strong>: a machine that keeps a copy of popular content near users, answering on the origin server's behalf.</li>
+<li><strong>Hot spot</strong>: one piece of content suddenly wanted by a huge number of people at once, flattening whichever machine serves it.</li>
+<li><strong>View</strong>: the set of machines a particular client currently knows about. Different clients can have different views — which is exactly the reality this paper confronts.</li>
+<li><strong>Big-O notation (e.g. <code>O(log n)</code>)</strong>: a coarse measure of growth that ignores constants; <code>O(log n)</code> means it grows very slowly with scale.</li>
+</ul>
+</div>
+
+<h2>Where it sits</h2>
+<p>The authors are David Karger, Eric Lehman, Tom Leighton, Matthew Levine, Daniel Lewin and Rina Panigrahy of MIT's theory group; the paper is "Consistent Hashing and Random Trees: Distributed Caching Protocols for Relieving Hot Spots on the World Wide Web," STOC 1997. It follows a mid-1990s line of work on how to organize web caches, and answers the most concrete engineering disaster of the exploding web: hot spots. In 1998 Leighton and Lewin turned the theory into a company, <strong>Akamai</strong> (Lewin was killed aboard American Airlines Flight 11 on September 11, 2001). Downstream it covers most of the next two decades of distributed storage — see the impact section.</p>
+
+<h2>The problem</h2>
+<p>The mid-1990s web had a brutal failure mode: get a page linked from a portal's front page and <strong>request volume could climb by orders of magnitude within minutes</strong>, killing the origin server. The natural fix is to scatter <em>caches</em> through the network to absorb the load — which immediately raises the question: <strong>which cache is responsible for which page?</strong></p>
+<p>The obvious answer is modulo bucketing: <code>cache = hash(URL) mod n</code>, i.e. hash the URL to a number and take it modulo the cache count. It has two fatal flaws.</p>
+<p>First, <strong>change the set and everything is reshuffled</strong>. Go from n = 10 to n = 11 and most URLs change owner — every cache is invalidated at once and all the requests go back to the origin, precisely at the moment you were scaling out.</p>
+<p>Second, and more awkward at the time: <strong>nobody's list matches</strong>. Caches were run by different organizations and came and went; the list any given browser knew was inevitably different. If each client takes the modulo of its own n, the same page is computed to different caches by different clients — the same content is stored separately in many caches and each of them fetches it from the origin once. Space and bandwidth both wasted.</p>
+<p>And a third thing modulo never touches: <strong>the page itself is hot</strong>. However evenly you assign, a viral page still has exactly one cache responsible for it, and it still gets flattened. That is what the paper's second half is for.</p>
+
+<figure>
+<svg viewBox="0 0 560 182" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<text x="16" y="24" fill="#7c8593" font-size="11.5">key</text>
+<text x="16" y="66" fill="#f0b429" font-size="11.5">n = 4</text>
+<text x="16" y="134" fill="#e8794b" font-size="11.5">n = 5</text>
+<g font-size="12.5" text-anchor="middle">
+<text x="85" y="24" fill="#b9c0ca">12</text><text x="143" y="24" fill="#b9c0ca">17</text><text x="201" y="24" fill="#b9c0ca">23</text><text x="259" y="24" fill="#b9c0ca">31</text><text x="317" y="24" fill="#b9c0ca">44</text><text x="375" y="24" fill="#b9c0ca">58</text><text x="433" y="24" fill="#b9c0ca">60</text><text x="491" y="24" fill="#b9c0ca">79</text>
+</g>
+<g>
+<rect x="60" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><rect x="118" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><rect x="176" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><rect x="234" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><rect x="292" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><rect x="350" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><rect x="408" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><rect x="466" y="36" width="50" height="30" rx="5" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/>
+</g>
+<g font-size="13" text-anchor="middle" fill="#e7ebf1">
+<text x="85" y="56">0</text><text x="143" y="56">1</text><text x="201" y="56">3</text><text x="259" y="56">3</text><text x="317" y="56">0</text><text x="375" y="56">2</text><text x="433" y="56">0</text><text x="491" y="56">3</text>
+</g>
+<g stroke="#e8794b" stroke-width="1.6" stroke-dasharray="3 3">
+<line x1="85" y1="70" x2="85" y2="100"/><line x1="143" y1="70" x2="143" y2="100"/><line x1="259" y1="70" x2="259" y2="100"/><line x1="317" y1="70" x2="317" y2="100"/><line x1="375" y1="70" x2="375" y2="100"/><line x1="491" y1="70" x2="491" y2="100"/>
+</g>
+<g stroke="#3a3f47" stroke-width="1.6">
+<line x1="201" y1="70" x2="201" y2="100"/><line x1="433" y1="70" x2="433" y2="100"/>
+</g>
+<g>
+<rect x="60" y="104" width="50" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><rect x="118" y="104" width="50" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><rect x="176" y="104" width="50" height="30" rx="5" fill="rgba(255,255,255,0.02)" stroke="#3a3f47"/><rect x="234" y="104" width="50" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><rect x="292" y="104" width="50" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><rect x="350" y="104" width="50" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><rect x="408" y="104" width="50" height="30" rx="5" fill="rgba(255,255,255,0.02)" stroke="#3a3f47"/><rect x="466" y="104" width="50" height="30" rx="5" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/>
+</g>
+<g font-size="13" text-anchor="middle" fill="#e7ebf1">
+<text x="85" y="124">2</text><text x="143" y="124">2</text><text x="201" y="124">3</text><text x="259" y="124">1</text><text x="317" y="124">4</text><text x="375" y="124">3</text><text x="433" y="124">0</text><text x="491" y="124">4</text>
+</g>
+<text x="288" y="166" fill="#e7ebf1" font-size="12.5" text-anchor="middle">6 of 8 keys (orange) change owner; grey = unchanged by luck</text>
+</svg>
+<figcaption>Fig. 1 · The flaw in modulo bucketing: switching <code>key mod 4</code> to <code>key mod 5</code> reshuffles almost every assignment — one extra machine means a cluster-wide migration.</figcaption>
+</figure>
+
+<h2>The core idea</h2>
+
+<h3>First define what "assigned well" means: four properties</h3>
+<p>Half the paper's real contribution is that <strong>it pins the problem down first</strong>. It introduces a <em>ranged hash function</em>: an ordinary hash has one fixed mapping, but this one gives a separate item-to-bucket assignment <strong>for every possible view V</strong> (the set of buckets some client knows about), and the family is required to satisfy four properties at once:</p>
+<ul>
+<li><strong>Balance</strong>: under any view, the buckets get roughly equal numbers of items. No one machine does all the work.</li>
+<li><strong>Monotonicity</strong>: when a bucket is added to a view, items may <strong>only move from an old bucket to the new one</strong>, never sideways between two old buckets. No pointless migration on scale-out — exactly what modulo bucketing violates utterly.</li>
+<li><strong>Spread</strong>: summed over all clients' views, one item is assigned to only <strong>a handful</strong> of distinct buckets. Don't store the same page in dozens of caches.</li>
+<li><strong>Load</strong>: the same statement from the bucket's side — summed over all views, no bucket is assigned too many distinct items. Don't let one machine be crushed by everyone's lists at once.</li>
+</ul>
+<p>The last two exist precisely to handle inconsistent views: <strong>even when lists differ, the conclusions must largely agree</strong>. That is what the "consistent" in consistent hashing actually means — <strong>not data consistency, but agreement of the assignment across different views</strong>. This point is perennially misread and worth memorizing on its own.</p>
+
+<h3>The construction: a ring, nearest clockwise</h3>
+<p>The construction that satisfies all four is startlingly plain: hash the <strong>buckets</strong> onto the unit interval <code>[0,1)</code> with the ends joined into a <strong>ring</strong>, and hash the <strong>items</strong> onto the same ring. One rule: <code>bucket(item) = the first bucket whose hash is ≥ hash(item), wrapping around at the end</code> — nearest clockwise.</p>
+<p>Monotonicity comes almost for free: an item's position depends only on its own name and <strong>not on how many buckets exist</strong>, so inserting a new bucket only takes over the items in the stretch counter-clockwise of it, from whoever was their successor; every other arc is untouched, and deletion is the mirror image. Hence the expected migration: <strong>adding the (n+1)-th bucket moves only about <code>1/(n+1)</code> of the items, and all of them move into the new bucket.</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ch1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8794b"/></marker></defs>
+<circle cx="280" cy="150" r="100" fill="none" stroke="#3a3f47" stroke-width="1.4"/>
+<g fill="#f0b429">
+<circle cx="280" cy="50" r="7"/><circle cx="380" cy="150" r="7"/><circle cx="297.4" cy="248.5" r="7"/><circle cx="186" cy="184.2" r="7"/>
+</g>
+<g fill="#f0b429" font-size="12.5" font-weight="700">
+<text x="272" y="38" text-anchor="middle">node A</text><text x="394" y="154">node B</text><text x="306" y="268">node C</text><text x="106" y="188">node D</text>
+</g>
+<circle cx="230" cy="63.4" r="7" fill="none" stroke="#e8794b" stroke-dasharray="3 2" stroke-width="1.6"/>
+<text x="140" y="52" fill="#e8794b" font-size="12" font-weight="700">new node E</text>
+<g fill="#cfd6de">
+<circle cx="358.4" cy="56.5" r="4"/><circle cx="373.5" cy="228.4" r="4"/><circle cx="238.3" cy="264.6" r="4"/><circle cx="174.3" cy="89" r="4"/>
+</g>
+<g fill="#cfd6de" font-size="12">
+<text x="368" y="46">k1</text><text x="383" y="240">k2</text><text x="228" y="284">k3</text><text x="150" y="82">k4</text>
+</g>
+<g fill="none" stroke="#e8794b" stroke-width="1.5" marker-end="url(#ch1)">
+<path d="M358.4,56.5 A122,122 0 0,1 402,150"/>
+<path d="M373.5,228.4 A122,122 0 0,1 301.2,270.1"/>
+<path d="M238.3,264.6 A122,122 0 0,1 165.4,191.7"/>
+<path d="M174.3,89 A122,122 0 0,1 280,28"/>
+</g>
+<text x="280" y="146" fill="#e7ebf1" font-size="12.5" text-anchor="middle">the first node met</text>
+<text x="280" y="164" fill="#e7ebf1" font-size="12.5" text-anchor="middle">clockwise takes it</text>
+<text x="30" y="292" fill="#7c8593" font-size="11.5">After E joins: only k4 moves (A → E); k1, k2, k3 do not budge</text>
+</svg>
+<figcaption>Fig. 2 · The consistent-hashing ring: nodes and keys land on the same ring by their own names, and a key goes to the nearest node clockwise; a new node E only claims the short arc counter-clockwise of it.</figcaption>
+</figure>
+
+<h3>Virtual nodes: buying balance back</h3>
+<p>That alone is not balanced enough: n random points cut the ring into n arcs of wildly differing length, and the longest can be several times the average. So the paper <strong>replicates each bucket into <code>Θ(log C)</code> points</strong> on the ring (C being the total number of buckets that may ever appear). One machine now has many alter egos, long and short arcs cancel out, and each machine's total arc length concentrates near the mean. Industry later named the trick <strong>virtual nodes (vnodes)</strong>, and it pays two dividends: when a machine leaves, its many arcs are taken over by <strong>different</strong> machines (no single neighbour absorbs the hit), and machines of different capacity can be <strong>weighted</strong> by scattering more or fewer alter egos.</p>
+<p>On that basis the paper proves (with high probability, i.e. the failure probability vanishes rapidly with scale): <strong>balance</strong> — each bucket receives an <code>O(1/|V|)</code> fraction of the items; <strong>monotonicity</strong> — unconditionally, since it is a property of the construction rather than of chance; and, assuming every client sees at least 1/t of all buckets, <strong>spread and load</strong> both stay on the order of <code>O(t·log C)</code>. The weight of the result is this: <strong>a rule you can evaluate with a single hash, needing no coordination at all, gets all four at once.</strong></p>
+
+<figure>
+<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<circle cx="150" cy="120" r="80" fill="none" stroke="#3a3f47" stroke-width="1.4"/>
+<circle cx="177.4" cy="54.8" r="6" fill="#f0b429"/><circle cx="219.3" cy="90" r="6" fill="#e8794b"/><circle cx="74.8" cy="157.4" r="6" fill="#cfd6de"/>
+<path d="M177.4,54.8 A80,80 0 0,1 219.3,90" fill="none" stroke="#e8794b" stroke-width="3"/>
+<path d="M74.8,157.4 A80,80 0 0,1 177.4,54.8" fill="none" stroke="#f0b429" stroke-width="3"/>
+<text x="150" y="118" fill="#7c8593" font-size="11.5" text-anchor="middle">1 point per node</text>
+<text x="150" y="136" fill="#e7ebf1" font-size="11.5" text-anchor="middle">arcs wildly uneven</text>
+<text x="150" y="232" fill="#b9c0ca" font-size="12" text-anchor="middle">the unlucky node minds a huge arc</text>
+<circle cx="410" cy="120" r="80" fill="none" stroke="#3a3f47" stroke-width="1.4"/>
+<circle cx="410.0" cy="40.0" r="4" fill="#f0b429"/><circle cx="437.4" cy="44.8" r="4" fill="#e8794b"/><circle cx="461.4" cy="58.7" r="4" fill="#cfd6de"/><circle cx="479.3" cy="80.0" r="4" fill="#e8794b"/><circle cx="488.8" cy="106.1" r="4" fill="#f0b429"/><circle cx="488.8" cy="133.9" r="4" fill="#cfd6de"/><circle cx="479.3" cy="160.0" r="4" fill="#cfd6de"/><circle cx="461.4" cy="181.3" r="4" fill="#f0b429"/><circle cx="437.4" cy="195.2" r="4" fill="#e8794b"/><circle cx="410.0" cy="200.0" r="4" fill="#f0b429"/><circle cx="382.6" cy="195.2" r="4" fill="#cfd6de"/><circle cx="358.6" cy="181.3" r="4" fill="#e8794b"/><circle cx="340.7" cy="160.0" r="4" fill="#e8794b"/><circle cx="331.2" cy="133.9" r="4" fill="#cfd6de"/><circle cx="331.2" cy="106.1" r="4" fill="#f0b429"/><circle cx="340.7" cy="80.0" r="4" fill="#cfd6de"/><circle cx="358.6" cy="58.7" r="4" fill="#e8794b"/><circle cx="382.6" cy="44.8" r="4" fill="#f0b429"/>
+<text x="410" y="118" fill="#7c8593" font-size="11.5" text-anchor="middle">dozens per node</text>
+<text x="410" y="136" fill="#e7ebf1" font-size="11.5" text-anchor="middle">long and short cancel</text>
+<text x="410" y="232" fill="#b9c0ca" font-size="12" text-anchor="middle">all three nodes end up near-equal</text>
+<text x="280" y="20" fill="#7c8593" font-size="11.5" text-anchor="middle">same ring, three machines (three colours)</text>
+</svg>
+<figcaption>Fig. 3 · Virtual nodes: with one point per machine the arcs are lopsided; scattered into dozens of points the totals even out, and a departing machine is absorbed by many others.</figcaption>
+</figure>
+
+<h3>Random trees: spreading a single hot item</h3>
+<p>Consistent hashing settles "who is responsible," not "what if one machine can't cope." The paper's second half gives every page a <strong>random tree</strong>: take a pool of caches as nodes and hash "page name + node index" into a d-ary tree — <strong>a different page yields a differently shaped tree with different members</strong>. A request does not go straight to "the responsible machine"; it picks a <strong>random leaf</strong> of that page's tree and asks there, and on a miss asks the <strong>parent</strong>, on up, reaching the <strong>origin server</strong> only if even the root misses.</p>
+<p>Two things make it work. First, each node is only ever asked by its d children — <strong>fan-in is constant</strong>, so no machine faces the whole internet. Second, once a node fetches the page it caches it, so later requests hit immediately and <strong>the number of requests passed upward is capped</strong>. Pressure from a hot page therefore decays rapidly up the tree and the origin sees only a few fetches; and because each page's tree is generated randomly from its name, <strong>different hot pages have their roots on different machines</strong> and cannot gang up on one. The paper proves that under its request model, with high probability no machine bears more than a logarithmic factor above its fair share.</p>
+
+<figure>
+<svg viewBox="0 0 560 262" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<defs><marker id="ch2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c8593"/></marker></defs>
+<rect x="228" y="8" width="104" height="28" rx="6" fill="rgba(232,121,75,0.16)" stroke="#e8794b"/><text x="280" y="27" fill="#e7ebf1" font-size="12" text-anchor="middle">origin server</text>
+<rect x="240" y="72" width="80" height="26" rx="6" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><text x="280" y="90" fill="#e7ebf1" font-size="12" text-anchor="middle">cache R</text>
+<rect x="130" y="132" width="80" height="26" rx="6" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><text x="170" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">cache a</text>
+<rect x="350" y="132" width="80" height="26" rx="6" fill="rgba(240,180,41,0.10)" stroke="#f0b429"/><text x="390" y="150" fill="#e7ebf1" font-size="12" text-anchor="middle">cache b</text>
+<g fill="rgba(255,255,255,0.03)" stroke="#7c8593"><rect x="60" y="190" width="72" height="24" rx="6"/><rect x="150" y="190" width="72" height="24" rx="6"/><rect x="330" y="190" width="72" height="24" rx="6"/><rect x="420" y="190" width="72" height="24" rx="6"/></g>
+<g fill="#b9c0ca" font-size="11.5" text-anchor="middle"><text x="96" y="207">leaf 1</text><text x="186" y="207">leaf 2</text><text x="366" y="207">leaf 3</text><text x="456" y="207">leaf 4</text></g>
+<g stroke="#7c8593" stroke-width="1.5" marker-end="url(#ch2)" fill="none">
+<line x1="96" y1="188" x2="150" y2="160"/><line x1="186" y1="188" x2="176" y2="160"/><line x1="366" y1="188" x2="378" y2="160"/><line x1="456" y1="188" x2="410" y2="160"/>
+<line x1="170" y1="130" x2="248" y2="100"/><line x1="390" y1="130" x2="314" y2="100"/>
+<line x1="280" y1="70" x2="280" y2="40"/>
+</g>
+<text x="24" y="248" fill="#7c8593" font-size="11.5">clients start at a random leaf; only a miss goes up, a hit stops there</text>
+<text x="456" y="112" fill="#e8794b" font-size="11" text-anchor="middle">another page,</text>
+<text x="456" y="126" fill="#e8794b" font-size="11" text-anchor="middle">another tree</text>
+</svg>
+<figcaption>Fig. 4 · Random trees: each page gets a cache tree generated from its name; requests start at a random leaf and climb only on a miss, so with constant fan-in a single hot spot is thinned out layer by layer.</figcaption>
+</figure>
+
+<p>The two halves are two faces of one conviction: <strong>fix the division of labour with no central coordinator and no global state, purely by having everyone compute the same hash</strong> — the ring divides space, the tree divides pressure. That is why it could work on the 1997 internet, where nobody was in charge of anybody.</p>
+
+<h2>Key results</h2>
+<p>To be clear up front: <strong>this is a theory paper (STOC), and its results are theorems, not measurements</strong> — there is no system evaluation, so there are no throughput or latency numbers to quote. What it guarantees:</p>
+<ul>
+<li><strong>Migration</strong>: going from n to n+1 buckets, only about <code>1/(n+1)</code> of the items change hands (modulo bucketing reshuffles nearly all of them); <strong>monotonicity</strong> holds unconditionally.</li>
+<li><strong>Balance</strong>: with <code>Θ(log C)</code> copies per bucket, with high probability each bucket's share stays within a constant factor of the mean.</li>
+<li><strong>Spread / load</strong>: assuming every view contains at least 1/t of all buckets, both stay on the order of <code>O(t·log C)</code> — one page is stored by only a handful of caches network-wide.</li>
+<li><strong>Random trees</strong>: with high probability no machine, origin included, carries more than a logarithmic factor above its fair share.</li>
+</ul>
+<p>The real "experiment" came later, in industry: Akamai built a global CDN on it, and Dynamo and Cassandra have used it as their default placement scheme ever since.</p>
+
+<h2>Why it matters</h2>
+<p>It took something everyone was doing crudely — sharding — and made it <strong>a primitive with a definition and guarantees</strong>, and so it became a shared part of a whole generation of systems: the ring under Chord and other DHTs, Dynamo's data placement, Cassandra's token ring, memcached's ketama clients, the backend-picking logic in layer-7 load balancers. The deeper contribution is <strong>"agreement without agreeing on the list"</strong> — the precondition for any system without a centre to function at all, and the starting point of twenty years of follow-up work on sharding that is more balanced and cheaper in memory.</p>
+
+<h2>Limits and criticism</h2>
+<ul>
+<li><strong>It balances keys, not heat.</strong> Equal numbers of keys is not equal numbers of requests, and one scorching key still lands on one machine. Industry patches this with hot-key replication and request coalescing; the theoretical patch is <strong>consistent hashing with bounded loads</strong> (around 2016): cap each bucket's capacity and overflow to the next one along.</li>
+<li><strong>Virtual nodes cost something.</strong> Good balance needs tens to hundreds of points per machine, and that metadata must be propagated and maintained cluster-wide; the Dynamo paper compared three partitioning strategies and abandoned the naive random-token scheme precisely because of the rebuild and metadata overhead. Replica placement also tends to carry rack- and availability-zone constraints, which the ring does not express — those get patched in above it.</li>
+<li><strong>Not the only answer.</strong> <em>Rendezvous hashing</em> (HRW, mid-1990s) scores every machine for a key and takes the highest; it is equally monotone and better balanced, but a naive implementation must walk every machine. <em>Jump consistent hash</em> (Google, 2014) uses essentially no memory and is very fast, but only supports adding and removing buckets at the tail. <em>Maglev hashing</em> (Google, 2016) trades a little monotonicity for better balance via a precomputed lookup table.</li>
+<li><strong>The guarantees rest on assumptions</strong>: that the hash is random enough and views are not too skewed. With badly skewed views, or keys crafted to collide into one arc, the bounds no longer hold.</li>
+<li><strong>Half the paper has been forgotten.</strong> The random-tree protocol was never adopted as-is — real CDNs use DNS redirection, cache hierarchies and request coalescing instead. Today almost everyone remembers only the first two words of the title.</li>
+</ul>
+
+<h2>Takeaways</h2>
+<div class="tl">
+<p>① In one line: hash machines and data onto one ring and give each item to the first machine clockwise, so adding or removing a machine disturbs only one arc.</p>
+<p>② The pain: <code>hash(key) mod n</code> reshuffles almost everything when n changes, and clients with mismatched machine lists compute conflicting owners.</p>
+<p>③ The real contribution is defining "assigned well" first: balance, monotonicity, spread, load — the last two aimed squarely at inconsistent views, which is what "consistent" here actually means (<strong>not data consistency</strong>).</p>
+<p>④ The construction is minimal: buckets and items hash onto a <code>[0,1)</code> ring, nearest clockwise wins; monotonicity is built in, and adding the (n+1)-th bucket moves only about <code>1/(n+1)</code> of the data, all of it into the new bucket.</p>
+<p>⑤ Virtual nodes: only with <code>Θ(log C)</code> alter egos per machine is balance achievable; the by-products are multi-machine takeover on departure and capacity weighting.</p>
+<p>⑥ Random trees: a per-page cache tree generated from its name, constant fan-in, stopping at the first hit — thinning a single hot spot layer by layer. This half was largely forgotten.</p>
+<p>⑦ Impact: the shared bedrock of Akamai (founded by two of the authors), Chord, Dynamo, Cassandra, ketama and layer-7 load balancing.</p>
+<p>⑧ Limits: balances keys not heat; virtual-node metadata cost; no notion of rack or zone; rendezvous, jump and Maglev hashing each trade differently.</p>
+</div>
+</div>
+<footer>CS Papers Deep-Read · reading this page ≈ getting the core of the paper; for the full formal definitions and proofs, go to the original.</footer>
+</div>
+<script>
+(function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
+</script>
+</body></html>
