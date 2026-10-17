@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 5</p>
@@ -188,17 +196,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Coverage and an engineering scar</strong>: the original paper only did classification, and the learned position embeddings are tied to the training resolution — changing resolution requires an interpolation patch-up, which is not elegant.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: cut the image into 16×16 patches as "words" and feed a standard Transformer, unchanged; with enough pretraining data, carrying no visual priors turns out stronger.</p>
-<p>② The pain: vision was CNN-monopolized; earlier attention attempts either mixed in convolutions or ran slowly; per-pixel attention is ruled out by quadratic cost.</p>
-<p>③ Mechanism one: patch embeddings — <code>(224/16)² = 196</code> patches, each linearly projected to a vector, + position embeddings + a [CLS] token; sequence length drops from 50,000 to 196.</p>
-<p>④ Mechanism two: strip out the CNN's locality/translation/hierarchy priors and buy them back with large-scale pretraining — lose at 1.3M images, tie at 14M, overtake at 300M.</p>
-<p>⑤ Results: ViT-H/14 hits 88.55% on ImageNet, beating the strongest CNNs; ViT-L/16 overtakes BiT-L with roughly 1/15 the pretraining compute; the public-data recipe reaches 85.30%.</p>
-<p>⑥ The model grows its own habits — low layers mix local-looking and global-looking heads — so priors need not be welded in; data can teach them.</p>
-<p>⑦ Impact: one architecture for vision and language; CLIP / MAE / DINO / SAM / DiT all stand on it — the eyes of multimodal models.</p>
-<p>⑧ Limits: fails on small data (DeiT later fixed this with tricks); quadratic cost at high resolution (Swin reinvited the priors); ConvNeXt questions whether the architecture was even necessary.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Sur's rewired ferrets (2000)</b>: Mriganka Sur's lab routed newborn ferrets' retinal input into the auditory cortex, which then grew orientation-selective cells much like visual cortex — the same tissue becomes whatever its data makes it, just as one Transformer can read text or look at images. Where it breaks: the rewired orientation maps were less orderly than normal, so the brain's blank slate already carries plenty of innate grid lines.</li>
+<li><b>Philosophy · Locke's blank slate vs Kant's a priori forms</b>: a CNN is Kantian, treating space as a form welded in before any experience; ViT is closer to Locke, learning even who-sits-next-to-whom from experience, as its position embeddings rediscover rows and columns. Where it breaks: ViT is no true blank slate — the patch cut and the architecture are priors too.</li>
+<li><b>Evolution · The Baldwin effect (1896)</b>: abilities that individuals keep acquiring by learning can, over generations, become innate. ViT learns local attention from data, then Swin welds local windows back into the structure — an engineered case of learning turning into instinct. Where it breaks: here engineers write it back, not natural selection.</li>
+<li><b>Psychology · Navon's "forest before trees" (1977)</b>: shown a large letter made of small letters, people usually recognize the global shape before the local ones. ViT has whole-image attention heads from layer one, while a CNN must build the whole up from local pieces. Where it breaks: ViT runs local and global heads in parallel, so nothing comes first.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>ViT slices an image into 16×16 patches, treats each patch as a word, and feeds them to a nearly unmodified standard Transformer for classification.</li>
+<li>Per-pixel self-attention is impractical: its cost grows with the square of the token count, and a 224×224 image has over 50,000 pixels.</li>
+<li>Cutting 16×16 patches shrinks a 224×224 image to just 196 tokens, making the quadratic cost of self-attention affordable.</li>
+<li>ViT adds only learnable position embeddings and a BERT-style [CLS] token; the rest is a standard Transformer encoder, untouched.</li>
+<li>CNNs carry three built-in inductive biases — locality, translation equivariance, hierarchy — an asset with little data, a cage with lots of it.</li>
+<li>Pretrained on 1.3M images ViT loses to ResNet, at 14M they roughly tie, and at 300M ViT pulls ahead across the board.</li>
+<li>ViT-H/14 reaches 88.55% ImageNet top-1, and ViT-L/16 beats BiT-L with roughly one fifteenth of the pretraining compute.</li>
+<li>A trained ViT grows both local and global attention heads on its own: priors need not be welded in when data can teach them.</li>
+<li>Vision and language now share one architecture, and CLIP, MAE, DINO, SAM and DiT are all built on the ViT family.</li>
+<li>DeiT showed ViT can train well on small data, Swin reinvited local priors, and ConvNeXt questioned whether the Transformer architecture was needed at all.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full model configs and experiment details, go to the original.</footer>
 </div>

@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 25</p>
@@ -178,17 +186,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Optimistic transactions lose under high contention</strong>: when a hot row is modified concurrently over and over, optimistic transactions abort and retry frequently and throughput drops; there you fall back to pessimistic (locking) transactions or finer-grained conflict tracking.</li>
 <li><strong>Heavy dependence on Spanner</strong>: F1's consistency, availability, and scalability rest almost entirely on Spanner — which in turn depends on TrueTime's specialized GPS + atomic-clock timing infrastructure, Google's own family silver that isn't easily reproduced elsewhere.</li>
 </ul>
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: F1 sits on Spanner, re-fitting a "scalable + strongly consistent" storage foundation with full SQL, ACID transactions, and consistent indexes — and ran AdWords.</p>
-<p>② The pain: you used to have to choose — relational DBs have SQL/transactions but don't scale (hand-sharding, re-sharding measured in years), NoSQL scales but loses transactions, SQL, and strong consistency.</p>
-<p>③ Skeleton: hand "scaling" to Spanner; F1 is a largely stateless, freely scalable SQL engine; large queries go to a slave pool to run in parallel.</p>
-<p>④ Hierarchical schema: child keys prefixed by parent keys, so parent/child rows cluster physically into a tree in one Paxos group → one local read for the whole tree, single-group local transactions for edits within it.</p>
-<p>⑤ Protobuf columns: embed one-to-many relationships into a row, building fewer tables and doing fewer JOINs, and erasing the object–relational impedance mismatch.</p>
-<p>⑥ Latency defense: optimistic transactions by default (read without locks, only record timestamps, verify at commit whether anything was modified), plus a batched + parallel client access pattern; change history as a first-class citizen keeps indexes consistent.</p>
-<p>⑦ Results: runs all of AdWords' data in production (hundreds of TB); commit latency 50–150 ms but user-visible latency comparable to the old system; survives a data center going offline with no data loss.</p>
-<p>⑧ Limits: commit latency is inherently high and needs the app rewritten; higher resource cost; global indexes and optimistic transactions under high contention are constrained; heavy dependence on Spanner and TrueTime.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Complexity science · Herbert Simon's near-decomposability (1962)</b>: In "The Architecture of Complexity," Simon argued that hierarchies are stable because interactions inside a subsystem are strong and interactions between subsystems are weak. The hierarchical schema turns each customer into exactly such a subsystem, so most transactions stay inside one tree. The difference: Simon's hierarchies grow out of evolution or organization, while F1's tree is declared by a designer through key prefixes, and a global index is precisely the thread that pierces the decomposition, which is why it costs so much.</li>
+<li><b>Law and economics · Shavell on liability versus regulation (1984)</b>: Steven Shavell compared two ways to control risk: let people act and hold them liable afterwards, or license and constrain them up front. Optimistic transactions are the first, pessimistic locking the second, and when conflicts are rare the after-the-fact check is cheaper. Unlike a tort, though, an aborted transaction just retries; legal harm usually can't be undone.</li>
+<li><b>Accounting · the double-entry journal (Pacioli, 1494)</b>: The method Luca Pacioli wrote down records every entry in a chronological journal first, then posts it to ledgers and statements. F1's first-class change history plays the journal, with indexes and caches as derived ledgers. The gap: accountants close the books period by period, while F1 streams its change records to subscribers as they happen.</li>
+<li><b>Evolution · endosymbiosis (Lynn Margulis, 1967)</b>: The eukaryotic cell handed its hardest job, making energy, to mitochondria and got on with being complex; F1 hands scaling and replication wholesale to Spanner and just does SQL. Where it breaks: cell and mitochondrion can't live without each other, but F1's dependence on Spanner runs one way only.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>F1 is the distributed relational database Google built for AdWords, bringing back full SQL, ACID transactions and consistent indexes on top of Spanner.</li>
+<li>Large systems used to face a forced choice: relational databases had SQL and transactions but couldn't scale, while NoSQL scaled but dropped transactions, SQL and strong consistency.</li>
+<li>AdWords ran on hand-sharded MySQL, where a single re-sharding took a team roughly two years, and that pain is what motivated F1.</li>
+<li>Horizontal scaling and cross-datacenter synchronous replication are delegated to Spanner, leaving F1 as a largely stateless SQL layer that can be scaled at will.</li>
+<li>In a hierarchical schema, child keys carry the parent key as a prefix, so a customer's whole data tree sits in one Paxos group and most reads and writes stay local.</li>
+<li>Protocol Buffer columns let one-to-many data live inside a single row, cutting tables and JOINs and removing the object–relational impedance mismatch.</li>
+<li>Optimistic transactions are the default: reads take no locks and only record timestamps, and the commit aborts and retries if any row read has since changed.</li>
+<li>Synchronous replication puts each commit at 50–150 ms, yet with batched parallel reads and the hierarchical schema, AdWords' user-visible latency matched the old system.</li>
+<li>The costs are high commit latency, applications that must be rewritten, heavier resource use, expensive global indexes, and deep dependence on Spanner and TrueTime.</li>
+<li>The hierarchical schema is a near-decomposable system in Herbert Simon's sense: dense links within a subtree, sparse links between them, so most transactions stay cheap.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full system details and experiments, go to the original.</footer>
 </div>

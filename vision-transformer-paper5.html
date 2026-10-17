@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 5</p>
@@ -167,17 +175,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>赢在架构，还是赢在规模与配方？</strong>ConvNeXt（2022）把 ResNet 按现代配方翻新后与 Swin 打平，说明 Transformer 架构本身未必是必要条件，这场争论至今没有定论。</li>
 <li><strong>覆盖面与工程小疤</strong>：原文只做了图像分类；学到的位置编码绑定训练分辨率，换分辨率要靠插值补救，谈不上优雅。</li>
 </ul>
-<h2 data-tts="59e6fe26f2f6d45c">要点</h2>
-<div class="tl">
-<p>① 一句话：把图切成 16×16 小块当「词」，喂给不改一行的标准 Transformer；预训练数据够大时，不带视觉先验反而更强。</p>
-<p>② 痛点：视觉被 CNN 垄断，此前的注意力方案要么混卷积、要么跑不快；逐像素注意力因平方复杂度不可行。</p>
-<p>③ 机制一：patch embedding——<code>(224/16)² = 196</code> 块、每块线性投影成向量，+ 位置编码 + [CLS] token，序列长度从 5 万降到 196。</p>
-<p>④ 机制二：拆掉 CNN 的局部性/平移/层级先验，用大规模预训练买回来——130 万图输、1400 万平、3 亿反超。</p>
-<p>⑤ 结果：ViT-H/14 在 ImageNet 88.55% 超最强 CNN；ViT-L/16 用约 1/15 的预训练算力反超 BiT-L；公开数据配方 85.30%。</p>
-<p>⑥ 模型自己学出「低层局部看与全局看并存」——先验可以不用焊死，由数据教出来。</p>
-<p>⑦ 影响：视觉与语言同架构，CLIP / MAE / DINO / SAM / DiT 全踩在它上面，多模态大模型的眼睛。</p>
-<p>⑧ 局限：小数据不行（DeiT 后来用技巧补救）；高分辨率平方开销（Swin 又请回先验）；ConvNeXt 质疑「架构必要性」。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · Sur 的「改线」雪貂（2000）</b>：Sur 团队把幼年雪貂的视网膜输入改接到听觉皮层，那里竟长出了像视觉皮层一样的朝向选择细胞——同一块组织喂什么数据就学成什么，正像同一个 Transformer 读字也能看图。不像在：改线后的朝向图比正常视皮层更乱，说明大脑这张「白纸」上本来就印着不少先天格线。</li>
+<li><b>哲学 · 洛克的白板与康德的先天形式</b>：CNN 像康德，把「空间」当成认识之前就焊好的形式；ViT 更像洛克，连「谁挨着谁」都从经验里学，位置编码自己学出了行列结构。不像在：ViT 并非真白板，切块那一刀和网络结构本身仍是先验。</li>
+<li><b>生物进化 · 鲍德温效应（Baldwin，1896）</b>：个体反复靠学习获得的本事，可能在演化中逐渐变成先天的。ViT 从数据里学出局部注意力，Swin 再把局部窗口焊回结构，像一次人工的「学习变本能」。不像在：这里是工程师动手写回，不是自然选择。</li>
+<li><b>心理学 · Navon 的「先见森林，后见树木」（1977）</b>：看由小字母拼成的大字母时，人通常先认出整体形状、再认出局部。ViT 第一层就有看全图的注意力头，CNN 却只能由局部一层层拼到整体。不像在：ViT 的局部与全局头是并行的，谈不上谁先谁后。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>ViT 把图像切成 16×16 的小块、每块当一个词，喂给几乎不改的标准 Transformer 做图像分类。</li>
+<li>逐像素做自注意力不可行，因为计算量随 token 数平方增长，而一张 224×224 的图有 5 万多个像素。</li>
+<li>切成 16×16 的 patch 后，224×224 的图只剩 196 个 token，自注意力的平方开销立刻变得可负担。</li>
+<li>ViT 只补上可学习的位置编码和 BERT 式的 [CLS] 分类 token，其余照搬标准 Transformer 编码器。</li>
+<li>CNN 自带局部性、平移等变、层级三条归纳偏置，数据少时是优势，数据多时反成束缚。</li>
+<li>预训练数据 130 万张时 ViT 输给 ResNet，1400 万张时大致打平，3 亿张时全面反超。</li>
+<li>ViT-H/14 在 ImageNet 拿到 88.55% top-1，ViT-L/16 只用约十五分之一的预训练算力就超过 BiT-L。</li>
+<li>训练后的 ViT 自己长出局部与全局并存的注意力头：先验不必焊进结构，也能被数据教出来。</li>
+<li>视觉与语言从此共用同一种架构，CLIP、MAE、DINO、SAM、DiT 都建立在 ViT 一族之上。</li>
+<li>DeiT 证明小数据也能训好 ViT，Swin 又把局部先验请了回来，ConvNeXt 则质疑 Transformer 架构是否必要。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整模型配置与实验细节，再去翻原文。</footer>
 </div>
