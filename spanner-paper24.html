@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 24</p>
@@ -176,17 +184,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>CAP 上的取舍</strong>：网络分区时 Spanner 选一致性、牺牲可用性（本质是 CP 系统）。Google 辩称因其专网极可靠而「实际近似 CA」，这个说法有争议（Brewer 后来专门撰文澄清边界）。</li>
 <li><strong>发表时 SQL 尚浅</strong>：2012 版的查询/SQL 能力有限，完整的分布式 SQL 引擎是 2017 年的续作《Spanner: Becoming a SQL System》才补齐。</li>
 </ul>
-<h2 data-tts="fd2c1b9964de5214">要点</h2>
-<div class="tl">
-<p>① 一句话：Spanner 是第一个既全球分布、又支持外部一致分布式事务的数据库，钥匙是 TrueTime。</p>
-<p>② 痛点：全球复制下机器的钟各自漂移、NTP 误差无上界，没有可信时间就无法用时间戳给跨机房事务定序——于是「全球 vs 强一致」被认为不可兼得。</p>
-<p>③ 核心 idea：TrueTime 不返回时间点，而返回区间 <code>[earliest, latest]</code> 并保证真时间在其中；ε 是不确定性，靠 GPS + 原子钟压到几毫秒。</p>
-<p>④ 定序机制：外部一致性 = 真实上先提交者时间戳更小；靠 commit wait——选 <code>s=now().latest</code> 后等到 <code>TT.after(s)</code>（约 2ε）再放锁，把不确定性「等」出去。</p>
-<p>⑤ 架构：数据切成 tablet，副本跨机房组成 Paxos 组（多数派写）；连续同前缀 key 成一个目录，是放置/迁移单位。</p>
-<p>⑥ 跨组事务：2PC 架在 Paxos 之上——每个参与者/协调者都是一个 Paxos 组，单点宕机被组内共识兜住，2PC 不再永久阻塞。</p>
-<p>⑦ 红利：全局时间戳 + 多版本 → 只读事务和快照读完全无锁，可就近读任一追上的副本。</p>
-<p>⑧ 影响与局限：证明「全球 + 强一致」可兼得，催生 NewSQL/全球数据库；但写有 ~2ε 延迟下限、依赖 GPS+原子钟、跨组走 2PC、分区时选 C 舍 A、初版 SQL 能力有限。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>物理学 · 狭义相对论的同时性</b>：爱因斯坦指出，相隔遥远的两件事是否「同时」取决于观察者的参照系，宇宙没有统一的「此刻」。Spanner 撞上的是同一堵墙：异地之间对不齐「现在」。不像在哪：相对论里同时性本身就是相对的，Spanner 却假定存在唯一的真实时间、只是测不准，所以能用一个区间把它框住。</li>
+<li><b>神经科学 · 后测（postdiction）</b>：Eagleman 等人用闪光滞后效应论证，大脑不是信号一到就宣布「看到了」，而是先攒一小段时间的信息再定稿，很像 commit wait 的「多等一拍」。不像在哪：大脑会回头改写先后，Spanner 定下的时间戳永不改。</li>
+<li><b>儒家 · 知之为知之，不知为不知</b>：孔子把坦白「我不知道」算作真知的一部分。TrueTime 也不报假装精确的时刻，而把自己的无知量化成 ε 交出来。不像在哪：孔子讲的是做人的诚实，TrueTime 的诚实还附带一个系统可以依赖的硬上界。</li>
+<li><b>投资 · 格雷厄姆的安全边际</b>：Benjamin Graham 主张别押注对价值的精确估计，而在价格与估值之间留出缓冲。Spanner 取区间上界作时间戳、再等误差过去，同样是用缓冲吸收误差而非消灭误差。不像在哪：安全边际只降低出错概率，commit wait 在 ε 成立时给出确定保证。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Spanner 是第一个既把数据分布到全球、又支持外部一致分布式事务的数据库。</li>
+<li>物理时钟会漂移、NTP 误差没有可靠上界，没有可信时间就无法给跨机房事务定序。</li>
+<li>TrueTime 不返回时间点，而返回保证包含真实时间的区间，靠 GPS 和原子钟把不确定性 ε 压到几毫秒。</li>
+<li>外部一致性的意思是：真实时间上先提交完成的事务，时间戳一定更小。</li>
+<li>commit wait 取区间上界作时间戳，再等约 2ε 才放锁，把时钟误差「等」出去。</li>
+<li>副本跨机房组成 Paxos 组，两阶段提交架在 Paxos 组之上，单点宕机不再卡死跨组事务。</li>
+<li>全局时间戳加多版本存储，让只读事务和快照读完全无锁，还能就近读副本。</li>
+<li>Spanner 证明全球分布与强一致事务可以兼得，催生了 CockroachDB、TiDB 等全球数据库。</li>
+<li>Spanner 的代价是每次写至少多等约 2ε、依赖 GPS 与原子钟，网络分区时选一致性舍可用性。</li>
+<li>TrueTime 的思路像格雷厄姆的安全边际：不去消灭误差，而是留出缓冲来吸收误差。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的 TrueTime 实现与事务协议细节，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 35</p>
@@ -169,17 +177,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>万维网也没完全兑现他的小径</strong>：Web 的链接大多是<strong>单向、易失效</strong>的；Ted Nelson 反过来批评 Web 丢掉了 Xanadu（承 Bush）设想的<strong>双向链接与版本追踪</strong>——某种意义上，Bush 的「小径」比今天的超链接还要讲究。</li>
 <li><strong>它终究是构想而非工程</strong>：Memex 从未被造出，其机械可行性存疑；它的价值在远见的准确，而非落地的完整。</li>
 </ul>
-<h2 data-tts="08da34274cf58f5d">要点</h2>
-<div class="tl">
-<p>① 一句话：1945 年 Bush 提出用个人设备 Memex 把海量记录压缩存下，靠「联想式索引」把资料串成可命名可分享的「小径」——超文本与万维网的思想源头。</p>
-<p>② 痛点：二战后知识爆炸，存进去容易、找出来难、连起来更难；层级归档「一条资料只归一处、要逐层追」，与人脑的联想方式南辕北辙。</p>
-<p>③ 核心机制：让用户把任意两条资料「拴」在一起，看其一按钮自动带出另一条；一串拴接成 trail（小径），可命名、可保存、可整条重走与分享。</p>
-<p>④ 为什么这样设计：检索的难点是「按什么关系连」，不是「存不存得下」；小径把「连接的智力劳动」固化下来重复使用、传给他人。</p>
-<p>⑤ 配套设想：微缩压缩（大英百科缩到火柴盒）、Memex 桌（屏幕+键盘+胶片库+干版摄影台）、语音转文字、可穿戴相机、拓径者职业。</p>
-<p>⑥ 结果的性质：无实验无数据，是一篇构想；靠「预言命中率」评判，多数设想此后逐一被兑现。</p>
-<p>⑦ 影响：经 Engelbart（鼠标、NLS、1968 演示）、Ted Nelson（造出 hypertext 一词、Xanadu）接力，最终在 Berners-Lee 的万维网落地为超链接。</p>
-<p>⑧ 局限：押错媒介（胶片模拟而非数字）、小径全手工无自动搜索、无网络概念、Web 未兑现其双向链接、终究是构想而非工程。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>哲学 · Clark 与 Chalmers 的「延展心智」</b>：1998 年两人设想失忆的 Otto 靠随身笔记本记事，认为本子对他起的作用就等于记忆，因而是心智的一部分。Memex 被定义为「个人记忆的私密补充」，正是一台被工程化的 Otto 笔记本；不同在于他们要论证「心在哪」，Bush 只关心「怎么找得到」。</li>
+<li><b>哲学 · Deleuze 与 Guattari 的「根茎」</b>：《千高原》（1980）把层层分叉的「树状」思维和任一点可连任一点的「根茎」对立起来，几乎就是层级归档对联想小径的翻版。但根茎没有起点终点，Bush 的小径却是有方向、有名字、一步接一步的线。</li>
+<li><b>生物 · Grassé 的「共识主动性」（stigmergy）</b>：1959 年 Grassé 发现白蚁不直接沟通，而是前人留下的痕迹刺激后来者继续施工；蚂蚁的信息素路径也同理，走的越多越浓、不走就挥发。Bush 的「拓径者」留下小径供后人走，结构相同；区别是 Memex 的小径不会自动加强或褪色，全靠手工维护——这恰好是它后来输给自动搜索的地方。</li>
+<li><b>经济学 · Hayek《知识在社会中的运用》</b>：与本文同在 1945 年发表，Hayek 论证知识分散在无数人手里，没有中央计划者能收齐，价格系统会自动把它汇总起来。两人都在对付「知识太散」，但 Bush 指望人手工拓径，Hayek 指望无人设计的自发机制——后来的搜索引擎更像 Hayek 的路子。</li>
+<li><b>佛学 · 华严宗的「因陀罗网」</b>：网上每个结点一颗宝珠，每颗珠子都映出所有其他珠子，一即一切。它是全连接、处处对称的；Memex 的小径则稀疏、有向、带着某个人的视角，连接本身就是一份个人的判断。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>1945 年 Vannevar Bush 在《大西洋月刊》发表《As We May Think》，构想了个人知识机器 Memex。</li>
+<li>二战后知识爆炸，真正的瓶颈不是存不下，而是找不到、也连不起来。</li>
+<li>层级归档让一条资料只能归一格、要逐层往下追，与人脑靠联想跳转的方式相反。</li>
+<li>Memex 是一张书桌：内部装微缩胶片库，桌面用斜置屏幕阅读，还能把手写笔记拍进库中。</li>
+<li>联想式索引让用户把任意两条资料拴在一起，看到一条就能按钮调出另一条。</li>
+<li>一串拴接组成可命名、可保存、可重走、可复制给别人的「小径」，即超链接的思想原型。</li>
+<li>小径把「连接资料」的智力劳动固化下来，Bush 由此预言了专门开辟小径的「拓径者」职业。</li>
+<li>这篇文章没有实验也没造出机器，它的价值只能用预言的命中率来衡量。</li>
+<li>经 Engelbart 的 NLS 和 Ted Nelson 的超文本接力，Memex 的思想最终落地为万维网的超链接。</li>
+<li>Memex 押错了模拟胶片、小径全靠手工、没有网络概念，后来输给了自动搜索，正如 Hayek 式的自发机制胜过人工规划。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想读 Bush 的原文与那些被引用的名句，再去翻《大西洋月刊》1945 年 7 月号。</footer>
 </div>

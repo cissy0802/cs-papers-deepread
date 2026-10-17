@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS · DEEP READ · PAPER 22</p>
@@ -206,17 +214,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The vertex view isn't universal</strong>: algorithms needing "the whole structure at once" or that are inherently non-local fit awkwardly into a per-vertex, per-superstep model — later work like Giraph++'s "think like a graph" addresses exactly this.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one sentence: a vertex-centric + BSP distributed graph framework — you write only "what one vertex does in one round (<code>Compute()</code>)," and the system handles partitioning, scheduling, synchronization, fault tolerance.</p>
-<p>② Pain: graph algorithms iterate dozens–hundreds of rounds; MapReduce drags whole-graph state on/off disk each round (slow, contorted); graph libraries aren't built for distributed fault tolerance.</p>
-<p>③ Core paradigm: "think like a vertex." A vertex holds value + out-edges + active state; in a superstep it reads last round's messages → mutates its value / edges → sends messages (delivered next round) → may vote to halt.</p>
-<p>④ Supersteps + barriers (BSP): strictly synchronous, so this round's messages are guaranteed read next round — no locks, no races; message passing over shared memory, as it fits graphs and lets messages be batched to amortize the network.</p>
-<p>⑤ Halting semantics: terminate when all vertices are inactive and no messages are in flight; a message re-activates a halted vertex.</p>
-<p>⑥ Practical mechanisms: Combiner locally merges same-destination messages (saves network); Aggregator does global reduction/stats (visible to all next round); topology mutation (add/remove vertices/edges) is supported.</p>
-<p>⑦ Implementation &amp; fault tolerance: master / worker, graph hash-partitioned and resident in worker memory; checkpoint rollback + confined recovery; the master only coordinates, never touches graph data.</p>
-<p>⑧ Impact &amp; limits: established the "think like a vertex" paradigm, spawning Giraph (Facebook ran a trillion edges) / GraphX, one of Google's new troika. Limits: synchronous barrier stragglers, heavy hash-partition communication, unfriendly to power-law graphs (PowerGraph's vertex-cut + GAS), in-memory bound.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Complexity science · Conway's Game of Life</b>: each cell looks only at its eight neighbors and all cells update on the same tick, yet simple local rules give rise to moving "gliders" — the same shape as thinking like a vertex in lockstep supersteps. Where it differs: Life runs on a fixed grid with one universal rule, no messages and no voting to halt.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society" (1945)</b>: Hayek argued that no central planner can gather the local knowledge scattered across individuals; prices compress it into signals, and people acting only on nearby signals end up coordinating the whole. Pregel's vertices likewise decide only from their neighbors' messages. Where it differs: Pregel still keeps a master beating the barrier and setting the tempo — a market has no such conductor.</li>
+<li><b>Biology · bacterial quorum sensing</b>: Vibrio fischeri keeps secreting signal molecules, and only when their concentration crosses a threshold does the whole colony light up — much like an Aggregator reducing everyone's values into one global number that each individual then acts on. Where it differs: bacteria rely on chemical diffusion, with no crisp "visible to all next round" guarantee.</li>
+<li><b>Complexity science · scale-free networks (Barabási &amp; Albert, 1999)</b>: rich-get-richer preferential attachment gives a few hubs vastly more links than everyone else — exactly where the "super vertices" that stall Pregel's barrier come from. Where it differs: Barabási explains how hubs grow; Pregel's limitation is about who pays once they have.</li>
+<li><b>Buddhism · Indra's net in Huayan thought</b>: every jewel in the net reflects every other jewel, so each one's appearance is set by all the rest; in PageRank a page's importance is likewise defined entirely by the pages linking to it, settling only after repeated iteration. Where it differs: Indra's net is simultaneous mutual reflection, "one is all," while Pregel passes values round by round, with barriers to order them.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Pregel (Google, SIGMOD 2010) is a vertex-centric distributed graph-processing framework built on the BSP model.</li>
+<li>Running iterative graph algorithms on MapReduce means writing the whole graph's state to disk and reading it back every single round.</li>
+<li>"Think like a vertex": you write only a per-vertex <code>Compute()</code>, and the system handles partitioning, scheduling and fault tolerance.</li>
+<li>In one superstep a vertex reads last round's messages, updates its value and out-edges, sends messages along edges, and may vote to halt.</li>
+<li>A global barrier between supersteps guarantees messages sent this round are read only next round, so there are no locks and no races.</li>
+<li>A Pregel computation ends when every vertex has halted and no messages are in flight; any message wakes a halted vertex back up.</li>
+<li>Combiners merge messages bound for the same vertex locally to save network traffic; Aggregators perform global reductions visible to all next superstep.</li>
+<li>Pregel uses a master / worker design with hash-partitioned graphs held in worker memory, recovering from failures via checkpoint rollback and confined recovery.</li>
+<li>"Think like a vertex" became the standard graph-computing paradigm, spawning Apache Giraph and GraphX; Facebook ran Giraph on a trillion-edge graph.</li>
+<li>The synchronous barrier waits on the slowest worker each round, so super vertices in power-law graphs stall everyone — which PowerGraph's vertex-cut set out to fix.</li>
+</ol>
 </div>
 <footer>CS Papers · Deep Read · Finish this page ≈ grasp the paper's core; for full protocol details and experimental data, go read the original.</footer>
 </div>

@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 69</p>
@@ -263,16 +271,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The problem it named is still open</strong>: the top rung, putting strings on information, is Lampson's 1973 <em>confinement problem</em> and the covert channels around it. DRM, data-loss prevention and taint tracking are partial answers at best — once data is handed over, you still cannot control it.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1 · What it is: a 1975 tutorial survey that invents no algorithm and instead invents the vocabulary and framework for talking about system security.</p>
-<p>2 · Context: time-sharing put mutually distrustful people on one machine, so the walls had to move inside it; the three violations (release / modification / denial of use) prefigure confidentiality, integrity and availability.</p>
-<p>3 · The eight: economy of mechanism, fail-safe defaults, complete mediation, open design, separation of privilege, least privilege, least common mechanism, psychological acceptability.</p>
-<p>4 · The gatekeeper: authentication and authorization are separate, complete mediation permits no bypass, and hardware — two modes plus descriptors — makes the check a side effect of addressing.</p>
-<p>5 · Two slices of the access matrix: by column gives access control lists (easy revocation, awkward global queries), by row gives capabilities (fast and delegable, painful to revoke).</p>
-<p>6 · The evidence is not an experiment but the Multics penetration post-mortem: what broke was mostly what violated the principles.</p>
-<p>7 · Impact and limits: deny by default, zero trust, a minimal trusted computing base, two-factor, IAM all map onto the eight; yet the principles are unmeasurable, they conflict, and putting strings on information remains unsolved.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · the blood-brain barrier</b>: the endothelial cells of brain capillaries are sealed by tight junctions, so by default nothing passes, and essentials such as glucose enter only through dedicated transporters. That is fail-safe defaults plus protected gates: whatever is not on the allow-list stays out, and traffic goes through a few checked doors. The difference: small fat-soluble molecules dissolve straight through the membrane, so the barrier ships with a bypass, exactly what complete mediation forbids.</li>
+<li><b>Immunology · two-signal T-cell activation</b>: a T cell activates only when it receives both an antigen signal and a co-stimulatory signal; the first alone tends to leave it unresponsive. Structurally, separation of privilege. Unlike two keys held by two people, though, both signals often come from the same antigen-presenting cell.</li>
+<li><b>Behavioral economics · the default effect</b>: most people stay with whatever is preselected, which is why opt-out organ-donation countries register far more donors than opt-in ones. It shows why fail-safe defaults matter: the default is the setting most people end up with. The difference: a nudge uses defaults to steer choices, while secure defaults spare people from choosing at all.</li>
+<li><b>Ecology · monoculture</b>: genetically uniform crops share one weakness, and a single blight can wipe out the whole field, the "one shared part breaks everyone" risk that least common mechanism warns about. The difference: nature gets diversity as a by-product of evolution, whereas isolation and redundancy in a system cost real money, and cloud multi-tenancy exists precisely to avoid that cost.</li>
+<li><b>Political philosophy · Montesquieu's separation of powers</b>: splitting legislative, executive and judicial power among different bodies so none can abuse power alone shares an instinct with separation of privilege and least privilege: never put all the power in one hand. The difference: the branches must keep checking each other indefinitely, while separation of privilege only asks for two conditions at the moment of access.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Saltzer and Schroeder's 1975 tutorial survey invents no algorithm; it establishes the shared vocabulary for talking about system security.</li>
+<li>Time-sharing put mutually distrustful users on one machine, making unauthorized release, modification and denial of use the three violations to guard against.</li>
+<li>The eight design principles are warning signs that tell you to stop and think when you violate one, not provable theorems.</li>
+<li>Fail-safe defaults decide by allow-list, so an oversight shows up as a feature that does not work rather than a hole nobody notices.</li>
+<li>The gatekeeper model separates authentication from authorization, and complete mediation demands a check on every access with no bypass.</li>
+<li>Multics-style hardware, with two processor modes and descriptors, makes the permission check a side effect of addressing, so checking every time stays affordable.</li>
+<li>Slicing the access matrix by column gives access control lists that are easy to revoke; slicing by row gives capabilities that delegate easily but are hard to revoke.</li>
+<li>The paper's evidence is the Multics penetration post-mortem, where most breaches traced back to implementation details that violated the principles.</li>
+<li>The eight principles are unmeasurable and conflict with each other, and the confinement problem of putting strings on information remains unsolved.</li>
+<li>Separation of privilege has the same structure as a T cell that activates only after receiving both an antigen signal and a co-stimulatory signal.</li>
+</ol>
 </div>
 
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full taxonomy of mechanisms and the state of the art of the day, go to the original.</footer>

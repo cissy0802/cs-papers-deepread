@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP READ · PAPER 70</p>
@@ -244,18 +252,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>It is unfalsifiable.</strong> There's no way to measure whether following these hints actually raises a project's odds. It is closer to an excellent engineer's testimony and teaching material than to a verifiable conclusion — which is precisely why he called them hints rather than rules: <strong>the paper is itself a hint. It may be wrong. Please check.</strong></li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1. In one line: Lampson distilled system-building judgment into about thirty sloganized "hints," organized by a 3×3 table, and said outright that they may be wrong and must be verified.</p>
-<p>2. The pain: system design has no computable right answer; failures come from judgment rather than algorithms, and that knowledge lived only in veterans' heads, transmitted by failed projects.</p>
-<p>3. The scheme: three questions (functionality / speed / fault-tolerance) by three places (how much to do / interface / implementation) file nearly every design argument into nine boxes.</p>
-<p>4. Interfaces: simple, complete, and cheap to implement can't all be had — hence "do one thing well, don't generalize," "don't hide power," "leave the decision to the client," "keep basic interfaces stable."</p>
-<p>5. Speed: "fast beats general" — small fast primitives compose, large slow features don't decompose; plus caching, batching, background work, static analysis, and "when in doubt, use brute force."</p>
-<p>6. Hints: guesses that may be wrong but are cheap to verify, leaving the system correct (only slower) when they all fail — branch prediction, optimistic concurrency and name caches are all this, and so is the title.</p>
-<p>7. Fault tolerance: end-to-end (only application-level recovery is logically necessary), log updates, atomic or restartable actions, safety first, shed load, and separate paths for normal and worst case.</p>
-<p>8. Results and influence: no experiments; the argument rests on real systems including the author's own failures — and it spread by being memorized, becoming course material and shared engineering vocabulary.</p>
-<p>9. Limits: anecdotal evidence and survivorship bias; hints that conflict with no arbitration rule; lines like "split resources rather than share" rewritten by cloud economics; nothing on consensus or security; unfalsifiable overall.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · predictive coding (Rao &amp; Ballard, 1999)</b>: higher visual areas keep sending guesses down, and lower areas pass up only the prediction error — guess first, check second, just like a hint. The difference: when every hint is wrong the system is still correct, whereas a wrong prediction in the brain can become an illusion.</li>
+<li><b>Psychology · fast-and-frugal heuristics (Gigerenzer &amp; Goldstein, 1996)</b>: "Take the Best" decides on the single most discriminating cue, and in simulations it matched methods that weigh every cue — a cousin of "keep it simple" and "when in doubt, use brute force." Unlike a hint, a human heuristic has no authoritative slow path to fall back on.</li>
+<li><b>Economics · Roy's safety-first criterion (1952)</b>: in <em>Econometrica</em>, A. D. Roy argued that an investor's first aim should be minimizing the chance of falling below a disaster level, not maximizing expected return — almost a financial rendering of "avoid disaster before you chase the optimum." The gap: Roy had a probability model you could compute; Lampson's "safety first" is a judgment call that never says where the disaster line sits.</li>
+<li><b>Evolution · convergent camera eyes</b>: vertebrates and cephalopods each evolved a camera-type eye independently, each built to its own lineage's terms (the octopus routes its optic nerve behind the retina and has no blind spot) — rather like "use a good idea again instead of generalizing it." But evolution has no designer: it isn't reusing an idea on purpose, it is being pushed to the same answer by the same optics.</li>
+<li><b>Buddhism · the Kalama Sutta (AN 3.65)</b>: the Buddha tells the Kalamas not to accept a teaching merely because of tradition, scripture or "this is our teacher," but to see whether, put into practice, it leads to harm or to welfare — much as Lampson calls his maxims hints and asks you to check them. The sutta, though, tests the wholesomeness of mind and conduct, not engineering trade-offs.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Lampson's 1983 "Hints for Computer System Design" distills system-building judgment into about thirty sloganized maxims.</li>
+<li>System design has no computable right answer; failures usually come from judgment, and that know-how used to pass only through veterans and failed projects.</li>
+<li>The paper files nearly every design argument into a 3×3 table: functionality, speed and fault tolerance against completeness, interface and implementation.</li>
+<li>A good interface should be simple, complete and cheaply implementable, which rarely all hold — so do one thing well and never hide the power underneath.</li>
+<li>Being fast matters more than being general: clients can compose small fast primitives, but nobody can make a big slow feature fast by taking it apart.</li>
+<li>A hint is a guess that may be wrong but is cheap to verify, so the system stays correct, only slower, when hints fail; branch prediction and name caches work this way.</li>
+<li>Fault tolerance rests on end-to-end checks at the application, logging updates, atomic or restartable actions, and shedding load before overload collapses useful throughput.</li>
+<li>The Hints paper has no experiments; it argues from real systems such as Alto and Grapevine, including Lampson's own failures.</li>
+<li>The Hints paper's limits are anecdotal evidence, conflicting maxims with no arbitration rule and unfalsifiability, and cloud economics has overturned advice like fixed resource partitioning.</li>
+<li>The guess-then-verify shape of a hint mirrors predictive coding in neuroscience, where higher brain areas predict and lower areas report only the error.</li>
+</ol>
 </div>
 <footer>CS Papers Deep Read · Reading this page ≈ getting the core of the paper; for the original table of slogans and the case-by-case argument, go read the source.</footer>
 </div>

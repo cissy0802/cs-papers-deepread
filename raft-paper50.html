@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 50</p>
@@ -196,18 +204,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Figure 8 的「只提交本任期条目」是易错点</strong>：这条反直觉细则若实现时漏掉，系统会在特定故障序列下丢失已提交数据——说明 Raft 也并非「照抄伪代码就一定对」。</li>
 <li><strong>超时需要调参</strong>：随机超时的取值要与部署环境的网络往返时延匹配，配错了会导致选举频繁或迟缓，运维上仍需经验。</li>
 </ul>
-<h2 data-tts="2614414ff2cbaca6">要点</h2>
-<div class="tl">
-<p>① 一句话：Raft 是一套多副本共识算法，让一组会宕机的机器就「一份复制日志」达成永不反悔的一致；核心卖点是<strong>为可理解性而设计</strong>。</p>
-<p>② 痛点：Paxos 正确却极难懂、且从单决议到「日志」的落地含糊，人人自行发挥、难保正确——一个正确性攸关的算法几乎没人真读通。</p>
-<p>③ 分解：把共识拆成<strong>领导选举 / 日志复制 / 安全性</strong>三块分别讲清；贯穿全局的是<strong>强领导者</strong>——日志只从领导者单向流向跟随者。</p>
-<p>④ 选举：用<strong>任期</strong>做逻辑时钟、见更高任期即退位；用<strong>随机化选举超时</strong>把「选票分裂」压成小概率并快速自愈；拿多数票即当选。</p>
-<p>⑤ 复制：命令经领导者追加、<code>AppendEntries</code> 铺给众人，<strong>被多数派复制即提交</strong>；靠「前一条索引+任期」的一致性检查强行对齐跟随者日志。</p>
-<p>⑥ 安全：<strong>只有日志「够新」的候选人能当选</strong>（选举限制）+ 多数派必相交 ⇒ 领导者完整性：已提交条目必存于此后每任领导者，永不丢失。</p>
-<p>⑦ 微妙点：领导者只靠复制<strong>本任期</strong>新条目来推进提交，旧任期条目间接被提交（Figure 8）——最易实现错的一处。</p>
-<p>⑧ 结果与影响：可理解性用户研究里显著胜过 Paxos；催生 etcd、Consul、TiKV、CockroachDB、KRaft 等一众系统，成为共识的事实标准与教学首选。</p>
-<p>⑨ 局限：单领导者瓶颈 + 选举不可用窗口；容错 / 性能不超 Paxos；不防拜占庭；成员变更曾被发现暗坑；超时需调参。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · 蜜蜂分群择巢（Thomas Seeley）</b>：侦察蜂各自为候选巢址招募同伴，某处聚集的侦察蜂达到法定数量（quorum），整群才动身——和 Raft「被多数派复制即提交」是同一种结构。不像在于：蜂群的门槛是一个数量阈值而非过半，也没有领导者，靠的是招募的正反馈竞争。</li>
+<li><b>发育生物学 · Notch–Delta 侧向抑制</b>：一片起初相同的细胞里，微小的随机差异被放大，抢先胜出的细胞抑制邻居走同一条路，最后只剩一个「领头」细胞——像随机超时打破对称、当选者靠心跳压住别人参选。不像的是，侧向抑制的结果基本不可逆，没有「领导者挂了就重选」这一步。</li>
+<li><b>神经科学 · 全局工作空间理论（Bernard Baars；Stanislas Dehaene 的神经版本）</b>：大脑里大量并行的无意识处理彼此竞争，只有一个内容胜出进入「工作空间」，再被广播给全脑各模块，很像强领导者把唯一一份日志单向铺给所有跟随者。不像在于：意识内容转瞬即逝、随时被下一个覆盖，而 Raft 已提交的条目永不改写。</li>
+<li><b>心理学 · 认知负荷理论（John Sweller）</b>：工作记忆一次能同时摆弄的相互依赖元素很少，所以拆分步骤、减少同时要考虑的情况，学得更快——Raft 的问题分解与压缩状态空间正是在给读者减负。不像的是，教学设计通常只改讲法，Raft 是真把算法本身的状态空间砍小了。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Raft 是一套多副本共识算法，让会宕机的服务器对同一份复制日志达成永不反悔的一致。</li>
+<li>Paxos 正确却出了名地难懂，从单决议拼成日志的部分讲得含糊，各家实现只好各自发挥。</li>
+<li>Ongaro 与 Ousterhout 把可理解性当作第一设计目标，手段是问题分解和压缩状态空间。</li>
+<li>Raft 把共识拆成领导选举、日志复制、安全性三块，日志只从唯一的强领导者单向流向跟随者。</li>
+<li>任期号充当全局逻辑时钟，随机化的选举超时让选票分裂变成小概率且能很快自愈。</li>
+<li>条目被多数派复制即算提交，AppendEntries 里的一致性检查把跟随者日志强行对齐到领导者。</li>
+<li>只有日志至少同样新的候选人才能当选，加上任意两个多数派必相交，已提交条目永不丢失。</li>
+<li>领导者只能靠复制本任期的新条目来推进提交（论文 Figure 8），这是实现 Raft 最易出错的细则。</li>
+<li>在 43 名学生的测验里 Raft 得分高于 Paxos，后来它成了 etcd、Consul、TiKV 等系统的共识内核。</li>
+<li>Raft 的局限包括单领导者写入瓶颈、选举期间短暂不可用、不防拜占庭故障，超时也需按网络调参。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的 RPC 字段、状态图与安全性证明，再去翻原文。</footer>
 </div>

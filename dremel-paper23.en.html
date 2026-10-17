@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 23</p>
@@ -220,17 +228,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Coupled storage/compute and the approximation trade-off</strong>: the early tree bound storage and compute fairly tightly and was rigidly shaped; approximate early termination lowers latency but returns <strong>incomplete results</strong>, unsuitable when exact answers are required. All of this was gradually re-architected over the following decade (storage/compute disaggregation, vectorized columnar evaluation, etc.).</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: columnar storage (that swallows nested data) + a multi-level serving tree (spread over thousands of machines) → second-scale interactive aggregation over trillion-row read-only data.</p>
-<p>② The pain: MapReduce batch latency runs to minutes and breaks exploration; and Google's data is nested, repeated, tree-shaped, while traditional columnar stores only knew flat tables.</p>
-<p>③ Core 1 (encoding): two integers — <strong>repetition level r</strong> (where a new group breaks) + <strong>definition level d</strong> (at which level a NULL is null) — shred nested records into columns losslessly and reassemble them; the paper's most technical move, inherited by Parquet.</p>
-<p>④ Core 2 (execution): a search-engine-style multi-level tree, root→intermediate→leaf; leaves read shards and aggregate locally, results merge up; aggregation is naturally divide-and-combine, so parallelism is huge.</p>
-<p>⑤ Engineering: in-situ reads on GFS, no data movement; replica reassignment tames stragglers; approximate early termination trades accuracy for latency.</p>
-<p>⑥ Results: columnar &gt;10× faster on an 85-billion-row / 87 TB table; trillion-row queries return in seconds; ~3000 nodes, petabytes, thousands of users; far faster than MapReduce.</p>
-<p>⑦ Impact: productized as BigQuery, launching serverless data warehouses; nested columnar encoding is the source of Parquet/ORC, the modern data-lake storage standard.</p>
-<p>⑧ Limits: read-only aggregation specialist, no transactions; barely any big-table JOINs early (shuffle added later); no indexes so even point lookups scan; high engineering bar for the encoding.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Buddhism · the five aggregates</b>: Buddhism takes a "person" apart into five heaps (form, feeling, perception, mental formations, consciousness) and finds no separate self inside, the same move as shredding a record into columns. The difference: Buddhism takes the whole apart so you can let it go; Dremel keeps (r, d) so the whole can always come back.</li>
+<li><b>Biology · Anfinsen's protein folding</b>: Anfinsen let a denatured ribonuclease refold on its own in a test tube, showing that a one-dimensional amino-acid sequence already carries its three-dimensional shape (Nobel Prize in Chemistry, 1972). (r, d) likewise lets a flat column carry the instructions for rebuilding its tree. Unlike a protein, which folds by physics and can misfold under the wrong conditions, column reassembly is a deterministic state machine.</li>
+<li><b>Economics · Hayek's price signal</b>: In "The Use of Knowledge in Society" (1945), Hayek argued that local knowledge can never be gathered into one mind, and prices compress it into a single number that travels. Leaf servers aggregating locally and passing up one small result do the same compression. Unlike the market, though, Dremel has a root server that sees everything.</li>
+<li><b>Psychology · Simon's satisficing</b>: Herbert Simon argued that real decision-makers don't optimize; they stop at good enough. Dremel quitting once 99% of tablets are in is that trade. The difference: Simon's humans rarely know how far short they fell, while Dremel at least knows what fraction it scanned.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Dremel runs second-scale interactive aggregation queries over trillions of rows of read-only nested data, and it became Google BigQuery.</li>
+<li>MapReduce, the workhorse of the time, was batch-oriented with minutes of latency, which killed think-and-ask data exploration.</li>
+<li>Columnar storage lets a query read only the few columns it needs, cutting most of the I/O and compressing well.</li>
+<li>The repetition level r marks where a new group breaks; the definition level d marks at which level a value went null.</li>
+<li>With just the two integers (r, d), nested records shred losslessly into columns and a finite-state machine reassembles them.</li>
+<li>A multi-level serving tree fans a query from the root out to thousands of leaves, which aggregate locally and merge results upward.</li>
+<li>Dremel reads columns in situ on GFS, reassigns straggler work to replicas, and can stop early with an approximate answer.</li>
+<li>On an 85-billion-record, roughly 87 TB table, columnar reads of a few fields were over an order of magnitude faster.</li>
+<li>Parquet and ORC inherited Dremel's nested columnar encoding, making it the de facto storage standard of open-source big data.</li>
+<li>Approximate early termination resembles Simon's satisficing: stop at 99% of tablets and trade a little accuracy for much less latency.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full encoding algorithm and experiment details, go to the original.</footer>
 </div>

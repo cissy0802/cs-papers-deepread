@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 3</p>
@@ -184,18 +192,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Still shallow, poorly understood</strong>: 8 layers is only a "shallow deep net" by today's standards; and why it works and what it learns lacked — then and largely still — a full theoretical account.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: an 8-layer deep CNN that cut top-5 error to 15.3% and won ImageNet 2012, igniting the deep learning revolution.</p>
-<p>② The pain: old methods used <strong>hand-crafted features</strong> + a shallow classifier — low ceiling, brittle; deep CNNs were better in principle but couldn't be trained or afforded.</p>
-<p>③ Core: let <strong>5 conv layers learn features themselves from a million images</strong> (no hand-design) + 3 FC layers + softmax, ~60M parameters.</p>
-<p>④ Ingredient 1, ReLU: <code>max(0,x)</code>, non-saturating, constant gradient, ~6× faster training, becoming the default activation.</p>
-<p>⑤ Ingredient 2, GPU: split across two GTX 580s, trained for five-to-six days, turning big deep nets from impossible into feasible.</p>
-<p>⑥ Ingredients 3/4: Dropout (randomly zero half the units in training) + data augmentation (flip/shift/recolor) tame overfitting.</p>
-<p>⑦ Results: 15.3% top-5 vs the runner-up's 26.2%, a near-halving; ablations show depth matters; first-layer filters self-learn into edge detectors.</p>
-<p>⑧ Impact: established the "data + compute + a deep net learning its own features" paradigm, spawning VGG/ResNet and the whole GPU-compute industry.</p>
-<p>⑨ Limits: a win of engineering and scale, not theory; LRN, large kernels, and the two-GPU split were later dropped; parameter bloat in FC layers; very hungry for data and compute.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Hubel–Wiesel simple cells and sparse coding</b>: from 1959 Hubel and Wiesel found "simple cells" in cat primary visual cortex that fire for edges at a particular orientation (Nobel, 1981); in 1996 Olshausen and Field showed that merely asking for a sparse code of natural images makes an algorithm grow the same oriented-edge filters. AlexNet's first layer lands on the same answer. Unlike it: the brain is full of feedback connections; AlexNet only feeds forward.</li>
+<li><b>Evolution · the "mixability" of sex (Livnat, Papadimitriou et al., PNAS 2008)</b>: sex keeps breaking gene combinations apart, so selection favors genes that work with many partners; Dropout knocks out half the units at random, forcing each to be useful without its usual clique. Unlike it: evolution spans generations with no gradient, while Dropout has an error signal at every step.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society" (1945)</b>: the knowledge an economy needs is scattered across countless people, and no central planner can write it all down; hand-crafted features are expert planning, and AlexNet lets a million images set the features. Unlike it: gradient descent still optimizes one centrally chosen objective, not dispersed agents bidding.</li>
+<li><b>Philosophy · Kant's a priori forms of intuition</b>: for Kant, space is a form the mind brings to experience, not something learned from it; a convolution kernel shared across the whole image likewise hard-codes "moved, it's still the same thing." AlexNet learns the content; the frame is still designed. Unlike it: Kant's forms are preconditions of knowing, convolution merely a useful engineering choice.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>AlexNet, an 8-layer deep convolutional network, won ImageNet 2012 by cutting top-5 error to 15.3%.</li>
+<li>Before 2012, image recognition relied on hand-crafted features plus a shallow classifier, brittle against changes in pose, lighting, and occlusion.</li>
+<li>AlexNet's 5 convolutional layers learn features on their own from about 1.2 million images, then 3 fully-connected layers and softmax output 1000 class probabilities.</li>
+<li>The ReLU activation, max(0, x), never saturates for positive inputs; the paper reports training about 6× faster than with tanh.</li>
+<li>Split across two GTX 580 GPUs and trained for five to six days, a big deep network became affordable to train for the first time.</li>
+<li>Dropout zeroes half the fully-connected units at random during training, and data augmentation adds flipped, shifted, recolored images; together they tame overfitting.</li>
+<li>A 15.3% versus 26.2% runner-up nearly halved the error, and removing any convolutional layer hurt results, showing that depth itself matters.</li>
+<li>"Give a deep net enough data and compute and let it learn its own features" became the paradigm, with ReLU, Dropout, and GPU training as the standard recipe.</li>
+<li>AlexNet won on engineering and scale rather than theory; LRN, 11×11 kernels, and the two-GPU split were later dropped, and its parameters bloat the fully-connected layers.</li>
+<li>The oriented-edge filters AlexNet's first layer learns share one structure with simple cells in cat visual cortex and with filters learned by sparse coding.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full network configs and experiment details, go to the original.</footer>
 </div>

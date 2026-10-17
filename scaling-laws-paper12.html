@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 12</p>
@@ -117,17 +125,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只解释"是什么"、不解释"为什么"</strong>：幂律是经验拟合，指数为何是这些值、背后的理论机制，本文并未回答，至今仍是开放问题。</li>
 <li><strong>被解读为"唯规模论"</strong>：它常被简化成"大就是好"，助长了对算力与数据的军备竞赛，也带来能耗、成本与集中化的隐忧。</li>
 </ul>
-<h2 data-tts="60526a33dc2fb616">要点</h2>
-<div class="tl">
-<p>① 一句话：Transformer 语言模型的损失，对参数量 N、数据量 D、算力 C 各是一条平滑幂律，跨多个数量级不弯、可外推。</p>
-<p>② 痛点：以前"大就是好"只是直觉，说不清好多少、到哪饱和、钱该投模型还是数据——每次都靠烧钱试错。</p>
-<p>③ 幂律：<code>L(N)∝N^−0.076</code>、<code>L(D)∝D^−0.095</code>、<code>L(C)∝C^−0.050</code>——双对数坐标里都是直线，小指数意味着回报稳但要成倍投入。</p>
-<p>④ 规模压倒结构：同参数量下，网络深宽比等形状几乎不影响损失，决定成绩的是总参数量。</p>
-<p>⑤ 大模型更省样本；给定算力最优是"训练很大的模型、数据上不到收敛就提前停"（本文：约 N∝C^0.73、D∝C^0.27，偏重模型）。</p>
-<p>⑥ 验证：几百个点连成的直线跨六七个数量级高度吻合；小规模拟合能外推大模型——GPT-3 的直接依据。</p>
-<p>⑦ 影响：把大模型从炼丹变工程，塑造"scale is all you need"时代，缩放律成为训练前沿模型的标配工具。</p>
-<p>⑧ 局限：Chinchilla 修正了配比（模型/数据应等比例、约 20 token/参数），当年许多模型被训练不足；损失≠下游能力；外推不可无限；只知其然不知其所以然。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物学 · 克莱伯定律（Kleiber's law）</b>：从老鼠到大象，动物的基础代谢率大致随体重的 3/4 次方增长，双对数图上同样是一条跨多个数量级的直线。像在都是「只看规模就能预测」的平滑幂律；不像在生物学后来有人用血管这类分形输运网络去推导那个指数，而语言模型缩放律的指数至今没有公认的理论来源。</li>
+<li><b>心理学 · 练习的幂律（power law of practice）</b>：人练一项技能，完成时间随练习次数按幂律缩短，Newell 与 Rosenbloom 把它总结成「练习律」。像损失随数据量的幂律：越往后，同样一截进步要越多倍的练习；不像在人是用一颗固定的大脑反复练，模型却能直接把「脑子」做大。</li>
+<li><b>经济学 · 莱特定律（Wright's law）/ 经验曲线</b>：飞机工程师 Theodore Wright 发现，累计产量每翻一番，单位成本就下降一个大致固定的比例。像在「每翻倍换固定比例」的账能让人提前规划投资；不像在莱特定律只有累计经验一根横轴，缩放律则拆成模型、数据、算力三根可以分配的轴。</li>
+<li><b>神经科学 · 人脑是「放大版的灵长类脑」</b>：Suzana Herculano-Houzel 用细胞计数发现，人脑的神经元数量正落在灵长类脑按比例放大的曲线上，人的特别更多在「数量多」而非结构独特。像「规模压倒结构」；不像在啮齿类和灵长类的放大规则不同，物种的「架构」决定了怎么放大，形状并非完全无关。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Kaplan 等人 2020 年的 Scaling Laws 论文发现，Transformer 语言模型的测试损失会随规模平滑、可预测地下降。</li>
+<li>在这篇论文之前，「模型越大越好」只是经验直觉，没人说得清好多少、何时饱和、钱该投模型还是数据。</li>
+<li>损失对参数量 N、数据量 D、算力 C 各是一条幂律，在双对数坐标里是跨六七个数量级都不弯的直线。</li>
+<li>幂律的指数只有 0.05 到 0.1，意味着回报稳定，但每换来一小截进步都要成倍地投入资源。</li>
+<li>同样的参数量下，网络做深还是做宽等形状差异几乎不影响损失，真正决定成绩的是总参数量。</li>
+<li>大模型更省样本，所以给定算力预算时，最优做法是训练很大的模型，并在数据上不训练到收敛就提前停。</li>
+<li>用小模型拟合出的缩放曲线能相当准地外推大模型的损失，这成了 OpenAI 押注 GPT-3 的定量依据。</li>
+<li>缩放律把大模型从炼丹变成「先算后做」的工程，研究重心也从设计更巧的架构转向扩大规模。</li>
+<li>DeepMind 的 Chinchilla 指出这篇论文低估了数据：算力最优时模型和数据应大致等比例增长，约每参数 20 个 token。</li>
+<li>缩放律只是对预测损失的经验拟合：它不等于下游能力，外推不能无限，也没解释指数为何是这些值。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整拟合细节与全部实验曲线，再去翻原文。</footer>
 </div>

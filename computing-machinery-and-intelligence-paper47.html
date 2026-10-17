@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 47</p>
@@ -163,17 +171,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>范围偏窄</strong>：刻意限定为「隔屏打字对话」，虽然巧妙地剥离了外貌，却也把智能<strong>压缩成了文字聊天</strong>，忽略了感知、运动、具身等大量非语言的智能形态。</li>
 <li><strong>它或许本就不是「定义」</strong>：不少学者认为，图灵从未想把测试当作「智能的定义」，而更像一记<strong>终止形而上争论的修辞</strong>——如今大语言模型能在轻量场景下骗过人，反倒让「通过测试到底证明了什么」重新成为争议，也侧面说明这个判据的边界一直很模糊。</li>
 </ul>
-<h2 data-tts="2b57f39e841d493b">要点</h2>
-<div class="tl">
-<p>① 一句话：把无法验证的「机器能思考吗」，替换成可操作的行为测试「模仿游戏 / 图灵测试」——裁判隔屏聊天分不出机器，就算它会思考。</p>
-<p>② 动机：「思考」的本质无法验证，连「别人是否在思考」都证不了，用更高标准苛求机器不公平；图灵把「本质之争」拆成「一个能判定的问题」。</p>
-<p>③ 机制：机器与真人隔电传打字机受裁判盘问，只比谈吐、不比外貌嗓音；机器伪装成人，裁判揪不出即算通过。判据把举证责任翻转给了否定方。</p>
-<p>④ 说理主体：逐条驳倒九种反对——数学（哥德尔）、意识（反唯我论）、洛夫莱斯（机器能带来惊喜）、各种「永不能 X」等，锋芒直指人类对自身的过度自信。</p>
-<p>⑤ 最前瞻的点子：与其硬编成人心智，不如造「小孩机器」再用奖惩与经验教育它，掺入随机、按进化式取舍——机器学习 / 强化学习 / 进化计算的先声。</p>
-<p>⑥ 预言：约 2000 年，10⁹ 比特的机器能让普通裁判五分钟后误判约三成；届时「机器会思考」将不再被反驳。</p>
-<p>⑦ 影响：为尚未命名的 AI 立下目标与判据（早达特茅斯会议六年），成为机器智能的文化图腾。</p>
-<p>⑧ 局限：中文房间指出「会装≠真懂」；测的是「像人」乃至「人多好骗」（ELIZA 效应）而非智能本身；范围窄、拟人化；或许本就是终止争论的修辞而非定义。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>东方哲学 · 庄子「濠梁之辩」</b>：惠子问「子非鱼，安知鱼之乐？」，和杰弗逊的意识反对是同一个他心难题；图灵的回击也像庄子的反问——你也不是我，凭什么断定我不知？不像在哪：庄子落脚在「我知之濠上」的亲身体察，图灵落脚在一场可重复的打字测验。</li>
+<li><b>心理学 · Heider–Simmel 动画（1944）</b>：Heider 与 Simmel 给受试者看几个三角形和圆在屏幕上移动的短片，人们纷纷讲出追逐、躲藏、嫉妒的故事。这正是 ELIZA 效应的结构：人天生倾向过度赋予心智。不像在哪：几何图形没在装，心智全是观者自己补上的。</li>
+<li><b>生物进化 · 贝氏拟态（Batesian mimicry）</b>：1862 年 Bates 报告，亚马孙一些无毒蝴蝶长得酷似有毒蝴蝶，靠骗过捕食鸟的眼睛活下来——成败只看接收方能不能分辨，正像模仿游戏只看裁判。不像在哪：拟态者从来不需要真的有毒，而图灵恰恰想从「分不出」推到「真会想」，这道缝正是中文房间下刀的地方。</li>
+<li><b>经济学 · 古德哈特定律（Goodhart's law）</b>：经济学家 Goodhart 1975 年谈英国货币政策时指出，统计规律一旦被拿来当调控目标就会失灵。图灵测试做成比赛后，机器靠装傻、故意打错字过关，就是这一幕。不像在哪：Goodhart 讲的是被调控者的博弈，这里是被测者主动伪装。</li>
+<li><b>发展心理学 · Spelke「核心知识」</b>：图灵的「小孩机器」是简单初始状态加教育；Spelke 的婴儿研究却发现，婴儿出生不久就带着表征物体、数量、空间的几套核心知识系统。像在「先天打底、后天塑形」的分工，不像在人类的「出厂设置」远比图灵设想的厚。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>图灵 1950 年在哲学期刊《Mind》发表本文，把「机器能思考吗」换成一个可操作的行为测试。</li>
+<li>「思考」的本质无法验证，连别人是否在思考都证明不了，用更高标准苛求机器并不公平。</li>
+<li>模仿游戏让裁判隔着电传打字机盘问一台机器和一个真人，裁判分不出，就算机器会思考。</li>
+<li>行为判据把举证责任翻给否定方：坚持机器不会思考，就得指出它在哪一句话上露了马脚。</li>
+<li>全文逐条反驳九种反对意见，锋芒指向人类对自身智力的过度自信和对机器的狭隘想象。</li>
+<li>洛夫莱斯说机器不能创造新东西，回应是：机器常让人吃惊，惊喜往往只是我们没算到后果。</li>
+<li>与其硬编成人心智，不如造一台「小孩机器」用奖惩和经验去教育，这是机器学习的思想先声。</li>
+<li>图灵预言约 2000 年，普通裁判盘问五分钟后，正确认出机器的概率不会超过 70%。</li>
+<li>塞尔的中文房间指出会装不等于真懂，图灵测试测的更像「像不像人」，而非智能本身。</li>
+<li>人天生过度赋予心智，几个移动的三角形都会被看成在追逐，ELIZA 也因此骗过了不少人。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的九种反对与原文措辞，再去翻 Turing 1950 原文。</footer>
 </div>

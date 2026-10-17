@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 56</p>
@@ -198,17 +206,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Not every application can lower harvest</strong>: a partial/stale answer is fine for search but wrong for an account balance or an inventory decrement — better to answer nothing. The framework fits "soft" use cases best.</li>
 <li><strong>Informal</strong>: as a position paper it offers intuition and a framework, not proofs; the rigor came later with the CAP formalization.</li>
 </ul>
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: split "availability" into yield (how many answered) and harvest (how complete), two measurable, tradeable quantities, turning failure from "hold up / fall over" into "how to degrade gracefully."</p>
-<p>② The pain: at scale failure is constant; binary availability misses the "mostly fine, a few broken" middle, uptime underweights peak failure, and strong consistency and high availability can't coexist under partition.</p>
-<p>③ yield = completed / received (weighted by requests, so failure costs more at peak); harvest = data covered / full data (admits partial answers).</p>
-<p>④ DQ principle: at saturation <code>D×Q≈constant</code> (capacity conserved); a failure cuts a chunk of DQ, and you choose to take it from D (lower harvest) or Q (lower yield).</p>
-<p>⑤ Replication keeps harvest, loses capacity (yield); partitioning keeps yield, loses harvest; at saturation both have equal total DQ — the difference is which quantity you keep.</p>
-<p>⑥ Architectural move: decompose into orthogonal, independently-failing subsystems, and pen strong-consistency hard state into the smallest range, the rest soft state.</p>
-<p>⑦ Impact: the direct ancestor of the CAP theorem; gave "graceful degradation / eventual consistency / success-rate SLO" a theoretical name.</p>
-<p>⑧ Limits: harvest/yield never became common vocabulary; DQ is only a saturation approximation; CAP was later called too coarse (PACELC completes it); hard use cases can't lower harvest.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolutionary biology · the Smith–Fretwell size–number trade-off</b>: Smith and Fretwell's 1974 model says that with a fixed reproductive budget, a parent can only split one pie between many offspring and well-provisioned ones — the same shape as D×Q≈constant. The difference: selection tunes that split over generations; DQ is chosen by an engineer in the middle of an outage.</li>
+<li><b>Neuroscience · the zoom-lens model of attention</b>: Eriksen and St. James proposed in 1986 that the attended region can widen or narrow, but the wider it gets, the coarser each item inside is processed — coverage and detail share a fixed budget, just like DQ. The difference: the brain refocuses all the time, not only when something breaks.</li>
+<li><b>Economics / psychology · Herbert Simon's satisficing</b>: Simon argued in 1956 that people, short on time and computation, take the first option that is good enough instead of the best one; an answer at under 100% harvest is satisficing done by a system. The difference: Simon describes a permanent cognitive limit, the paper a temporary concession under failure.</li>
+<li><b>Biology · Weismann's germline–soma separation</b>: Weismann's 1892 germ-plasm theory entrusts heredity to a small germ line, while the rest of the body is disposable and rebuilt from that line each generation — exactly the layout of locking hard state in the smallest cage and making everything else rebuildable soft state. The difference: changes in the soma never write back to the germ line, whereas a system's soft state often has to sync back to its hard state.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Availability should not be an on/off switch; it splits into two measurable, tradeable quantities, yield and harvest.</li>
+<li>At scale failure is constant, binary availability misses the "mostly fine, a few broken" middle, and uptime underweights peak-hour failures.</li>
+<li>Under a network partition strong consistency and high availability cannot coexist, so the thing to design is how to degrade gracefully.</li>
+<li>Yield is the fraction of requests completed; because it is weighted by requests, a failure at peak load costs more.</li>
+<li>Harvest is the fraction of the full data reflected in an answer, which admits a partial answer as still an answer.</li>
+<li>The DQ principle says that at saturation data per query times queries per second is roughly constant, so a failure forces a cut to D or to Q.</li>
+<li>Under failure, replication keeps harvest and loses capacity, partitioning keeps yield and loses harvest, and at saturation both have the same total DQ.</li>
+<li>Decompose a service into orthogonal, independently failing subsystems, keep strongly consistent hard state as small as possible, and make the rest soft state.</li>
+<li>Fox and Brewer's 1999 HotOS position paper is the direct ancestor of the CAP theorem and gave graceful degradation and eventual consistency a theoretical footing.</li>
+<li>Lowering harvest only suits soft workloads like search; for account balances or inventory decrements an incomplete answer is simply wrong.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full argument and more examples, go to the original.</footer>
 </div>

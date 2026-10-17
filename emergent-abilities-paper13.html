@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 13</p>
@@ -118,17 +126,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只是观察、未解释机理</strong>：论文明确把「为什么会涌现」留作开放问题，没有给出机制层面的答案；后续争论也主要在「现象是否为真」，机理仍不清楚。</li>
 <li><strong>可比性有限</strong>：跨模型族比较时，数据、训练细节、评测口径难以完全对齐，个别曲线的陡峭程度需谨慎解读。</li>
 </ul>
-<h2 data-tts="c383b58ca9e09428">要点</h2>
-<div class="tl">
-<p>① 一句话：某些能力小模型完全没有、大到某个门槛才「突然」出现且事先不可预测，作者命名为「涌现能力」。</p>
-<p>② 痛点：规模定律说「整体误差平滑可预测下降」，但落到一项项具体任务上，成绩常是「长平线 + 陡坎」，无法外推。</p>
-<p>③ 定义：不在小模型、只在大模型；关键是相变式形状 + 不可预测，而非单纯「大模型更强」。</p>
-<p>④ 方法：同族不同大小的一排模型，用统一少样本提示做同批任务，横轴放算力/参数、纵轴放准确率，反复得到「平线 + 陡坎」。</p>
-<p>⑤ 连技巧也涌现：思维链、指令微调在小模型无效甚至有害，够大才生效。</p>
-<p>⑥ 结果：十几项任务（算术、冷门语言问答、MMLU 等）在约 10²²～10²⁴ FLOPs 一带涌现；跨 GPT-3、LaMDA、Gopher、Chinchilla、PaLM 反复出现。</p>
-<p>⑦ 影响：把「涌现」推成通用语汇，既强化「继续 scale」的动机，也点燃对不可预测风险的安全担忧，并抬高了逐任务评测的重要性。</p>
-<p>⑧ 局限：Schaeffer 等 2023「海市蜃楼」反驳——很多突变是非连续指标造的假象，换连续指标即平滑；「不可预测」被削弱；论文只观察、未解释机理。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · 间断平衡</b>：Eldredge 与 Gould 1972 年提出，物种在化石记录里长期停滞、新种却「突然」出现，和涌现曲线的「长平线 + 陡坎」同形。连争论都像：有人质疑那些跳跃部分出自化石记录太稀疏；不像在于，进化的「突然」仍以数万年计。</li>
+<li><b>心理学 · 学习曲线</b>：Gallistel 等 2004 年在 PNAS 上重新分析动物条件反射数据，发现单个个体的学习多是一步跳上去，平滑上升的群体曲线是把不同时刻的跳平均出来的。这和「海市蜃楼」之争恰成镜像：那边是粗指标把渐变显成突变，这边是平均把突变抹成渐变——量尺两头都会骗人。</li>
+<li><b>哲学 · 弱涌现与强涌现</b>：Chalmers 区分两种涌现：弱涌现原则上可从底层推出、只是出乎意料；强涌现原则上推不出。本文以「无法从小模型外推」定义涌现，落在弱涌现一侧，说的是观察者的预测失败，而非出现了新规律。</li>
+<li><b>复杂性科学 · 随机图的巨连通分量</b>：Erdős 与 Rényi 1960 年证明，随机图平均每点连边数越过 1，一个占全体相当比例的连通块会骤然出现。论文猜「多个子步骤全部到位才突然会」，结构与此相近；不像在于，随机图的临界点能精确算出，模型的门槛只能事后量。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>涌现能力指在小模型上完全不存在、模型规模越过某个门槛后才突然出现的能力。</li>
+<li>Jason Wei 等人 2022 年的这篇论文不提新模型，而是给这一现象正式命名并系统整理证据。</li>
+<li>规模定律描述的平均损失平滑可预测，但落到一项项具体任务上，成绩常是「长平线加陡坎」。</li>
+<li>涌现的定义性特征是不可预测：单看小模型的平线段，无法外推出大模型会不会跳、在哪跳。</li>
+<li>测量方法是让同族不同大小的模型用统一少样本提示做同一批任务，以训练算力为横轴画准确率。</li>
+<li>算术、波斯语问答、MMLU 等十几项任务在约 10²²～10²⁴ 训练 FLOPs 一带出现涌现，且跨多个模型族复现。</li>
+<li>思维链和指令微调这类提示技巧在小模型上无效甚至有害，模型足够大才开始生效。</li>
+<li>涌现图景既强化了继续扩大模型的动机，也让安全研究者担心有害能力会不打招呼地冒出来。</li>
+<li>Schaeffer 等人 2023 年指出，许多「突变」是全对才算对的指标造成的假象，换连续指标曲线就变平滑。</li>
+<li>动物学习研究里，平滑的群体曲线常是把个体的一步跳跃平均出来的，可见量尺两头都可能误导。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整任务清单与每条曲线，再去翻原文。</footer>
 </div>

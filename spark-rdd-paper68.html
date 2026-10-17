@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 68</p>
@@ -218,16 +226,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>内存是硬约束</strong>：工作集放不进集群内存时优势迅速消退；JVM 的对象开销与 GC 压力也是长期痛点，这直接催生了后来 Spark 的 Tungsten（堆外内存 + 代码生成）改造。</li>
 <li><strong>RDD 接口对优化器是黑箱</strong>：算子里装的是任意用户函数，引擎看不透语义，做不了谓词下推、列裁剪这类关系式优化。<strong>Spark 自己后来也承认了这点</strong>——2015 年起 DataFrame / Dataset + Catalyst 成为推荐接口，裸 RDD API 退居底层。某种意义上，RDD 的成功正是「通用到足以长出更高层抽象」。</li>
 </ul>
-<h2 data-tts="5a2b3ed1888d4a6d">要点</h2>
-<div class="tl">
-<p>① 一句话：RDD = 只读 + 分区 + 只能由粗粒度确定性变换生成的内存数据集；容错靠记「血统」并重算，而非复制数据。</p>
-<p>② 痛点：MapReduce 每阶段必经 HDFS，迭代算法与交互式查询被反复落盘拖死；而放进内存又撞上「细粒度更新只能靠复制或日志容错」的老墙。</p>
-<p>③ 关键交换：<strong>主动放弃细粒度写</strong>，于是「怎么算出来的」几十字节就记得下——容错从「存数据」变成「存配方」。前提是不可变 + 变换确定，重算的分区才与丢失的逐字节等价。</p>
-<p>④ 窄依赖（一对一）可本机流水线、重算便宜；宽依赖要 shuffle、重算可能波及上游全部——调度器就在宽依赖处切「阶段」。</p>
-<p>⑤ 接口：变换惰性、动作触发，引擎因此拿到整张 DAG 做优化；<code>persist()</code> 指定缓存级别，内存不足按分区 LRU 淘汰、淘汰了照血统重算；血统太长则打检查点截断，且因只读可后台异步写、无需停机快照。</p>
-<p>⑥ 结果：100 台机器上迭代式 ML 比 Hadoop 快最多约 20 倍；1 TB 缓存后交互查询 5–7 秒；故障只拖慢出事那一轮；内存不足时平滑退化。</p>
-<p>⑦ 影响与局限：Spark 全家桶的地基，「重算代替复制」成为分布式容错的正统路线之一；但不适合细粒度更新，长血统 + 宽依赖恢复昂贵、自动检查点未解，吃内存、JVM 开销大，算子对优化器是黑箱——后被 DataFrame / Catalyst 取代为推荐接口。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>佛学 · 缘起</b>：「此有故彼有」——一法没有独立自性，只由因缘生起；RDD 也不「独立存在」，它就是「父 RDD + 一个变换」这条来历。不像在哪：缘起是无始、相互依待的网，血统却是有根（稳定存储里的原始数据）、单向无环的 DAG。</li>
+<li><b>神经科学 · 记忆再巩固（reconsolidation）</b>：大脑存下的更像重建记忆的线索而非录像，每次回忆都重新生成一遍，这很像照血统重算。但最关键处恰好相反：回忆在重新激活时可能被改写，结果不再相同；RDD 的全部前提，正是变换确定、重算出的分区与丢失的那块逐字节等价。</li>
+<li><b>生物 · 美西螈断肢再生</b>：美西螈（axolotl）断了腿，伤口处细胞重跑一段发育程序，只长回缺掉的那截，身体其他部分不动——正像只重算丢失的分区。不像：再生的「配方」分散写在每个细胞的基因组里，RDD 的血统则集中由调度器掌握。</li>
+<li><b>哲学 · 忒修斯之船</b>：普鲁塔克记下的老问题——木板全换过一遍，还是原来那条船吗？RDD 给了个工程答案：输入不变、配方不变，重算出的分区就「是」原来那块。不像：忒修斯之船追问的是材料的延续，RDD 根本不认材料，只认生成过程。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>迭代算法和交互式查询在 MapReduce 上很慢，因为每一轮都要经 HDFS 读写硬盘并做三副本。</li>
+<li>已有的集群内存系统允许细粒度更新，只能靠跨机器复制数据或记更新日志来容错，代价太高。</li>
+<li>RDD 是只读、分区、只能由粗粒度确定性变换生成的数据集，Zaharia 等人借此主动放弃了细粒度写。</li>
+<li>每个 RDD 只记「父 RDD + 变换」这条血统，出故障时只重算丢失的分区，平时不必存数据副本。</li>
+<li>不可变加确定性变换是血统容错的前提，它保证重算出的分区与丢失的那块逐字节相同。</li>
+<li>窄依赖可在本机流水线执行、重算便宜，宽依赖要跨机器 shuffle，调度器就在宽依赖处切分阶段。</li>
+<li>RDD 的变换是惰性的、动作才触发计算，persist() 让反复用的数据常驻内存，被淘汰就照血统重算。</li>
+<li>血统又长又含宽依赖时要打检查点截断；因为 RDD 只读，检查点可以在后台异步写。</li>
+<li>论文实验里 Spark 做迭代式机器学习比 Hadoop 快最多约 20 倍，1 TB 缓存后交互查询只需 5–7 秒。</li>
+<li>RDD 成了 Spark 生态的地基，但它不适合细粒度更新、对优化器是黑箱，后被 DataFrame 取代为推荐接口。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的调度器实现与全部实验配置，再去翻原文。</footer>
 </div>

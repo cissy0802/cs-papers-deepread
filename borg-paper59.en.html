@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 59</p>
@@ -215,16 +223,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The conclusions may not travel</strong>: Borg's gains lean heavily on Google's <strong>homogeneous environment</strong> — one RPC framework, one monitoring and naming stack, a controlled software base, a limited set of machine types. On a public cloud with wildly varied stacks and mutually distrustful tenants, the safe envelope for aggressive mixing is much narrower.</li>
 <li><strong>Not reproducible, and told from the winning side</strong>: the system is closed-source and the data comes from Google's internal cells, so outsiders can neither verify nor compare; and while the utilization and scale numbers are generous, the paper is comparatively reticent about batch queueing delays and the wasted recomputation caused by repeated preemption.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one sentence: users submit a declarative "what I want" spec and Borg picks machines, starts, watches and restarts the work inside a cell of tens of thousands — allocating a datacenter as if it were one machine.</p>
-<p>② The pain: fleets carved into disjoint pools, each sized for its own peak and unable to lend its idle capacity; at ten-thousand-machine scale, failure is routine and manual operations can't keep up.</p>
-<p>③ Mechanism one, mixing: online services and batch work on the same machines, with priority bands and preemption keeping the former first; production tasks never preempt each other, to avoid cascades.</p>
-<p>④ Mechanism two, reclamation: limit (requested) / usage (measured) / reservation (measured + margin); the band between reservation and limit is lent to low-priority work, and about 20% of the workload runs there.</p>
-<p>⑤ Scheduling: feasibility checking then scoring (a hybrid of spreading and best fit), made computable by score caching, equivalence classes and relaxed randomization; median task startup 25s, 80% of it package installation. Supporting parts: allocs (pod ancestors), BNS naming, cgroups isolation.</p>
-<p>⑥ Results (measured by cell compaction): segregating prod from non-prod costs 20–30% more machines; coarsening resource requests costs 30–50% more; big cells beat small ones; median cell about 10,000 machines.</p>
-<p>⑦ Impact and limits: the direct blueprint for Kubernetes (alloc→pod, declarative control loop, kubelet); but the authors themselves call the job-only grouping and one-IP-per-machine mistakes, container isolation is incomplete, and the gains lean on Google's homogeneous environment in ways a public cloud may not be able to copy.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Ecology · temporal niche partitioning</b>: Two species of spiny mice share the same rocky slopes in Israel: the common spiny mouse forages at night, the golden spiny mouse by day — and when the common species is experimentally removed, the golden one shifts into the night. That is the same shape as online and batch work splitting one fleet by busy and quiet hours. The difference: the mice's division of labour is slowly pressed out by competition with no referee, whereas Borg's yielding is decreed by a master, by explicit priority, within seconds.</li>
+<li><b>Neuroscience · cortical remapping</b>: Merzenich and colleagues reported in 1984 that after a digit was amputated in adult owl monkeys, the neighbouring digits gradually took over the somatosensory cortex that had served it — idle territory gets handed to the neighbours, much as Borg reclaims capacity that was requested but unused. Unlike Borg, the takeover takes weeks to months; Borg claws resources back the moment usage rises.</li>
+<li><b>Economics · airline overbooking</b>: Airlines sell more tickets than seats based on historical no-show rates — the same bet as Borg overcommitting on measured usage. In 1968 Julian Simon proposed bidding for volunteers instead of bumping people arbitrarily, adopted from 1978. The difference: bumped flyers get paid; a preempted batch task gets only cheap quota.</li>
+<li><b>Economics · Hayek on dispersed knowledge</b>: In "The Use of Knowledge in Society" (1945), Hayek argued that a central planner can never gather the local knowledge scattered across a society. Borgmaster is a central planner that works, because polling every machine every few seconds hands it that local knowledge — and, like Hayek's markets, it trusts observed behaviour over self-reported needs.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Borg allocates a cell of tens of thousands of machines as one computer: users submit a declarative spec, and Borg places, starts, monitors and restarts the work.</li>
+<li>The old approach carved fleets into disjoint pools, each sized for its own peak, with idle capacity that could not be lent.</li>
+<li>Packing latency-sensitive online services and throughput-oriented batch jobs onto the same machines is the main engine of Borg's utilization gains.</li>
+<li>When resources run short, higher-priority tasks preempt lower-priority ones, but production tasks never preempt each other, to avoid cascades.</li>
+<li>Quota decides how much a team may request at submission, priority decides who yields at runtime; separating them stops everyone from marking work top priority.</li>
+<li>Reclamation trusts measured usage: the gap between reservation and limit is lent to low-priority work, and about 20% of the workload runs there.</li>
+<li>The scheduler trades "optimal" for "computable" via score caching, equivalence classes and relaxed randomization; median task startup is about 25 seconds, 80% of it package installation.</li>
+<li>Cell compaction in Fauxmaster shows segregating prod from non-prod costs 20–30% more machines, and coarse rounding of requests costs 30–50% more.</li>
+<li>Borg's limits include one IP per machine, jobs as the only grouping, imperfect container isolation, and gains that lean on Google's homogeneous environment.</li>
+<li>Resource reclamation is the same bet as airline overbooking: oversell on measured history rather than declared demand, and let whoever gets bumped bear the cost.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full scheduling policy details and all the charts, go to the original.</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 35</p>
@@ -160,17 +168,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The Web didn't fully deliver his trails either</strong>: Web links are mostly <strong>one-way and prone to breaking</strong>; Ted Nelson, in turn, criticized the Web for discarding the <strong>two-way links and version tracking</strong> that Xanadu (following Bush) had envisioned — in a sense, Bush's "trails" were more careful than today's hyperlink.</li>
 <li><strong>It is, in the end, a vision, not engineering</strong>: the Memex was never built and its mechanical feasibility is doubtful; its value lies in the accuracy of its foresight, not the completeness of its execution.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: in 1945 Bush proposed a personal device, the Memex, to store vast records compressed and, via "associative indexing," to string items into named, shareable "trails" — the intellectual source of hypertext and the Web.</p>
-<p>② The pain: post-war knowledge explosion made storing easy, finding hard, and connecting harder; hierarchical filing ("one item, one slot; trace down class by class") runs contrary to the mind's associative way.</p>
-<p>③ Core mechanism: let the user tie any two items together, so viewing one, a button auto-brings the other; a string of ties makes a trail — namable, savable, re-walkable, and shareable.</p>
-<p>④ Why so: the hard part of retrieval is "by what relation to connect," not "can we store it"; trails freeze the intellectual labor of connecting for reuse and for passing on.</p>
-<p>⑤ Companion ideas: microfilm compression (Britannica to a matchbox), the Memex desk (screens + keyboard + film store + dry-photo platen), speech-to-text, wearable camera, the trailblazer profession.</p>
-<p>⑥ Nature of the "results": no experiments, no data — a vision; judged by prediction hit rate, and most of its ideas were later realized.</p>
-<p>⑦ Impact: relayed through Engelbart (mouse, NLS, the 1968 demo) and Ted Nelson (coined "hypertext," Xanadu), it finally landed in Berners-Lee's Web as the hyperlink.</p>
-<p>⑧ Limits: wrong medium (analog film, not digital), all-manual trails with no automatic search, no network concept, the Web never delivered its two-way links, and it remained a vision rather than engineering.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Philosophy · Clark and Chalmers's "extended mind"</b>: in 1998 they imagined Otto, a man with memory loss who relies on a notebook, and argued that because the notebook does the job memory does for others, it is part of his mind. The Memex, defined as an "enlarged intimate supplement" to memory, is Otto's notebook engineered. The difference: they ask where the mind is; Bush only asks how to find things.</li>
+<li><b>Philosophy · Deleuze and Guattari's "rhizome"</b>: A Thousand Plateaus (1980) sets branching, tree-like "arborescent" thought against the rhizome, where any point can connect to any other, almost a restatement of hierarchical filing versus associative trails. But a rhizome has no beginning or end, while a Bush trail is a directed, named sequence.</li>
+<li><b>Biology · Grassé's stigmergy</b>: in 1959 Grassé saw that termites coordinate without talking: traces left by earlier workers prompt later ones to keep building. Ant pheromone trails work the same way, growing stronger with use and evaporating without it. Bush's trailblazers leave trails for others to follow, the same structure; yet Memex trails never strengthen or fade on their own and must be kept by hand, which is exactly where they later lost to automatic search.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society"</b>: published the same year, it argues that knowledge is scattered across countless people, no central planner can gather it, and prices aggregate it automatically. Both men confront dispersed knowledge, but Bush relies on hand-cut trails and Hayek on an undesigned mechanism; search engines turned out closer to Hayek.</li>
+<li><b>Buddhism · Indra's net in the Huayan school</b>: a jewel sits at every knot of the net, and each reflects all the others, the one containing the all. That net is fully connected and symmetric; Memex trails are sparse, directed and personal, so each link is itself one reader's judgment.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>In 1945 Vannevar Bush published "As We May Think" in The Atlantic, imagining a personal knowledge machine called the Memex.</li>
+<li>After the war the real bottleneck of exploding knowledge was not storage but finding records and connecting them.</li>
+<li>Hierarchical filing puts each item in a single slot traced down level by level, the opposite of how the mind jumps by association.</li>
+<li>The Memex is a desk holding a microfilm library, with slanted screens for reading and a platen for photographing your own notes.</li>
+<li>Associative indexing lets a user tie any two items together, so viewing one brings up the other at a button press.</li>
+<li>A chain of such ties forms a trail that can be named, saved, re-walked and copied to others, the prototype of the hyperlink.</li>
+<li>Trails preserve the intellectual labor of connecting material, which led Bush to predict a new profession of trailblazers.</li>
+<li>The essay has no experiments and built no machine, so it can only be judged by how many of its predictions came true.</li>
+<li>Relayed through Engelbart's NLS and Ted Nelson's hypertext, the Memex idea finally landed as the hyperlink of the World Wide Web.</li>
+<li>Analog film, hand-made trails and no notion of a network let automatic search win, much as Hayek's spontaneous order beats central planning.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Finish this page ≈ hold the paper's core; for Bush's own words and the famous lines quoted here, go read The Atlantic Monthly, July 1945.</footer>
 </div>

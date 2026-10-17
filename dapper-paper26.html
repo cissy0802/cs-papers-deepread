@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 26</p>
@@ -203,17 +211,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>看聚合会淹没个体</strong>：把大量 trace 汇总成统计视图便于看全局，但也容易把单个诡异的离群请求平均掉；而排障时要的往往正是那一个离群点。</li>
 <li><strong>追踪 ≠ 自动诊断</strong>：Dapper 忠实地把「发生了什么、各段多久」摆出来，但「为什么慢、根因是什么」仍要人去解读——它是一副更好的眼镜，不是自动的医生。</li>
 </ul>
-<h2 data-tts="9adc15dbd106dbf4">要点</h2>
-<div class="tl">
-<p>① 一句话：给每次请求发一个全局 trace id 沿调用链传递，把每段工作记成带父子关系的 span，拼成一棵调用树，从「单次请求」视角看清跨上千台机器的系统。</p>
-<p>② 痛点：一次请求扇出到成百上千台机器，单机日志按机器组织，没人能拼出一次请求的完整因果链——慢了、错了都不知道卡在哪。</p>
-<p>③ 三原则：对应用透明、开销极低、可全公司规模部署——后面所有设计都为满足这三条。</p>
-<p>④ 数据模型：trace（一次请求）= span 树；span 带 trace id / span id / parent id + cs/sr/ss/cr 四个时间戳，把耗时拆成网络在途 vs 服务端处理。</p>
-<p>⑤ 透明的秘诀：把埋点做进全公司共用的 RPC / 线程 / 控制流公共库，trace id 靠线程本地存储 + RPC 消息头自动传递，业务代码零改动。</p>
-<p>⑥ 低开销的秘诀：抽样（约 1/1024）压运行时开销 + 带外异步采集（写本地日志→守护进程→BigTable，一 trace 一行）不占请求关键路径。</p>
-<p>⑦ 影响：定义了 trace/span/上下文传递范式，直接催生 Zipkin、Jaeger、OpenTelemetry，是「可观测性」三支柱之一的地基。</p>
-<p>⑧ 局限：抽样漏掉罕见事件；透明依赖同构基础设施；因果模型偏 RPC 树、对异步/批处理模糊；看聚合淹没离群；追踪不等于自动诊断根因。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物化学 · Calvin 的碳-14 示踪</b>：1946 年起 Melvin Calvin 往小球藻里通入含碳-14 的 CO₂，在不同时刻叫停代谢、看标记落在哪些分子上，拼出光合作用的碳路径，获 1961 年诺贝尔化学奖。trace id 就是这枚同位素：对系统几乎「透明」，随物质一路流动。不像在：示踪看的是一大群分子的统计，Dapper 能还原单次请求的整棵调用树。</li>
+<li><b>神经科学 · Golgi 染色</b>：Golgi 1873 年发明的「黑色反应」只随机染上约 1–5% 的神经元，正因稀疏，Cajal 才看清单个神经元的完整枝杈。Dapper 约 1/1024 的抽样同理：少记反而看得清。不像在：Golgi 染上哪些至今说不清，Dapper 的抽样率可调。</li>
+<li><b>哲学 · 休谟论因果</b>：休谟说我们只看得到事件「恒常相随」，看不到因果本身。黑盒法从日志的先后共现推断谁调了谁，正是休谟式处境；标注法给每个 span 贴上父 span 的标签，等于把因果直接写进数据——自然界可不发这种标签。</li>
+<li><b>经济学 · 哈耶克的知识问题</b>：哈耶克 1945 年《知识在社会中的运用》指出，知识分散在无数人手里，没有谁掌握全貌；Google 里「没有任何工程师了解全部环节」是同一处境。不像在：哈耶克认为价格体系让人不必看全貌也能协调，Dapper 偏要把全貌拼出来给人看。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Dapper 是 Google 的分布式追踪系统，从「单次请求」的视角串起横跨上千台机器的工作。</li>
+<li>一次搜索请求会扇出到上千台机器，按机器组织的日志拼不出单次请求的完整因果链。</li>
+<li>Dapper 给自己定了三条硬约束：对应用透明、开销极低、能在全公司规模部署。</li>
+<li>一次请求记成一个 trace，即一棵由带父子关系和时间戳的 span 组成的树。</li>
+<li>追踪选标注法而非黑盒推断：请求带着 trace id 走，因果关系精确，代价是要埋点。</li>
+<li>埋点只做进全公司共用的 RPC 和线程库，trace id 自动传递，业务代码零改动。</li>
+<li>约 1/1024 的抽样加上带外异步采集，让追踪对线上延迟和吞吐几乎没有影响。</li>
+<li>Dapper 的 trace、span、上下文传递范式被 Zipkin、Jaeger 和 OpenTelemetry 继承，成为可观测性的地基。</li>
+<li>抽样会漏掉罕见事件，透明性依赖同构基础设施，追踪也不能自动诊断根因。</li>
+<li>稀疏抽样让结构可读，就像 Golgi 染色只染少数神经元，单个神经元的全貌才看得清。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的实现细节与使用案例，再去翻原文。</footer>
 </div>

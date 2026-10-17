@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPERS DEEP-READ · PAPER 52</p>
@@ -169,17 +177,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>A difference in the kind of reduction</strong>: Cook used the broader polynomial-time Turing reduction; after Karp the field mostly switched to the stricter <em>many-one reduction</em>, so the two notions of "completeness" differ in detail.</li>
 <li><strong>Independent discovery and credit</strong>: Levin in the Soviet Union obtained an equivalent result on "universal search problems" almost simultaneously (arguably earlier), long overlooked in the West — hence the proper name <strong>Cook–Levin theorem</strong>.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One line: Cook defined NP, used polynomial reductions to compare difficulty, and proved SAT is the first NP-complete problem.</p>
-<p>② Pain point: even within the computable lies a vast gulf — some problems admit only "try every possibility," yet there was no precise notion of "harder."</p>
-<p>③ Two classes: P = efficiently solvable; NP = answers efficiently verifiable (equivalently, nondeterministic polynomial time); clearly P⊆NP — is P=NP?</p>
-<p>④ Yardstick: polynomial-time reduction <code>A ≤ B</code> — "if B is easy so is A" — giving "hardest" its first definition.</p>
-<p>⑤ Completeness: NP-complete = the hardest representative of NP; solve any one and all of NP collapses into P.</p>
-<p>⑥ Cook's theorem: SAT is NP-complete; proved by encoding "does a given nondeterministic machine accept?" as a satisfiability formula (run tableau → boolean clauses).</p>
-<p>⑦ Impact: Karp promptly found 21, now thousands; a signpost for algorithm design, birth of SAT solvers; P vs NP a Millennium Problem, Cook a Turing laureate.</p>
-<p>⑧ Limits: P vs NP still open; NP-completeness is worst-case, not always hard in practice; polynomial ≠ always practical; Levin discovered it independently (Cook–Levin).</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Statistical physics · the random 3-SAT phase transition</b>: Kirkpatrick and Selman (Science, 1994) used finite-size scaling from statistical physics to study random k-SAT: once the ratio of clauses to variables crosses a critical value (about 4.2 for 3-SAT), formulas flip from almost always satisfiable to almost never, and the instances solvers struggle with cluster right at that transition, like water freezing at zero. The difference: Cook's hardness is a verdict on the worst instance, while the phase transition describes the statistics of random ones, which is exactly why "NP-complete" does not mean "unsolvable in practice."</li>
+<li><b>Quantum mechanics · superposition and Grover search</b>: a nondeterministic machine "branching to try every possibility at once" looks a lot like quantum superposition. Yet Bennett, Bernstein, Brassard and Vazirani (1997) showed that for black-box search a quantum computer can only cut brute force down to its square root, a bound Grover's algorithm meets exactly. Unlike nondeterminism, measuring a superposition collapses it to a random branch; you cannot simply pick out the accepting one.</li>
+<li><b>Biology · Levinthal's paradox</b>: Levinthal (1969) noted that a protein trying every conformation in turn would take longer than the age of the universe to fold, yet real proteins fold in seconds or less; Berger and Leighton (1998) proved that folding in the simplified HP lattice model is NP-complete. Both face an exponential search space, but evolution has kept sequences with funnel-shaped energy landscapes, so nature never meets the worst case.</li>
+<li><b>Philosophy of science · discovery vs justification</b>: Reichenbach (<i>Experience and Prediction</i>, 1938) separated how a hypothesis is thought up from how it is justified. NP is a quantified version of that line: checking a certificate is easy, finding one may be very hard. Where they part ways: Reichenbach handed discovery to psychology and left it unanalyzed, while complexity theory turns "how much harder is finding than checking" into a provable question.</li>
+<li><b>Economics · the complexity of Nash equilibrium</b>: starting in 2006, Daskalakis, Goldberg and Papadimitriou used the same reduction-and-completeness toolkit to show that computing a Nash equilibrium is PPAD-complete, a cold shower for the assumption that markets simply compute their equilibria. Unlike SAT, an equilibrium is guaranteed to exist by Nash's theorem, so the question is never "is there one?", which places it in PPAD rather than among the NP-complete problems.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Cook's 1971 paper gave "intractable" its first precise definition and turned P versus NP into a rigorous mathematical question.</li>
+<li>By the 1960s a vast gulf remained inside the computable: some problems seemed to need brute force, yet "harder" had no precise meaning.</li>
+<li>P is the class of decision problems solvable in polynomial time; NP is the class whose answers can be verified in polynomial time.</li>
+<li>A polynomial-time reduction <code>A ≤ B</code> means "if B is easy, so is A," giving a yardstick for comparing difficulty.</li>
+<li>NP-complete problems are the hardest in NP: solve any single one efficiently and all of NP collapses into P.</li>
+<li>The Cook–Levin theorem shows SAT is the first NP-complete problem; Levin reached an equivalent result independently in the Soviet Union.</li>
+<li>The proof lays a nondeterministic Turing machine's run out as a tableau and pins down "valid start, legal steps, acceptance" with boolean clauses.</li>
+<li>In 1972 Karp used the same reductions to show 21 classic problems NP-complete; thousands are known today.</li>
+<li>NP-completeness describes only the worst case: modern SAT solvers routinely crack typical instances, and P versus NP is still open.</li>
+<li>The gap between easy verification and hard discovery reads as a quantified version of Reichenbach's split between discovery and justification.</li>
+</ol>
 </div>
 <footer>IT Papers Deep-Read · Finish this page ≈ grasp the paper's core; for the full formal definitions and proof details, go read the original.</footer>
 </div>

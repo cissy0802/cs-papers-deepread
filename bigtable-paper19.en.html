@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 19</p>
@@ -253,19 +261,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The original is single-datacenter</strong>: the Bigtable of the paper works mainly within one cluster; cross-datacenter replication and global consistency came later (Megastore, Spanner).</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: Google's distributed structured-data store, organizing data as a "sparse, sorted, multidimensional table" that spans thousands of machines and grows to petabytes, storing files on GFS and coordinating via Chubby.</p>
-<p>② Data model: <code>(row key, column, timestamp) → byte value</code>. Rows in <strong>lexicographic order</strong>, single-row read/write <strong>atomic</strong>; columns in <strong>families</strong> (the access-control unit) + unbounded qualifiers; each cell <strong>multi-version</strong>; <strong>sparse</strong> (empty cells free).</p>
-<p>③ Row key is locality: encode related data into adjacent row keys (e.g. reversed URLs), and it sits together physically for fast range scans.</p>
-<p>④ Slicing and roles: sliced by row-key range into <strong>tablets</strong> (~100–200 MB), served by many <strong>tablet servers</strong>, assigned/scheduled by a lightweight <strong>master</strong>, with clients connecting directly.</p>
-<p>⑤ Three-level addressing: <strong>Chubby → root tablet → METADATA → user tablet</strong>, B+-tree-shaped; clients cache locations, so the master stays light and never a bottleneck.</p>
-<p>⑥ Engine (LSM): write = append <strong>commit log</strong> (GFS) + insert into in-memory <strong>memtable</strong>; read = merge memtable with read-only <strong>SSTables</strong>; a full memtable is <strong>minor-compacted</strong> into an SSTable, with merging/major compaction bounding count and clearing deletes.</p>
-<p>⑦ Why fast and robust: writes are all sequential appends, no random in-place disk edits; SSTables are immutable → lock-free reads, recovery by replaying the log.</p>
-<p>⑧ Tuning: locality groups, ~10:1 compression, Bloom filters to skip seeks, two-level caching, one log per server, and near-free tablet splits via immutability.</p>
-<p>⑨ Scale: at publication, 388 internal clusters on ~24,500 tablet servers, backing Google Earth, Analytics, personalized search; a single table up to hundreds of TB.</p>
-<p>⑩ Impact and limits: the source of wide-column NoSQL (HBase, Cassandra) and LevelDB/RocksDB; but <strong>single-row transactions only, no SQL/secondary indexes</strong>, later filled in by Percolator and Spanner.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · complementary learning systems</b>: McClelland, McNaughton and O'Reilly (1995) proposed that the hippocampus records new experiences quickly, then replays them so the neocortex absorbs them slowly — the same fast-buffer-plus-slow-store shape as a memtable being compacted into SSTables. The difference: the brain extracts shared structure and drops detail as it consolidates, while compaction copies verbatim and only clears deletion markers.</li>
+<li><b>Neuroscience · somatotopic maps</b>: Penfield and Boldrey's 1937 stimulation study produced the "homunculus," where neighboring body parts sit on neighboring patches of cortex. Reversed-URL row keys play the same trick: keep related things physically adjacent. Unlike cortex, which enlarges the hands and mouth by use, row keys only sort; they don't allot space by heat.</li>
+<li><b>Philosophy · four-dimensionalism</b>: Ted Sider's <i>Four-Dimensionalism</i> (2001) argues that an object has a temporal part at every moment it exists. A Bigtable cell is likewise a stack of timestamped versions rather than one value overwritten in place. The difference: past temporal parts never vanish, whereas Bigtable garbage-collects old versions by policy.</li>
+<li><b>Business · the accounting ledger</b>: a proper ledger never erases a posted entry; a mistake gets a reversing entry and the original stays on the books. Bigtable deletes the same way, writing a deletion marker, and the old data disappears only at major compaction. The motive differs: ledgers keep the trail for auditors, Bigtable keeps files immutable for sequential writes and lock-free reads.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Bigtable is Google's distributed store for structured data, spreading one table across thousands of cheap machines and petabytes.</li>
+<li>Bigtable deliberately drops general transactions, SQL and joins, keeping only row reads, writes and range scans, in exchange for near-unlimited horizontal scale.</li>
+<li>The data model is a sparse, sorted, multidimensional map: (row key, column, timestamp) points to an uninterpreted string of bytes.</li>
+<li>Rows are kept in lexicographic order, so using reversed URLs as row keys puts pages from the same domain physically side by side.</li>
+<li>Tables are cut by row range into tablets of roughly 100–200 MB, served by many tablet servers while a light master only assigns and balances them.</li>
+<li>Three-level addressing through Chubby, the root tablet and METADATA, plus client-side caching, keeps the master off the critical path.</li>
+<li>The LSM-style engine writes only to an append-only commit log and an in-memory memtable, and reads by merging the memtable with immutable SSTables.</li>
+<li>Locality groups, roughly 10:1 compression, Bloom filters and immutable SSTables make reads cheaper and tablet splits nearly free.</li>
+<li>Bigtable seeded wide-column NoSQL such as HBase and Cassandra, but offers only single-row transactions, a gap Percolator and Spanner later filled.</li>
+<li>A memtable compacted into SSTables mirrors the hippocampus recording fast and the neocortex consolidating slowly: the same two-tier memory design.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Finish this page ≈ get the paper's core; for full implementation details and result tables, go read the original.</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 31</p>
@@ -183,17 +191,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>全序在并发事件间是任意的</strong>：一致但不「有意义」——它只保证大家排得一样，不保证符合任何现实语义。</li>
 <li><strong>物理时钟一节偏理论</strong>：真正的工程化时钟同步（NTP、GPS、原子钟、TrueTime）是几十年后的后话。</li>
 </ul>
-<h2 data-tts="89d473f7947699ac">要点</h2>
-<div class="tl">
-<p>① 一句话：分布式系统没有统一时钟，用「消息一定先发后收」定义 happens-before 偏序，再用逻辑时钟把它补成全序。</p>
-<p>② 痛点：多台机器各有会漂移的石英钟、网络延迟不定，「谁先谁后」无从判断，副本便无法就处理顺序达成一致。</p>
-<p>③ happens-before（→）：进程内先后 + 「发送→接收」+ 传递性；互不影响的事件是并发，不强分先后（偏序，呼应相对论）。</p>
-<p>④ 逻辑时钟：每进程一个计数器，本地事件 +1（IR1）、收消息取 <code>max(自己, 捎来的)+1</code>（IR2），保证有因果的号必更大——是号码牌，不是钟。</p>
-<p>⑤ 补全序：号相同就按进程编号裁决，得到人人一致的唯一顺序 ⇒。</p>
-<p>⑥ 杀手级应用：无中心分布式互斥；抽象出来就是复制状态机——同序同命令必得同状态，容错复制的通用配方。</p>
-<p>⑦ 影响：Lamport 时间戳成教科书标配，复制状态机通往 Paxos、Raft、Spanner；催生向量时钟、分布式快照、因果一致性。</p>
-<p>⑧ 局限：时钟单向（号小不代表有因果，需向量时钟）；互斥算法要 FIFO、不容错；全序在并发处任意；物理钟同步偏理论。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · Dennett 与 Kinsbourne 的「多重草稿」模型</b>：他们反对大脑里有一个「笛卡尔剧场」统一给体验盖时间戳，主张先后是各脑区从信号内容里推出来的。这和「没有全局时钟、顺序靠因果推出」是同一个结构；不像的是，大脑推出的顺序可以与事件真实到达顺序不同，Lamport 时钟则绝不违背因果。</li>
+<li><b>地质学 · Steno 的叠覆律</b>：同一处岩层下老上新，只给出相对先后、不给年份，正像进程内的事件顺序；异地岩层靠共有的标准化石对齐，好比靠消息连起两条时间线。后来的放射性定年像论文最后「物理时钟的回归」。不像的是，岩层不会互相捎时间戳。</li>
+<li><b>西方哲学 · Leibniz 的关系时间观</b>：与 Newton 的绝对时间相对，Leibniz 在与 Clarke 的通信里主张时间只是事物相继的次序，离开事件就无所谓时间。Lamport 把「时间」降格为事件的先后关系，恰是这种关系论的工程版；不像的是，Leibniz 的次序默认是全序，Lamport 承认大量事件根本不可比。</li>
+<li><b>佛学 · 缘起（pratītyasamutpāda）</b>：「此有故彼有，此生故彼生」——先后由条件依存来定，不靠外在的钟，这与 happens-before 用「能否影响」定义先后同构。不像的是，十二缘起是循环往复的，而 happens-before 是不允许成环的偏序。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>分布式系统里各机器的石英钟会漂移、网络延迟不定，单靠比物理时间无法判定事件先后。</li>
+<li>Lamport 把「谁先谁后」改问成「谁能影响谁」，用因果关系而非物理时间来定义顺序。</li>
+<li>happens-before 只由三条规则构成：进程内先后、消息先发后收、以及传递性。</li>
+<li>happens-before 是偏序：彼此影响不到的事件叫并发，硬给它们排先后反而是错的。</li>
+<li>逻辑时钟每个本地事件计数加一，收消息时跳到 max(自己, 捎来的时间戳)+1。</li>
+<li>Lamport 时间戳是号码牌而不是钟，只保证有因果的事件号码递增，不测量真实时间。</li>
+<li>号码相同时按进程编号裁决，就把偏序补成一个与因果不冲突、所有机器一致的全序。</li>
+<li>人人按同一全序执行同一串命令，确定性状态机必得同样状态，这就是复制状态机。</li>
+<li>论文中的分布式互斥算法依赖 FIFO 可靠信道且不容忍宕机，这些洞后来由 Paxos、Raft 补上。</li>
+<li>Lamport 时钟只单向成立：号小推不出有因果，精确刻画因果要靠后来的向量时钟。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整证明与物理时钟同步定理，再去翻原文。</footer>
 </div>

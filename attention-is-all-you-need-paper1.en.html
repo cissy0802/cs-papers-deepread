@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 1</p>
@@ -215,17 +223,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>"Attention weights = interpretability" is disputed</strong>: they aren't the same as feature importance, so treat them as explanations with care.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: <strong>drop RNNs and convolution, use attention alone</strong> — parallel to train, any two words one hop apart.</p>
-<p>② The pain: RNNs compute sequentially and can't parallelize; long-range dependencies travel step by step and get lost.</p>
-<p>③ Mechanism: each word makes Q/K/V; <code>softmax(QKᵀ/√dₖ)V</code> pulls in the sentence by relevance; <code>√dₖ</code> keeps softmax out of saturation and stabilizes training.</p>
-<p>④ Multi-head = several relationship types in several subspaces; positional encoding injects order; the decoder masks self-attention so it can't peek.</p>
-<p>⑤ Attention moves information, the FFN refines it; residual + layer norm make dozens of layers trainable.</p>
-<p>⑥ Results: 28.4 BLEU on En→De sets SOTA, trained in 3.5 days on 8 GPUs — better, faster, cheaper.</p>
-<p>⑦ Impact: BERT/GPT build on it; parallelism enabled scaling; "tokenize anything" unified fields — the foundation of modern AI.</p>
-<p>⑧ Limits: <strong>O(n²)</strong> on long sequences, positional encoding a stopgap, data-hungry, title oversells — feed-forward/residuals/norm/positional encoding are all indispensable.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Biased competition</b>: Desimone and Duncan (1995) argued that stimuli seen together drive neural populations that compete, and top-down goals tip the contest toward one of them. A query matching keys is the same move: what you are looking for decides who wins. Unlike: the brain's attention is capacity-limited and close to winner-take-all, while softmax still gives every word some weight.</li>
+<li><b>Neuroscience · Grid cells</b>: in 2005 the Mosers' lab found grid cells in the rat entorhinal cortex, which code position with periodic firing at several scales, spacing growing from dorsal to ventral. Sinusoidal positional encoding is the same kind of multi-scale periodic code. Unlike: grid cells tile 2D space in a triangular lattice; positional encoding is 1D and fixed by hand.</li>
+<li><b>Buddhism · Indra's net</b>: the Huayan school pictured reality as a net with a jewel at every knot, each jewel reflecting all the others. In self-attention, each word's new representation is likewise the whole sentence reflected into it. Unlike: Indra's net is symmetric and infinitely recursive; attention weighs some words heavily and others barely, runs one way, and stops after six layers.</li>
+<li><b>Philosophy of language · Saussure's "value"</b>: in the Course in General Linguistics (1916), Saussure held that a word has no meaning of its own; its value comes from how it differs from the other words in the system. Self-attention turns that into arithmetic: the same "it" gets a different representation next to "tired" than next to "wide." Unlike: Saussure meant the whole language system, while attention sees only the sentence at hand.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>The Transformer drops recurrence and convolution and models sequences with attention alone, so it trains in parallel and links any two words in one hop.</li>
+<li>RNNs must process words one at a time, leaving GPUs underused, and long-range signals fade as gradients vanish over many steps.</li>
+<li>In self-attention each word scores its query against every key in the sentence and sums the values, weighted by relevance.</li>
+<li>Multi-head attention looks at different relations, such as reference and syntax, in eight subspaces at once, and the heads specialize on their own.</li>
+<li>Attention is blind to word order, so sinusoidal positional encoding stamps each position with a multi-frequency wave code.</li>
+<li>Attention moves information between words, the feed-forward layer refines each word, and residuals plus layer norm keep deep stacks trainable.</li>
+<li>The Transformer reached 28.4 BLEU on English–German and 41.8 on English–French after 3.5 days on 8 GPUs: better, faster and cheaper.</li>
+<li>BERT and GPT are built on the Transformer; parallelism made scaling feasible, and turning everything into tokens unified many fields.</li>
+<li>Self-attention's compute and memory grow quadratically with sequence length, and without built-in inductive bias the Transformer is data-hungry.</li>
+<li>Each word's new representation is the whole sentence reflected into it, much like Indra's net in Huayan Buddhism, where every jewel mirrors all the others.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full derivations and ablations, go to the original.</footer>
 </div>

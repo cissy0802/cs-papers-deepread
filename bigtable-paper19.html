@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 19</p>
@@ -229,19 +237,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>调优是门手艺</strong>：局部性组怎么分、要不要压缩、布隆过滤器、内存组、行键怎么设计——用好 Bigtable 很吃经验，用不好性能差很多。</li>
 <li><strong>原版是单数据中心</strong>：论文里的 Bigtable 主要在单集群内工作，跨数据中心的复制与全球一致是后来（Megastore、Spanner）才补上的。</li>
 </ul>
-<h2 data-tts="02adc005754ce9f2">要点</h2>
-<div class="tl">
-<p>① 一句话：Google 的分布式结构化存储系统，把数据组织成能横跨上千台机器、长到 PB 级的「稀疏、有序、多维大表」，用 GFS 存文件、Chubby 做协调。</p>
-<p>② 数据模型：<code>(行键, 列, 时间戳) → 字节值</code>。行按行键<strong>字典序</strong>、单行读写<strong>原子</strong>；列归<strong>列族</strong>（访问控制单位）+ 无限限定词；每格<strong>多版本</strong>；<strong>稀疏</strong>（空格不占地）。</p>
-<p>③ 行键即局部性：把逻辑相关数据编成相邻行键（如网址反转），物理上就挨在一起，扫区间极快。</p>
-<p>④ 切片与角色：按行键区间切成 <strong>tablet</strong>（约 100–200 MB），由众多 <strong>tablet server</strong> 服务、轻量 <strong>master</strong> 分配调度、客户端库直连。</p>
-<p>⑤ 三级寻址：<strong>Chubby → 根 tablet → METADATA → 用户 tablet</strong>，形如 B+ 树，客户端缓存位置，master 因此轻载不成瓶颈。</p>
-<p>⑥ 引擎（LSM）：写 = 追加<strong>提交日志</strong>（GFS）+ 插入内存 <strong>memtable</strong>；读 = memtable 与只读 <strong>SSTable</strong> 合并看；memtable 满则<strong>次压实</strong>成 SSTable，另有合并/主压实控数量、清删除。</p>
-<p>⑦ 为何又快又稳：写全是顺序追加、不做随机磁盘改写；SSTable 不可变→读免锁、故障后重放日志即恢复。</p>
-<p>⑧ 精调：局部性组、约 10:1 压缩、布隆过滤器省寻道、两级缓存、每服务器一份日志、靠不可变性让 tablet 分裂近乎零成本。</p>
-<p>⑨ 规模：论文时内部 388 个集群、约 24500 台 tablet server，撑起 Google Earth、Analytics、个性化搜索等；单表可达数百 TB。</p>
-<p>⑩ 影响与局限：宽列 NoSQL（HBase、Cassandra）与 LevelDB/RocksDB 的源头；但<strong>只有单行事务、无 SQL/二级索引</strong>，后由 Percolator、Spanner 补齐。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 互补学习系统</b>：McClelland、McNaughton 与 O'Reilly 1995 年提出，海马体先快速记下新经历，再通过反复重放把它慢慢写进新皮层——和 memtable 先收、压实后固化成 SSTable 是同一种「快缓冲 + 慢长期库」的两级结构。不像在：大脑巩固时会提炼共性、丢掉细节，压实只是逐字誊写、清掉删除标记，不提炼任何规律。</li>
+<li><b>神经科学 · 躯体地形图</b>：Penfield 与 Boldrey 1937 年用术中电刺激画出「小人图」，身体上相邻的部位在皮层上也相邻。网址反转当行键是同一招：让逻辑相关的东西物理上挨着。不像在：皮层按用途放大手和嘴，行键只排序、不按热度分配空间。</li>
+<li><b>哲学 · 四维主义</b>：Sider 在 2001 年的《Four-Dimensionalism》里主张，物体在存在的每一刻都有一个「时间部分」。Bigtable 的单元格也是一摞带时间戳的版本，而不是一个被反复改写的值。不像在：哲学里过去的时间部分不会消失，Bigtable 会按策略回收旧版本。</li>
+<li><b>商业 · 会计账簿</b>：规范的账本不涂改已记的分录，记错了就补一笔冲销分录，原始记录始终留着。Bigtable 删除数据也只是写一个删除标记，旧数据要到主压实才真正消失。不像在：会计留痕是为了审计，Bigtable 不改旧文件是为了顺序写快、读免加锁。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Bigtable 是 Google 的分布式结构化存储，能把一张表摊到上千台廉价机器上、长到 PB 级。</li>
+<li>Bigtable 刻意放弃通用事务、SQL 和多表关联，只留按行读写与扫区间，换来近乎无限的横向扩展。</li>
+<li>数据模型是一张稀疏、有序的多维表：(行键, 列, 时间戳) 定位一个不被系统解释的字节值。</li>
+<li>整张表按行键字典序排列，把网址反转当行键，同一域名的网页在物理上就挨在一起。</li>
+<li>表按行键区间切成约 100–200 MB 的 tablet，由众多 tablet server 服务，master 只管分配与调度。</li>
+<li>Chubby → 根 tablet → METADATA → 用户 tablet 的三级寻址加上客户端缓存，让 master 不成瓶颈。</li>
+<li>LSM 式引擎让写入只追加提交日志和内存 memtable，读取时把 memtable 与不可变的 SSTable 合并看。</li>
+<li>局部性组、约 10:1 的压缩、布隆过滤器和 SSTable 的不可变性，让读取更省、tablet 分裂近乎零成本。</li>
+<li>Bigtable 是 HBase、Cassandra 等宽列 NoSQL 的源头，但只有单行事务，后由 Percolator 和 Spanner 补齐。</li>
+<li>memtable 先收、压实再固化成 SSTable，与海马体先记、新皮层慢慢巩固记忆是同一种两级结构。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整实现细节与实验表格，再去翻原文。</footer>
 </div>

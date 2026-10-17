@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 74</p>
@@ -247,17 +255,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Half the paper has been forgotten.</strong> The random-tree protocol was never adopted as-is — real CDNs use DNS redirection, cache hierarchies and request coalescing instead. Today almost everyone remembers only the first two words of the title.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: hash machines and data onto one ring and give each item to the first machine clockwise, so adding or removing a machine disturbs only one arc.</p>
-<p>② The pain: <code>hash(key) mod n</code> reshuffles almost everything when n changes, and clients with mismatched machine lists compute conflicting owners.</p>
-<p>③ The real contribution is defining "assigned well" first: balance, monotonicity, spread, load — the last two aimed squarely at inconsistent views, which is what "consistent" here actually means (<strong>not data consistency</strong>).</p>
-<p>④ The construction is minimal: buckets and items hash onto a <code>[0,1)</code> ring, nearest clockwise wins; monotonicity is built in, and adding the (n+1)-th bucket moves only about <code>1/(n+1)</code> of the data, all of it into the new bucket.</p>
-<p>⑤ Virtual nodes: only with <code>Θ(log C)</code> alter egos per machine is balance achievable; the by-products are multi-machine takeover on departure and capacity weighting.</p>
-<p>⑥ Random trees: a per-page cache tree generated from its name, constant fan-in, stopping at the first hit — thinning a single hot spot layer by layer. This half was largely forgotten.</p>
-<p>⑦ Impact: the shared bedrock of Akamai (founded by two of the authors), Chord, Dynamo, Cassandra, ketama and layer-7 load balancing.</p>
-<p>⑧ Limits: balances keys not heat; virtual-node metadata cost; no notion of rack or zone; rendezvous, jump and Maglev hashing each trade differently.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Economics · Schelling's focal point</b>: In <i>The Strategy of Conflict</i> (1960), Schelling asked students where and when they would meet a stranger in New York with no way to confer; most said noon at Grand Central. Consistent hashing likewise lands clients that never talk on the same answer. The difference: a focal point rides on shared cultural salience, while the hash needs no common intuition at all, only the same deterministic function.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society"</b>: Hayek argued in 1945 that no single mind holds all the information, yet dispersed local knowledge still coordinates into order. "Different lists, largely the same assignment" has that shape. Unlike prices, though, the ring rule never sends feedback and never learns.</li>
+<li><b>Neuroscience · the fruit fly's hash</b>: Dasgupta, Stevens and Navlakha argued in <i>Science</i> (2017) that the fly olfactory circuit encodes odours with a sparse random projection, a form of locality-sensitive hashing. Both divide labour by random mapping; but the fly wants similar odours to get similar codes, whereas consistent hashing only wants ownership to stay put as machines come and go.</li>
+<li><b>Behavioural ecology · hexagonal fish territories</b>: Barlow (1974) watched male Mozambique tilapia dig a near-honeycomb of territories into sand, a pattern usually modelled as a Voronoi tessellation, where a newcomer carves space only from its immediate neighbours and distant cells stay put, much like monotonicity. Unlike the ring, fish negotiate borders by fighting, and positions are not random.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>"Consistent Hashing and Random Trees" (STOC 1997) came from MIT's theory group, and Leighton and Lewin turned it into Akamai a year later.</li>
+<li>Modulo bucketing, <code>hash mod n</code>, reshuffles almost every key when the machine count changes, invalidating all caches at the moment you scale out.</li>
+<li>When clients know different lists of machines, modulo sends the same page to different caches, wasting both space and bandwidth.</li>
+<li>The paper first defines a good assignment through four properties: balance, monotonicity, spread and load, the last two aimed at inconsistent views.</li>
+<li>The "consistent" in consistent hashing means assignments agree across different views; it has nothing to do with data consistency.</li>
+<li>Hashing machines and items onto one ring, with each item going to the nearest machine clockwise, means adding machine n+1 moves only about <code>1/(n+1)</code> of the data.</li>
+<li>Balance requires scattering <code>Θ(log C)</code> virtual nodes per machine, which also spreads a departing machine's load and allows capacity weighting.</li>
+<li>Random trees give each page its own name-derived cache tree with constant fan-in, thinning a hot spot layer by layer, yet this half is largely forgotten.</li>
+<li>Consistent hashing balances keys rather than heat, virtual nodes carry metadata cost, and rendezvous, jump and Maglev hashing make different trade-offs.</li>
+<li>Getting non-communicating clients to the same answer resembles a Schelling focal point, except that a shared hash function replaces shared intuition.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · reading this page ≈ getting the core of the paper; for the full formal definitions and proofs, go to the original.</footer>
 </div>

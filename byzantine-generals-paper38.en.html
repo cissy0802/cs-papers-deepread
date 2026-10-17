@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 38</p>
@@ -190,17 +198,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>High redundancy cost</strong>: <code>3m+1</code> means tolerating <code>m</code> bad nodes needs three-times-plus the machines, far costlier than the <code>2m+1</code> for crash-only faults (as in Paxos / Raft). Many systems therefore prefer to assume only crash faults.</li>
 <li><strong>The signed version outsources the hard part</strong>: the signed-message scheme's power rests on "an unforgeable signature exists" — but building that cryptographic infrastructure and managing keys is a whole other hard problem.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one sentence: casts "how to agree when nodes may behave arbitrarily maliciously" as besieging generals with traitors, and gives the fault-tolerance bound and algorithms.</p>
-<p>② Pain point: classic fault tolerance assumes "broken = stops working," but real faults may lie, send conflicting messages, collude maliciously (Byzantine faults); honest nodes can't tell "who is faulty / who is deceiving."</p>
-<p>③ Goal: IC1 all loyal generals obey the same order; IC2 when the commander is loyal, they obey his true order.</p>
-<p>④ Oral lower bound: tolerating <code>m</code> traitors needs <code>n ≥ 3m+1</code> (traitors under one-third); three generals with one traitor is unsolvable — loyal parties receive identical messages in two cases and can't distinguish them.</p>
-<p>⑤ Algorithm <code>OM(m)</code>: recursive relaying plus majority vote, attaining the bound in <code>m+1</code> rounds, but exponential message count makes it impractical.</p>
-<p>⑥ Signed version <code>SM(m)</code>: unforgeable signatures expose lies, any number of traitors solvable, bypassing <code>3m+1</code> — at the cost of needing reliable signature infrastructure.</p>
-<p>⑦ Impact: defined the "Byzantine fault tolerance" vocabulary and the <code>3m+1</code> red line; opened PBFT, Tendermint/HotStuff, and Bitcoin and every anti-cheating consensus.</p>
-<p>⑧ Limitations: strong synchrony assumption (cf. FLP asynchronous impossibility), membership must be fixed and known, high redundancy cost, and the signed version outsources the hard part to cryptography.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Economics · Condorcet's jury theorem (1785)</b>: if each voter is right more than half the time and voters are independent, a bigger group's majority is more likely to be right — the same bet on "the majority" that <code>OM(m)</code> makes. The difference: Condorcet's errors are random and uncoordinated, so a bare majority suffices; Byzantine traitors pick their lies and collude, which is why the honest share must exceed two-thirds rather than one-half.</li>
+<li><b>Philosophy · Descartes' evil demon (1641)</b>: the First Meditation imagines an all-powerful deceiver faking the entire outside world so that truth and illusion look identical — exactly L1's position facing two word-for-word identical scenarios. The difference: Descartes retreats inward to the cogito for certainty; Lamport's way out is to count more witnesses.</li>
+<li><b>Neuroscience · multisensory integration (Ernst &amp; Banks 2002)</b>: when sight and touch disagree, the brain weights each by its noise and combines them close to statistically optimally — another judgment assembled from conflicting reports. The difference: the brain assumes its senses are noisy, not deceitful, and nothing requires two brains to reach the same verdict.</li>
+<li><b>Evolution · Zahavi's handicap principle (1975)</b>: a costly ornament like a peacock's tail is hard to fake, so it works as an honest signal — like a signature, it makes lying impossible rather than outvoting it. The difference: handicaps stay honest through cost, signatures through a private key at almost no cost; Bitcoin's proof of work is the closer cousin of "buying honesty with expense."</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>"The Byzantine Generals Problem" recasts agreement among arbitrarily malicious nodes as a fable of besieging generals with traitors in their ranks.</li>
+<li>A Byzantine fault is the strongest fault model: a bad node doesn't just stop, it lies, tells different parties different things, and colludes.</li>
+<li>Interactive consistency has two conditions: all loyal generals obey the same order, and if the commander is loyal they obey the order he actually gave.</li>
+<li>With oral messages that can be altered when relayed, tolerating m traitors takes at least 3m+1 generals, so traitors must be under one-third.</li>
+<li>Three generals with one traitor is unsolvable, because a loyal lieutenant receives identical messages in two scenarios and cannot tell who is lying.</li>
+<li>Lamport and colleagues' OM(m) algorithm reaches that bound through recursive relaying and majority votes, but its message count grows exponentially.</li>
+<li>With unforgeable digital signatures, the SM(m) algorithm lets loyal generals agree no matter how many traitors there are.</li>
+<li>The "fewer than one-third malicious" red line traces back to this paper and now sits inside PBFT, Tendermint, HotStuff and their successors.</li>
+<li>The Byzantine generals solutions assume synchrony and a fixed, known membership, so open anonymous networks need Bitcoin-style Sybil resistance on top.</li>
+<li>Condorcet's jury theorem needs only a bare majority while Byzantine fault tolerance needs two-thirds, because random errors are easier to outvote than collusion.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for full proofs and algorithm details, go to the original.</footer>
 </div>

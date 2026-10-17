@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 48</p>
@@ -179,17 +187,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>有人认为已被部分打脸</strong>：托管语言（自动垃圾回收）、开源生态、云与海量库复用、以及正在发生的 AI 辅助编程，被一些人视作叠加起来早已远超「十倍」——尽管这更多是<strong>许多进步的合力</strong>，仍与「没有任何东西能大幅提速」的悲观基调形成张力。Brooks 本人在《再回首》里也承认面向对象与复用的价值被他低估了增速。</li>
 <li><strong>它诊断多、药方少</strong>：文章把「难在哪」讲得极透，但给出的四条出路（买、原型、增量、育人）都是方向性的慢功，缺少可立即照做的方法论——这既是它的诚实，也是它的局限。</li>
 </ul>
-<h2 data-tts="3d560c95b6326039">要点</h2>
-<div class="tl">
-<p>① 一句话：软件之难分「本质」与「偶然」两类；过去的进步只削偶然，而偶然已所剩无几，故十年内不会有单一技术把生产率提高一个数量级——没有银弹。</p>
-<p>② 本质 = 软件「是什么」固有的难（一堆相互咬合的概念构造）；偶然 = 当前工具 / 表达方式附带的麻烦，换一套即可减轻。</p>
-<p>③ 四条本质困难：复杂（零件各不同，放大≠重复）、迁就（得将就一堆人为乱接口）、可变（无限可塑、越成功越常改）、不可见（画不出一眼看懂的图）。</p>
-<p>④ 关键算术：偶然已不到总困难的 9/10，全清零也提不到十倍——上限锁死在本质。</p>
-<p>⑤ 候选银弹（Ada、面向对象、AI、自动编程、图形化、形式化验证）大多只削偶然，碰不到本质；软件之难在「决定说什么」而非「怎么说」。</p>
-<p>⑥ 冲着本质去的四条慢路：能买就别造、快速原型定需求、增量式生长、倾力培养顶尖设计者（个体生产率差一个数量级）。</p>
-<p>⑦ 影响：给行业装上「反炒作」框架——每见新技术自称银弹，就问它削的是偶然还是本质；「买而非造」被后来的货架软件 / 开源强力印证。</p>
-<p>⑧ 局限：预言限定太多近乎不可证伪；本质/偶然界线模糊、随抽象上移而流动；Harel 等反驳可视化能松动「不可见性」；托管语言 / 开源 / AI 的合力与其悲观基调有张力。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · 喉返神经的绕行</b>：哺乳动物的喉返神经从脑部下行，先绕过心脏附近的大血管再折回喉部，长颈鹿身上这段弯路被拉得极长；这是从鱼类祖先继承来的布局，不是好设计。它正是 Brooks 说的「迁就」：复杂由历史硬塞进来，没有道理可讲。不像在于，进化没有设计者能推倒重来，软件至少原则上可以重写。</li>
+<li><b>神经科学 · 概念空间里的网格编码（Constantinescu 等，2016）</b>：fMRI 显示，人在一个二维的抽象概念空间里「导航」时，大脑会出现和空间导航相似的六边形网格信号，提示大脑能把非空间的东西当地图读。所以「不可见性」未必是死结；不像的是，实验里的概念只有两个连续维度，软件却是多张交叠的网。</li>
+<li><b>经济学 · 鲍莫尔成本病（Baumol &amp; Bowen，1966）</b>：一场弦乐四重奏没法靠拉快一点来提高效率，这类劳动密集的活在别的行业生产率飙升时显得越来越贵。软件里「想清楚造什么」的本质劳动也属于这一类；不像在于，四重奏所需的人手压不下来，软件的抽象层却在不断把昔日的本质压成偶然。</li>
+<li><b>佛学 · 中观的「无自性」</b>：龙树认为诸法依因缘而立，没有固定不变的自性（svabhāva）。批评者说本质 / 偶然的界线会随抽象层次漂移，正是一种依条件而定的「本质」。不像在于，Brooks 需要一条暂时稳定的线来做算术，中观连这条线本身也要看空。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>《没有银弹》断言：十年内没有任何单一技术或管理方法，能把软件的生产率、可靠性或简洁性提高一个数量级。</li>
+<li>Brooks 借亚里士多德的概念，把软件之难分成源自软件本身的本质困难和来自当下工具的偶然困难。</li>
+<li>软件的本质是一套相互咬合的概念结构，最难的是把它想清楚、说精确，写成代码和调试反倒是次要的。</li>
+<li>软件有四条本质困难：天生复杂、必须迁就人为的旧接口、永远在被修改、看不见也画不出一张完整的图。</li>
+<li>高级语言、分时系统和统一编程环境带来过真正的生产率飞跃，但它们砍掉的都是偶然困难。</li>
+<li>如果偶然困难已不到总困难的十分之九，把它全部清零也换不来十倍的提升，上限卡在本质上。</li>
+<li>面向对象、人工智能、自动编程、图形化编程和形式化验证这些候选银弹，大多只削偶然、碰不到本质。</li>
+<li>真正冲着本质去的都是慢功：能买就别造、用原型和客户对齐需求、让系统增量生长、培养顶尖设计者。</li>
+<li>「新技术削的是偶然还是本质」成了检验每一波技术炒作的持久问法，「买而非造」也被开源和货架软件印证。</li>
+<li>本质与偶然的界线会随抽象层次上移而漂移，这让 Brooks 的预言近乎不可证伪，也像佛学中观说的没有固定自性。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇文章的核心；想读布鲁克斯的原味论证与《再回首》复盘，再去翻原文。</footer>
 </div>

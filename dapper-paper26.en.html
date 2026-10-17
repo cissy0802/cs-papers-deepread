@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 26</p>
@@ -198,17 +206,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Aggregates drown individuals</strong>: rolling many traces into statistical views is handy for the big picture but easily averages away a single bizarre outlier request — which is often exactly what you need when debugging.</li>
 <li><strong>Tracing ≠ automatic diagnosis</strong>: Dapper faithfully lays out "what happened and how long each segment took," but "why it was slow, what the root cause is" still needs a human to interpret — it's a better pair of glasses, not an automatic doctor.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: assign each request a global trace id that propagates along the call chain, record each unit of work as a parent/child-linked span, reassemble a call tree, and see a system spanning thousands of machines from a single request's vantage.</p>
-<p>② Pain: a request fans out to hundreds or thousands of machines; per-machine logs are organized by machine, and no one can assemble a request's full causal chain — slow or wrong, you can't tell where it stalled.</p>
-<p>③ Three principles: application transparency, low overhead, company-wide scale — every design choice serves these.</p>
-<p>④ Data model: trace (one request) = a tree of spans; each span carries trace id / span id / parent id + cs/sr/ss/cr timestamps splitting cost into network transit vs server processing.</p>
-<p>⑤ Transparency secret: instrument the company-wide shared RPC / threading / control-flow libraries; the trace id propagates automatically via thread-local storage + RPC headers, with zero changes to business code.</p>
-<p>⑥ Low-overhead secret: sampling (~1/1024) crushes runtime cost + out-of-band async collection (local logs → daemon → BigTable, one trace per row) stays off the request's critical path.</p>
-<p>⑦ Impact: defined the trace/span/context-propagation paradigm, directly spawning Zipkin, Jaeger, OpenTelemetry — the foundation of observability, one of engineering's three pillars.</p>
-<p>⑧ Limits: sampling misses rare events; transparency needs homogeneous infra; the causal model favors RPC trees, blurring async/batch; aggregates drown outliers; tracing isn't automatic root-cause diagnosis.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Biochemistry · Calvin's carbon-14 tracer</b>: From 1946 Melvin Calvin fed carbon-14-labeled CO₂ to Chlorella algae, halted metabolism at successive moments, and read which molecules carried the label — mapping photosynthesis's carbon path and winning the 1961 Nobel Prize in Chemistry. A trace id is that isotope: nearly invisible to the system, riding along with the material. The difference: tracers report statistics over huge populations of molecules, while Dapper rebuilds one request's whole call tree.</li>
+<li><b>Neuroscience · the Golgi stain</b>: Golgi's 1873 "black reaction" randomly stains only about 1–5% of neurons, and that sparseness is exactly what let Cajal see single neurons whole. Dapper's ~1/1024 sampling works the same way: record less, see more. Unlike Golgi, whose selectivity is still unexplained, Dapper's rate is a dial.</li>
+<li><b>Philosophy · Hume on causation</b>: Hume argued we observe only constant conjunction, never causation itself. Black-box tracing, inferring who called whom from co-occurrence in logs, lives in Hume's predicament; annotation stamps each span with its parent, writing causality straight into the data — a label nature never hands us.</li>
+<li><b>Economics · Hayek's knowledge problem</b>: In "The Use of Knowledge in Society" (1945), Hayek argued knowledge is dispersed and no one holds the whole picture — Google's "no engineer understands every part" is the same condition. The difference: Hayek's prices let people coordinate without the whole picture; Dapper insists on assembling it.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Dapper is Google's distributed tracing system, stitching together work across thousands of machines from the viewpoint of a single request.</li>
+<li>One search request fans out to thousands of machines, and logs organized by machine cannot reassemble its full causal chain.</li>
+<li>Dapper set itself three hard constraints: transparency to applications, very low overhead, and company-wide deployability.</li>
+<li>Each request is recorded as a trace: a tree of spans linked by parent/child ids and stamped with timestamps.</li>
+<li>Annotation beats black-box inference here: requests carry a trace id, so causality is exact, at the cost of instrumentation.</li>
+<li>Instrumentation lives only in Google's shared RPC and threading libraries, so trace ids propagate automatically with zero business-code changes.</li>
+<li>Sampling around 1 in 1024 plus out-of-band asynchronous collection keeps tracing's impact on latency and throughput negligible.</li>
+<li>Dapper's trace, span, and context-propagation model was inherited by Zipkin, Jaeger, and OpenTelemetry, becoming the bedrock of observability.</li>
+<li>Sampling misses rare events, transparency depends on homogeneous infrastructure, and tracing does not diagnose root causes by itself.</li>
+<li>Sparse sampling makes structure legible, much as the Golgi stain reveals whole neurons by staining only a few.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for the full implementation details and usage stories, go read the original.</footer>
 </div>

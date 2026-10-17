@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 8</p>
@@ -193,17 +201,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>又慢又难并行</strong>：RNN 必须逐步算，训练无法像 Transformer 那样整句并行；逐词解码也慢。这是它最终被取代的根本原因。</li>
 <li><strong>想法并非凭空首创</strong>：Kalchbrenner &amp; Blunsom（2013）和 Cho 等（2014，比它早几个月）已提出类似的编码–解码框架；这篇的独特贡献是用<strong>足够深的 LSTM + 倒序 + 大算力</strong>第一次把端到端翻译做到超过 SMT，证明这条路走得通。</li>
 </ul>
-<h2 data-tts="2be785806fd57d16">要点</h2>
-<div class="tl">
-<p>① 一句话：两个深 LSTM 组成编码器–解码器，中间只交接一个固定长度向量 v，端到端学会「变长序列 → 变长序列」。</p>
-<p>② 痛点：深度网络只吃定长输入输出，而翻译等核心问题是变长序列进出；SMT 流水线模块多、难优化。</p>
-<p>③ 机制：解码器是被 v「定调」的语言模型，<code>p(y|x) = ∏ p(yₜ|v, y₁…yₜ₋₁)</code>，逐词生成、生成 &lt;EOS&gt; 即停，输出长度自己定。</p>
-<p>④ 大招：源句倒序输入，句首对齐变成短程依赖，BLEU 25.9 → 30.6。</p>
-<p>⑤ 结果：WMT'14 英法 BLEU 34.8 超过 SMT 基线 33.3，神经翻译首胜；重排序可到 36.5。</p>
-<p>⑥ 证据：句向量可视化显示按语义聚类、对语态不敏感——v 真的在编码「意思」。</p>
-<p>⑦ 影响：确立 seq2seq 范式，催生 GNMT、注意力、Transformer；今天 LLM 的问答形态是它的直系后代。</p>
-<p>⑧ 局限：固定向量长句丢信息（注意力因此而生）、倒序是经验 hack、词表 UNK 问题、RNN 难并行终被 Transformer 取代。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · Broca 区与 Wernicke 区</b>：经典失语症模型把语言拆成两块，Wernicke 区管听懂、Broca 区管说出，和编码器–解码器的「读」「说」分家同构。不像的是，两区之间有弓状束等通路双向往来，今天更被看作一张分布式网络，不是只交接一个向量。</li>
+<li><b>心理学 · 记要义不记字面</b>：Jacqueline Sachs 的经典实验发现，人读完一段话后很快分不清某句是主动还是被动，却牢记意思。Seq2Seq 的句向量按语义聚类、对语态不敏感，像得出奇；不同在于人还能回头重读原文，固定向量没有这条退路。</li>
+<li><b>进化神经科学 · 基因组瓶颈（Anthony Zador）</b>：基因组的信息量远不够逐条写明大脑每个突触，只能传递压缩过的布线规则，这道窄口反倒逼出了可泛化的结构。思想向量 v 也是一道逼人压缩的窄口；不像在于基因组瓶颈跨越世代、压的是「怎么学」，v 压的是一句话的内容。</li>
+<li><b>哲学 · 蒯因的翻译不确定性</b>：蒯因用「gavagai」思想实验论证，单凭说话人的行为证据，定不出唯一正确的译法，「意义」并不是一个现成的东西。Seq2Seq 却从不问意义是什么，只从海量句对的用法里学对应，某种程度上恰好站在蒯因那边；不像在于它默认存在一个可压缩的共享「意思」v。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Seq2Seq 用两个深 LSTM 组成编码器–解码器，端到端学会把变长序列映射成变长序列。</li>
+<li>Seq2Seq 之前，深度网络只能处理定长输入输出，而统治翻译的 SMT 是一条难以整体优化的模块流水线。</li>
+<li>编码器把整句读成一个固定长度向量 v，这个「思想向量」是两个网络之间唯一的接口。</li>
+<li>解码器是以 v 定调的语言模型，逐词生成、每词回喂作下一步输入，生成结束符即停，输出长度自己决定。</li>
+<li>把源句倒序输入让句首词紧挨译文句首，造出短程依赖，单此一招把 BLEU 从 25.9 提到 30.6。</li>
+<li>Sutskever 等人的 5 模型集成在 WMT'14 英法上拿到 BLEU 34.8，纯神经翻译首次超过 SMT 基线 33.3。</li>
+<li>句向量可视化显示按意思聚类、对主动被动语态不敏感，就像人读完话只记要义、不记字面。</li>
+<li>「一切皆序列到序列」的范式由此确立，GNMT、注意力机制、Transformer 和今天大模型的问答形态都是它的后代。</li>
+<li>整句压进固定向量导致长句丢信息，倒序输入只是经验性的 hack，这两点直接催生了注意力机制。</li>
+<li>词表外的罕见词只能记作 UNK，RNN 又必须逐步计算难以并行，Seq2Seq 最终被 Transformer 取代。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整训练配置与实验细节，再去翻原文。</footer>
 </div>

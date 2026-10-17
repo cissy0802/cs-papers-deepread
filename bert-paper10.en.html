@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 10</p>
@@ -201,17 +209,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Engineering limits</strong>: inputs cap at 512 tokens, so long documents need chunking; pre-training demanded serious TPU resources at the time, hard to reproduce outside big labs.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>1. In one line: pre-train a deep bidirectional Transformer encoder with cloze-style MLM, then add one output layer per task and fine-tune — records broken on 11 tasks.</p>
-<p>2. The pain: "predict the next word" fundamentally conflicts with bidirectionality (stacked attention lets a word see itself via detours and copy the answer), so GPT-1 stayed unidirectional and ELMo could only shallowly concatenate two one-way models.</p>
-<p>3. Core mechanism: remove 15% of the words and make the model guess them — the removed answer can't leak, and guessing right requires fusing left and right context; bidirectionality turns from cheating into necessity.</p>
-<p>4. The patch: of selected positions, 80% become [MASK], 10% a random word, 10% stay unchanged — softening the "[MASK] exists only in training" mismatch.</p>
-<p>5. The paradigm: pre-train once (3.3B words, big bill) + fine-tune per task (small data, under an hour on one TPU); [CLS] output as the whole-input summary; same architecture, one thin head.</p>
-<p>6. Results: GLUE 80.5% (+7.7); SQuAD v1.1 F1 93.2, above human; ablations show bidirectionality drives the gains.</p>
-<p>7. Impact: NLP's ImageNet moment — "pre-train + fine-tune" became the ruling paradigm; deployed in Google Search; today's retrieval embedding models are largely its descendants.</p>
-<p>8. Limits: NSP proved useless; the original was under-trained (RoBERTa); MLM is sample-inefficient (ELECTRA); masked-word independence (XLNet); cannot generate (later overtaken by the GPT line); 512-token cap.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Psychology · Phonemic restoration (Warren 1970)</b>: Warren replaced one speech sound in a recorded sentence with a cough, and listeners still "heard" the whole word and could not say where the cough fell; later experiments showed that words arriving after the gap can decide which sound gets filled in. The brain runs a bidirectional cloze test by default. The difference: people fill gaps in real time and unconsciously, while BERT treats the blanks as offline homework.</li>
+<li><b>Neuroscience · Predictive coding (Rao &amp; Ballard 1999)</b>: on this view the cortex constantly predicts its input and learns from prediction error, the same self-supervised loop as MLM guessing a hidden word and updating on the miss. The difference: the brain's predictions run as hierarchical feedback unfolding in time; BERT only masks static text.</li>
+<li><b>Philosophy · Wittgenstein's "meaning is use"</b>: Philosophical Investigations §43 says that for a large class of cases the meaning of a word is its use in the language. BERT gives "bank" a different vector in every sentence, letting context set the meaning. The difference: Wittgenstein's use lives inside forms of life and action; BERT has only ever seen text.</li>
+<li><b>Evolution · Exaptation (Gould &amp; Vrba 1982)</b>: feathers probably first served insulation or display and were only later co-opted for flight. BERT's representations, shaped by fill-in-the-blank, get co-opted for question answering and inference. The difference: evolution's co-option has no designer, whereas BERT was pre-trained precisely so it could be reused.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>BERT pre-trains a deeply bidirectional Transformer encoder with a cloze-style masked language model, then fine-tunes it for each task.</li>
+<li>Next-word prediction clashes with bidirectionality: stacked self-attention lets each word see itself indirectly and copy the answer.</li>
+<li>GPT-1 reads only left to right, and ELMo merely concatenates two one-way LSTMs, so neither is truly deeply bidirectional.</li>
+<li>The masked language model hides 15% of tokens, so the answer cannot leak, yet guessing it requires both left and right context.</li>
+<li>Chosen positions become [MASK] 80% of the time, a random word 10%, and stay unchanged 10%, easing the pre-train/fine-tune mismatch.</li>
+<li>Pre-training happens once; fine-tuning adds one output layer and trains the whole model for 2–4 epochs, under an hour on one TPU.</li>
+<li>BERT set records on 11 tasks, lifting GLUE by 7.7 points and reaching 93.2 F1 on SQuAD v1.1, above human performance.</li>
+<li>Ablations show that switching back to a left-to-right objective drops SQuAD by about 10 F1, so deep bidirectionality drives the gains.</li>
+<li>Limits: RoBERTa showed next sentence prediction barely helps, the original was undertrained, and encoder-only models cannot generate long text.</li>
+<li>Listeners use context on both sides to restore a sound masked by a cough, the same structure as BERT's bidirectional cloze task.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full hyperparameters and experiment details, go to the original.</footer>
 </div>

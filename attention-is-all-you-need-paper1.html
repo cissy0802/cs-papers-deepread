@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .switch-hint a{color:#f0b429;text-decoration:none;border-bottom:1px dashed rgba(240,180,41,0.5);cursor:pointer}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 1</p>
@@ -189,17 +197,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>标题其实夸张</strong>：前馈层、残差、层归一化、位置编码<strong>一个都不能少</strong>，纯注意力并不够——「注意力就是全部」是句响亮但过头的标语。</li>
 <li><strong>「注意力权重=可解释性」被质疑</strong>：注意力权重不等于特征重要性，拿它当「模型在看哪」的解释要小心。</li>
 </ul>
-<h2 data-tts="4d49e08bd36c27e5">要点</h2>
-<div class="tl">
-<p>① 一句话：<strong>丢掉 RNN 和卷积、只用注意力</strong>，既能并行训练、又能让任意两词一步直连。</p>
-<p>② 痛点：RNN 顺序计算不能并行，长距离依赖沿时间步传递、容易丢。</p>
-<p>③ 机制：每词生成 Q/K/V，<code>softmax(QKᵀ/√dₖ)V</code> 按相关度把全句信息汇总到自己身上；<code>√dₖ</code> 防止 softmax 饱和、稳住训练。</p>
-<p>④ 多头 = 在多个子空间同时关注不同关系；位置编码把词序注入；解码器自注意力加掩码防偷看未来。</p>
-<p>⑤ 注意力搬运信息、FFN 深加工信息；残差 + 层归一化让几十层稳训。</p>
-<p>⑥ 结果：英译德 28.4 BLEU 刷新 SOTA，8 卡 3.5 天训完，更好更快更省。</p>
-<p>⑦ 影响：BERT/GPT 全建在它上面；可并行带来可规模化；「万物 token 化」统一了各领域——当代 AI 的共同地基。</p>
-<p>⑧ 局限：<strong>O(n²)</strong> 长序列吃紧、位置编码是权宜、数据饥渴、标题夸张——前馈/残差/归一化/位置编码一个都不能少。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 偏向竞争模型</b>：Desimone 与 Duncan 1995 年提出，多个刺激同时激活的神经元群会互相竞争，自上而下的目标给其中一方加码——Query 和 Key 的匹配也是「我要找什么」去偏置谁胜出。不像在：大脑注意力受容量所限、近乎赢家通吃，softmax 却给每个词都留一份权重。</li>
+<li><b>神经科学 · 网格细胞</b>：Moser 夫妇团队 2005 年在大鼠内嗅皮层发现网格细胞，用周期性放电、由背到腹间距逐级变大的多种尺度编码位置——和正弦位置编码用多种频率的波给每个位置打码，是同一种「多尺度周期码」。不像在：网格细胞编码二维空间、是三角晶格，位置编码是一维、人手设计的固定函数。</li>
+<li><b>佛学 · 因陀罗网</b>：华严宗用因陀罗网喻万法互摄——网上每颗宝珠都映出其他所有宝珠，自注意力里每个词的新表示也是全句其他词按权重映在它身上的结果。不像在：因陀罗网是对等、无穷层层互映；注意力的映照有轻重之分、方向不对称，而且只叠 6 层就停。</li>
+<li><b>语言哲学 · 索绪尔的「价值」</b>：索绪尔在 1916 年出版的《普通语言学教程》里说，一个词没有自带的意义，它的价值由它和系统里其他词的差异关系决定。自注意力把这件事做成了计算：同一个「it」，周围是「tired」还是「wide」，算出来的表示就不同。不像在：索绪尔说的关系存在于整个语言系统，注意力只看眼前这一句。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Transformer 彻底丢掉循环和卷积，只用注意力处理序列，既能并行训练，又让任意两词一步直连。</li>
+<li>RNN 必须逐词顺序计算，喂不满 GPU；远距离信息沿时间步一格格传，梯度容易消失。</li>
+<li>自注意力让每个词用 Query 去和全句的 Key 打分，按相关度把各词的 Value 加权汇总到自己身上。</li>
+<li>多头注意力在 8 个子空间里同时关注指代、句法等不同关系，各个头会自发分工。</li>
+<li>注意力本身对词序无感，正弦位置编码给每个位置加上一串不同频率的「波形条码」来补上词序。</li>
+<li>注意力负责在词之间搬运信息，前馈网络在每个词内部深加工，残差和层归一化让深层网络稳训。</li>
+<li>Transformer 在英译德拿到 28.4 BLEU、英译法 41.8 BLEU，只用 8 张 GPU 训练 3.5 天，更好更快更省。</li>
+<li>Transformer 是 BERT、GPT 的共同地基，可并行让规模化成为可能，「万物皆 token」统一了各领域。</li>
+<li>自注意力的计算和显存随序列长度平方级增长，加上缺少归纳偏置而数据饥渴，是 Transformer 的主要局限。</li>
+<li>每个词的新表示都是全句按权重映在它身上，很像华严宗因陀罗网里每颗宝珠映出所有宝珠。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整推导与消融实验，再去翻原文。</footer>
 </div>

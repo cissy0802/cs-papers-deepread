@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 41</p>
@@ -185,17 +193,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只是今天排序的一小块</strong>：现代搜索用了几百个信号与机器学习排序（如 RankBrain、BERT 类模型），PageRank 早已被大改并弱化；面向公众的「工具栏 PageRank」数值也在 2016 年停更。这篇论文是起点，不是终局。</li>
 <li><strong>作者自己的诚实一笔</strong>：论文附录专门讨论广告与利益冲突，指出「靠广告养活的搜索引擎天然有偏」，主张搜索应更透明、更学术——这个立场，与谷歌日后成为广告巨头形成了耐人寻味的对照。</li>
 </ul>
-<h2 data-tts="60baaeacf9af07e7">要点</h2>
-<div class="tl">
-<p>① 一句话：论文介绍了搜索引擎原型「谷歌」，核心是用超链接结构给网页质量打分——PageRank + 锚文本。</p>
-<p>② 痛点：九十年代搜索只靠文本匹配，「含这个词」≠「是好页」、且极易被堆关键词操纵；人工目录追不上网页增长。</p>
-<p>③ PageRank：把链接当带权投票，重要页的票更重，递归定义；等价于「随机冲浪者」停留在该页的长期概率。</p>
-<p>④ 机制：<code>PR(A)=(1−d)/N + d·Σ PR(Tᵢ)/C(Tᵢ)</code>，d=0.85；是链接矩阵的主特征向量，用幂迭代算，约 52 次收敛、可扩展。</p>
-<p>⑤ 锚文本：用指向某页的链接文字描述该页——常比自我介绍更准，还能索引图片 / 未抓取页。</p>
-<p>⑥ 融合排序：PageRank（全局）× 文本命中（位置 / 字号 / 标题 / 邻近度）；配一整套爬虫→仓库→索引→检索的可扩展架构。</p>
-<p>⑦ 结果与影响：约 2400 万页的原型，结果明显更相关；奠定「链接判质」范式，催生谷歌，重塑互联网找信息的方式。</p>
-<p>⑧ 局限：查询无关、易被链接作弊、富者愈富；只是现代排序几百信号中的一块；作者关于广告偏见的告诫尤显讽刺。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>佛学 · 华严宗「因陀罗网」</b>：网上每颗宝珠都映着其余所有宝珠，一颗珠是什么只能由它与全体的关系说明——PageRank 也不看页面本身，只看它在整张链接网里的位置。不像在哪：因陀罗网是对称的「一即一切」，不分高下；PageRank 的边有方向，算出来恰恰是一份排行。</li>
+<li><b>动物行为 · Seeley 的蜜蜂择巢</b>：Thomas Seeley 发现，分蜂群里的侦察蜂用摇摆舞为候选巢址「拉票」，巢址越好舞跳得越久，招来的同伴越多，支持者在某处凑够门槛就拍板（《蜂群民主》，2010）。和 PageRank 一样是分布式加权投票、选出全局最优；不同在于蜜蜂的票重看的是巢址本身的质量，而不是投票者自己有多「重要」。</li>
+<li><b>经济学 · 凯恩斯「选美比赛」</b>：凯恩斯在《通论》（1936）第 12 章把股市比作选美竞猜——要猜的不是谁最美，而是别人会选谁。PageRank 同样是「重要＝被重要者认为重要」的递归；不像在哪：PageRank 是对一张静态链接图求不动点，不存在参与者揣摩彼此的多层博弈。</li>
+<li><b>经济学 · 古德哈特定律</b>：Charles Goodhart 1975 年的观察——一个统计规律一旦被拿来当调控目标，就会失灵。链接本是自发的背书，排名一挂钩链接，链接农场、买卖链接就来了，指标被目标腐蚀。不同在于：搜索引擎能持续换规则反作弊，货币政策制定者很难这样。</li>
+<li><b>复杂性科学 · Barabási–Albert 优先连接</b>：Barabási 与 Albert 1999 年在《Science》上证明，网络不断增长、新节点又偏爱连向已有很多连接的节点，就会长出少数巨型枢纽的无标度结构。这正是 PageRank「富者愈富」的生成机制；不同在于他们解释网络怎么长成，PageRank 只是对已长成的网络打分，再反过来影响它怎么长。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Brin 和 Page 1998 年的这篇论文介绍了搜索引擎原型 Google，核心是用超链接结构给网页质量打分。</li>
+<li>九十年代的搜索只靠文本匹配，「含这个词」不等于「是好页」，而且堆关键词就能操纵排名。</li>
+<li>PageRank 把每条链接当成一张带权重的投票，来自重要页面的票更重，因此重要性是递归定义的。</li>
+<li>PageRank 等价于「随机冲浪者」长期停留在某页的概率：85% 顺着链接点，15% 随机跳到任意页。</li>
+<li>数学上 PageRank 是链接矩阵的主特征向量，用幂迭代求解，在 3.22 亿条链接上约 52 轮就收敛。</li>
+<li>锚文本把链接上的文字算到被指向的页头上，常比页面自我介绍更准，还能描述图片和未抓取的页。</li>
+<li>谷歌雏形的最终排序把与查询无关的 PageRank 和词的位置、字号、标题、邻近度等文本命中信号融合起来。</li>
+<li>原型索引了约 2400 万个网页，在宽泛查询上明显比当时的商业搜索引擎更切题，并催生了谷歌公司。</li>
+<li>局限在于：排名一旦靠链接，就招来链接农场和刷锚文本，老页面还会富者愈富，压住新的好页面。</li>
+<li>链接作弊正是古德哈特定律的翻版：一个指标被当成目标去优化，就不再是好指标。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整系统实现与数据结构细节，再去翻原文。</footer>
 </div>

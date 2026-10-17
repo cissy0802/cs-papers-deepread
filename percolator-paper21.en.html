@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS · DEEP READ · PAPER 21</p>
@@ -224,17 +232,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Lazy lock cleanup causes blocking</strong>: locks left behind by a crashed client are only cleared when the next transaction stumbles on them, combined with a timeout; meanwhile the affected rows are blocked, waiting out the timeout in the worst case.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one sentence: add "cross-row ACID transactions + observer notifications" on top of Bigtable to turn Google's web indexing from a full MapReduce rebuild into incremental processing.</p>
-<p>② The pain: MapReduce reprocesses the whole repository even to change one page, so new pages take days to enter the index; and no DBMS could do random transactions at that scale.</p>
-<p>③ Transaction mechanism: give each column <code>data</code>/<code>lock</code>/<code>write</code> metadata columns; two-phase commit — prewrite locks (one primary, rest secondary), commit atomically turns the <strong>primary</strong> lock into a write record (the moment of effect), then cleans up secondaries; reads honor only write, so half-finished state is invisible.</p>
-<p>④ Snapshot isolation: transactions take start_ts / commit_ts from the <strong>timestamp oracle</strong>, read a consistent snapshot, check write-write conflicts on write; the oracle batch-dispenses ~2M/sec on one machine.</p>
-<p>⑤ Fault tolerance: no dedicated transaction manager — locks left by a crash are lazily rolled forward / back by later transactions following <strong>secondary → primary</strong>, with a Chubby-like service plus timeout deciding death.</p>
-<p>⑥ Notification mechanism: observers register on columns; write → mark notify → workers randomly scan → run observer → write again, cascading changes through the index; each notification fires at most once (ack dedup) to avoid loops.</p>
-<p>⑦ Results: shipped as the Caffeine indexing system, cutting average document age by ~50% (2× freshness) at the same throughput; the cost is dozens of random ops per document and low resource efficiency.</p>
-<p>⑧ Impact: made "timestamp + primary-lock 2PC" a distributed-transaction template, directly inspiring TiKV / TiDB; paved the way for Spanner's globally consistent transactions. Limits: SI only (write skew), high per-transaction latency, timestamp oracle as a logical single point.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Complexity science · percolation theory</b>: the theory Broadbent and Hammersley founded asks whether local, step-by-step seepage through a randomly connected network can join up into a path that spans the whole. Percolator's observer cascade likewise spreads by local triggers; unlike percolation theory, which cares about the sudden phase transition past a critical threshold, the indexing cascade is deliberately kept bounded and controlled.</li>
+<li><b>Neuroscience · Troxler fading</b>: fix your gaze on one point and unchanging images in the periphery slowly fade — the visual system mostly reports change. Percolator likewise wakes computation only for data that changed; unlike the brain, which throws the static information away, it keeps the full state.</li>
+<li><b>Biology · the MAPK kinase cascade</b>: once a receptor fires, Raf phosphorylates MEK, MEK phosphorylates ERK, and the signal travels into the nucleus to rewrite gene expression — the same shape as write, notify, observe, write again. Unlike the cell, which amplifies at each tier, Percolator uses ack columns so each notification fires at most once.</li>
+<li><b>Law · Torrens title</b>: under this land-registration system, however complete the contract, ownership is whatever the register says — registration itself confers title. Turning the primary lock into a write record is that single decisive entry; unlike a central land office, Percolator's "register" is scattered across rows and tidied up lazily by whoever comes next.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Percolator adds cross-row ACID transactions and observer notifications on top of Bigtable, turning Google's web indexing incremental.</li>
+<li>With MapReduce, changing even one page meant rescanning the whole web repository, so new pages took days to reach the index.</li>
+<li>No database of the time could sustain the random transactional throughput web indexing needed across thousands of machines.</li>
+<li>Each data column gets companion lock and write columns; readers honor only the write column, so uncommitted work stays invisible.</li>
+<li>In the two-phase commit, the instant the primary lock is atomically turned into a write record is when the whole transaction takes effect.</li>
+<li>Locks left by a crashed client are lazily rolled forward or back by later transactions that follow the secondary lock to its primary.</li>
+<li>The timestamp oracle reserves ranges in batches and hands out numbers from memory, reaching about two million timestamps per second on one machine.</li>
+<li>A write sets a notification, workers run the observer registered on that column, and its writes trigger the next step, so changes percolate outward.</li>
+<li>Shipped as Caffeine, Percolator cut average document age by about 50% at equal throughput, at far lower resource efficiency than MapReduce.</li>
+<li>Timestamps plus primary-lock two-phase commit became the template TiKV and TiDB copied, though snapshot isolation still permits write skew.</li>
+</ol>
 </div>
 <footer>CS Papers · Deep Read — Finish this page ≈ grasp the paper's core; for full protocol details and data, go to the original.</footer>
 </div>

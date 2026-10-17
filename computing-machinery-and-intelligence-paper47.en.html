@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 47</p>
@@ -157,17 +165,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Narrow scope</strong>: deliberately confined to "typed conversation behind a screen." Clever as that is for stripping away appearance, it also <strong>compresses intelligence into text chat</strong>, ignoring the vast non-linguistic forms — perception, motor skill, embodiment.</li>
 <li><strong>It may not be a "definition" at all</strong>: many scholars argue Turing never meant the test as a "definition of intelligence" but as a <strong>rhetorical move to end a metaphysical argument</strong> — and today's large language models passing casual tests has reopened the question of what passing actually proves, itself a sign that the criterion's boundaries were always blurry.</li>
 </ul>
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: replace the unverifiable "can machines think?" with the operational behavioral test "imitation game / Turing test" — if a judge chatting behind a screen can't tell the machine apart, count it as thinking.</p>
-<p>② Motivation: the "essence" of thinking can't be verified — you can't even prove other people think — so a higher bar for machines is unfair; Turing cuts "an argument about essence" into "a question you can decide."</p>
-<p>③ Mechanism: machine and human are interrogated by teleprinter; only talk counts, not looks or voice; the machine impersonates a human, and if the judge can't catch it, it passes. The criterion flips the burden of proof onto the denier.</p>
-<p>④ Argumentative body: rebuts nine objections — mathematical (Gödel), consciousness (anti-solipsism), Lovelace (machines can surprise us), the various "can never X" — all aimed at human overconfidence.</p>
-<p>⑤ Most far-sighted idea: rather than hand-code an adult mind, build a "child machine" and educate it with rewards, punishments, and experience, add randomness, and select as in evolution — the herald of machine learning, RL, and evolutionary computation.</p>
-<p>⑥ Prediction: around 2000, a 10⁹-bit machine could fool an average judge into ~30% wrong identifications after five minutes; by then "machines think" would go uncontradicted.</p>
-<p>⑦ Impact: set the goal and criterion for AI before it was even named (six years before Dartmouth); became a cultural totem of machine intelligence.</p>
-<p>⑧ Limits: the Chinese Room shows "faking ≠ understanding"; it measures "human-like," even "how gullible we are" (the ELIZA effect), not intelligence itself; narrow and anthropocentric; perhaps a rhetorical move to end an argument, not a definition.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Eastern philosophy · Zhuangzi and the fish</b>: on a bridge over the Hao, Huizi asks Zhuangzi how he can know the fish are happy when he is not a fish. It is Jefferson's objection in miniature, the problem of other minds, and Turing answers much as Zhuangzi does: you are not me, so how do you know I don't know? The difference: Zhuangzi rests on lived perception by the river; Turing rests on a repeatable typed test.</li>
+<li><b>Psychology · Heider and Simmel (1944)</b>: shown a short film of triangles and a circle moving around, viewers told stories of chasing, hiding, and jealousy. Same structure as the ELIZA effect: we over-attribute minds by default. Unlike ELIZA, the shapes weren't trying to fool anyone; the viewers supplied the mind entirely.</li>
+<li><b>Evolutionary biology · Batesian mimicry</b>: in 1862 Henry Walter Bates reported harmless Amazon butterflies that look like toxic ones and survive by fooling birds. Success is judged only by whether the receiver can tell them apart, exactly like the imitation game. The break: a mimic never needs to be toxic, while Turing wants "indistinguishable" to license "really thinks," and that gap is where the Chinese Room cuts.</li>
+<li><b>Economics · Goodhart's law</b>: writing on UK monetary policy in 1975, Charles Goodhart observed that a statistical regularity collapses once it is used as a control target. Turned into a contest, the Turing test rewards playing dumb and typing typos on purpose. The difference: Goodhart's targets game a policy; here the tested party disguises itself.</li>
+<li><b>Developmental psychology · Spelke's core knowledge</b>: Turing's child machine is a simple starting state plus education. Elizabeth Spelke's infant studies find babies arrive with several core systems for objects, number, and space. The split between nature and nurture matches; the starting state doesn't: the human factory setting is far richer than Turing assumed.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Turing's 1950 paper in the philosophy journal Mind swaps "can machines think?" for an operational behavioral test.</li>
+<li>The essence of thinking can't be verified; we can't even prove other people think, so demanding more of machines is unfair.</li>
+<li>In the imitation game a judge questions a machine and a human by teleprinter; if the judge can't tell them apart, the machine counts as thinking.</li>
+<li>A behavioral criterion shifts the burden of proof: whoever denies machine thought must point to the reply that gave it away.</li>
+<li>The paper rebuts nine objections, most of them resting on human overconfidence or a narrow picture of what machines can do.</li>
+<li>Against Lady Lovelace's claim that machines originate nothing: machines often surprise us, and surprise usually means we didn't work out the consequences.</li>
+<li>Rather than hand-code an adult mind, build a "child machine" and educate it with rewards and punishments, a seed of machine learning.</li>
+<li>Turing predicted that around 2000 an average judge would identify the machine correctly no more than 70% of the time after five minutes.</li>
+<li>Searle's Chinese Room argues that faking is not understanding; the Turing test measures human-likeness more than intelligence.</li>
+<li>Humans over-attribute minds by default, reading chases into moving triangles, which is why even ELIZA fooled people.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full nine objections and the original wording, go to Turing 1950.</footer>
 </div>

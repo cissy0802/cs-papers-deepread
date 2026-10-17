@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 46</p>
@@ -222,18 +230,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Privacy is only pseudonymity</strong>: the whole ledger is permanently public, and chain analysis (combined with on/off-ramps like exchanges) can often link addresses to real identities.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: Bitcoin uses "proof-of-work + longest chain" so anonymous strangers can agree on transaction order with no center, solving digital money's double-spend problem.</p>
-<p>② The pain: digital money copies, so double-spending could only be stopped by a trusted third party (a bank's central ledger); remove the center and "one-vote-each" in an open, anonymous network is crushed by Sybil attacks.</p>
-<p>③ Coin definition: a chain of digital signatures (signing "prev-tx hash + payee's public key") — proves ownership but can't stop double-spends, so a network-wide unique order is needed.</p>
-<p>④ Ordering: transactions batched into blocks; each block holds the prior block's hash, forming a timestamp chain where changing one forces changing all after it.</p>
-<p>⑤ Core mechanism: adding a block requires solving <code>Hash(block+nonce) &lt; target</code> proof-of-work — hard to find, easy to verify; votes bind to power (defeats Sybil), rewriting history means re-solving all later puzzles (defeats tampering), and the longest chain is truth.</p>
-<p>⑥ Operation &amp; incentive: a 6-step broadcast-collect-mine-verify loop; the block reward (new coins) + fees both issue the currency and make "honest mining pays more than forging."</p>
-<p>⑦ Analysis &amp; results: a gambler's-ruin model proves attack success decays exponentially in confirmations; a decade-plus of unbroken core consensus in the wild is the strongest evidence.</p>
-<p>⑧ Impact: Byzantine fault tolerance under open anonymity (Nakamoto consensus); the origin of blockchains and the whole cryptocurrency / smart-contract industry.</p>
-<p>⑨ Limits: huge energy use, low throughput, re-centralization into ASICs and pools, 51% attacks and only probabilistic finality, selfish mining, and mere pseudonymity.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolutionary biology · Zahavi's handicap principle</b>: in 1975 Amotz Zahavi argued a peacock's tail is an honest signal precisely because it is costly — a weak bird can't afford one; Alan Grafen formalized it as a game model in 1990 (still debated). Proof-of-work runs the same play: honesty enforced because faking costs more than it pays. The difference: the peacock's cost also displays its fitness, while burned hashpower proves nothing beyond "I spent this" — and anyone can check it with one hash.</li>
+<li><b>Economics · Yap's stone money</b>: Milton Friedman's 1991 essay "The Island of Stone Money" tells of a huge stone that sank to the seabed yet was still accepted as its family's wealth — ownership lived in the island's shared memory, not in possession. Bitcoin likewise turns money into a public ledger; but Yap leaned on a small community's memory and trust, whereas Bitcoin must substitute computing power for that trust among strangers.</li>
+<li><b>Philosophy · Searle's institutional facts</b>: in The Construction of Social Reality (1995), John Searle argues that paper is money only because "X counts as Y in context C" is collectively accepted. The longest-chain rule mechanizes that acceptance: mining on top of a block is the vote that recognizes it. Where it differs: Searle's acceptance is a belief that can sit silently, while Bitcoin's must be declared in real electricity and computation.</li>
+<li><b>Physics · Boltzmann's statistical thermodynamics</b>: on Boltzmann's reading, the second law is not an absolute ban but a statement that the reverse process is overwhelmingly improbable — which is where time's arrow comes from. Bitcoin's "immutability" is the same kind of probabilistic irreversibility: the odds of a reversal fall exponentially with confirmations but never reach zero. Unlike entropy, though, it can be bought: an attacker with majority hashpower really can turn the clock back.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Digital money can be copied, so preventing double-spends used to require a central ledger kept by a trusted third party such as a bank.</li>
+<li>"One identity, one vote" fails in an open, anonymous network, because a Sybil attacker can forge endless identities and seize the vote.</li>
+<li>Bitcoin defines a coin as a chain of digital signatures, which proves ownership but cannot stop the same coin being signed to two people.</li>
+<li>Transactions are batched into blocks that each contain the previous block's hash, forming a timestamp chain where changing one block means changing every later one.</li>
+<li>Proof-of-work demands brute-forcing a nonce until the block's hash falls below a target: extremely hard to find, verifiable with a single hash.</li>
+<li>Proof-of-work moves voting power from identities to computing power, defeating Sybil attacks and forcing any history rewrite to re-solve every later puzzle.</li>
+<li>The network accepts only the longest chain with the most cumulative work, so forks resolve by dropping the shorter branch and nodes converge on one history.</li>
+<li>Block rewards and fees both issue new coins and make honest mining more profitable than forging the ledger, even for a majority miner.</li>
+<li>Nakamoto's gambler's-ruin analysis shows an attacker's chance of catching up falls exponentially with confirmations, so finality is only ever probabilistic.</li>
+<li>Bitcoin pays in energy, low throughput and pool re-centralization; like the handicap principle, its security rests on faking costing more than honesty.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full script system and network protocol details, go to the original.</footer>
 </div>

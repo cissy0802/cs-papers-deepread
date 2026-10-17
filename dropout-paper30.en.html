@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 30</p>
@@ -333,17 +341,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>A narrow sweet spot</strong>: the benefit disappears when data is too scarce (already underfitting) and again when data is abundant. Large language model pretraining today often sets dropout to zero outright — the data is seen roughly once, so overfitting never becomes the binding constraint.</li>
 <li><strong>The explanation is not settled</strong>: "prevents co-adaptation" and "exponential ensemble" are both persuasive intuitions, neither is a proof; the weight-scaling equivalence is exact only in the single-softmax special case, and why it still works so well in deep networks has complementary explanations rather than a definitive one.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: during training, delete units together with their connections at random so each step trains a different thinned network; at test time drop nothing and run one forward pass with weights scaled by the retention probability p.</p>
-<p>② The pain: large networks plus finite data means inevitable overfitting; the reliable cure — ensembling — is prohibitively expensive in both training and inference, and Bayesian model averaging is intractable.</p>
-<p>③ The root cause: co-adaptation — units cluster and patch each other's mistakes, so a feature is only meaningful when specific partners are present, and it breaks on new data.</p>
-<p>④ The mechanism: multiply the layer's outputs by a Bernoulli 0/1 mask, <code>ỹ = r ⊙ y</code>; typically keep p=0.5 in hidden layers and p≈0.8 at the input.</p>
-<p>⑤ The two intuitions: nobody can count on a particular partner being present, so every unit must learn a feature that stands on its own (ten teams of five &gt; one conspiracy of fifty); and n units correspond to 2ⁿ thinned networks sharing one weight set, so one network's training cost buys an approximate ensemble.</p>
-<p>⑥ Why scale by p at test time: it restores the next layer's expected input to training levels; for a single softmax layer it is exactly the geometric mean, and in deep networks one scaled pass performs about as well as averaging a few dozen sampled thinned networks.</p>
-<p>⑦ Results: MNIST about 1.60% → 1.25% (best about 1.05%); CIFAR-10 14.98% → 12.61%; SVHN about 3.95% → 2.55%; TIMIT about 23.4% → 21.8% — consistent across vision, speech and text. The recipe also includes max-norm, a large learning rate and high momentum.</p>
-<p>⑧ Impact and limits: it established "inject noise ≈ cheap ensemble" as a template, spawning DropConnect, stochastic depth and MC dropout, and Transformers still use it; but training is 2–3× slower, BN largely replaced it in convnets (and stacking the two causes a variance shift), it is not directly usable on recurrent connections, and it does nothing when data is very scarce or very abundant.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Unreliable synapses</b>: The brain already runs with random absences: Allen and Stevens (1994) found that at single synapses on hippocampal CA1 neurons, more than half of arriving impulses produce no response at all. The likeness: computation stays accurate while parts drop out at random. The difference: synaptic failure is a physiological cost whose odds shift with activity, while dropout is a deliberate design that is switched off after training.</li>
+<li><b>Biology · Degeneracy (Edelman &amp; Gally, 2001)</b>: They call it degeneracy when structurally different parts can do the same job, and set it apart from redundancy, where identical copies back each other up; they see it as a root of biological robustness. Dropout breeds exactly that: several different groups of units can each carry the same judgment. The difference: evolution selects degeneracy slowly, dropout imposes it on the spot through one knob, p.</li>
+<li><b>Psychology · Desirable difficulties (Bjork, 1994)</b>: Spacing, interleaving and varied presentation make practice look worse yet improve long-term retention and transfer. Dropout has the same shape: noisier training that takes two to three times longer, in exchange for steadier performance on unseen data. The difference: people mistake smooth practice for real learning; a network has no such metacognitive illusion.</li>
+<li><b>Investing · Markowitz diversification (1952)</b>: Portfolio risk depends on covariances, so averaging uncorrelated assets cuts volatility, while correlated ones leave a floor no amount of adding can remove. Dropout's exponentially many thinned networks share one set of weights and are highly correlated, which is why it is only an approximate ensemble: a real gain, but far short of a vote among truly independent models.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>The dropout paper (Srivastava, Hinton and colleagues, JMLR 2014) targets the overfitting that hits big networks trained on limited data.</li>
+<li>Ensembles curb overfitting but multiply the cost of training and inference, and full Bayesian model averaging is simply intractable.</li>
+<li>One root of overfitting is co-adaptation: hidden units lean on each other, so a feature only works when specific partners are present.</li>
+<li>During training, dropout removes each unit and its connections with probability 1−p at every step, usually keeping p=0.5 for hidden units and about 0.8 for inputs.</li>
+<li>Because no unit can count on any particular partner, each must learn features that hold up across many random combinations of neighbors.</li>
+<li>With n units there are 2ⁿ thinned networks sharing one set of weights, so dropout approximates their ensemble for the price of training one network.</li>
+<li>At test time nothing is dropped; weights are scaled by the keep probability p so expected inputs match training, and one forward pass approximates the average.</li>
+<li>Dropout cut error rates consistently on MNIST, CIFAR, SVHN, TIMIT and text data, and was part of the recipe behind AlexNet's ImageNet win.</li>
+<li>The costs: training runs two to three times slower, batch normalization largely replaced dropout in convnets, and the benefit fades with very little or very much data.</li>
+<li>Dropout mirrors the psychology of desirable difficulties: making training harder and noisier on purpose buys better generalization.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Finish this page and you have the core of the paper; for full experimental setups and per-dataset detail, go to the original.</footer>
 </div>

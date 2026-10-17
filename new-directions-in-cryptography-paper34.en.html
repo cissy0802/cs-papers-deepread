@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 34</p>
@@ -156,17 +164,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Quantum threat</strong>: Shor's algorithm can efficiently solve discrete log and factoring on a quantum computer — <strong>once large-scale quantum machines arrive, DH and RSA both fall</strong>, and the field is now shifting to "post-quantum cryptography."</li>
 <li><strong>Slow, a supporting role only</strong>: public-key operations are far slower than symmetric encryption, so real systems typically <strong>use it only to agree on a symmetric key</strong>, then encrypt the actual data with a fast symmetric cipher (hybrid encryption).</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One line: split encryption/decryption into a "public + private" key pair, sidestepping the millennia-old knot of "you must first deliver the key securely" — publish the public key, keep the private one.</p>
-<p>② Pain: in symmetric crypto the key must be shared offline in advance — hard to deliver safely and exploding as n²/2 with the crowd — barring the age of "strangers being private any time."</p>
-<p>③ Mechanism one: the public key is an "open padlock" — anyone can lock, only you can unlock; use it backwards (private key stamps, public key verifies) and you get a digital signature.</p>
-<p>④ Mechanism two (deployable): Diffie–Hellman key exchange — each keeps a secret exponent, publishes only <code>g^a</code>/<code>g^b</code>, and one exponentiation converges both to <code>g^(ab)</code>; the eavesdropper is stuck on discrete log.</p>
-<p>⑤ Paradigm shift: security moves from Shannon's "informationally impossible" to "<strong>computationally infeasible</strong>" — keys can be short and half-public, as long as reversing them is unaffordably expensive.</p>
-<p>⑥ Results: introduced the public-key scheme, digital signatures, and one-way trapdoor functions, plus one usable protocol; the concrete trapdoor function (RSA) followed two years later.</p>
-<p>⑦ Impact: the start of modern cryptography — the shared bedrock of HTTPS / SSH / certificates / Bitcoin; the authors won the 2015 Turing Award.</p>
-<p>⑧ Limits: security is unproven, the basic version can't stop a man-in-the-middle (needs PKI), public-key is slow and used only as a supporting role, and quantum computing is a long-term threat.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolutionary biology · Zahavi's handicap principle</b>: Zahavi argued in 1975 that a peacock's tail is believable because a weak bird can't afford it and so can't fake it. A digital signature is likewise a signal nobody else can forge and anyone can check. The difference: a signature's unforgeability rests on secret knowledge that costs its holder almost nothing, while a handicap's rests entirely on the sender paying a real price.</li>
+<li><b>Economics · Becker on crime</b>: Becker's 1968 economics of crime treated offending as a cost–benefit choice, so deterrence need not make crime impossible, only unprofitable. Computational security is the same move: don't make breaking impossible, make it unaffordable. Unlike Becker's marginal costs, cryptography pushes the price to astronomical levels.</li>
+<li><b>Physics · entropy and irreversibility</b>: mixing paint is easy and un-mixing it is practically hopeless, the same shape as thermodynamic mixing. But physical irreversibility is statistical, while a one-way function is a fully deterministic computation whose "hard to reverse" is only a matter of nobody having found a fast method, with no law guaranteeing it.</li>
+<li><b>Quantum mechanics · BB84 key distribution</b>: Bennett and Brassard's 1984 protocol tackles the very same problem of distributing a key over a public channel, but stakes security on physics: measuring disturbs a quantum state and unknown states can't be cloned, so eavesdropping leaves traces. It trades "hard to compute" for "physically impossible," yet still needs an authenticated classical channel, so it can't escape DH's question of who is on the other end.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Diffie and Hellman's 1976 "New Directions in Cryptography" introduced public-key cryptography, splitting encryption and decryption into two different keys.</li>
+<li>Symmetric ciphers force both parties to share one key offline in advance, and delivering that key is itself a secure communication.</li>
+<li>Under symmetric schemes, n people talking privately in pairs need about n²/2 keys, which becomes unmanageable as the group grows.</li>
+<li>A public key works like an open padlock: anyone can snap it shut, only the private-key holder can open it, so publishing it is harmless.</li>
+<li>Running the key pair backwards, stamping with the private key and checking with the public one, yields an undeniable digital signature.</li>
+<li>In Diffie–Hellman key exchange each side keeps a secret exponent, publishes only a modular power, and both arrive at the same shared key.</li>
+<li>An eavesdropper who wants the Diffie–Hellman shared key must first solve the discrete logarithm problem, which is believed to be very hard.</li>
+<li>The yardstick of security shifted from Shannon's "informationally impossible" to "computationally infeasible," the paradigm of modern cryptography.</li>
+<li>The paper gave trapdoor functions only as a concept, basic DH cannot stop a man in the middle, and its security remains unproven.</li>
+<li>Computational security mirrors Becker's economics of crime: an attack need not be impossible, only too expensive to be worth it.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Finish this page ≈ grasp the paper's core; for the full protocol details and security discussion, go to the original.</footer>
 </div>

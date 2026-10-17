@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 11</p>
@@ -185,18 +193,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Closed and expensive</strong>: training cost millions and the weights were never released; researchers criticized it for deepening resource inequality and making results hard to reproduce independently.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: a 175-billion-parameter autocomplete model picks up dozens of tasks from a few examples, with zero weight changes.</p>
-<p>② The pain: pre-train + fine-tune needs tens of thousands of labels per task and yields narrow specialists; humans need one instruction and a demo.</p>
-<p>③ Mechanism: in-context learning — task description and demos go into the input as plain text; the model stays frozen, zero gradient updates, and the answer emerges from the continuation.</p>
-<p>④ Where it comes from: the corpus is full of "demo → answer" patterns; next-word training forces the model to internalize them, and prompts merely cue up the recorded ability.</p>
-<p>⑤ Experimental design: 8 models (125M → 175B) × three settings × dozens of benchmarks; the architecture copies GPT-2 — the only variable is scale.</p>
-<p>⑥ Core finding: few-shot scores rise steepest with scale, and the few-shot/zero-shot gap keeps widening — learning from examples is an ability that grows with size.</p>
-<p>⑦ Results: 86.4% on LAMBADA, 71.2% on TriviaQA beating closed-book fine-tuned models, generated news detected at ≈ chance; but SuperGLUE 71.8 still trails fine-tuned SOTA, and reasoning tasks stay weak.</p>
-<p>⑧ Impact: the prompting paradigm + model-as-a-service + the scale race; add instruction tuning and RLHF and you get ChatGPT.</p>
-<p>⑨ Limits: hallucination, bias, contested in-context learning mechanics, Chinchilla-proven suboptimal recipe, no instruction-following, closed and hard to reproduce.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · predictive coding</b>: In Rao and Ballard's 1999 model of visual cortex, higher areas keep predicting lower-level activity and only the prediction error travels upward; GPT-3 likewise grows a whole toolkit from the single goal of guessing the next word. Alike: prediction is the engine of learning. Unlike: the brain predicts in the service of a body and action, with errors constantly rewriting it, while GPT-3 at inference is frozen and learns nothing from a wrong guess.</li>
+<li><b>Psychology · Harlow's learning sets</b>: In 1949 Harry Harlow ran monkeys through hundreds of discrimination problems until they solved new ones in a single trial: "learning to learn." Spotting a task from a few demos is the same skill. Unlike: the monkeys were shaped by reward, while GPT-3 only ever practiced continuing text and was never told it was solving a problem.</li>
+<li><b>Complexity science · Anderson's "More Is Different"</b>: Physicist Philip Anderson argued in 1972 that large assemblies of particles show properties no single particle has, so each level needs its own laws. Few-shot ability strengthening with scale has that shape. Unlike: most of the paper's scaling curves rise smoothly rather than jumping like a phase transition.</li>
+<li><b>Buddhism · Yogācāra seeds (bīja)</b>: Yogācāra holds that the storehouse consciousness carries seeds that sprout only when conditions arise; GPT-3's skills were laid into its weights during pre-training, and the prompt is the condition. Unlike: the seeds are karmic imprints bound up with rebirth and liberation, whereas the model stores mere statistical residue of text.</li>
+<li><b>Philosophy · Wittgenstein's language games</b>: Philosophical Investigations (1953) locates meaning in use, in which game is being played right now; few-shot demos tell the model "we're playing English-to-French." Unlike: Wittgenstein's games are rooted in human forms of life, and GPT-3 has only ever seen text, which is exactly the sting of the "stochastic parrots" critique.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>GPT-3 scales a next-word-predicting, decoder-only Transformer to 175 billion parameters, pre-trained on about 300 billion tokens.</li>
+<li>The pre-train-then-fine-tune paradigm needs tens of thousands of labels per task and produces narrow specialists that exploit dataset shortcuts.</li>
+<li>In-context learning puts a task description and a few demos into the input as plain text, with frozen weights and zero gradient updates.</li>
+<li>Web text is full of demo-then-answer patterns, so next-word training forces a model to internalize them, and a prompt merely cues them up.</li>
+<li>The paper trains eight models from 125 million to 175 billion parameters on a GPT-2 architecture, making scale the real variable.</li>
+<li>Few-shot scores climb steepest with scale and pull away from zero-shot, so learning from examples is an ability that grows with size.</li>
+<li>GPT-3 shines on LAMBADA and closed-book TriviaQA but still trails fine-tuned models on SuperGLUE and natural language inference.</li>
+<li>Working with models shifts from collecting data and fine-tuning to writing prompts; add instruction tuning and RLHF and the road leads to ChatGPT.</li>
+<li>Confident fabrication, bias, closed weights, and the too-many-parameters, too-little-data recipe exposed by Chinchilla are the approach's main limits.</li>
+<li>Few-shot prompting resembles Harlow's monkeys learning to learn, except the monkeys were trained by reward and the language model only by continuing text.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full benchmark tables and contamination analysis, go to the original.</footer>
 </div>

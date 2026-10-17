@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 9</p>
@@ -216,17 +224,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The vocabulary problem went untouched</strong>: rare words remained unknown tokens (UNK), and "matching Moses" above holds only on the no-rare-word subset; that hole was later filled by BPE subword units (2016).</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① The pain: the encoder–decoder squeezes the whole sentence into one fixed-length vector — fixed capacity, so the longer the sentence the more is lost, and long-sentence BLEU plummets.</p>
-<p>② The core idea: for every word it generates, the decoder <strong>looks back at the source dynamically</strong> — score → softmax → weighted sum — into a context vector custom-made for that word.</p>
-<p>③ Mechanism: <code>eᵢⱼ = a(s₍ᵢ₋₁₎, hⱼ)</code>, <code>α = softmax(e)</code>, <code>cᵢ = Σ αᵢⱼ·hⱼ</code>; the scorer is a small network trained along with everything else (additive attention).</p>
-<p>④ "Soft" is the key: differentiable everywhere, so "where to look" and "how to translate" train jointly end-to-end, with no human alignment annotations — alignment falls out as a by-product.</p>
-<p>⑤ The supporting piece: a bidirectional RNN encoder gives each source word a context-aware annotation hⱼ for attention to draw on.</p>
-<p>⑥ Results: WMT'14 English–French, RNNsearch-50 at 26.75 vs the fixed-vector 17.82; long sentences barely degrade; 36.15 on the no-rare-word subset, past Moses at 35.63.</p>
-<p>⑦ Impact: attention became a universal architectural primitive — via Luong and GNMT all the way to the Transformer and the self-attention in every large model today.</p>
-<p>⑧ Limits: sequential RNN slowness; n×m scoring cost; soft alignment isn't true alignment and is debated as explanation; the UNK vocabulary problem was left for BPE.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Biased competition (Desimone &amp; Duncan 1995)</b>: In visual cortex, many stimuli compete for limited representation, and a top-down task signal tips the contest toward one — the same structure as the decoder state scoring every source position and softmax picking the winners. The difference: the brain has a hard capacity limit and competition is often winner-take-all, while softmax only reshuffles proportions and every word keeps a share.</li>
+<li><b>Philosophy · The extended mind (Clark &amp; Chalmers 1998)</b>: Otto, who has Alzheimer's, doesn't remember addresses; he checks his notebook, and the two philosophers argue the notebook is part of his memory. Attention likewise turns the source sentence from something to memorize into an external store to consult. The difference: Otto's notebook persists, while this store is wiped after every sentence.</li>
+<li><b>Buddhism · Manaskāra (attention)</b>: Yogācāra lists manaskāra among the five omnipresent mental factors: it accompanies every moment of mind and turns the mind toward its object. A decoder that recomputes attention for every word it writes is attention in every moment. The difference: manaskāra fixes the mind on one object, while softmax spreads its gaze across the whole sentence.</li>
+<li><b>Economics · The scarcity of attention (Herbert Simon 1971)</b>: Simon argued that in an information-rich world the scarce resource is attention, which must be allocated across competing sources. Softmax pins the weights to sum to 1 — a budget that has to be spent in full. The difference: human attention costs real time, while this budget is reissued free at every step.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Neural translation in 2014 squeezed the whole sentence into one fixed-length vector, so long-sentence BLEU collapsed.</li>
+<li>Bahdanau, Cho and Bengio's RNNsearch lets the decoder look back over the entire source sentence for every word it generates.</li>
+<li>Attention has three steps: a small network scores each source position, softmax turns scores into weights, and a weighted sum yields the context vector.</li>
+<li>Because the alignment is soft and differentiable, where to look and how to translate are learned jointly, with no human alignment labels.</li>
+<li>A bidirectional RNN encoder gives each source word a context-aware annotation for attention to pick up.</li>
+<li>Long sentences stop degrading: information skips the single-vector bottleneck, and gradients get a shortcut to any source position.</li>
+<li>On WMT'14 English–French, RNNsearch-50 scored 26.75 BLEU against 17.82 for the fixed-vector encoder–decoder.</li>
+<li>On sentences without rare words, the Bahdanau attention model scored 36.15, edging past the statistical system Moses at 35.63.</li>
+<li>Score, softmax, weighted sum: via Luong and GNMT, this recipe grew into the Transformer and the self-attention in today's large models.</li>
+<li>Softmax pins attention weights to sum to 1 — Herbert Simon's scarce attention budget, except reissued free at every step.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full model configs and derivations, go to the original.</footer>
 </div>

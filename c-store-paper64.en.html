@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 64</p>
@@ -217,18 +225,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Physical design becomes the new burden</strong>: which projections to build, in what sort order, with how much redundancy, decides performance outright; the paper hands that hard problem to an automatic design tool, and a bad choice degrades into "bulky and still slow."</li>
 <li><strong>Not for OLTP</strong>: changing one row touches several projections and several encodings, and read-only queries see a snapshot seconds old — a deliberate trade, not an oversight.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: columnar storage + heavy compression + sorted redundant projections + a split write/read path, a database rebuilt for workloads read far more than written.</p>
-<p>② The pain: a row store keeps whole rows together, while analytical queries touch few columns, forcing the disk to haul fields nobody reads.</p>
-<p>③ Columnar mechanics: each column stored contiguously, only the needed ones read; rows are stitched back by position ("the i-th value is the i-th row"), with no row id per value.</p>
-<p>④ Compression: encoding picked by "sort key or not × few or many distinct values" — RLE / bitmaps / deltas / none; the key is that operators consume the compressed form, saving space and CPU at once.</p>
-<p>⑤ Projections: no tables, only overlapping column groups each sorted on a key and cut into segments; a sorted copy serves as index, compression multiplier and replica, while join indices stitch across projections.</p>
-<p>⑥ Writes: new data enters the uncompressed WS and a background tuple mover merges it in bulk into the packed RS, with queries reading both — an ancestor of the "small write area, big read area, background merge" pattern.</p>
-<p>⑦ Concurrency and recovery: read-only queries take a snapshot at a past epoch and hold no locks; RS is not logged, and K-safety replicas query each other's missing data back.</p>
-<p>⑧ Results: on seven TPC-H-style queries, about 164× a commercial row store and 21× a commercial column store, in roughly 40% of the row store's space — but the write side was unfinished and the authors call it preliminary.</p>
-<p>⑨ Impact and limits: commercialized as Vertica and the shared foundation under ClickHouse / Redshift / Snowflake / BigQuery and Parquet / ORC; yet the comparison was uneven, the sources of the gain unseparated, join indices never landed in practice, and the physical-design problem was handed off to a tool.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · complementary learning systems (McClelland, McNaughton &amp; O'Reilly, 1995)</b>: the hippocampus records new episodes fast, then replays them so they fold slowly into neocortical long-term knowledge — the same shape as WS taking writes and the tuple mover merging them into RS. Unlike it, cortex keeps the gist and drops detail; the tuple mover may not lose a row.</li>
+<li><b>Biology · degeneracy (Edelman &amp; Gally, 2001)</b>: redundancy is identical parts doing one job; degeneracy is structurally different parts giving the same output, and it is the latter that makes life robust. Projections in different sort orders that answer the same query and back each other up are degenerate in this sense — though a design tool computes them, evolution doesn't.</li>
+<li><b>Neuroscience · Barlow's redundancy reduction (1961)</b>: each sensory relay strips redundancy and recodes, and downstream stages work on the compressed code — the same move as C-Store operators eating RLE runs directly. But neural codes may be lossy; database compression must round-trip exactly.</li>
+<li><b>Philosophy of language · Saussure's "value" (1916)</b>: a sign's value lies not in itself but in its place in the system; in a column store a value's row is likewise just its position. The gap: Saussure's position is a web of differences, the column store's a mere ordinal.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>C-Store rebuilds the database for read-mostly analytics with columns, heavy compression, sorted projections and split writes.</li>
+<li>Analytical queries touch a few columns, yet a row store hauls whole rows, wasting most disk I/O.</li>
+<li>A column store keeps each column contiguous and rebuilds rows by position, storing no row ids.</li>
+<li>C-Store picks RLE, bitmaps, deltas or no encoding per column, by sortedness and distinct-value count.</li>
+<li>Operators compute on compressed data without decompressing, so compression saves CPU as well as I/O.</li>
+<li>Projections are overlapping column groups sorted on different keys, serving as index, compressor and replica at once.</li>
+<li>Writes land in an uncompressed WS; a background tuple mover merges them in bulk into the packed RS.</li>
+<li>Read-only queries see a slightly stale epoch snapshot without locks; the unlogged RS recovers from K-safe replicas.</li>
+<li>Preliminary tests ran about 164× faster than a commercial row store, but the write path was unfinished and the comparison uneven.</li>
+<li>Commercialized as Vertica, C-Store made columns plus heavy compression the default design for data warehouses.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Finish this page and you have the paper's core; for the full encoding details and query executor design, go read the original.</footer>
 </div>

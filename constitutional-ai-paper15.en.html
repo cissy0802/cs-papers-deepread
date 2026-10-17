@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 15</p>
@@ -187,17 +195,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Helpfulness still relies on human feedback</strong>: the paper only swaps the "harmless" half for AI feedback; supervising helpfulness still needs humans — it isn't fully free of human labeling.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: replace human harmfulness labeling with a short "constitution" of principles, and have the AI align itself by self-critiquing, rewriting, and judging against them.</p>
-<p>② Pain: RLHF for a harmless assistant needs humans to label harmful content case by case (costly, punishing, unscalable), and the resulting model tends to "play dead" and evade.</p>
-<p>③ SL stage: the model answers tricky prompts → <strong>self-critiques</strong> against a random principle → <strong>rewrites</strong>; after several washing rounds the rewrites <strong>supervised-finetune</strong> it into SL-CAI.</p>
-<p>④ RL stage (RLAIF): the model gives two answers to a prompt → <strong>judges which is better</strong> by a principle → this AI feedback trains a preference model → RL yields RL-CAI; <strong>chain-of-thought</strong> makes judging more accurate.</p>
-<p>⑤ Division of labor: the harmlessness signal is produced almost entirely by AI, helpfulness still uses human feedback; the constitution is a few dozen readable, editable natural-language principles.</p>
-<p>⑥ Results: RL-CAI beats standard RLHF on the "helpful × harmless" frontier, with <strong>markedly less evasion</strong>, and uses zero human harmfulness labels.</p>
-<p>⑦ Impact: pioneered the RLAIF paradigm, moved the human role from "labeling" up to "writing principles," and is a cornerstone of training Claude.</p>
-<p>⑧ Limits: "whose constitution" unresolved; AI judging inherits model biases; principles → behavior not fully controllable; not the same as truly safe; helpfulness still relies on humans.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Buddhism · the Pratimoksha and uposatha</b>: a monk's Pratimoksha is a written code recited every fortnight at the uposatha; after each section the reciter asks whether anyone present has broken a rule, much like checking yourself against principles one by one. The difference: Vinaya rules were mostly laid down by the Buddha in response to specific incidents, so their origin looks more like RLHF's case-by-case accumulation.</li>
+<li><b>Psychology · Vygotsky's inner speech</b>: Vygotsky argued that children first regulate themselves by talking aloud, and that this private speech later "goes underground" as silent inner speech. SL-CAI likewise writes its critiques and rewrites out, then finetunes them into the weights so no live critique is needed. The difference: a child's self-talk comes from dialogue with adults; CAI's comes from a written list.</li>
+<li><b>Philosophy · Kant's autonomy</b>: in the 1785 Groundwork of the Metaphysics of Morals, Kant defines the moral agent as a rational being that gives the law to itself, and a model restraining itself by principles looks like exactly that. The crucial mismatch is right there: the model did not legislate its constitution; researchers wrote it and handed it over, which in Kant's terms is closer to heteronomy. That is the philosophical form of the "whose constitution?" critique above.</li>
+<li><b>Economics · Goodhart's law</b>: discussing monetary policy in 1975, Charles Goodhart observed that any statistical regularity tends to collapse once it is used as a target for control. When RL-CAI maximizes the preference model's score, the AI judge's biases can get amplified by optimization. The difference: Goodhart had in mind people actively gaming the rules; here the gaming is just a side effect of optimization pressure.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Constitutional AI replaces human harm labels with a short written constitution, letting the model supervise itself by those principles.</li>
+<li>Training a harmless assistant with RLHF means humans labeling harmful content one by one, which is costly, distressing and hard to scale.</li>
+<li>Models trained hard on a harmlessness signal turn evasive, refusing anything sensitive without explaining why.</li>
+<li>In the SL stage the model critiques and rewrites its own answers against randomly drawn principles, and the rewrites finetune SL-CAI.</li>
+<li>In the RL stage the model judges which of two answers better fits a principle; those AI preferences train a preference model for RL, which is RLAIF.</li>
+<li>Having the judging model write a chain of thought before deciding makes RLAIF judgments more accurate and stable.</li>
+<li>The final model uses AI feedback for harmlessness and human feedback for helpfulness, guided by a few dozen readable, editable principles.</li>
+<li>RL-CAI is more harmless than standard RLHF at similar helpfulness, explains its refusals, and used no human harm labels at all.</li>
+<li>Constitutional AI moves the human role from labeling examples to writing principles, making RLAIF an alignment paradigm alongside RLHF.</li>
+<li>Who writes the principles, and how an AI judge's biases get amplified into training, remain Constitutional AI's two core open questions.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Reading this page ≈ getting the paper's core; for the full constitution text, prompts, and experimental details, go read the original.</footer>
 </div>

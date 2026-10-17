@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 6</p>
@@ -199,17 +207,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The loss wasn't the endpoint</strong>: successors like SigLIP (sigmoid instead of softmax contrastive loss) and EVA-CLIP improve clearly on the original design — the recipe was far from optimal.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One line: 400M web image–text pairs + contrastive learning put images and language into one vector space; categories are written in text, on demand.</p>
-<p>② Pain: supervised vision was expensive to label, closed-category, and brittle under distribution shift — while the web offered nearly free language supervision.</p>
-<p>③ Mechanism 1 (contrastive objective): an N×N similarity table; pull true pairs up, push mismatches down. "Recognize, don't recite" is ~4× more efficient than predicting words — the key that let scale climb.</p>
-<p>④ Mechanism 2 (zero-shot): a classifier = class names written as sentences through the text encoder; prompt templates + an 80-template ensemble add almost 5 points.</p>
-<p>⑤ Results: 76.2% zero-shot ImageNet, matching supervised ResNet-50; wins 16 of 27 datasets; closes the robustness gap under distribution shift by up to 75%; but MNIST is only 88%.</p>
-<p>⑥ Impact: text understanding for Stable Diffusion / DALL·E 2, the vision encoder for LLaVA-style models, open-vocabulary detection/segmentation/retrieval, and the OpenCLIP + LAION open ecosystem.</p>
-<p>⑦ Limits: weak counting and fine-grained skills, bag-of-words compositionality, fooled by a written label, web-data bias, and ~1000× compute short of SOTA by zero-shot alone.</p>
-<p>⑧ Step back: it's the "scale + weak supervision + general interface" creed landing in vision — vision's GPT moment.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · concept cells (Quiroga 2005)</b>: Quiroga and colleagues recorded a “Halle Berry neuron” in the medial temporal lobe of epilepsy patients that fired for her photos, a drawing, and even her printed name — picture and word converging on one concept, the same shape as CLIP’s shared space. Unlike CLIP: concept cells are sparse and form after a few exposures, while CLIP smears concepts across dense vectors learned from 400M pairs.</li>
+<li><b>Developmental psychology · cross-situational word learning (Smith &amp; Yu 2008)</b>: 12- and 14-month-olds heard two words while seeing two objects, with no clue which went with which, yet pooled co-occurrence across trials to learn six word–object pairs in minutes. CLIP’s N×N matching is the same trick — except infants need dozens of trials, CLIP hundreds of millions.</li>
+<li><b>Linguistics / philosophy · Saussure’s “only differences”</b>: Saussure’s <i>Course in General Linguistics</i> (1916) holds that a sign means what it means by contrast with other signs. A contrastive loss likewise only asks that true pairs sit closer than mismatches, so meaning is pure relative position. The difference: Saussure’s system is closed inside language, while CLIP anchors words to images outside it.</li>
+<li><b>Psychology · the Stroop effect (1935)</b>: show the word “RED” printed in blue ink and ask for the ink color, and people slow down — reading is automatic and intrudes on other judgments. An apple with an “iPod” note fooling CLIP is the same interference; but people merely slow down and still answer right, while CLIP flips its answer, having no control process to suppress the reading.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>CLIP trains an image encoder and a text encoder contrastively on 400M web image–text pairs, placing both in one vector space.</li>
+<li>Supervised vision before CLIP was costly to label, locked to fixed categories, and brittle under distribution shift.</li>
+<li>Captions next to web images are a nearly free supervision signal, far richer in meaning than a class index.</li>
+<li>Instead of generating captions word by word, CLIP only matches images to texts in an N×N table, about 4× more efficient.</li>
+<li>Zero-shot classification writes each class name as “a photo of a …”, encodes it, and picks the class closest to the image vector.</li>
+<li>Prompt templates that disambiguate words, plus an 80-template ensemble, raise zero-shot ImageNet accuracy by almost 5 points.</li>
+<li>The best CLIP reaches 76.2% zero-shot on ImageNet, matching a supervised ResNet-50 and closing the distribution-shift robustness gap by up to 75%.</li>
+<li>CLIP’s text encoder and shared image–text space became the foundation of Stable Diffusion, DALL·E 2, and LLaVA-style multimodal models.</li>
+<li>CLIP is weak at counting, fine-grained classes, and compositional relations, and a paper note reading “iPod” makes it misread an apple.</li>
+<li>The brain’s “Halle Berry neuron” fires for both photos and the written name, the same structure as CLIP’s shared image–text space.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · this page ≈ the core of the paper; for the full experiment matrix and all 30 datasets, see the original.</footer>
 </div>

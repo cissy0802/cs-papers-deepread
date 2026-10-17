@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 7</p>
@@ -192,17 +200,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Evidence lagged the claim</strong>: the original experiments are all synthetic; the paper's value was only fully stamped by large-scale real-world deployment years later.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① The disease: an RNN's correction signal is multiplied by "weight × slope" at every step back through time, vanishing or exploding exponentially — dependencies more than ten-odd steps apart can't be learned (Hochreiter's 1991 diagnosis).</p>
-<p>② Core idea: the constant error carousel (CEC) — a linear self-loop with weight fixed at 1; memories and error signals flow along it with a multiplier of exactly 1, crossing a thousand steps without decay.</p>
-<p>③ Second idea: multiplicative gates. The input gate governs writing, the output gate governs reading, resolving the conflict of "one weight must both write and block noise"; gates are 0–1 openings learned by the network itself.</p>
-<p>④ Formulas: original <code>c(t) = c(t−1) + i·g</code>; after Gers et al. added the forget gate in 2000, <code>c(t) = f·c(t−1) + i·g</code> — today's standard LSTM.</p>
-<p>⑤ Results: learns across 1000-step lags on artificial tasks where BPTT/RTRL fail at a few dozen steps; but the paper has no real-world benchmark.</p>
-<p>⑥ Impact: ruled sequence modeling for twenty years — handwriting recognition, speech recognition, seq2seq translation, Google voice search and GNMT all sat on top of it.</p>
-<p>⑦ Legacy: gating (GRU, highway networks) and the "decay-free path with multiplier 1" (residual connections) live on today.</p>
-<p>⑧ Limits: the original lacked the forget gate; effective memory is finite; inherently sequential and expensive to train — handed the throne to the fully parallel Transformer in 2017.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · prefrontal–basal ganglia gating</b>: O'Reilly and Frank's 2006 PBWM model has prefrontal cortex hold information through self-sustaining activity while the basal ganglia act as a gate deciding when to update it. Holding and controlling are split across two structures, just like the CEC plus gates. The difference: PBWM learns to open the gate from reward signals rather than backpropagation through time, and its subcortical gating is still debated experimentally.</li>
+<li><b>Complexity science · critical branching ratio</b>: In 2003 Beggs and Plenz recorded "neuronal avalanches" in rat cortical slices where each firing triggers about one successor on average: below 1 activity dies out, above 1 it runs away. The CEC pins the backward multiplier at exactly 1, the same knife edge. But the brain is thought to self-organize near criticality, while LSTM hard-wires it.</li>
+<li><b>Psychology · the Atkinson–Shiffrin multi-store model</b>: In this 1968 model, items survive in short-term memory only through a rehearsal loop, and control processes decide what gets rehearsed: a self-loop plus a valve, much like the CEC plus gates. Unlike the CEC, human rehearsal costs attention and holds very little, while the carousel keeps its contents for free.</li>
+<li><b>Buddhism · the Yogācāra storehouse consciousness</b>: Yogācāra holds that experience "perfumes" the mind with seeds stored in the ālaya-vijñāna, which manifest only when conditions ripen: write, lie dormant, read out on cue, roughly input gate, cell state, output gate. The mismatch: the seeds arise and perish moment by moment rather than being kept intact, and the theory is about karma and liberation, not learning.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>When an RNN trains, the error signal flowing back through time is multiplied by weight times slope at each step, so it vanishes or explodes exponentially.</li>
+<li>Because of vanishing gradients, a plain RNN in practice learns only dependencies spanning about ten steps or fewer.</li>
+<li>The heart of LSTM is the constant error carousel: a linear self-loop with weight fixed at 1 that carries error signals across a thousand steps without decay.</li>
+<li>An input gate controls writing and an output gate controls reading, separating what to store from when to touch it and resolving the input weight conflict.</li>
+<li>Each gate is a small sigmoid neuron with an opening between 0 and 1, learned from the current input and the previous state.</li>
+<li>The original 1997 LSTM had no forget gate, so its state could only grow; Gers and colleagues added one in 2000, giving today's standard form.</li>
+<li>Hochreiter and Schmidhuber tested only on synthetic tasks, where LSTM bridged 1,000-step lags while BPTT and RTRL failed at a few dozen.</li>
+<li>LSTM ruled sequence modeling for about two decades, underpinning handwriting recognition, speech recognition, seq2seq translation and Google's GNMT.</li>
+<li>Gating lives on in GRUs and highway networks, and the idea of a multiplier-of-one path lives on in the residual connections of ResNet and the Transformer.</li>
+<li>LSTM is inherently sequential, cannot parallelize across time and has limited effective memory, which is why the fully parallel Transformer replaced it in 2017.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full derivations and all experiments, go to the original.</footer>
 </div>

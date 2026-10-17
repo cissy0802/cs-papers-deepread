@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 53</p>
@@ -161,18 +169,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Only for discrete-action, reactive games</strong>: continuous control (e.g., a robot arm's torque) needs other methods (DDPG and the like).</li>
 <li><strong>No convergence guarantee, sensitive to hyperparameters</strong>: that it works is more a triumph of engineering and empirics than of proven stability.</li>
 </ul>
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: use a convolutional network to approximate Q-learning's action-value function <code>Q(s,a)</code>, learning to play Atari end-to-end from pixels and score alone.</p>
-<p>② The pain: RL data is sparse, delayed, strongly correlated, and shifts with the policy; "neural network + Q-learning + bootstrapping" easily diverges (the deadly triad).</p>
-<p>③ The target: the Bellman form <code>y = r + γ·max Q(s',a')</code> as the "answer," minimizing <code>(y−Q(s,a))²</code> — turning RL into supervised regression toward a self-computed target.</p>
-<p>④ The Q-network: input the last 4 frames (carrying motion), one forward pass outputs a Q value per action, take the max.</p>
-<p>⑤ Key stabilizer: experience replay — store (s,a,r,s') in a replay pool, train on random minibatches, breaking correlation, reusing data, smoothing distribution shift.</p>
-<p>⑥ Engineering: ε-greedy exploration, reward clipping to {−1,0,+1}, the same hyperparameters across all 7 games; the 2015 <em>Nature</em> version added a target network for true stability.</p>
-<p>⑦ Results: 6 of 7 games beat all prior methods, 3 surpassed human experts, all with one architecture and zero customization.</p>
-<p>⑧ Impact: founded deep reinforcement learning, leading straight to the Nature human-level version, AlphaGo, and a whole subsequent wave of methods.</p>
-<p>⑨ Limits: extremely sample-hungry, overestimates values, fails on sparse rewards / long-horizon planning, discrete actions only, no convergence guarantee.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · hippocampal replay (Wilson &amp; McNaughton, 1994)</b>: place cells that fired together while a rat ran a maze fire together again during the sleep that follows, as if the day were being replayed for consolidation. Experience replay is the engineered version of that night-time diary. The difference: the brain replays selectively and in compressed time, while DQN samples its buffer uniformly at random.</li>
+<li><b>Neuroscience · dopamine as reward-prediction error (Schultz, Dayan &amp; Montague, 1997)</b>: dopamine neurons burst at an unexpected juice reward, and once the reward is predictable the burst moves to the cue, which is exactly the temporal-difference "actual minus expected" signal. Unlike DQN, the brain broadcasts that error as one scalar to many regions at once.</li>
+<li><b>Psychology · interleaved practice (Kornell &amp; Bjork, 2008)</b>: people who studied 12 painters' works mixed together identified new paintings better than those who studied one painter at a time, yet nearly 80% believed blocking had helped more. Shuffled replay exploits the same effect, minus the illusion of fluency a network never feels.</li>
+<li><b>Philosophy · Neurath's boat (Otto Neurath)</b>: sailors must rebuild their ship plank by plank at sea, never in dry dock; bootstrapping likewise corrects one's estimates using one's own estimates. Neurath's ship does not warp from the repairs, though, and a Q-network can, which is why it needs replay and later a target network to hold steady.</li>
+<li><b>Behavioral economics · hyperbolic discounting (George Ainslie, 1975)</b>: people and pigeons discount steeply up close and gently far out, so they reverse preferences as a small, sooner reward draws near. DQN's γ = 0.99 is exponential and time-consistent: no last-minute reversals, but no reason to invent precommitment either.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>DQN approximates Q-learning's action-value function with a convolutional network, learning Atari from raw pixels and score alone.</li>
+<li>Reinforcement-learning data is delayed, strongly correlated, and shifts with the policy, breaking every assumption deep learning relies on.</li>
+<li>Combining a neural network, Q-learning, and bootstrapping tends to diverge, a pattern later named the deadly triad.</li>
+<li>The training target is the Bellman form r + γ·max Q(s′,a′), turning reinforcement learning into regression toward a self-computed target.</li>
+<li>The Q-network takes the last four stacked frames to capture motion and scores every action in a single forward pass.</li>
+<li>Experience replay stores transitions in a million-entry buffer and trains on random minibatches, breaking correlation, reusing data, and stabilizing learning.</li>
+<li>Epsilon-greedy exploration, reward clipping to {−1, 0, +1}, and one shared set of hyperparameters cover all seven games without per-game tuning.</li>
+<li>DQN beat all prior methods on six of seven games and surpassed human experts on Breakout, Enduro, and Pong.</li>
+<li>DQN launched deep reinforcement learning; the 2015 Nature version added a target network, and the lineage runs on to AlphaGo.</li>
+<li>DQN is sample-hungry, overestimates Q values, and fails at sparse rewards, while its replay buffer echoes how the hippocampus replays experience during sleep.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full network configs and experiment details, go to the original.</footer>
 </div>

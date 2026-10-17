@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 49</p>
@@ -151,18 +159,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>It often needs learning-rate warmup</strong>: training Transformers without warmup can be unstable because the early second-moment estimate is unreliable (analyzed and fixed by <strong>RAdam</strong> and others).</li>
 <li><strong>Memory overhead</strong>: each parameter needs two extra state values, <code>m</code> and <code>v</code> — roughly <strong>3× the parameter memory</strong> — a real burden at the hundred-billion-parameter scale, which spawned many memory-thrifty optimizer variants.</li>
 </ul>
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: Adam = momentum (1st moment) + per-parameter adaptive step (2nd moment) + bias correction, updating <code>θ ← θ − α·m̂/(√v̂+ε)</code>.</p>
-<p>② The pain: SGD's single learning rate is one-size-fits-all — too big oscillates, too small crawls, and sparse/steep/flat directions each need a different step; hand-tuning hurts.</p>
-<p>③ The ancestors: AdaGrad scales by past squared gradients but decays the rate to zero and "stalls"; RMSProp's moving average fixes the stall but lacks momentum and bias correction.</p>
-<p>④ Mechanism: m records direction (smoothing noise), v records magnitude (the ruler); head along m, divide by √v — the gradient scale cancels out and each step covers "a sensible distance."</p>
-<p>⑤ Signal-to-noise + auto-annealing: <code>m/√v</code> is roughly an SNR — bold when certain, small when not; near the optimum the ratio shrinks and steps rein themselves in.</p>
-<p>⑥ Bias correction: m and v start biased toward 0, so <code>÷(1−βᵗ)</code> undoes the start-up bias and gets the first steps right — the key patch over RMSProp.</p>
-<p>⑦ Defaults <code>α=.001, β₁=.9, β₂=.999</code> work nearly out of the box; the AdaMax variant uses the L∞ norm.</p>
-<p>⑧ Impact: became deep learning's default optimizer; Transformer/BERT/GPT/diffusion models are largely trained with Adam or AdamW.</p>
-<p>⑨ Limits: the original convergence proof was flawed (AMSGrad patches it); sometimes generalizes worse than SGD; weight decay must be decoupled (AdamW); often needs warmup; stores two extra states, costing memory.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · the BCM sliding threshold</b>: in Bienenstock, Cooper and Munro's 1982 theory, whether a synapse strengthens or weakens depends on a threshold that itself slides with a running average of the neuron's recent activity (textbooks usually write it as the average of activity squared). Adam sizing its steps by a running average of squared gradients is the same structure: both use "my own recent past" as the yardstick that keeps learning from running away. The difference: the BCM threshold decides the direction of change, while Adam's √v only scales the step and never flips it.</li>
+<li><b>Psychology · Weber's law</b>: Ernst Weber found in the 19th century that the smallest noticeable change grows in proportion to the starting stimulus, so we perceive relative rather than absolute differences. Dividing by √v likewise makes Adam respond to relative gradient size and ignore overall scale; unlike Weber's law, which breaks down for very faint stimuli, Adam patches the near-zero end with ε.</li>
+<li><b>Investing · the Sharpe ratio</b>: William Sharpe's 1966 "excess return over volatility" has the same shape as Adam's signal-to-noise-like m/√v — bet big when the direction is clear, pull back when things are choppy. Unlike it, Adam's denominator is an uncentered second moment, not a standard deviation with the mean subtracted.</li>
+<li><b>Psychology · anchoring</b>: Tversky and Kahneman (1974) showed that people estimate by starting from a number and adjusting too little, so the starting point drags the answer. Moments that start at 0 and get pulled down are a model "anchored on zero"; the difference is that people can't see their anchor, whereas Adam knows its bias is exactly 1−βᵗ and simply divides it out.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Plain SGD uses one global learning rate for everything: too large and it oscillates or diverges, too small and it crawls, yet parameters need wildly different step sizes.</li>
+<li>AdaGrad scales each step by the accumulated sum of past squared gradients, but that denominator only grows, so the learning rate decays to zero and stalls early.</li>
+<li>RMSProp fixes the stall with an exponential moving average, but has no momentum and no correction for the moving average's start-up bias.</li>
+<li>Kingma and Ba's Adam keeps two moving averages per parameter: a first moment m for direction and a second moment v for magnitude and jitter.</li>
+<li>Adam steps along the smoothed direction m and divides by √v per coordinate, so the overall scale of the gradient cancels out automatically.</li>
+<li>The ratio m/√v acts like a signal-to-noise ratio: confident directions get big steps, and near the optimum the ratio shrinks, an automatic annealing.</li>
+<li>Bias correction divides the zero-initialized m and v by 1−βᵗ so the very first steps are correctly sized, Adam's key patch over RMSProp.</li>
+<li>The defaults α=0.001, β₁=0.9, β₂=0.999 work nearly out of the box, making Adam and AdamW the default optimizers for Transformers, GPT and beyond.</li>
+<li>Adam's original convergence proof was flawed (AMSGrad patches it), it sometimes generalizes worse than tuned SGD, and its two extra states cost memory.</li>
+<li>Adam's m/√v has the same shape as the Sharpe ratio in investing, return over volatility, except that Adam's denominator does not subtract the mean.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full algorithm pseudocode and convergence proof, go to the original.</footer>
 </div>

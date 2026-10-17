@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 72</p>
@@ -222,18 +230,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>状态与通道可能很大</strong>：论文不关心记录一次状态要花多少钱，而工程上这正是主要成本——高吞吐通道的在途消息可能极多，大状态算子的快照可以是 GB 级。Flink 后来的增量快照与 <em>unaligned checkpoint</em>（放弃 barrier 对齐、把在途数据一并记下）都是在偿还这笔账。</li>
 <li><strong>拓扑假设</strong>：要求 marker 能沿边到达所有进程（论文按强连通图讨论）；成员动态进出的现代系统里，这个前提要额外维护。</li>
 </ul>
-<h2 data-tts="a1bca0f89d6f2896">要点</h2>
-<div class="tl">
-<p>① 一句话：不停机、不对表，靠一种叫 marker 的特殊消息，给运行中的分布式系统拍一张<strong>因果一致</strong>的全局照片。</p>
-<p>② 痛点：没有共享内存、没有全局时钟，「看一眼当前全局状态」只能挨个问，而挨个问会让钱凭空多或凭空少——死锁检测、终止检测、分布式 GC 全卡在这。</p>
-<p>③ 概念转换：放弃「同一瞬间」，改追求「<strong>一致割</strong>」——照片里绝不能出现「收到了还没发出的消息」；而「已发未收」完全合法。</p>
-<p>④ 全局状态 = 所有进程状态 <strong>+ 所有通道里的在途消息</strong>。后半截最易被忘，也正是钱丢失的地方。</p>
-<p>⑤ 算法只有两条规则：发送规则「先记录自身、再向每条出边发 marker、然后才发后继消息」；接收规则「首次收到 marker 就记录自身并转发（该通道记空），否则把『记录自身之后到这枚 marker 之前』收到的消息记为该通道状态」。</p>
-<p>⑥ 为什么对：把「记录状态」看作由白变红。规则次序保证 marker 排在所有红消息之前，FIFO 保证次序不被打乱——marker 于是成了干净的剪刀：红消息进不了照片，白消息一条不漏。</p>
-<p>⑦ 代价：每条通道一枚 marker，共 <code>|E|</code> 条；与业务计算完全并发，不停机、不加锁、不需时钟同步。</p>
-<p>⑧ 最微妙处：<code>S*</code> 可能从未真实发生，但 <code>S_i</code> → <code>S*</code> → <code>S_φ</code> 可达——它是一个「本可能发生」的世界，这对<strong>稳定性质</strong>的判定已经足够。</p>
-<p>⑨ 影响与局限：一致割成为标准词汇，Flink 的 barrier 快照是它的直系变体；但它依赖 FIFO、不容错、只管稳定性质、要求全员改造，状态还可能很大。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>会计 · 银行对账里的「在途存款」</b>：月末把公司账和银行对账单对平，必须单列已入账、银行尚未收到的在途存款和已开出未兑付的支票——这正是「全局状态 = 各方账本 + 通道里的在途消息」。不像的是，会计靠事后逐笔核对补齐在途项，快照靠 marker 在线划界。</li>
+<li><b>神经科学 · 知觉的「后述」（postdiction）</b>：Eagleman 与 Sejnowski 2000 年在 Science 上用闪光滞后错觉论证，大脑归到闪光那一刻的知觉，取决于此后约 80 毫秒内发生的事。「此刻」是事后拼出来的，像 S* 由不同物理时刻的碎片拼成；不像的是大脑不保证一致，错觉正是拼错的结果。</li>
+<li><b>意识哲学 · Dennett 的多重草稿模型</b>：Dennett 在《意识的解释》（1991）里否认存在一个所有信号同时汇合、「此刻」被统一呈现的笛卡尔剧场，意识是各处并行、在不同时间定稿的草稿。这和「没有全局时钟、不存在同一瞬间」同构；但 Dennett 认为不存在唯一正确的版本，快照算法却给出了一个可证明一致的版本。</li>
+<li><b>哲学 · 可能世界与可达关系</b>：Kripke 的模态语义用「从当前世界可达的可能世界」来定义「可能」。S* 正是这样一个世界：它未必是实际发生的那个，却从起点可达、又能通向终点；稳定性质在这条可达链上的保持，有点像模态逻辑里沿可达关系传递的必然命题。不像的是，这里的可达关系由因果重排具体给出，不是抽象设定。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Chandy 与 Lamport 1985 年的快照算法，不停机、不对表，就能给运行中的分布式系统拍一张因果一致的全局照片。</li>
+<li>没有共享内存和全局时钟时，挨个询问各进程会拼出钱凭空多或凭空少的错误全局状态。</li>
+<li>全局状态不只是各进程状态之和，还必须包括所有通道里尚在途中的消息。</li>
+<li>论文把目标从「同一瞬间」换成「一致割」：照片里可以有已发未收的消息，但绝不能有已收未发的消息。</li>
+<li>算法只有两条规则：先记录自身再向每条出边发 marker；首次收到 marker 就记录自身，否则把窗口内收到的消息记为通道状态。</li>
+<li>规则次序让 marker 排在所有拍照后发出的消息之前，FIFO 通道保证次序不乱，一致性由此自动成立。</li>
+<li>快照的额外开销是每条通道恰好一枚 marker，并且与业务计算完全并发，不暂停也不加锁。</li>
+<li>记录下的全局状态未必真实出现过，但它从起始状态可达、又能到达结束状态，足以判定死锁、终止等稳定性质。</li>
+<li>Flink 的异步屏障快照是这篇论文的直系后代，数据流里的 barrier 就是 marker。</li>
+<li>算法依赖 FIFO、不容错、只对稳定性质有效；它拼出的「此刻」像大脑的后述知觉，是事后拼成的。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式化模型与正确性证明，再去翻原文。</footer>
 </div>

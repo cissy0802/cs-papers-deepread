@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 51</p>
@@ -169,18 +177,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>现实攻击多走更省事的路</strong>：野外真正高发的供应链攻击是依赖库投毒、构建服务器入侵等，Thompson 式的编译器自繁殖后门至今罕见于实战——它的价值主要在<strong>思想层面</strong>：给「可审计 = 可信」这个默认信念永久打上问号。</li>
 <li><strong>演讲的道德尾声较松散</strong>：文末 Thompson 转而批评媒体美化「入侵者」、主张「闯入计算机系统应与闯入邻居家一样可耻」——这段道德呼吁与前面的技术主体关系较松，属个人立场，常被后世单独讨论。</li>
 </ul>
-<h2 data-tts="235461e80a81d3af">要点</h2>
-<div class="tl">
-<p>① 一句话：用一个自我繁殖、源码里查不到的编译器后门，证明「你无法信任任何不是你亲手从头造出来的代码」。</p>
-<p>② 痛点：安全界默认「读源码干净 = 可信」；但你审的是源码，运行的是二进制，中间隔着一个没被审过的编译器。</p>
-<p>③ 第 0 步：程序能「产出自己」（quine）——后门可脱离源码而存活。</p>
-<p>④ 第 1 步：编译器会「学习」，一段能力可只存于二进制、在源码里隐形（以新增转义符 <code>\v</code> 为例）。</p>
-<p>⑤ 第 2 步：编译 login 时注入万能密码后门；编译「编译器自己」时把这套逻辑复制进新二进制；再把恶意代码从源码删净——后门永生于二进制、源码全干净。</p>
-<p>⑥ 关键：传染发生在「编译」这个动作里，重编整套系统也洗不掉。</p>
-<p>⑦ 结论：<code>You can't trust code that you did not totally create yourself</code>；且攻击可下移到汇编器、微码、硬件——信任无法靠读代码封顶。</p>
-<p>⑧ 影响：供应链攻击的思想原型；催生可复现构建与多编译器交叉验证（DDC）；SolarWinds、XZ 等事件的思想回声。</p>
-<p>⑨ 局限：DDC 可在合理假设下检测；需一次性污染可信二进制为前提；现实攻击多走更省事的路；价值主要在思想。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · 内源性逆转录病毒（ERV）</b>：逆转录病毒把自己的基因写进宿主 DNA，一旦嵌进生殖细胞，就随每次复制和繁殖代代相传，外面早已没有那只病毒——和后门只活在二进制、靠「编译」这个复制动作延续是同一个结构。不像的是，ERV 大多已经失活，有些还被宿主收编派上正用（如参与胎盘形成的 syncytin），后门却始终只为攻击者服务。</li>
+<li><b>生物 · 朊病毒（Stanley Prusiner）</b>：朊病毒是折错的蛋白质，会让碰到的正常蛋白照着自己折错，而基因这份「源码」毫无异常。像在病变藏在制造过程、不在配方里；不像在朊病毒不带信息也不挑目标，后门却精确认出 login 和编译器两个目标。</li>
+<li><b>哲学 · 明希豪森三难（Hans Albert）</b>：任何论证一路追问理由，只剩三条路：无穷后退、循环论证、在某处武断停下。Thompson 的信任链正是如此，最后只能选一层「就信它」。不同在于，Albert 由此主张知识永远可错、要持续批判，工程上则用 DDC 这类交叉验证把武断的那一步缩小。</li>
+<li><b>佛学 · 唯识的「种子」与「熏习」</b>：唯识宗说行为熏习成种子藏进阿赖耶识，日后再生出新的行为，表层意识看不到来处。这像编译器的「学习」：一次编译把知识烙进二进制，源码里已无痕。不像在于唯识的出路是「转依」、从根上转化，Thompson 却认为无法从内部自查，只能去信造它的人。</li>
+<li><b>神经科学 · 程序性记忆与患者 H.M.</b>：Brenda Milner 发现，大部分海马被切除的 H.M. 连练几天镜像描图越描越好，却每次都说自己从没做过。能力活在「执行层」、陈述记忆里查不到，正如 <code>\v</code> 的知识只活在二进制里。不像的是，H.M. 的隐形是手术意外，后门的隐形是刻意删掉源码。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Ken Thompson 在 1983 年图灵奖演讲中证明：把源代码读干净，并不能保证运行的程序没有后门。</li>
+<li>源码审查有个盲点：你审的是源代码，运行的是二进制，中间隔着一个没被审过的编译器。</li>
+<li>自我繁殖程序（quine）能打印出自己的完整源码，说明代码可以不靠外部源码复制自己。</li>
+<li>编译器会「学习」：教会它转义符 <code>\v</code> 再删掉教学代码，这个知识仍只活在编译器二进制里。</li>
+<li>Thompson 的木马在编译 login 时注入万能密码，在编译编译器自己时把整套恶意逻辑复制进新二进制。</li>
+<li>恶意代码从源码删净后，后门仍在二进制里代代相传，重编整个系统也洗不掉。</li>
+<li>攻击可下移到汇编器、微码乃至硬件，信任最终要在某一层选择，无法靠读代码证明。</li>
+<li>这篇演讲是供应链攻击的思想原型，SolarWinds 与 XZ Utils 后门都是它的现实回声。</li>
+<li>David A. Wheeler 的多编译器交叉编译（DDC）表明，只要有一个独立可信的编译器，这类后门就能被检测。</li>
+<li>信任链往下追问只能在某处停下，这和哲学里的明希豪森三难是同一个结构。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想读 Thompson 演讲原文与那段自我繁殖代码的细节，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 30</p>
@@ -333,17 +341,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>适用区间有限</strong>：数据太少（欠拟合）或极多时收益都会消失。今天的大语言模型预训练常把 dropout 直接设为 0——数据近乎单遍过，根本不到过拟合那一步。</li>
 <li><strong>解释未有定论</strong>：「防共适应」与「指数集成」都是有说服力的直觉，却都不是严格证明；权重缩放的等价性只在单层 softmax 下精确，深层网络里为何仍好用，学界给的是互补解释而非定论。</li>
 </ul>
-<h2 data-tts="5755db79be3a0925">要点</h2>
-<div class="tl">
-<p>① 一句话：训练时随机把单元连同其连线丢弃、每步得到一个不同的瘦网络；测试时不丢弃、把权重乘以留存概率 p 做一次前向。</p>
-<p>② 痛点：大网络参数多、数据有限必然过拟合；解药「集成」训练与推理都贵得离谱，贝叶斯模型平均则完全算不动。</p>
-<p>③ 病根：共适应——单元抱团互补，特征只在特定同伴在场时才有意义，一换数据就失灵。</p>
-<p>④ 机制：给该层输出乘一个伯努利 0/1 掩码 <code>ỹ = r ⊙ y</code>；隐藏层通常留 p=0.5，输入层留 p≈0.8。</p>
-<p>⑤ 两层直觉：谁也不能指望特定伙伴在场，每个单元被迫学出自己就站得住的特征（十个五人小分队 &gt; 一个五十人大阴谋）；同时 n 个单元对应 2ⁿ 个共享权重的瘦网络，用一个网络的成本近似拿到集成。</p>
-<p>⑥ 测试时乘 p：把下一层的输入期望拉回训练水平；对单层 softmax 精确等于几何平均，深层网络里约等于采样几十个瘦网络求平均。</p>
-<p>⑦ 结果：MNIST 约 1.60% → 1.25%（最好约 1.05%）；CIFAR-10 14.98% → 12.61%；SVHN 约 3.95% → 2.55%；TIMIT 约 23.4% → 21.8%；配方还包括 max-norm + 大学习率 + 高动量。</p>
-<p>⑧ 影响与局限：确立「注入噪声 ≈ 廉价集成」的模板，催生 DropConnect、随机深度、MC dropout；但训练慢 2–3 倍、卷积网络里大体被 BN 取代（叠用还有方差偏移）、不宜直接用于循环连接、数据太少或极多时都失效。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 不可靠的突触</b>：大脑本身就在「随机请假」——Allen 与 Stevens（1994）测得海马 CA1 单个突触上，过半的神经冲动传过去后没引起任何回应。像在哪：网络在部件随时缺席的条件下照样算得准；不像在哪：突触失败是生理代价、概率还随活动变化，dropout 是人为设计、训练完就关掉。</li>
+<li><b>生物学 · 简并性（Edelman &amp; Gally, 2001）</b>：他们把「结构不同的部件能完成同一功能」叫简并性，与「相同部件重复备份」的冗余区分开，认为这是生命系统鲁棒的来源。Dropout 逼出的正是简并：多组不同单元都能撑起同一判断。不像在哪：生物的简并由演化慢慢筛出，dropout 用一个超参数 p 当场强加。</li>
+<li><b>心理学 · 必要难度（Bjork, 1994）</b>：间隔练习、交错练习、变换呈现方式会让练习时表现变差，却让长期保持和迁移更好。Dropout 同构：训练曲线更吵、要多花两三倍时间，换来没见过的数据上更稳。不像在哪：人会误以为「练得顺 = 学得好」，网络没有这层元认知错觉。</li>
+<li><b>投资 · Markowitz 分散化（1952）</b>：组合风险取决于资产间的协方差，资产越不相关，平均下来波动越小；相关性高时，加再多也降不到零。Dropout 的指数个瘦网络共享同一套权重、高度相关，所以只能算「近似」集成——收益真实，但远不如真正独立的模型投票。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Dropout 论文（Srivastava、Hinton 等，JMLR 2014）要解决的是大网络参数多、数据少而必然过拟合的问题。</li>
+<li>集成多个模型能压住过拟合，但训练和推理成本都成倍增加，贝叶斯模型平均更是根本算不动。</li>
+<li>过拟合的一个病根是共适应：隐藏单元抱团互补，特征只在特定同伴在场时才有用。</li>
+<li>Dropout 训练时每一步以概率 1−p 随机丢弃单元及其连线，隐藏层通常保留 p=0.5，输入层保留约 0.8。</li>
+<li>随机丢弃让任何单元都无法依赖特定伙伴，只能学出在各种搭档组合下都站得住的特征。</li>
+<li>n 个单元对应 2ⁿ 个共享同一套权重的瘦网络，dropout 用训练一个网络的成本近似得到它们的集成。</li>
+<li>测试时不再丢弃，而把权重乘以保留概率 p，让下一层的输入期望与训练时对齐，一次前向近似全体平均。</li>
+<li>Dropout 在 MNIST、CIFAR、SVHN、TIMIT 等视觉、语音、文本数据上都稳定降低了错误率，并是 AlexNet 夺冠配方的一环。</li>
+<li>Dropout 的代价是训练慢两三倍、在卷积网络中大体被批归一化取代，数据太少或极多时收益消失。</li>
+<li>Dropout 和心理学的「必要难度」同构：故意让训练更难、更吵，换来更好的泛化。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整实验配置与各数据集细节，再去翻原文。</footer>
 </div>

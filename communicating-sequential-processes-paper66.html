@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 66</p>
@@ -228,17 +236,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>同步无缓冲带来耦合，性能也不普遍占优</strong>：发方必须等收方，跨机器时每次通信要一个来回；而通道通信要走调度与拷贝，在共享内存的多核机器上一把互斥锁常常更快。CSP 卖的是可推理性与纪律，不是速度——Go 社区的经验也常是「能用互斥锁说清的地方别硬上 channel」。</li>
 <li><strong>今天说的 CSP 已不是这篇</strong>：这篇是程序写法提案、没有形式语义；教科书与工具里的「CSP」多指 1985 年那套进程代数。</li>
 </ul>
-<h2 data-tts="e5efb9e9de049e69">要点</h2>
-<div class="tl">
-<p>① 一句话：把并发程序写成一组<strong>无共享变量</strong>的顺序进程，只靠一对同时执行的输入 / 输出命令（会合）交互。</p>
-<p>② 旧世界的痛：共享内存把「传数据」和「对时间」拆成两套机制，bug 长在缝里、且不复现；推理还得穷举所有交错。</p>
-<p>③ 想法一：<code>east!x</code> / <code>west?c</code> 必须配对，先到的阻塞等待，配上就同时执行——交割与同步一次完成，无共享故无从争抢；同步、无缓冲是刻意的选择。</p>
-<p>④ 想法二：<strong>输入可放进守卫</strong>，进程于是能等「多路里谁先就绪」、任选一路（不承诺公平）——服务型进程与缓冲区的基础、Go <code>select</code> 的祖先；这一版不许输出守卫。</p>
-<p>⑤ 想法三：加上并行命令 <code>[P1 || P2]</code>，信号量、监视器、子程序、协程、流水线全成了「再加一个进程」——卖点是概念的经济性。</p>
-<p>⑥ 结果：没有实验数字，证据是一串覆盖经典并发题目的短例子，加上「无共享 ⇒ 可分别推理」这张期票，七年后兑现成进程代数与可上模型检查器的验证工具。</p>
-<p>⑦ 影响：occam 与 Transputer、Ada 的任务会合、Newsqueak→Limbo→<strong>Go 的 channel 与 select</strong>（actor / Erlang 同源但走异步信箱）。</p>
-<p>⑧ 局限：写死进程名不可组合、只许输入守卫、进程静态、<strong>治数据竞争不治死锁</strong>、同步耦合、性能常不如一把锁。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>细胞生物学 · 细胞膜与受体信号</b>：细胞也不共享内部状态，胞质被膜隔开，外界只能靠分子与受体对上才把信号递进来——像 CSP 的「各自私有、只走接口」。不像在：激素扩散出去就不管了，是异步广播，没有双方停下来对齐的会合。</li>
+<li><b>哲学 · 莱布尼茨的单子</b>：《单子论》（1714）说单子「没有窗户」，什么都进不去出不来，像 CSP 进程的变量只有自己能碰。不像在：莱布尼茨索性取消了真实的交互，靠上帝的预定和谐让各单子步调一致；CSP 恰好相反，私有之后专门留一个会合口，让对齐在交互那一刻当场发生。</li>
+<li><b>经济学 · 哈耶克的分散知识</b>：哈耶克《知识在社会中的运用》（1945）认为没有谁能把全部知识收进一个中央大脑，协调只能靠价格这种信号在分散的个体间传递——像 CSP 拒绝那块人人可写的共享内存。不像在：价格是匿名广播，CSP 的消息点对点、要求双方当场接手。</li>
+<li><b>意识研究 · 全局工作空间</b>：Baars 1988 年的全局工作空间理论把意识想成一块「黑板」：众多无意识的专家模块抢占它，赢家的内容被广播给所有模块——正是 CSP 想拆掉的共享内存模型。反差说明两种协作各有用处：要全局可见就得有公共区，要局部可推理就得无共享。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>CSP 把并发程序写成一组没有共享变量的顺序进程，进程间只靠输入 / 输出命令交互。</li>
+<li>共享内存把「传数据」和「对时间」拆成两套机制，并发 bug 恰好长在两者的缝里且难以复现。</li>
+<li>Hoare 的会合要求收发两条命令配对，先到的一方阻塞等待，配上后两边同时执行。</li>
+<li>一次会合同时完成数据交割与同步，进程状态私有，于是数据竞争无从发生、推理可以逐个进程分开做。</li>
+<li>把输入命令放进 Dijkstra 的守卫命令后，进程能等多路输入里谁先就绪，这正是 Go 的 select 的祖先。</li>
+<li>缓冲区、信号量、监视器、子程序和流水线在 CSP 里都只是「再加一个进程」，卖点是概念的经济性。</li>
+<li>1978 年的 CSP 论文没有实验和性能数字，证据是一串短例子，可证明性的期票在 1985 年的进程代数里兑现。</li>
+<li>CSP 一路落进 occam 语言与 Transputer 芯片，又经 Newsqueak、Limbo 汇成 Go 的 goroutine 与 channel。</li>
+<li>无共享治得了数据竞争却治不了死锁，哲学家就餐要额外加门房；进程名写死、只许输入守卫也限制了组合。</li>
+<li>CSP 的「各自私有、只走接口」与莱布尼茨「没有窗户」的单子相似，但 Hoare 保留了会合这个真实的交互口。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想看完整的例子代码与记号细节，再去翻原文。</footer>
 </div>

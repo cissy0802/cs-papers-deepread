@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 54</p>
@@ -174,19 +182,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Amazon itself later changed course</strong>: the customer-facing DynamoDB is a rewrite offering strongly consistent read options and full management—a hint that "pure eventual consistency + app-side merge" isn't the friendliest choice for every scenario.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One line: Dynamo is Amazon's highly available key-value store built so the "cart never refuses a write," trading immediate consistency for perpetual availability.</p>
-<p>② Trade-off: under CAP it explicitly picks A (availability) over immediate C—a failed add is far worse than briefly divergent data.</p>
-<p>③ Placement: consistent hashing arranges machines on a ring; a key finds its first clockwise machine as coordinator, and adding/removing a machine only moves a neighboring arc (virtual nodes for load balance).</p>
-<p>④ Replication: the coordinator plus the next N−1 machines hold N copies, forming the preference list.</p>
-<p>⑤ Knob: write W copies, read R copies, with <code>R+W&gt;N</code> so read and write sets must overlap—consistency tunable per workload.</p>
-<p>⑥ Fault tolerance: sloppy quorum + hinted handoff—if a home machine is down, a neighbor signs for the write with a hint and hands it back on recovery, so writes almost never fail.</p>
-<p>⑦ Conflicts: vector clocks record version causality; dominated versions auto-resolve, true conflicts coexist and are merged by the app's semantics (cart union).</p>
-<p>⑧ Self-healing: Merkle-tree anti-entropy repairs long-term drift, gossip spreads membership and failures with no center—fully peer-to-peer.</p>
-<p>⑨ Impact: ignited NoSQL and eventual consistency, the ancestor of Cassandra / Riak / Voldemort, its mechanisms now standard distributed-storage vocabulary.</p>
-<p>⑩ Limits: merge logic offloaded to the app, vector clocks bloat, sloppy quorums allow occasional stale reads/lost writes, tuning and ops have a learning curve; DynamoDB is a ground-up rewrite.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Animal behavior · quorum sensing in honeybee swarms (Seeley)</b>: Thomas Seeley found that scouts choosing a new nest don't wait for unanimity; once enough of them gather at one site, a quorum, the swarm moves, and the threshold trades speed against accuracy, much like tuning R and W. The difference: the bees want the right site, while Dynamo's R+W&gt;N exists to force read and write sets to overlap.</li>
+<li><b>Neuroscience · complementary learning systems (McClelland et al., 1995)</b>: the hippocampus stores new memories quickly and later hands them over to the neocortex for the long term, a lot like a neighbor holding a write until the home node returns. Unlike hinted handoff, though, the transfer reshapes and abstracts the memory instead of returning it verbatim.</li>
+<li><b>Evolution · phylogenetic trees and horizontal gene transfer</b>: the version history drawn by vector clocks is a branching tree, and two non-dominating versions are like lineages evolving apart; the app's merge resembles horizontal gene transfer joining two lines again. But in nature such joins are rare accidents, whereas Dynamo merges as routine every time a read finds a conflict.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society" (1945)</b>: Hayek argued no center can hold all the dispersed knowledge in a society, and that prices let local information spread from person to person; gossip likewise has no center and lets a global view emerge from pairwise exchanges. Where they part: gossip wants every node to end up with the same ring, while prices pass along a compressed signal and never ask anyone to know everything.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Dynamo is the highly available key-value store Amazon built for core services like the shopping cart, designed to be always writeable.</li>
+<li>Under the CAP theorem, Dynamo picks availability over immediate consistency during partitions, because a failed add-to-cart is worse than brief divergence.</li>
+<li>Consistent hashing places machines on a ring; a key's first clockwise machine coordinates it, and adding or removing a machine only moves a neighboring arc.</li>
+<li>Each key is stored on N replicas, the coordinator plus the next machines on the ring, forming that key's preference list.</li>
+<li>Writes wait for W replicas and reads for R; with R+W&gt;N the two sets must overlap, so consistency can be tuned per workload.</li>
+<li>A sloppy quorum with hinted handoff lets a neighbor hold writes for a dead node and return them on recovery, so writes almost never fail.</li>
+<li>Vector clocks track version causality: dominated versions are dropped automatically, and true conflicts are returned together for the application to merge, as a cart takes the union.</li>
+<li>Merkle-tree anti-entropy repairs long-diverged replicas with little data transfer, while a gossip protocol spreads membership and failure news with no central node.</li>
+<li>Dynamo set off the NoSQL and eventual-consistency movement, with Cassandra, Riak and Voldemort as its direct descendants.</li>
+<li>Its costs are merge logic pushed onto applications, growing vector clocks, sloppy quorums that can still serve stale reads or lose writes, and demanding tuning.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Finish this page ≈ grasp the paper's core; for full system configuration and measurements, go read the original.</footer>
 </div>

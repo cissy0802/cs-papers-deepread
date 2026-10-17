@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 33</p>
@@ -187,19 +195,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>「Worse is better」</strong>：Richard Gabriel 的著名论断——UNIX 靠「实现简单优先于接口完美」的取舍胜出，但也因此留下不少粗糙边角与不一致；这既是对它的批评，也是对它成功之道的精准描述。</li>
 <li><strong>对新手不友好</strong>：命令晦涩简短、报错惜字如金，早期文档也少——好用是对熟手而言的。</li>
 </ul>
-<h2 data-tts="954c6e5b9944db77">要点</h2>
-<div class="tl">
-<p>① 一句话：UNIX 用一小组极简、正交、可自由组合的原语，做出一个又小又通用的分时操作系统。</p>
-<p>② 痛点：此前的大型系统（如 Multics）大而全、专用接口林立、程序之间不可组合，还要昂贵硬件。</p>
-<p>③ 文件＝无格式字节流 + 树状目录；目录只存「名字→i 编号」，i-node 才记本体——名字与本体分离，带来链接、廉价改名与共享。</p>
-<p>④ 一切皆文件：设备也是 <code>/dev</code> 下的特殊文件，和普通文件共用同一套 open/read/write，程序天生设备无关。</p>
-<p>⑤ 文件描述符 + 标准输入输出（0/1/2）＝重定向 <code>&lt;</code> <code>&gt;</code> 与管道 <code>|</code> 的地基；shell 只是可替换的普通程序。</p>
-<p>⑥ 小工具用管道自由串接（<code>who | wc -l</code>），复杂任务靠组合而非写大程序——UNIX 组合哲学。</p>
-<p>⑦ 进程＝<code>fork</code>（整个复制）+ <code>exec</code>（替换映像）两步；拆成两步正是为了在缝隙里接好重定向与管道。</p>
-<p>⑧ 整个系统用 C 写成 → 可移植，作者视之为成功首因；C 也由此走向世界。</p>
-<p>⑨ 影响：Linux / macOS / Android / iOS / POSIX 皆其后代；文件描述符、管道、fork、shell 成为通用词汇；获 1983 图灵奖。</p>
-<p>⑩ 局限：本版无网络；权限模型粗、setuid 有洞；字节流把结构推给应用；fork 被现代环境诟病；「Worse is better」两面性。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · Jacob 的「修补匠」</b>：François Jacob 1977 年在《Science》上撰文说，进化不像工程师照图纸造新件，而像修补匠拿手边的旧零件拼出新用途；管道把现成小工具串成新功能，是同一种思路。不像在哪：UNIX 的小工具是刻意为可组合而设计的，进化没有设计者，也不预留接口。</li>
+<li><b>复杂性科学 · 领结结构（bow tie）</b>：Csete 与 Doyle 指出代谢网络呈领结形：各种养分先汇成 ATP 等少数通用分子，再散成各种产物；「一切皆文件」同样把五花八门的设备收进 open/read/write 这条细腰。不像在哪：细胞的腰是演化慢慢磨出来的，UNIX 的腰是设计者一次定下的。</li>
+<li><b>哲学 · Frege 的「晨星与昏星」</b>：Frege 1892 年区分「意义」与「指称」：「晨星」「昏星」两个名字指的是同一颗金星；UNIX 的硬链接也是多个名字指向同一个 i-node。不像在哪：Frege 的两个名字带着不同的呈现方式，硬链接却完全对等，没有哪个是「本名」。</li>
+<li><b>生物学 · 细胞分裂与分化</b>：细胞先完整复制基因组、一分为二，子细胞再走上各自的分化道路，像 fork 先整个复制、再由 exec 变成别的程序。不像在哪：exec 把旧映像整个换掉，分化的细胞却通常保留全套基因，只是关掉了大部分。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>UNIX 用一小组极简、彼此正交、可自由组合的原语，搭出了一个小而通用的分时操作系统。</li>
+<li>UNIX 之前的大型分时系统如 Multics 大而全、专用接口林立，程序之间难以互相组合。</li>
+<li>UNIX 的文件只是无格式字节流，系统不强加任何结构，怎么解释全交给使用它的程序。</li>
+<li>目录只存「名字→i 编号」，i-node 才记文件本体，名字与本体分离带来硬链接和廉价改名。</li>
+<li>「一切皆文件」让设备也成为 <code>/dev</code> 下的特殊文件，与普通文件共用同一套 open/read/write。</li>
+<li>文件描述符和标准输入输出让程序不必知道对面接的是谁，重定向和管道因此成为可能。</li>
+<li>管道把各做一件事的小工具串成流水线，复杂任务靠组合完成，而不是再写一个大程序。</li>
+<li>进程创建拆成 <code>fork</code> 复制与 <code>exec</code> 替换两步，中间的缝隙正好用来接好重定向和管道。</li>
+<li>Thompson 与 Ritchie 用 C 写成整个系统，换机器只需改少量底层代码，作者视之为成功首因。</li>
+<li>Linux、macOS、Android 与 POSIX 都是 UNIX 的后代，但它也留下了无网络、权限粗、fork 低效等局限。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整系统调用清单与实现细节，再去翻原文。</footer>
 </div>

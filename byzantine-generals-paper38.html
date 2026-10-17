@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 38</p>
@@ -196,17 +204,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>冗余成本高</strong>：<code>3m+1</code> 意味着要容忍 <code>m</code> 个坏节点得部署三倍多的机器，代价远高于只防崩溃故障的 <code>2m+1</code>（如 Paxos / Raft）。很多系统因此宁可只假设崩溃故障。</li>
 <li><strong>签名版把难题外包了</strong>：signed-message 方案的强大，建立在「存在无法伪造的签名」之上——而这套密码学基础设施本身的建立与密钥管理，是另一整个难题。</li>
 </ul>
-<h2 data-tts="36dfefd678433048">要点</h2>
-<div class="tl">
-<p>① 一句话：把「节点会任意作恶时如何达成一致」抽象成围城将军里有叛徒，给出容错下界与算法。</p>
-<p>② 痛点：传统容错默认「坏=不工作」，但真实故障可能撒谎、发矛盾消息、恶意协同（拜占庭故障）；诚实节点无法区分「谁在故障 / 谁在骗」。</p>
-<p>③ 目标：IC1 所有忠诚者服从同一命令；IC2 司令忠诚时须服从其真令。</p>
-<p>④ 口信下界：容忍 <code>m</code> 个叛徒需 <code>n ≥ 3m+1</code>（叛徒少于三分之一）；三将军一叛徒无解——因忠诚者在两种场景收到的消息完全相同、无法分辨。</p>
-<p>⑤ 算法 <code>OM(m)</code>：递归转述 + 多数表决，用 <code>m+1</code> 轮达到下界，但消息量指数级、不实用。</p>
-<p>⑥ 签名版 <code>SM(m)</code>：不可伪造签名让谎报露馅，任意多叛徒都可解，绕开 <code>3m+1</code>——代价是需要可靠签名基础设施。</p>
-<p>⑦ 影响：定义了「拜占庭容错」词汇与 <code>3m+1</code> 红线；下启 PBFT、Tendermint/HotStuff 与比特币等一切防作恶共识。</p>
-<p>⑧ 局限：强同步假设（对照 FLP 异步不可能性）、成员需固定已知、冗余成本高、签名版把难题外包给密码学。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>经济学 · 孔多塞陪审团定理（1785）</b>：每个投票者判断正确的概率过半、且彼此独立时，人越多，多数票越可能是对的——和 <code>OM(m)</code> 一样把宝押在「多数」上。不像在：孔多塞的错误是随机的、互不串通，所以过半就够；拜占庭叛徒会挑着说、彼此协同，诚实者因此得占三分之二以上，门槛从 1/2 抬到了 2/3。</li>
+<li><b>哲学 · 笛卡尔的恶魔（1641）</b>：《第一沉思》设想一个全能的骗子伪造整个外部世界，让人无从分辨真假——正是 L1 面对两个「一字不差」的场景时的处境。不像在：笛卡尔退回「我思」内部找确定性，Lamport 的出路是向外数更多证人。</li>
+<li><b>神经科学 · 多感官整合（Ernst &amp; Banks 2002）</b>：视觉和触觉说法不一时，大脑按各自噪声大小加权合并，结果接近统计最优——同样是从相互矛盾的报告里拼出一个判断。不像在：大脑假定感官只是有噪声、不会存心骗人，也不必保证两个大脑得出同一结论。</li>
+<li><b>生物进化 · 扎哈维的累赘原理（1975）</b>：像孔雀大尾巴这样昂贵的装饰造不了假，所以能当可靠信号——和签名一样，是让谎报做不出来，而不是靠多数去识破。不像在：累赘信号靠代价保真，签名靠私钥保真、几乎零成本；倒是比特币的工作量证明更像「用代价换诚实」。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>《拜占庭将军问题》把「节点会任意作恶时如何达成一致」讲成了围城将军里混进叛徒的寓言。</li>
+<li>拜占庭故障是最强的故障模型：坏节点不只停摆，还会撒谎、对不同的人说不同的话、彼此串通。</li>
+<li>交互一致性有两条：忠诚的将军服从同一命令；司令忠诚时，大家服从他实际下达的命令。</li>
+<li>只靠可被篡改转述的口信时，要容忍 m 个叛徒，将军总数至少要 3m+1，即叛徒必须少于三分之一。</li>
+<li>三将军一叛徒无解，因为忠诚副官在两种场景里收到的消息一模一样，无从分辨谁在撒谎。</li>
+<li>Lamport 等人的 OM(m) 算法靠递归转述加多数表决达到这个下界，但消息量随叛徒数指数增长。</li>
+<li>引入不可伪造的数字签名后，SM(m) 算法让忠诚者在任意多叛徒下都能达成一致。</li>
+<li>「少于三分之一作恶」这条红线源自本文，后来写进了 PBFT、Tendermint、HotStuff 等协议。</li>
+<li>拜占庭将军的解法依赖同步假设和固定已知的成员，开放匿名网络还得靠比特币式的抗女巫机制补上。</li>
+<li>孔多塞陪审团定理只需过半，拜占庭容错却要三分之二，差别在于错误是随机的还是串通的。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整定理证明与算法细节，再去翻原文。</footer>
 </div>

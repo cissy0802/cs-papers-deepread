@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 16</p>
@@ -149,18 +157,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>理论保证与现实有距离</strong>：那套「收敛到 <code>p_g=p_data</code>」的证明假设模型容量无限、且能在概率密度空间里直接优化；真用有限的神经网络加梯度下降交替训练时，并不保证到达那个理想解。</li>
 <li><strong>后浪超越</strong>：扩散模型（DDPM 等）以更稳的训练与更高的样本质量，在许多生成任务上取代了 GAN——它的王座并非永久。</li>
 </ul>
-<h2 data-tts="f61f613c55154b44">要点</h2>
-<div class="tl">
-<p>① 一句话：用生成器 G 与判别器 D 的对抗博弈来学造数据，不写任何逼真度函数、评价标准由对抗自己涌现。</p>
-<p>② 痛点：显式概率密度的生成模型算不出/不稳；而「像不像真的」没有简单可导的打分公式。</p>
-<p>③ 核心：G 造假骗 D、D 分辨真假，<code>min_G max_D E[log D(x)] + E[log(1−D(G(z)))]</code>，交替训练互相逼强。</p>
-<p>④ 比喻：造假者 vs 验钞警察，你追我赶到验钞员只能瞎猜。</p>
-<p>⑤ 理论落点：最优 <code>D*=p_data/(p_data+p_g)</code>；博弈最优在 <code>p_g=p_data</code>、<code>D≡1/2</code>，等价于最小化两分布的 JS 散度。</p>
-<p>⑥ 关键修补：G 改为最大化 <code>log D(G(z))</code>（非饱和），避免早期梯度消失、让造假者学得动。</p>
-<p>⑦ 结果：MNIST/TFD/CIFAR-10 生成清晰样本、隐空间平滑插值；无需马尔可夫链一次出图；定量指标（Parzen 窗）当时偏弱。</p>
-<p>⑧ 影响：催生 DCGAN、CycleGAN、StyleGAN、deepfake 等一整片工作，对抗思想成为通用武器。</p>
-<p>⑨ 局限：训练不稳、模式坍缩、难评价、理论假设理想化；后被扩散模型在许多任务上超越。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · 贝氏拟态（Batesian mimicry）</b>：Henry Walter Bates 1862 年报告，亚马孙无毒的粉蝶长得像有毒的袖蝶，靠「冒充」躲过鸟的捕食。拟态者就是 G、鸟就是 D、有毒的模型物种就是真实数据。不像在哪：自然界的鸟被骗多了会付出代价、拟态也就有上限，GAN 的理想终点却是 D 完全分不清。</li>
+<li><b>进化生物学 · 红皇后假说（Red Queen）</b>：Leigh Van Valen 1973 年提出，物种之间的竞争像零和博弈，谁都得不停进化才能「原地不动」。G 与 D 的你追我赶正是这种军备竞赛；但红皇后没有终点，GAN 却有一个数学上定义好的均衡点 <code>p_g = p_data</code>。</li>
+<li><b>神经科学 · 生成对抗的大脑</b>：Samuel Gershman 2019 年在《The Generative Adversarial Brain》里提出假说：大脑分辨「想象」和「真看到」，可能靠一个像判别器的环节，判断信号来自外界还是自己生成；这套判别失灵或与某些妄想有关。结构几乎与 GAN 一一对应，不像在哪：大脑的生成器不是为了骗谁而练的。</li>
+<li><b>经济学 · 古德哈特定律（Goodhart's law）</b>：Charles Goodhart 1975 年指出，一个统计规律一旦被拿来当调控目标，就会失灵。模式坍缩就是 G 把 D 的打分当目标、钻空子反复画同一张「稳赢」的图。不像在哪：GAN 的 D 会跟着更新、把空子补上，评分标准是活的。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>GAN 用生成器与判别器的对抗博弈来学生成数据，不需要人写任何「逼真度」评分函数。</li>
+<li>2014 年之前的生成模型难在两处：高维数据的概率密度算不出来，「像不像真的」也没有可导的打分公式。</li>
+<li>像素级误差当目标会逼模型去画所有可能答案的平均，结果是一团模糊的图。</li>
+<li>生成器把随机噪声变成假样本去骗判别器，判别器输出样本为真的概率，两者交替训练、互相逼强。</li>
+<li>Goodfellow 等人自己的比喻是造假钞者对验钞警察，追到最后警察只能掷硬币瞎猜。</li>
+<li>固定生成器时最优判别器是 p_data/(p_data+p_g)，此时博弈等价于缩小两个分布的 JS 散度。</li>
+<li>博弈的理想终点是生成分布等于真实分布、判别器处处输出 1/2，但证明假设了无限容量和在分布空间直接优化。</li>
+<li>实践中生成器改为最大化 log D(G(z))，避免训练早期梯度消失、学不动的问题。</li>
+<li>GAN 出了名难训：两边失衡会震荡不收敛，还可能模式坍缩，像古德哈特定律那样钻评分的空子。</li>
+<li>GAN 催生了 DCGAN、CycleGAN、StyleGAN 和 deepfake，后来在许多图像任务上被扩散模型超越。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整训练细节与证明，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 61</p>
@@ -240,17 +248,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>「自动化」没有消灭人的猜测，只是搬了个家</strong>：代价函数里超限与浪费的相对权重、模型池怎么构造、边际给多少，仍是人定的全局判断。它把「每个作业猜一次」变成了「全局猜几个超参」——巨大的进步，但不是问题的消失。</li>
 <li><strong>一份生产报告，不是通用算法</strong>：所有数字来自 Google 的 Borg 与它相对同质、监控完备的负载，没有公开代码与数据集，外部难以复现；在负载更杂、监控更差、隔离更弱的环境里能拿到多少收益，是开放问题。</li>
 </ul>
-<h2 data-tts="238f120c62298245">要点</h2>
-<div class="tl">
-<p>① 一句话：Autopilot 自动设定 Borg 上每个任务的 CPU / 内存配额与副本数，靠的是「会指数衰减的历史用量直方图 + 取统计量 + 安全边际」。</p>
-<p>② 痛点：云上的大头浪费不是伸缩慢，而是人填不准 resource request——填少了被 OOM 杀 / 被节流，填多了只是账单难看，激励彻底不对称，于是全都往大了填。</p>
-<p>③ 枢纽：把这份不对称写成明文<strong>代价函数</strong>（超限的痛 ≫ 浪费，再加改动罚分），「填多少」于是从判断题变成可回放、可打分的优化题。</p>
-<p>④ 垂直伸缩：用量攒进<strong>会褪色的直方图</strong>（<code>w(τ)=2^(−τ/t½)</code>，CPU 约 12h、内存约 48h）；内存取峰值、在线服务 CPU 取高分位、批处理取均值；乘安全边际后滚动下发，调小内存尤其谨慎。</p>
-<p>⑤ 多模型推荐器：养一群参数各异的模型，各自回放历史算代价，按代价加权投票；换模型也要罚分，防止来回横跳。</p>
-<p>⑥ 水平伸缩：同一条不对称原则——<strong>上调看短窗口、立刻跟上；下调看多日峰值、小步慢降</strong>。</p>
-<p>⑦ 结果：覆盖 Google 超过 48% 的资源用量；slack 46% → 23%（一组对照中绝对量从约 12000 台机器降到约 500 台）；被 OOM 严重影响的作业减少约一个数量级，&gt;99.5% 的作业-天无 OOM。</p>
-<p>⑧ 影响与局限：Kubernetes VPA 与各家云的资源推荐几乎照抄这套；但它只会照抄历史（冷启动无解）、看到的用量已被节流扭曲、改配额可能重启任务，而且权重与超参仍是人定的——自动化搬走了猜测，没有消灭它。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>进化医学 · 烟雾报警器原理（Randolph Nesse）</b>：Nesse 在 2001 年论证，漏报一次危险可能致命、误报一次只费点力气，所以自然选择让防御反应宁可过敏。Autopilot 内存取峰值、CPU 只取分位，记的是同一笔不对称账；不同在于进化把权重藏进本能，Autopilot 把它写成了明文、能回放检验的代价函数。</li>
+<li><b>经济学 · 火箭与羽毛（Bacon 1991）</b>：Robert Bacon 发现英国油价对成本「涨如火箭、跌如羽毛」，这和水平伸缩上调立刻跟、下调小步慢降是同一条曲线。不像在动机：加油站靠定价权多赚一段，Autopilot 是怕流量回来时手里没副本。</li>
+<li><b>公共财政 · 「不用就丢」的预算（Liebman &amp; Mahoney 2017）</b>：美国联邦机构财年最后一周的采购额是平时周均的 4.9 倍，因为结余要上缴、还可能招来减预算。人工把 limit 往大了填是同一种激励扭曲；不同在于 Autopilot 没去改激励，而是直接替人填数。</li>
+<li><b>生理学 · 应变稳态（Sterling &amp; Eyer 1988）</b>：应变稳态说身体的调节目标不是钉死的设定点，而是随需求移动、「在变化中求稳定」。Autopilot 让配额跟着用量漂，正是从固定设定点走向这一步；但应变稳态强调提前预判需求，Autopilot 只会回看历史。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>人工填资源配额时，填少会被 OOM 杀掉或被节流，填多只是账单难看，于是人人往大了填。</li>
+<li>Google 人工管理的作业里，配额与实际用量之差（slack）高达约 46%，近一半预定资源没人用。</li>
+<li>Autopilot 的枢纽是把超限、浪费和改动的代价写成明文代价函数，让「填多少」可以回放打分。</li>
+<li>垂直伸缩把用量攒进按半衰期褪色的直方图，内存取峰值、在线服务的 CPU 取高分位，再乘安全边际。</li>
+<li>多模型推荐器让一群参数各异的模型回放历史、按代价加权投票，换模型本身也要罚分以防横跳。</li>
+<li>水平伸缩刻意不对称：上调看短窗口、立刻跟上，下调看多日峰值、小步慢降。</li>
+<li>让工程师肯交出配额控制权，靠的是离线仿真、空跑、对照实验、分批灰度和随时退出这条证据链。</li>
+<li>Autopilot 覆盖 Google 超过 48% 的资源用量，slack 降到约 23%，严重受 OOM 影响的作业少了约一个数量级。</li>
+<li>按用量定配额的局限：只会照抄历史、冷启动无解，看到的用量已被节流扭曲，超参仍由人定。</li>
+<li>内存宁取峰值与进化医学的「烟雾报警器原理」同理：漏报的代价远大于误报时，就该偏向谨慎。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的代价函数形式与全部实验图表，再去翻原文。</footer>
 </div>

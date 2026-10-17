@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 67</p>
@@ -204,18 +212,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>As an industrial paper it is not reproducible</strong>: Lambda's actual densities, oversubscription ratios and slot-reclamation policies are not published, leaving outside researchers with the paper's qualitative description.</li>
 <li><strong>It solves isolation and density, not serverless's structural problem</strong>: the complaint in the Berkeley View and in Hellerstein's contemporaneous paper — functions cannot talk to each other directly, so data must be shipped to the code — still stands. A better brick does not change the floor plan.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: shave a VM's device model down to a virtio NIC, a block device, a serial port and a power-off key, rewrite the VMM in 50k lines of Rust, and virtual-machine-grade isolation arrives at container-grade density and startup.</p>
-<p>② The old pain: early Lambda gave each customer account its own instance — clean isolation, far too coarse; low density, boots in seconds, machines idling, all in direct conflict with per-millisecond billing.</p>
-<p>③ Rejected alternatives: containers (boundary is 300+ syscalls, too wide), language sandboxes (locks in a language, compatibility fails), user-space kernels (compatibility and performance both cost), general-purpose VMMs (a million lines, second-scale boots, tens of MB resident).</p>
-<p>④ The pivotal judgement: <strong>virtualization is not what is slow, the device model is</strong>. KVM already hands CPU and memory to hardware; the seconds go to BIOS self test and PCI/USB enumeration — and serverless only needs "any Linux binary", which is what makes the cutting possible.</p>
-<p>⑤ The mechanism: no BIOS, load an uncompressed kernel and jump in; four devices only; one process per microVM with vCPUs as threads; a jailer outside (chroot + namespaces + cgroups + seccomp allowlist + non-root) as a second boundary.</p>
-<p>⑥ Operational knobs: demand-paged memory enables <strong>oversubscription</strong>; token-bucket <strong>rate limiters</strong> on block and network devices handle noisy neighbours; the control plane is a REST API on a Unix socket, with a MicroManager owning slots that are never reused across customers.</p>
-<p>⑦ Results: &lt; 5 MiB overhead, ~125 ms to user code, 150 creations per second per host; it beats QEMU on boot and memory, trailed it on I/O at the time, and the paper says so; the hardest evidence is Lambda and Fargate in production.</p>
-<p>⑧ Impact: it dismantled the false "safe vs fast" dilemma, made the serverless cost model real, and seeded the rust-vmm family of "build your own VMM in Rust" projects.</p>
-<p>⑨ Limits: no GPU or PCI passthrough, an I/O performance debt, cold starts still dominated by customer runtimes (later addressed by snapshot/restore), KVM still in the TCB, side channels unstopped, operational parameters undisclosed — and no change to serverless's ship-data-to-code structure.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Synthetic biology · JCVI-syn3.0, the minimal genome</b>: in 2016 the Venter Institute pared a Mycoplasma genome down to 473 genes and the cell still replicated. As with Firecracker, "minimal" only holds in a pampered environment, here a nutrient-rich broth. Where it differs: their first design cut too deep and nothing grew, exposing a class of "quasi-essential" genes.</li>
+<li><b>Safety science · Reason's Swiss cheese model</b>: in <i>Human Error</i> (1990) the psychologist James Reason argued that every defensive layer has holes and accidents happen only when the holes line up; a jailer wrapped around the KVM boundary is exactly that stacking of imperfect slices. Where it differs: cheese holes fall at random, while an attacker goes looking for the aligned path.</li>
+<li><b>Neuroscience · the blood–brain barrier</b>: brain capillary cells seal their gaps with tight junctions, so nutrients enter only through dedicated transporters — much like a seccomp allowlist plus the narrow virtio interface. Where it differs: small fat-soluble molecules slip straight through, so the barrier's leaks are set by chemistry, not by bugs.</li>
+<li><b>Economics · the Diamond–Dybvig bank-run model</b>: their 1983 model shows a bank funding long-term assets with demand deposits is fine until everyone withdraws at once; memory oversubscription makes the same bet that tenants won't all use their full allocation together. Where it differs: runs are self-fulfilling expectations, and tenants cannot see one another to spread a panic.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Early Lambda gave each customer a dedicated EC2 instance: clean isolation, but low density and boots measured in seconds, at odds with per-millisecond billing.</li>
+<li>Containers share the host kernel, so their boundary is 300+ syscalls — too wide to separate mutually untrusting tenants.</li>
+<li>Language sandboxes restrict the language, user-space kernels re-implement syscalls one by one, and general-purpose VMMs are too heavy; none met Lambda's six requirements.</li>
+<li>The paper's pivotal judgement: virtualization itself is not what is slow — emulating BIOS, PCI, USB and the rest of the device model is.</li>
+<li>Firecracker keeps only a virtio NIC, a virtio block device, a serial port and a power-off-only keyboard controller, and boots the kernel directly with no BIOS.</li>
+<li>Roughly 50,000 lines of Rust sit inside a jailer — chroot, namespaces, cgroups, a seccomp allowlist, non-root — giving two layers of isolation.</li>
+<li>Demand-paged memory lets microVMs be oversubscribed, and token-bucket rate limiters on disk and network tame noisy neighbours.</li>
+<li>Firecracker measured under 5 MiB of VMM overhead, about 125 ms to user code and 150 microVMs per second per host, though its I/O trailed QEMU's at the time.</li>
+<li>There is no GPU or PCI passthrough, cold starts are still dominated by customer runtimes, and KVM plus the host kernel remain in the trusted computing base.</li>
+<li>Firecracker's two-layer isolation mirrors Reason's Swiss cheese model: assume every layer has holes, and make sure they don't line up.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full experimental setup and device implementation details, go to the original.</footer>
 </div>

@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 40</p>
@@ -162,17 +170,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The quantum sword of Damocles</strong>: Shor's algorithm (1994) shows a <strong>sufficiently large quantum computer factors large integers efficiently</strong>, fully breaking RSA — the direct driver of today's migration to <strong>post-quantum cryptography (PQC)</strong>.</li>
 <li><strong>Not the earliest</strong>: GCHQ's Cocks had privately derived an equivalent construction back in 1973, but secrecy kept it unpublished — RSA was the independent and first <strong>public</strong> invention.</li>
 </ul>
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: the first practical public-key scheme — public <code>(n,e)</code> lets anyone encrypt/verify, private <code>d</code> lets only you decrypt/sign.</p>
-<p>② The pain: symmetric crypto has the "key distribution" deadlock (to communicate securely, first communicate securely) and can't "prove to a third party who signed"; RSA breaks it with two asymmetric keys.</p>
-<p>③ Trapdoor: security rests on "multiplying big primes is easy, factoring the product back is brutal"; whoever knows p, q skips the hard part.</p>
-<p>④ Keygen: <code>n=p·q</code>, <code>φ=(p−1)(q−1)</code>, pick e, find <code>d≡e⁻¹ (mod φ)</code>; d needs φ, φ needs p, q.</p>
-<p>⑤ Round trip: encrypt <code>c=m^e mod n</code>, decrypt <code>m=c^d mod n</code>, coming back via <code>m^(ed)≡m (mod n)</code> (Euler/Fermat).</p>
-<p>⑥ Reverse = signature: sign <code>s=m^d mod n</code> with the private key, verify <code>s^e mod n</code> with the public one — publicly verifiable, non-repudiable.</p>
-<p>⑦ Impact: the foundation of HTTPS/TLS, digital certificates, PGP, and software signing; the trio won the 2002 Turing Award.</p>
-<p>⑧ Limits: slow (hence hybrid encryption); insecure raw, needs OAEP/PSS padding; implementation pitfalls; security is an assumption; Shor's algorithm lets a quantum computer break it, driving post-quantum migration.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Chinese history · The tiger tally</b>: Warring States troops moved only when the king's half of a bronze tiger matched the general's, the same split-and-match structure as an RSA key pair. Unlike RSA, both halves had to stay secret: Lord Xinling stole the king's half to rescue Zhao, while RSA's public half can go to the whole world.</li>
+<li><b>Evolutionary biology · Zahavi's handicap principle</b>: a peacock's tail is believable because a weak bird cannot afford it, so it cannot be faked, much like a signature no one else can forge. The difference: an RSA signer pays almost nothing; honesty comes from a held secret, not from cost.</li>
+<li><b>Physics · Maxwell's demon and Szilard's engine</b>: Szilard showed that one bit of information, which side the molecule is on, lets the demon run a seemingly irreversible process backward; in RSA, knowing p and q likewise makes a one-way function reversible. Unlike thermodynamic irreversibility, a statistical law, the hardness of factoring is still an unproven assumption.</li>
+<li><b>Immunology · "Missing self" (Klas Kärre)</b>: natural killer cells check cells for MHC class I molecules and destroy those that cannot show this proof of self, like rejecting a failed signature check. But the immune system only checks that a token is shown, not that it is mathematically unforgeable, and some viruses have evolved MHC look-alikes.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>RSA, by Rivest, Shamir, and Adleman, was the first practical public-key system: the public key <code>(n, e)</code> is published, the private key <code>d</code> stays secret.</li>
+<li>Symmetric ciphers hit a key-distribution deadlock: to communicate securely, you first need a secure channel to deliver the key.</li>
+<li>Symmetric ciphers cannot prove to a third party who signed, because both sides share one key and either could forge the other.</li>
+<li>Diffie and Hellman proposed the public-key idea in 1976; RSA first turned it into an algorithm that both encrypts and signs.</li>
+<li>The RSA trapdoor: multiplying large primes is easy, factoring the product is brutal, so only whoever knows p and q can derive the private key.</li>
+<li>RSA key generation: <code>n = p·q</code>, <code>φ(n) = (p−1)(q−1)</code>, choose a public exponent e, then find d with <code>e·d ≡ 1 (mod φ(n))</code>.</li>
+<li>RSA encrypts with <code>c = m^e mod n</code> and decrypts with <code>m = c^d mod n</code>; Euler's theorem guarantees the round trip restores the message.</li>
+<li>Run backward, <code>s = m^d mod n</code> with the private key is a digital signature anyone can verify with the public key and the signer cannot deny.</li>
+<li>RSA underpins HTTPS/TLS, digital certificates, PGP, and software signing, and earned Rivest, Shamir, and Adleman the 2002 Turing Award.</li>
+<li>RSA is slow, insecure without OAEP/PSS padding, rests on an unproven assumption, and could fall to a quantum computer running Shor's algorithm.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full number-theory proof and parameter details, go to the original.</footer>
 </div>

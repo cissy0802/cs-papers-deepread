@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 4</p>
@@ -175,17 +183,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>No word order within the window</strong>: "dog bites man" and "man bites dog" contribute identical co-occurrence signals — syntax is out of reach.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: two shallow models with the hidden layer removed (CBOW / Skip-gram) plus efficient approximations, self-learning high-quality word vectors from massive unlabeled text.</p>
-<p>② The pain: one-hot treats every word as an island with no notion of distance; neural language models learn good vectors but are too costly for big corpora.</p>
-<p>③ The bet: vector quality feeds on data volume, not model complexity — "simple model × massive corpus" wins.</p>
-<p>④ Mechanism: fill-in-the-blank self-supervision; a prediction = lookup + dot product (<code>p(o|c) ∝ exp(u_o·v_c)</code>); the economy of prediction forces similarly-used words to share nearby coordinates.</p>
-<p>⑤ Speedups: hierarchical softmax (full normalization → ~20 binary choices on a tree), negative sampling (just tell true neighbors from a few random fakes), frequent-word subsampling — 1.6 billion words a day on one machine.</p>
-<p>⑥ The phenomenon: linear structure emerges; king − man + woman ≈ queen; relations become stable directions.</p>
-<p>⑦ Results and impact: several times the old models' accuracy on the 19,544-question analogy set; embeddings became AI's universal building block, leading straight to GloVe / fastText / BERT and today's vector retrieval.</p>
-<p>⑧ Limits: one vector can't hold multiple senses; analogy scores partly rest on evaluation conventions; corpus biases are copied; unknown words and word order are out of scope — contextual models took the baton.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · a grid code for concepts (Constantinescu, O'Reilly &amp; Behrens, 2016)</b>: people learned cartoon birds whose neck and leg lengths varied, and fMRI showed a six-fold grid-like signal in entorhinal cortex and ventromedial prefrontal cortex as they moved through this "bird space" &mdash; the brain, too, seems to give concepts coordinates and move along directions. The difference: that map has two dimensions and serves navigation and choice; Word2Vec has hundreds and exists only to guess neighbors.</li>
+<li><b>Philosophy · Wittgenstein's "meaning is use"</b>: section 43 of the <em>Philosophical Investigations</em> says that, in most cases, the meaning of a word is its use in the language; Word2Vec turns "use" into co-occurrence counts and compresses them into coordinates. Unlike Wittgenstein's use, which lives inside forms of life and action, Word2Vec sees only a few neighbors in a window.</li>
+<li><b>Buddhism · Nagarjuna's dependent origination and emptiness</b>: Madhyamaka holds that nothing has independent self-nature; things exist only in mutual dependence. A word vector is the same &mdash; one coordinate alone means nothing, and all the meaning is in distances and directions to other words. But Madhyamaka declares the relations empty too, while Word2Vec freezes them into fixed geometry.</li>
+<li><b>Psychology · Osgood's semantic differential</b>: in <em>The Measurement of Meaning</em> (1957), Osgood and colleagues had people rate words on scales like good&ndash;bad, strong&ndash;weak and active&ndash;passive, and found meaning falls mostly along three factors: evaluation, potency, activity &mdash; an early "words as points in space." Those three axes came from questionnaires and are readable; Word2Vec's hundreds are learned from text and no single one means anything.</li>
+<li><b>Social psychology · the Implicit Association Test</b>: Greenwald and colleagues (1998) used reaction times to measure how close two concepts sit in a person's mind, and found bias hiding in that associative distance. Cosine distance between word vectors measures the same kind of thing, and later work reproduced several IAT findings with word embeddings. The IAT measures one person; word vectors measure a whole corpus's collective associations.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Before Word2Vec, one-hot encoding treated every word as an island: "cat" was as far from "dog" as from "fridge."</li>
+<li>Mikolov and colleagues bet that word-vector quality depends on data volume, not model complexity, so they stripped the costly neural language model down to swallow huge corpora.</li>
+<li>Word2Vec turns the distributional hypothesis into self-supervised fill-in-the-blank, so billions of words become billions of free practice questions.</li>
+<li>CBOW averages the context word vectors to guess the center word; Skip-gram uses the center word to guess each context word; neither has a hidden layer.</li>
+<li>Hierarchical softmax, negative sampling and frequent-word subsampling avoid full-vocabulary normalization, letting one machine train on 1.6 billion words in a day.</li>
+<li>In the learned word-vector space, semantic relations become stable directions: king &minus; man + woman lands nearest to queen.</li>
+<li>On the 19,544-question analogy set, Skip-gram scored about 55% on semantic questions, more than double the older feedforward neural language model.</li>
+<li>Word2Vec made embeddings AI's universal building block, a line running through GloVe, fastText, BERT and today's vector retrieval.</li>
+<li>Static word vectors give each word a single vector, miss unseen words, ignore word order, and turn corpus bias into geometry.</li>
+<li>"Meaning comes from neighbors" mirrors Wittgenstein's "meaning is use," except that word vectors see only a few neighbors in a window.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full training configs and all comparison tables, go to the original.</footer>
 </div>

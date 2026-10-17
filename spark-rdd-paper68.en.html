@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 68</p>
@@ -225,19 +233,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Memory is a hard constraint.</strong> Once the working set no longer fits in cluster memory the advantage fades fast, and JVM object overhead plus GC pressure remained a chronic pain — which is what motivated Spark's later Tungsten work (off-heap memory and code generation).</li>
 <li><strong>The RDD interface is opaque to an optimizer.</strong> Operators carry arbitrary user functions, so the engine cannot see their semantics and cannot perform relational optimizations such as predicate pushdown or column pruning. <strong>Spark itself conceded this</strong>: from 2015 the DataFrame / Dataset API with the Catalyst optimizer became the recommended interface and the raw RDD API receded to a lower layer. In a sense RDD's success was being general enough that a higher abstraction could grow on top of it.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: an RDD is a read-only, partitioned in-memory dataset creatable only by coarse-grained deterministic transformations; fault tolerance comes from logging lineage and recomputing, not from replicating data.</p>
-<p>② The pain: MapReduce hands off through HDFS at every stage, so iterative algorithms and interactive queries drown in disk round-trips — yet moving into memory hits the old wall that fine-grained-update systems can only survive failure by replication or update logging.</p>
-<p>③ The trade: <strong>deliberately give up fine-grained writes</strong>, and "how this was computed" fits in tens of bytes — fault tolerance shifts from storing data to storing the recipe.</p>
-<p>④ The premise: immutability plus deterministic transformations, which is what makes a recomputed partition byte-for-byte identical to the lost one.</p>
-<p>⑤ Narrow dependencies (one to one) pipeline locally and recover cheaply; wide ones need a shuffle and can drag in every upstream partition — the scheduler cuts stages exactly at the wide ones.</p>
-<p>⑥ Interface: lazy transformations, eager actions, so the engine optimizes over the whole DAG; <code>persist()</code> picks the storage level, and memory pressure evicts partitions LRU — an evicted partition is simply recomputed from lineage.</p>
-<p>⑦ When lineage is too long, checkpoint to truncate it; immutability lets checkpoints be written asynchronously in the background with no stop-the-world snapshot.</p>
-<p>⑧ Results: up to ~20× over Hadoop for iterative ML on 100 machines; 5–7 s interactive queries over 1 TB cached; a node failure slows only the iteration it hits; degradation under low memory is smooth.</p>
-<p>⑨ Impact: the foundation of the whole Spark stack, and "recompute instead of replicate" as a standing route to distributed fault tolerance.</p>
-<p>⑩ Limits: wrong for fine-grained updates; costly recovery on long lineage with wide dependencies and no automatic checkpointing; memory-hungry with JVM overhead; opaque to optimizers, later superseded as the recommended API by DataFrames and Catalyst.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Buddhism · dependent origination</b>: "When this is, that is" — nothing has a self-standing nature; it arises only from conditions. An RDD likewise has no existence apart from its history: a parent plus one transformation. Where it breaks: dependent origination is a beginningless web of mutual conditioning, while lineage is a one-way DAG rooted in raw data on stable storage.</li>
+<li><b>Neuroscience · memory reconsolidation</b>: the brain keeps something closer to cues for rebuilding a memory than a recording, and each recall regenerates it — much like recomputing from lineage. But the crucial point runs the other way: a reactivated memory can be rewritten and come back different, whereas RDDs rest entirely on deterministic transformations that rebuild a lost partition byte for byte.</li>
+<li><b>Biology · axolotl limb regeneration</b>: an axolotl that loses a leg reruns part of its developmental program at the wound and regrows only the missing piece, leaving the rest of the body alone — just like recomputing only the lost partitions. Where it breaks: the regeneration recipe is spread across every cell's genome, while RDD lineage is held centrally by the scheduler.</li>
+<li><b>Philosophy · the Ship of Theseus</b>: Plutarch's old puzzle — once every plank has been replaced, is it the same ship? RDDs give an engineer's answer: same inputs, same recipe, and the recomputed partition simply is the old one. Where it breaks: Theseus asks about continuity of material; an RDD ignores material entirely and recognizes only the process that produced it.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Iterative algorithms and interactive queries crawl on MapReduce because every round goes through HDFS, disk and triple replication.</li>
+<li>Earlier in-memory cluster systems allowed fine-grained updates, so they could only tolerate faults by replicating data or logging updates across machines.</li>
+<li>An RDD is a read-only, partitioned dataset built only by coarse-grained deterministic transformations — Zaharia and colleagues deliberately gave up fine-grained writes.</li>
+<li>Each RDD records only its lineage, a parent plus a transformation, so a failure means recomputing just the lost partitions, with no replicas kept.</li>
+<li>Immutability plus deterministic transformations is what guarantees that a recomputed partition is byte-for-byte identical to the lost one.</li>
+<li>Narrow dependencies pipeline on one machine and recover cheaply; wide dependencies need a shuffle, and the scheduler cuts stages exactly there.</li>
+<li>RDD transformations are lazy and actions trigger work; persist() keeps reused data in memory, and an evicted partition is simply recomputed from lineage.</li>
+<li>When lineage grows long and full of wide dependencies, a checkpoint truncates it, and read-only data lets checkpoints be written asynchronously in the background.</li>
+<li>In the paper's experiments Spark ran iterative machine learning up to about 20× faster than Hadoop and answered queries over 1 TB of cached data in 5–7 seconds.</li>
+<li>RDDs became the foundation of the Spark stack, yet they suit no fine-grained updates and stay opaque to optimizers, so DataFrames later became the recommended API.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Finish this page and you have the paper's core; for the full scheduler implementation and experimental setup, go read the original.</footer>
 </div>

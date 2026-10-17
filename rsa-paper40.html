@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 40</p>
@@ -163,17 +171,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>量子计算的达摩克利斯之剑</strong>：Shor 算法（1994）表明<strong>足够大的量子计算机能高效分解大整数</strong>，从而彻底攻破 RSA——这正是当下<strong>后量子密码（PQC）</strong>迁移的直接动因。</li>
 <li><strong>并非最早</strong>：GCHQ 的 Cocks 早在 1973 年已私下得到等价构造，只是因保密未公开——RSA 是独立且第一个<strong>公开</strong>的发明。</li>
 </ul>
-<h2 data-tts="3beadc2ea3388e42">要点</h2>
-<div class="tl">
-<p>① 一句话：第一套实用公钥体制——公钥 <code>(n,e)</code> 人人可加密/验签，私钥 <code>d</code> 只有你能解密/签名。</p>
-<p>② 痛点：对称密码有「密钥分发」死结（想安全通信得先安全通信）和「无法向第三方证明谁签的」；RSA 用不对称的两把钥匙破局。</p>
-<p>③ 陷门：安全靠「大质数相乘易、把乘积分解回质数极难」；知道 p、q 的人能绕过难关。</p>
-<p>④ 造钥：<code>n=p·q</code>、<code>φ=(p−1)(q−1)</code>、选 e、求 <code>d≡e⁻¹ (mod φ)</code>；d 要靠 φ、φ 要靠 p、q。</p>
-<p>⑤ 收发：加密 <code>c=m^e mod n</code>、解密 <code>m=c^d mod n</code>，靠 <code>m^(ed)≡m (mod n)</code>（欧拉/费马）转得回来。</p>
-<p>⑥ 反用即签名：私钥盖章 <code>s=m^d mod n</code>、公钥验 <code>s^e mod n</code>，可公开验证、不可抵赖。</p>
-<p>⑦ 影响：HTTPS/TLS、数字证书、PGP、软件签名的地基；三人获 2002 图灵奖。</p>
-<p>⑧ 局限：慢（故混合加密）；裸用不安全需 OAEP/PSS 填充；实现多坑；安全性只是假设；Shor 算法下量子计算机可破，正推动后量子迁移。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>中国史 · 虎符</b>：战国虎符一剖两半，君王与将领各持一半，合得上才认令，像 RSA 拆成两半、配对验证。不像在于：虎符两半都得保密，偷到一半就能冒充，信陵君窃符救赵正是如此；RSA 的公钥那半却能满世界公开。</li>
+<li><b>进化生物学 · Zahavi 的累赘原理（handicap principle）</b>：孔雀大尾巴可信，因为弱者付不起、装不出来，和签名「伪造不出」同属防伪信号。不像的是，RSA 签名几乎不花代价，诚实靠独有的秘密而非昂贵。</li>
+<li><b>物理 · 麦克斯韦妖与 Szilard 引擎</b>：Szilard 指出，一比特「分子在哪边」的信息就能让妖精倒转看似不可逆的过程；RSA 里「知道 p、q」也让单向变可逆。不像在于：热力学不可逆是统计定律，分解之难只是未证的假设。</li>
+<li><b>免疫学 · 「缺失自我」（missing self，Klas Kärre）</b>：自然杀伤细胞检查细胞表面的 MHC-I 分子，亮不出这张「自我证明」就清除，像验签失败即拒收。不像的是，它只看有没有出示、不验能否伪造，一些病毒就演化出了仿冒 MHC 的分子。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Rivest、Shamir、Adleman 的 RSA 是第一套实用公钥密码：公钥公开，私钥自己保管。</li>
+<li>对称密码有密钥分发的死结：想安全通信，得先有一条安全通道把密钥送到对方手里。</li>
+<li>对称密码无法向第三方证明是谁签的名，因为双方共享同一把钥匙、谁都能伪造对方。</li>
+<li>Diffie 与 Hellman 1976 年提出公钥设想，RSA 第一次把它落地成既能加密又能签名的算法。</li>
+<li>RSA 的陷门是大质数相乘容易、分解乘积极难，只有知道 p、q 的人能倒推私钥。</li>
+<li>RSA 造钥匙：<code>n = p·q</code>，选公开指数 e，再求 d 使 <code>e·d ≡ 1 (mod φ(n))</code>。</li>
+<li>RSA 加密 <code>c = m^e mod n</code>、解密 <code>m = c^d mod n</code>，欧拉定理保证还原原文。</li>
+<li>反过来用私钥加密就是数字签名，任何人用公钥都能验证，签名者无法抵赖。</li>
+<li>RSA 是 HTTPS、数字证书和软件签名的地基，Rivest、Shamir、Adleman 因此获 2002 年图灵奖。</li>
+<li>RSA 计算慢、裸用须加 OAEP/PSS 填充，且量子计算机运行 Shor 算法可能将其攻破。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的数论证明与参数细节，再去翻原文。</footer>
 </div>

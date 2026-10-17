@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 .q{background:#171b21;border:1px solid rgba(240,180,41,0.18);border-radius:8px;padding:12px 16px;margin:14px 0;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:0.86rem;color:#f5c451;line-height:1.85;overflow-x:auto}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP READ · PAPER 71</p>
@@ -220,19 +228,26 @@ Select cl.procName, SUM(incr.delta)</div>
 <li><strong>Adoption is the most honest criticism.</strong> A decade on, the industry mainstream is still Dapper-style sampled tracing plus metrics and logs; the <em>complete</em> form of Pivot Tracing — issuing queries at runtime and weaving them in dynamically — has not been widely deployed. What spread was its abstraction (baggage, causal propagation), not its product form.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1. In one line: use a happened-before join to pair "the number at the bottom" with "the identity at the top" along the causal path, and dynamic instrumentation to install the query into a running system — monitoring moves from bookkeeping-in-advance to asking-afterwards.</p>
-<p>2. Pain one: what gets recorded is frozen at development time; a new question means editing code, redeploying, and waiting for a recurrence.</p>
-<p>3. Pain two: information is carved along component boundaries — HDFS recognizes only direct clients and cannot say which high-level job ate the disk; the two halves live in two systems.</p>
-<p>4. The operator: <code>a ⋈→ b</code>, pairing not by equal values and not by timestamps (clocks disagree) but by Lamport's causal order — the one reliable relation a distributed system gives you for free.</p>
-<p>5. The implementation key: baggage — pack the join's fields into a container the request carries through threads, queues and RPCs; downstream unpacks and pairs <strong>in place</strong>, emitting only results instead of shipping raw events to a central node.</p>
-<p>6. Why it is cheap: aggregation and filtering are pushed to the source and the baggage carries only what is needed — 0 bytes with no query, about 137 bytes per request for the heaviest one evaluated.</p>
-<p>7. The machinery: query → restricted advice (Observe / Unpack / Filter / Pack / Emit) → pub-sub to agents → bytecode weaving at tracepoints → results stream back; retraction returns the cost to zero.</p>
-<p>8. Results: DataNode disk bandwidth decomposed by high-level client on a Hadoop cluster; a software bug, a misconfiguration and a limping disk located; 50–200 lines per system to add baggage propagation; about 16% worst-case overhead under a stress test.</p>
-<p>9. Impact: cross-layer attribution formalized as an operator; one of the sources of "observability = answering what you did not anticipate"; baggage now in the OpenTelemetry standard interfaces.</p>
-<p>10. Limits: a broken baggage chain fails silently; only path causality is visible, not contention over shared resources; it depends on runtime rewriting and raises injection-security concerns; the complete form is still not widely adopted in industry.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · the binding problem</b>: a bird's color, shape and motion are processed in different brain areas, so how does the brain know they belong to one object? A famous hypothesis from Wolf Singer and colleagues binds them by synchronized neural firing. Same attribution gap; the difference is that Pivot Tracing refuses to pair by timing and trusts only the shared causal path.</li>
+<li><b>Buddhism · dependent origination</b>: "when this exists, that comes to be" — things are linked not by a shared essence but by conditions that precede and enable each other, much as the happened-before join ignores equal values and asks only what could have influenced what. Unlike it, dependent origination is a whole mutual web; Pivot Tracing sees one request path at a time.</li>
+<li><b>Developmental biology · CRISPR lineage tracing</b>: plant an editable barcode in an embryo, let each cell division add fresh mutations, then read the barcode every cell carries to rebuild the family tree — the record travels with the individual, not in a central registry, just like baggage. The barcode is read only at the end; baggage is computed along the way.</li>
+<li><b>Management accounting · activity-based costing</b>: Robert Kaplan and Robin Cooper argued for charging shared factory overhead to individual products by the activities that actually drive it — the same question of which top-level customer a bottom-level cost belongs to. Activity-based costing estimates by driver ratios; Pivot Tracing measures each request.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Pivot Tracing lets engineers ask ad hoc questions of a running distributed system and withdraw them afterwards, with no code change or redeploy.</li>
+<li>Traditional logs, metrics and traces freeze what gets recorded at development time, so a new question means new code and waiting for a recurrence.</li>
+<li>Cross-layer attribution is hard because component boundaries split the facts: HDFS knows the bytes read, only upper layers know on whose behalf.</li>
+<li>The happened-before join pairs records by Lamport's causal order, relying neither on equal values nor on machine clocks that disagree.</li>
+<li>Baggage packs the join's fields into a container the request carries, so downstream code pairs and aggregates in place and emits only results.</li>
+<li>Filtering and aggregation are pushed to the source: baggage is 0 bytes with no query and about 137 bytes per request for the heaviest one evaluated.</li>
+<li>Queries compile to restricted advice that per-machine agents weave into tracepoints by bytecode rewriting, and removing a query restores the system.</li>
+<li>On a Hadoop cluster Pivot Tracing located a software bug, a misconfiguration and a limping disk, with about 16% worst-case overhead under stress.</li>
+<li>Baggage as a concept made it into the OpenTelemetry standard, but the full form of pushing queries into live systems never saw wide industry adoption.</li>
+<li>A broken baggage chain fails silently, and only causality along a request's path is visible, not interference between requests contending for one disk.</li>
+</ol>
 </div>
 
 <footer>CS Papers Deep Read · Reading this page ≈ getting the core of the paper; for the full query language and the per-query measurements, go to the original.</footer>

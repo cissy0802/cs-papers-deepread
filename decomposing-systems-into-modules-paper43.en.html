@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 43</p>
@@ -177,17 +185,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Abstractions leak</strong>: however clean an interface, performance characteristics, error behavior, and the like can still "leak" implementation details, forcing users to learn the internals; information hiding is an ideal, hard to achieve absolutely in practice.</li>
 <li><strong>KWIC is a toy example</strong>: it makes the principle clear on a small system, but applying the criterion to very large systems needs additional organizing means (layering, dependency management, team boundaries).</li>
 </ul>
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: don't split modules by "processing steps / the flowchart," split by "information hiding" — each module hides one "most-likely-to-change design decision" and exposes only a stable interface.</p>
-<p>② The pain: by-step modules share one data format, so a single storage change ripples through all of them — hard to change, hard to divide.</p>
-<p>③ Core: first list the "hard / changeable design decisions," seal each inside a module as its "secret," and let others use it only through a set of functions (the interface), never seeing the implementation.</p>
-<p>④ Three payoffs: changeability (change stays in the box), independent development (only agree on interfaces), comprehensibility (each module understandable alone).</p>
-<p>⑤ Two clarifications: a module is a "responsibility assignment," not "a flowchart step"; what to hide is the core hard problem, and the interface should expose as little as possible.</p>
-<p>⑥ Method of argument: contrast two decompositions of a KWIC index point by point on change/labor/understanding — by-secret wins decisively.</p>
-<p>⑦ Impact: encapsulation, abstract data types, the OOP class, API / microservice boundaries are all descendants of this criterion.</p>
-<p>⑧ Limits: success rides on "guessing what will change"; layered abstraction has costs and invites over-design; abstractions leak; it gives a criterion but not the whole structure (later filled by the uses hierarchy / program families).</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Complexity science · Herbert Simon's near-decomposability (1962)</b>: In "The Architecture of Complexity," Simon's watchmaker Hora builds stable subassemblies, so a phone call costs him one subassembly; Tempus builds part by part, and every interruption makes the whole watch fall apart. Complex systems tend to be hierarchies with strong interaction inside units and weak interaction between them. The shared move is buying stability with loose coupling; the difference is that Simon is about surviving disturbance, Parnas about absorbing future design changes.</li>
+<li><b>Evolutionary biology · modularity and evolvability (Wagner &amp; Altenberg, 1996)</b>: A good genotype-phenotype map keeps pleiotropy (one gene affecting several traits) mostly inside one functional module, so improving one function doesn't break another and the lineage evolves more easily. Unlike Parnas, no designer lists the likely changes; selection sifts the modules out slowly.</li>
+<li><b>Philosophy of mind · Fodor's modules and informational encapsulation (1983)</b>: Input systems like vision can't consult your beliefs, so the Müller-Lyer lines still look unequal after a ruler proves them equal. The arrow points the other way: in Parnas the outside can't see into the module, in Fodor the module can't see out.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society" (1945)</b>: When tin gets scarce, users needn't know why; a rising price is enough to make them economize. The price is an interface exposing one number while the particular knowledge stays local. The gap: nobody assigns the market's secrets, whereas Parnas's are deliberately handed to modules by a designer.</li>
+<li><b>Business · Baldwin &amp; Clark, Design Rules (2000)</b>: Two Harvard Business School scholars borrowed information hiding, splitting a design into visible design rules everyone obeys and hidden parameters each module evolves alone, and used the option value of modules to explain how the computer industry fragmented. They price an industry; Parnas only asks whether one program is easy to change.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Parnas's 1972 paper asks not whether to split a system into modules, but by what criterion to split it.</li>
+<li>The popular, natural decomposition of the day followed the flowchart, making each processing step a module.</li>
+<li>In the KWIC example, step-based modules all share one storage format, so a single storage change ripples through every module.</li>
+<li>The information-hiding criterion: list the hard or likely-to-change design decisions, and give each module one such secret to keep.</li>
+<li>Modules cut along secrets talk only through a set of interface functions that reveal as little of the implementation as possible.</li>
+<li>Information hiding pays off three ways: changes stay inside one module, teams work independently once interfaces are agreed, and each module can be understood alone.</li>
+<li>A module is an assignment of responsibility, not a step in a flowchart, and what it hides is a core hard decision, not a trivial detail.</li>
+<li>Encapsulation, abstract data types, the object-oriented class, APIs, and microservice boundaries all descend from the information-hiding criterion.</li>
+<li>Information hiding stands or falls on guessing which decisions will change, and it carries costs in leaky abstractions and over-design.</li>
+<li>Herbert Simon's near-decomposability mirrors Parnas's modularity: strong coupling within units and weak coupling between them buy overall stability.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full module lists of both KWIC decompositions and the original argument, go to the original.</footer>
 </div>

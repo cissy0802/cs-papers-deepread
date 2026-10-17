@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 63</p>
@@ -227,17 +235,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Two costs it plays down.</strong> Most of serverless's power comes from a vendor's proprietary BaaS, so lock-in runs far deeper than with virtual machines; and once a request is shattered into dozens of short-lived calls, debugging gets dramatically harder.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: give "serverless" a usable definition, then probe its edges with five application classes and write the result up as a four-item obstacle list.</p>
-<p>② The definition: <code>serverless = FaaS + BaaS</code>, with three tests — compute and storage decoupled, code submitted instead of resources requested, billed for usage rather than allocation (zero cost when idle).</p>
-<p>③ The old pain: you were forced to guess sizes and peaks, with asymmetric costs for guessing wrong; the meter ran from boot; elasticity was your own job.</p>
-<p>④ Mechanism and price: to be startable, killable and billable by the millisecond, functions must be <strong>short-lived, stateless and unaddressable</strong>; so there is no direct line between two of them and all sharing detours through external storage, turning a microsecond in-memory handoff into tens of milliseconds. A shuffle degrades from "N machines connected directly" into "N×N small objects written to storage" — and the finer the slicing (serverless's whole selling point), the worse it gets.</p>
-<p>⑤ The four obstacles: no low-latency ephemeral shared storage (the worst one), no fine-grained coordination, expensive broadcast/aggregation/shuffle, unpredictable performance (cold starts + hardware lottery + no accelerators).</p>
-<p>⑥ The truth about the economics: per unit of compute it is more expensive; it wins by charging nothing while idle, so it pays off only for bursty, low-duty-cycle workloads — the steadier the load, the worse the deal.</p>
-<p>⑦ The rebuttal (Hellerstein et al., CIDR 2019): FaaS is a data-shipping architecture that inverts forty years of "ship the code to the data," and for data-intensive work it comes out roughly an order of magnitude slower and more expensive.</p>
-<p>⑧ Legacy and limits: the checklist became the sub-field's research agenda (Pocket, Locus, Firecracker and Cloudburst all follow it); but this is a position paper rather than an experimental one, its "serverless will replace serverful" prediction has yet to come true, and the architectural objection from the other side was never truly answered.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Complexity science · Stigmergy (Grassé, 1959)</b>: the French biologist Pierre-Paul Grassé saw that nest-building termites don't talk to each other; each reads the structure already built and decides what to add. Function A writing to storage and function B reading it is coordination through the environment in exactly this sense. The difference: the termites' "storage" is right underfoot and nearly free, while every serverless read or write costs tens of milliseconds plus a line on the bill.</li>
+<li><b>Neuroscience · Patient H.M. (Henry Molaison)</b>: after a 1953 bilateral medial temporal lobe resection he could no longer form new long-term memories, meeting everyone as if for the first time, like a stateless function wiped after each call. The difference: Brenda Milner found he still got better at mirror-drawing a star, the skill quietly kept elsewhere in the brain.</li>
+<li><b>Immunology · Clonal expansion in adaptive immunity</b>: only when an antigen shows up does the body mass-copy the matching lymphocytes, and once the infection clears most of them die off, close to zero. That is scale-on-demand, scale-to-zero. The difference: the immune system deliberately keeps memory cells so the next response is faster, while cold starts remain on the paper's list of obstacles.</li>
+<li><b>Economics · Coase, "The Nature of the Firm" (1937)</b>: if markets are so efficient, why do firms exist? Because using the market has transaction costs. Serverless pushes compute back onto a pay-per-call market, and the rebuttal's data shipping is that transaction cost. The difference: Coase meant search and contracting; here the cost is physical latency and bandwidth.</li>
+<li><b>Buddhism · Yogācāra momentariness and the storehouse consciousness</b>: Yogācāra holds that moments of consciousness arise and perish instantly, and continuity comes from karmic "seeds" deposited in the ālaya-vijñāna. Like functions that live and die while all continuity sits in outside storage; unlike them, each being has its own storehouse rather than a shared locker.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>"A Berkeley View on Serverless Computing" (2019) is a position paper: it defines serverless, then lists what it still cannot do.</li>
+<li>The pain of serverful computing is that guessing capacity has asymmetric costs: too big wastes money daily, too small takes you down.</li>
+<li>The paper defines serverless as FaaS + BaaS: compute decoupled from storage, code instead of resource requests, billing by usage.</li>
+<li>To be started and killed at will, cloud functions must be short-lived, stateless and unaddressable, so all sharing detours through storage.</li>
+<li>On serverless, a shuffle becomes N×N small objects written to object storage, and the finer the tasks, the worse the cost.</li>
+<li>The Berkeley paper's four obstacles: no ephemeral shared storage, no fine-grained coordination, costly communication patterns, unpredictable performance.</li>
+<li>The rebuttal by Hellerstein et al. calls FaaS a data-shipping architecture that inverts the rule of shipping code to the data.</li>
+<li>Per unit of compute, cloud functions cost more; they only pay off for bursty, low-duty-cycle loads because idle time is free.</li>
+<li>The obstacle list became a research agenda, but the prediction that serverless would replace serverful has not come true.</li>
+<li>Functions relaying through object storage resemble termites coordinating through the nest they have built (stigmergy), except each read and write is slow and costly.</li>
+</ol>
 </div>
 
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full case studies, cost tables and predictions, go to the original — and to the rebuttal published the same year.</footer>

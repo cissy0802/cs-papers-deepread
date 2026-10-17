@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 37</p>
@@ -153,17 +161,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>A letter is not a full methodology</strong>: how to actually write reasoned-about programs was filled in later by Dijkstra, Hoare, and others through invariants, pre/post assertions, and stepwise refinement; this letter only pointed the direction.</li>
 <li><strong>goto still has legitimate modern uses</strong>: e.g. centralized error cleanup in C (jump to the end of a function to release resources in one place), as the Linux kernel does extensively — a disciplined goto that actually makes resource handling clearer.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: goto decouples static code text from the dynamic execution process; switching to sequence / selection / iteration fixes it — the manifesto of structured programming.</p>
-<p>② Insight: the human mind is good at static structure, poor at picturing dynamic processes; good code makes the text a reliable map of execution.</p>
-<p>③ Core mechanism: structured control flow always gives "progress" a compact set of coordinates (textual pointer + (loop) count + (call) stack); this is the footing for invariants and correctness reasoning.</p>
-<p>④ Harm of goto: arbitrary jumps make a textual position no longer imply "what came before," coordinates degenerate, reasoning loses its ground.</p>
-<p>⑤ Theoretical backing: Böhm–Jacopini (1966) proved sequence / selection / iteration can express any process — deleting goto loses no expressive power.</p>
-<p>⑥ The famous line: "programmer quality is a decreasing function of goto density"; what he opposes is <em>unrestricted</em> jumping, not all jumping.</p>
-<p>⑦ Impact: it ignited structured programming, made if/while/for language standards, and raised readability / provability to first-class criteria.</p>
-<p>⑧ Limits: Knuth showed goto is better in a few cases ("use sparingly," not banned); goto is only a scapegoat for unstructured control flow; modern error handling still has legitimate goto.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Psychology · Miller's chunking</b>: In 1956 George Miller found that short-term memory holds roughly seven "chunks," not seven units of information, and familiar patterns compress many details into one chunk. Structured control flow chunks for the reader: a whole while block can be held as a single unit. The difference: Miller measured storage capacity, while Dijkstra cared whether reasoning has somewhere to stand, not just whether you can remember.</li>
+<li><b>Complexity science · Simon's two watchmakers</b>: In Herbert Simon's 1962 "The Architecture of Complexity," Hora builds from stable subassemblies and loses only a small piece when interrupted; Tempus assembles part by part and loses everything. Nested blocks are Hora's method. The difference: Simon asks whether systems can evolve and survive, Dijkstra whether people can understand them.</li>
+<li><b>Evolutionary biology · modularity and evolvability</b>: Wagner and Altenberg (1996) argued that a modular genotype-phenotype map, where a mutation rarely disturbs unrelated functions, makes new adaptations easier to evolve. goto behaves like sprawling pleiotropy: touch one spot, disturb everything. The difference: modularity is slowly selected by nature, while structured programming is a discipline people choose.</li>
+<li><b>Philosophy · Bergson's spatialized time</b>: Bergson's 1889 doctoral thesis argued that the intellect grasps flowing duration (durée) by laying it out as a line in space. Dijkstra likewise wants the execution unfolding in time to be pinned down as a static arrangement on paper. The difference: Bergson saw spatializing as a distortion to be overcome by intuition; Dijkstra embraces it as the very tool for reasoning and proof.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>"Go To Statement Considered Harmful" is a two-page letter Dijkstra published in CACM in 1968, and it ignited the structured programming movement.</li>
+<li>A program has two faces, static text on paper and a dynamic process at run time, and reading, writing and debugging all mean mapping one onto the other.</li>
+<li>Human minds grasp static structure well but picture processes unfolding in time poorly, so good code should make its text a reliable map of execution.</li>
+<li>In a program built only from sequence and selection, a single textual pointer ("which line am I on") pins down execution progress uniquely.</li>
+<li>Loops add an iteration count and procedure calls add a stack of textual pointers, yet the progress coordinates stay well defined.</li>
+<li>Progress coordinates are the footing for invariants and correctness reasoning; arbitrary goto jumps reduce a textual position to a meaningless coordinate.</li>
+<li>Böhm and Jacopini proved in 1966 that sequence, selection and iteration can express any flow, so dropping goto costs no expressive power.</li>
+<li>Dijkstra opposed unrestricted jumps, not all jumps; structured branches and loops are themselves tamed jumps.</li>
+<li>Knuth showed in 1974 that goto is clearer in a few cases such as escaping nested loops, so the consensus became "use sparingly," not "never."</li>
+<li>Structured control flow does for the reader what the psychologist Miller called chunking, compressing an entire loop into one memorable unit.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Reading this page ≈ getting the core of the paper; for Dijkstra's original letter and the debate that followed, go to the source.</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 3</p>
@@ -167,18 +175,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>极吃数据与算力</strong>：没有 ImageNet 这种百万级标注数据和 GPU，这套方法根本无从谈起；也因此更像「大数据 + 大算力」时代的产物，而非小数据场景的通用解。</li>
 <li><strong>深度仍浅、可解释性差</strong>：8 层在今天看只是「浅深网络」；且它为何有效、学到了什么，当时（乃至现在）都缺乏充分的理论解释。</li>
 </ul>
-<h2 data-tts="3a610759845529b8">要点</h2>
-<div class="tl">
-<p>① 一句话：一个 8 层深度 CNN，在 2012 ImageNet 上把 top-5 错误率降到 15.3% 夺冠，引爆深度学习革命。</p>
-<p>② 痛点：旧方法靠<strong>人工设计特征</strong> + 浅分类器，天花板低、脆弱；深 CNN 理论更优却一直训不动、训不起。</p>
-<p>③ 核心：让 <strong>5 层卷积自己从百万张图里学特征</strong>（不再人工设计）+ 3 层全连接分类 + softmax，共约 6000 万参数。</p>
-<p>④ 要素一 ReLU：<code>max(0,x)</code> 不饱和、梯度恒定，训练快约 6 倍，成为默认激活。</p>
-<p>⑤ 要素二 GPU：拆到两块 GTX 580 上训练五六天，让大深网络从不可能变可行。</p>
-<p>⑥ 要素三/四：Dropout（训练时随机置零一半单元）+ 数据增强（翻转/平移/调色）压住过拟合。</p>
-<p>⑦ 结果：top-5 15.3% vs 第二名 26.2%，近乎腰斩；消融证明「深」在起作用；第一层滤波器自学成边缘检测器。</p>
-<p>⑧ 影响：确立「数据+算力+深网络自学特征」范式，催生 VGG/ResNet 等与整条 GPU 算力产业。</p>
-<p>⑨ 局限：胜在工程与规模而非理论；LRN、大卷积核、双 GPU 分组等后被淘汰；参数臃肿于全连接层；极吃数据算力。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · Hubel–Wiesel 简单细胞与稀疏编码</b>：Hubel 和 Wiesel 1959 年起在猫的初级视觉皮层里找到只对特定朝向边缘放电的「简单细胞」（1981 年诺奖）；Olshausen 与 Field 1996 年证明，只要求对自然图像做稀疏编码，算法就会自己长出同样的朝向边缘滤波器。AlexNet 第一层的边缘检测器是同一个答案。不像在于：大脑有大量反馈连接，AlexNet 只单向前传。</li>
+<li><b>生物进化 · 有性生殖的「可混合性」（Livnat、Papadimitriou 等，PNAS 2008）</b>：有性生殖不断拆散基因组合，被选中的是和许多搭档都能合作的基因；Dropout 随机让一半单元缺席，逼每个单元离开固定的小圈子也有用。不像在于：进化跨代、没有梯度，Dropout 每一步都有误差信号指路。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》（1945）</b>：哈耶克认为经济所需的知识散落在无数人手里，没有哪个中央计划者写得全；手工特征就是专家计划，AlexNet 让百万张图自己定特征。不像在于：梯度下降仍在优化一个中央设定的单一目标，不是分散主体各自出价。</li>
+<li><b>哲学 · 康德的先天直观形式</b>：康德认为空间是心灵整理经验的先天形式，不从经验里来；卷积核在全图共享，等于预先写死「换个位置还是同一个东西」。所以 AlexNet 学的是内容，框架仍是设计的。不像在于：康德的形式是认识的必要条件，卷积只是好用的工程选择。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>AlexNet 是一个 8 层深度卷积网络，2012 年在 ImageNet 比赛上把 top-5 错误率降到 15.3% 夺冠。</li>
+<li>2012 年之前的图像识别靠人工设计特征加浅层分类器，面对姿态、光照和遮挡的变化很脆弱。</li>
+<li>AlexNet 用 5 层卷积自己从约 120 万张图里学特征，再用 3 层全连接和 softmax 输出 1000 类概率。</li>
+<li>ReLU 激活函数 max(0, x) 在正区间不饱和，论文报告训练比 tanh 快约 6 倍。</li>
+<li>网络拆在两块 GTX 580 显卡上训练了五到六天，GPU 让大而深的网络第一次训得起。</li>
+<li>Dropout 训练时随机置零一半全连接单元，数据增强用翻转、平移和调色扩充样本，两招合力压住过拟合。</li>
+<li>15.3% 对第二名的 26.2% 近乎腰斩，去掉任一卷积层成绩都会下滑，说明深度本身在起作用。</li>
+<li>「给足数据和算力、让深网络自己学特征」从此成为范式，ReLU、Dropout、GPU 训练变成通用套路。</li>
+<li>AlexNet 胜在工程与规模而非理论：LRN、11×11 大卷积核、双 GPU 分组后来都被淘汰，参数还臃肿在全连接层。</li>
+<li>AlexNet 第一层自学出的朝向边缘滤波器，和猫视觉皮层的简单细胞、稀疏编码算法学到的滤波器是同一种结构。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整网络配置与实验细节，再去翻原文。</footer>
 </div>

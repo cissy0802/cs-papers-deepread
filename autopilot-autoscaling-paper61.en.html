@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 61</p>
@@ -240,17 +248,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Automation did not abolish human guessing; it relocated it.</strong> The relative weights of overrun versus waste, how the model pool is constructed, how much margin to allow — all remain global human judgements. It replaced "guess once per job" with "guess a handful of hyperparameters once". An enormous improvement, but not the disappearance of the problem.</li>
 <li><strong>It is a production report, not a general algorithm.</strong> Every number comes from Borg and Google's comparatively homogeneous, thoroughly instrumented workloads. There is no public code or dataset, so it is hard to reproduce externally, and how much of the benefit survives in messier, less observable, more weakly isolated environments is open.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: Autopilot sets CPU/memory limits and replica counts for every task on Borg automatically, from an exponentially decaying histogram of past usage plus a statistic plus a safety margin.</p>
-<p>② The pain: cloud waste comes mostly not from slow scaling but from people mis-declaring resource requests — asking too little gets you killed or throttled, asking too much only shows on a bill, so everyone overshoots.</p>
-<p>③ The hinge: write that asymmetry down as an explicit <strong>cost function</strong> (overrun ≫ waste, plus a churn penalty). "What number?" becomes a replayable, scoreable optimisation.</p>
-<p>④ Vertical: usage accumulates into a <strong>fading histogram</strong> (<code>w(τ)=2^(−τ/t½)</code>, ≈12 h for CPU, ≈48 h for memory); peak for memory, high percentile for serving CPU, average for batch; multiply by a margin, roll out gradually, lower memory only with care.</p>
-<p>⑤ The multi-model recommender: keep a stable of differently parameterised models, score each by replaying history, weight by cost — and penalise switching so it does not oscillate.</p>
-<p>⑥ Horizontal: the same asymmetry — <strong>scale up on a short window immediately, scale down on multi-day peaks in small steps</strong>.</p>
-<p>⑦ Results: over 48% of Google's fleet-wide usage; slack 46% → 23% (in one comparison, from ~12,000 machines' worth to ~500); jobs severely affected by OOMs down about 10×, with &gt;99.5% of job-days OOM-free.</p>
-<p>⑧ Legacy and limits: Kubernetes VPA and cloud rightsizing tools follow this recipe almost directly — but it only copies history (cold start unsolved), the usage it observes is already distorted by throttling, changing limits can restart tasks, and the weights and hyperparameters are still set by humans. Automation moved the guessing; it did not end it.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolutionary medicine · the smoke detector principle (Randolph Nesse)</b>: Nesse argued in 2001 that because a missed threat can be fatal while a false alarm costs a little energy, selection tunes defences to fire too easily. Taking the peak for memory but only a percentile for CPU is the same lopsided ledger; the difference is that evolution buries the weights in instinct, while Autopilot writes them out as a cost function it can replay and audit.</li>
+<li><b>Economics · rockets and feathers (Bacon 1991)</b>: Robert Bacon found UK petrol prices shoot up like rockets after cost rises and drift down like feathers after cuts, the same curve as scaling up at once and down in small steps. The motive differs: stations are exploiting pricing power, Autopilot is insuring against traffic coming back.</li>
+<li><b>Public finance · use-it-or-lose-it budgets (Liebman &amp; Mahoney 2017)</b>: US federal agencies spend 4.9 times their usual weekly amount in the last week of the fiscal year, because leftover money is returned and may invite a smaller budget. Padded limits come from the same warped incentive; Autopilot does not fix the incentive, it simply takes the number out of human hands.</li>
+<li><b>Physiology · allostasis (Sterling &amp; Eyer 1988)</b>: allostasis replaces the fixed set point of homeostasis with targets that move with demand, "stability through change". Letting limits drift with usage is that same step; but allostasis stresses anticipating demand, whereas Autopilot can only look backwards.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>When people set resource limits by hand, asking too little gets tasks OOM-killed or throttled while asking too much only costs money, so everyone overshoots.</li>
+<li>In manually managed Google jobs, slack (the gap between limit and actual usage) was about 46%: nearly half of reserved resources sat idle.</li>
+<li>The hinge of Autopilot is an explicit cost function over overruns, waste and churn, which makes "what limit?" a question you can replay and score.</li>
+<li>Vertical scaling keeps a histogram of usage that fades with a half-life, takes the peak for memory and a high percentile for serving CPU, then adds a safety margin.</li>
+<li>The multi-model recommender replays history through many differently tuned models, weights them by cost, and penalises switching models to avoid oscillation.</li>
+<li>Horizontal scaling is deliberately asymmetric: scale up on a short window immediately, scale down on multi-day peaks in small steps.</li>
+<li>Engineers handed over control of their limits only after a chain of evidence: offline simulation, dry runs, controlled experiments, gradual rollout and an easy opt-out.</li>
+<li>Autopilot covered over 48% of Google's fleet-wide usage, cut slack to about 23%, and reduced jobs severely hit by OOMs by roughly an order of magnitude.</li>
+<li>Usage-based limits have hard edges: they only copy history, cannot handle cold starts, see usage already distorted by throttling, and still rely on human-set hyperparameters.</li>
+<li>Taking the peak for memory follows the smoke detector principle from evolutionary medicine: when a miss costs far more than a false alarm, err on the cautious side.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the exact form of the cost function and all the charts, go to the original.</footer>
 </div>

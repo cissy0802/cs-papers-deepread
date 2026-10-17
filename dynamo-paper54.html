@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 54</p>
@@ -175,19 +183,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>运维与调参有门槛</strong>：N/R/W、虚拟节点数、反熵频率等都要按业务细调，用不好会踩坑。</li>
 <li><strong>亚马逊自己后来换了路</strong>：面向外部客户的 DynamoDB 是重写，提供了强一致读选项与托管化——侧面说明「纯最终一致 + 应用自合并」并非对所有场景都最友好。</li>
 </ul>
-<h2 data-tts="39d5587574ac0330">要点</h2>
-<div class="tl">
-<p>① 一句话：Dynamo 是亚马逊为「购物车永不拒绝写入」造的高可用键值存储，主动用即时一致换永远可用。</p>
-<p>② 取舍：CAP 里明确选 A（可用）弃即时 C——加购失败远比数据短暂分歧糟糕。</p>
-<p>③ 分布：一致性哈希把机器摆成环，键顺时针找第一台当协调者，加减机器只动相邻一段（虚拟节点做负载均衡）。</p>
-<p>④ 副本：协调者连同其后 N−1 台共存 N 份，构成 preference list。</p>
-<p>⑤ 旋钮：写 W 份、读 R 份，令 <code>R+W&gt;N</code> 使读写副本必重叠，一致性可按业务调。</p>
-<p>⑥ 抗故障：宽松法定人数 + 暗示移交（hinted handoff）——原主机宕了先让邻居代收、附便条，恢复后归还，写几乎永不失败。</p>
-<p>⑦ 冲突：向量时钟记录版本因果，能覆盖的自动取新，真冲突多版本并存、交应用语义合并（购物车取并集）。</p>
-<p>⑧ 自愈：Merkle 树反熵修复长期不同步，gossip 去中心地传播成员与故障——人人对等、无中心。</p>
-<p>⑨ 影响：点燃 NoSQL 与最终一致运动，Cassandra / Riak / Voldemort 的直系母本，机制成分布式存储通用词汇。</p>
-<p>⑩ 局限：合并逻辑甩给应用、向量时钟会膨胀、宽松法定人数偶有旧读/丢写、调参运维有门槛；DynamoDB 已是另起炉灶的重写。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>动物行为学 · 蜜蜂的「法定数感知」（Seeley）</b>：Thomas Seeley 研究分蜂群选新巢，发现侦察蜂不等全体一致，只要某个候选点聚到足够多同伴（一个法定数）就启程，阈值高低在快与准之间取舍——和可调的 R、W 是同一个旋钮。不像在于：蜂群要的是选对，Dynamo 的 R+W&gt;N 要的是读写集合必然重叠。</li>
+<li><b>神经科学 · 互补学习系统（McClelland 等，1995）</b>：海马体先快速暂存新记忆，再在之后慢慢把它转交给新皮层长期保存，很像「邻居先代收、原主恢复再移交」。不像的是，暗示移交原样归还，记忆转移却是一边转一边被改写、抽象。</li>
+<li><b>生物进化 · 系统发生树与基因水平转移</b>：向量时钟画出的版本谱系就是一棵会分叉的树，互不覆盖的两支像各自演化的谱系；应用把两版本合并，像基因水平转移把两条线重新汇合。不像在于：自然界的汇合罕见而偶然，Dynamo 的合并是每次读到冲突都要做的例行公事。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》（1945）</b>：哈耶克认为没有哪个中心能掌握全部分散的知识，价格系统让局部信息在人与人之间传开；gossip 协议同样无中心，靠两两交换让全局视图浮现。不像的是，gossip 追求每台机器最终知道同一张环，价格只传压缩后的信号、从不要求人人知道一切。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Dynamo 是亚马逊为购物车等核心服务造的高可用键值存储，目标是「永远可写」。</li>
+<li>按 CAP 定理，网络分区时 Dynamo 明确选择可用性，放弃即时强一致，因为加购失败比数据短暂分歧更糟。</li>
+<li>一致性哈希把机器摆成环，键顺时针找到的第一台机器当协调者，加减机器只影响相邻一段。</li>
+<li>每个键连同协调者在内共存 N 份副本，这 N 台机器构成该键的 preference list。</li>
+<li>写至少 W 份、读至少 R 份，只要 R+W&gt;N，读写副本集合必定重叠，一致性强弱可按业务调节。</li>
+<li>宽松法定人数加暗示移交让宕机机器的写入先由邻居代收，原主恢复后再归还，写入几乎从不失败。</li>
+<li>向量时钟记录版本因果，能被覆盖的旧版本自动丢弃，真冲突多版本并存，交给应用合并，购物车取并集。</li>
+<li>Merkle 树反熵用极少传输修复长期不同步的副本，gossip 协议无中心地传播成员与故障信息。</li>
+<li>Dynamo 点燃了 NoSQL 与最终一致运动，Cassandra、Riak、Voldemort 都是它的直系后代。</li>
+<li>Dynamo 的代价是合并逻辑甩给应用、向量时钟会膨胀、宽松法定人数仍可能读旧或丢写，调参门槛也高。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整系统配置与实测细节，再去翻原文。</footer>
 </div>

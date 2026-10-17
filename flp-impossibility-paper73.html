@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 73</p>
@@ -202,18 +210,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>纯粹的最坏情况结论</strong>：不给任何概率刻画——不告诉你卡住的可能性多大、预期多久能决定。</li>
 <li><strong>极易被误引</strong>：常见误读是「异步系统无法达成共识」（正确说法是无法<strong>保证终止</strong>），以及与 CAP 混为一谈——CAP 讲分区时一致性与可用性的取舍，FLP 讲无时间假设下活性无法保证，关切相近但命题不同。</li>
 </ul>
-<h2 data-tts="8f5e9b15d1c6729d">要点</h2>
-<div class="tl">
-<p>① 一句话：异步网络中只要允许一个进程崩溃，就没有确定性算法能同时保证一致、非平凡与终止。</p>
-<p>② 痛点：协议普遍默认「超时可信」，真实网络却给不出延迟上界；2PC 在协调者失联时无限阻塞即是症状。</p>
-<p>③ 核心直觉：<strong>崩溃与极慢在旁人眼中完全相同</strong>——一直等可能不终止，不等则可能出两个答案。</p>
-<p>④ 机制一：给配置贴「价」——单价（大局已定）与双价（还悬着）；终止等价于「不可能永远双价」。</p>
-<p>⑤ 机制二：双价的初始配置必然存在——相邻初始配置只差一个进程的值，把它杀掉即得矛盾。</p>
-<p>⑥ 机制三：双价可无限维持——不同进程上的两事件可换序走到同一配置（菱形交换），同一进程上的则按住它、让其余人先决定；两路都出矛盾。</p>
-<p>⑦ 拼出的无限运行完全合法：消息都送达、进程都在动，却永不决定；其中<strong>没有进程真的崩溃</strong>——洞来自算法必须为崩溃留退路。</p>
-<p>⑧ 边界极紧：最温和的崩溃、消息保证送达、只要求「两值都有可能」，甚至只要一个进程决定也不行；反之故障进程若一开始就死、活者过半则可解。</p>
-<p>⑨ 影响与局限：共识设计从此以「安全无条件、活性靠假设」为纲，四条绕路是部分同步（Paxos / Raft）、随机化、失效检测器、弱化问题；但模型极端、只管确定性算法，也常被误引为「异步不能达成共识」或与 CAP 混为一谈。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>哲学 · 布里丹之驴（Buridan's ass）</b>：一头完全理性的驴站在两堆一样好的干草正中，找不到偏向任何一边的理由，于是饿死——这就是双价：0 和 1 都还可能，确定性的选择者没有理由迈步。不像在于，驴的对称是静止的，FLP 的对称是对手每一步主动重新摆平的；这则寓言其实不见于 Buridan 本人的著作，源头可追到亚里士多德《论天》。</li>
+<li><b>经济学 · 阿罗不可能定理（Kenneth Arrow，1951）</b>：帕累托、无关选项独立、非独裁，几条单看都很温和的要求凑在一起，就没有投票规则能全部满足；FLP 同样是把三条最弱的要求叠出不可能。不像的是，阿罗卡在偏好怎么聚合，FLP 卡在时间与信息。</li>
+<li><b>生物进化 · 蜜蜂分群的停止信号（Thomas Seeley 等，2012）</b>：两个同样好的巢址会让蜂群僵持，侦察蜂用头撞对方阵营舞者的「停止信号」做交叉抑制，才打破僵局。像在都要打破对称；不像在于蜂群靠噪声与群体阈值，等于同时用了随机化和时间，恰是 FLP 排除的两样。</li>
+<li><b>神经科学 · 紧迫性门控（Paul Cisek，2009）</b>：在 Cisek 的模型里，证据要乘上一个随时间增长的「紧迫性」信号，等得越久，越弱的证据也够拍板——这是把时间假设写进决策回路。不像的是，大脑宁可偶尔选错，Paxos 的超时只用来换主，安全性一步不让。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>FLP 定理：异步系统里只要允许一个进程崩溃，就没有确定性算法能保证共识终止。</li>
+<li>当时的协议普遍默认超时可信，可真实网络给不出延迟上界，2PC 会因协调者失联而无限阻塞。</li>
+<li>在异步网络中，崩溃的进程和极慢的进程在其他进程眼里完全无法区分。</li>
+<li>证明给每个配置贴上「价」：单价是大局已定，双价是 0 和 1 都还可能，像两堆草正中的布里丹之驴。</li>
+<li>相邻初始配置只差一个进程的值，让这个进程一开始就崩溃，即可推出双价初始配置必然存在。</li>
+<li>作用在不同进程上的两个事件可以换序走到同一配置，这个「菱形交换」是证明里最关键的一刀。</li>
+<li>对手每轮送出最老的消息却始终保持双价，拼出一条公平却永不决定的无限运行，其中没有进程真的崩溃。</li>
+<li>FLP 的边界极紧：只要一次最温和的崩溃、消息保证送达、只要求两值都有可能，结论依然成立。</li>
+<li>绕开 FLP 的四条路是部分同步、随机化、失效检测器和弱化问题，Paxos 与 Raft 走的是部分同步。</li>
+<li>FLP 说的是确定性算法无法「保证」终止，不是异步系统做不成共识，也不等同于 CAP 定理。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式化模型与逐步证明，再去翻原文。</footer>
 </div>

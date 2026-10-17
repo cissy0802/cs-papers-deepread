@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 39</p>
@@ -182,17 +190,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>「端点在哪」并不总是清楚</strong>：应用一复杂（多级代理、缓存、服务网格），谁算真正的「端」变得模糊，原则的套用需要再解释。</li>
 <li><strong>它是原则、不是算法</strong>：不能机械照搬，最终仍依赖设计者的判断——这既是它的灵活，也是它常被误用（用来支持互相矛盾的结论）的原因。</li>
 </ul>
-<h2 data-tts="ac4dabd3c48403c4">要点</h2>
-<div class="tl">
-<p>① 一句话：功能若只有靠通信两端应用的知识与配合才能完整正确地实现，就该放在端点，而不是做进底层网络。</p>
-<p>② 痛点：设计分层系统时，总有把可靠性、加密等功能塞进底层「一次做好、大家共享」的诱惑——但这常常是错的。</p>
-<p>③ 决定性例子：仔细的文件传输——数据要过硬盘、内存、网络、再内存、再硬盘，每环都可能出错，而网络看不见硬盘/内存里的错。</p>
-<p>④ 机制：唯一可靠的办法是端到端校验（两头各算文件校验和、比对、不符重传）；既然它必不可少，底层再保证可靠对「正确性」就是多余。</p>
-<p>⑤ 但底层可以「帮忙」：在很烂的网络上，底层重传能<strong>降低</strong>（但不能消除）端到端重试的概率，是正当的性能优化——要不要加是工程权衡。</p>
-<p>⑥ 同一逻辑推及加密/认证、投递确认、去重排序，结论都指向端点。</p>
-<p>⑦ 影响：塑造了 TCP/IP「尽力而为 IP + 主机里 TCP」的沙漏架构、「笨网络聪明终端」共识，以及网络中立性的技术根基。</p>
-<p>⑧ 局限：现实网络已被中间盒侵蚀；高丢包链路上纯端到端反而低效；「端点在哪」有时模糊；它是需要判断的原则、非机械公式。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>分子生物学 · DNA 复制的多层保真</b>：聚合酶挑碱基、外切酶校对（proofreading）、复制后错配修复（mismatch repair）三道关层层压低错误，合起来约每复制十亿个碱基才错一个或更少；每一层都像底层重传，只能减少、不能清零。不像在于：细胞没有「两头比对、不符重传」的终检，漏网的错就成了突变，而突变恰是进化的原料。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》（1945）</b>：哈耶克认为关于具体时空情境的知识散在每个当事人手里，中央计划者收不齐；端到端论证同样认定，判断数据「对不对」的知识只在端点应用手里。不像的是，市场还要靠价格把分散知识汇成信号，网络只搬字节、不汇总任何东西。</li>
+<li><b>政治哲学 · 辅助性原则（subsidiarity）</b>：庇护十一世 1931 年通谕《四十年》主张，小单位能办好的事大单位不该包揽，上级只在下级力有不逮时给予「援助」（subsidium），正像底层可靠性只算帮忙。不像在于：它讲自治与尊严，端到端讲的是正确性在哪一层才能被保证。</li>
+<li><b>复杂性科学 · 领结架构（Csete &amp; Doyle，2004）</b>：两人指出代谢网络是「领结」：千百种养分汇入 ATP、NADH 等少数通用载体，再展开成千百种产物，和 IP 窄腰上下多样、中间极薄同构。不像在于：代谢的结心受严密调控、一点不「笨」，而且这种结构稳健却带着可预测的脆弱点。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>端到端论证主张：只有靠通信两端应用的知识才能完整正确实现的功能，应放在端点而不是底层网络。</li>
+<li>Saltzer、Reed 和 Clark 在 MIT 把早期互联网设计里零散的直觉，提炼成一条可复述、可辩论的设计原则。</li>
+<li>分层系统设计里，把可靠性、加密等功能塞进底层「一次做好、大家共享」的直觉常常是错的。</li>
+<li>在「仔细的文件传输」例子里，硬盘、内存、网络每一环都可能出错，而网络看不见主机内部的错。</li>
+<li>唯一真正可靠的办法是端到端校验：两头各算整个文件的校验和，比对不符就整份重传。</li>
+<li>底层可靠传输只是性能优化：在很烂的网络上能减少端到端重传，但永远不能取代端到端检查。</li>
+<li>拿同一把尺子量加密与认证、投递确认、去重与排序，结论都指向由端点负责。</li>
+<li>端到端论证是 TCP/IP「尽力而为的 IP + 主机里的 TCP」沙漏架构和「笨网络、聪明终端」的思想地基。</li>
+<li>NAT、防火墙、CDN 等中间盒把功能塞回网络，高丢包链路上纯端到端也不划算，端到端论证终究要靠工程判断。</li>
+<li>DNA 复制靠层层校对把错误率压到极低却不清零，与底层可靠性只能减少、不能消除错误同构。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整论证与更多例子，再去翻原文。</footer>
 </div>

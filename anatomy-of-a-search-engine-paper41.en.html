@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 41</p>
@@ -194,17 +202,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The authors' own honest note</strong>: an appendix specifically discusses advertising and conflicts of interest, arguing that "advertising-funded search engines are inherently biased" and that search should be more transparent and academic — a stance in telling contrast with Google's later life as an advertising giant.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: the paper introduces the search prototype "Google," whose core is scoring page quality by hyperlink structure — PageRank + anchor text.</p>
-<p>② The pain: 1990s search ranked by text matching alone, "contains the word" ≠ "is a good page," and it was trivially gamed by keyword stuffing; hand-curated directories couldn't keep pace.</p>
-<p>③ PageRank: treat links as weighted votes, important pages cast heavier votes, defined recursively; equivalent to a "random surfer's" long-run probability of being on the page.</p>
-<p>④ Mechanism: <code>PR(A)=(1−d)/N + d·Σ PR(Tᵢ)/C(Tᵢ)</code>, d=0.85; the link matrix's principal eigenvector, computed by power iteration, converging in ~52 iterations and scaling.</p>
-<p>⑤ Anchor text: describe a page by the text on links pointing to it — often more accurate than self-description, and it indexes images / uncrawled pages.</p>
-<p>⑥ Fused ranking: PageRank (global) × text hits (position / font / title / proximity); with a full scalable crawler → repository → index → searcher architecture.</p>
-<p>⑦ Results and impact: a ~24-million-page prototype with markedly more relevant results; set the "quality via links" paradigm, spawned Google, reshaped how the internet finds information.</p>
-<p>⑧ Limits: query-independent, easily spammed via links, rich-get-richer; only one piece of modern ranking's hundreds of signals; the authors' warning on advertising bias is especially ironic.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Buddhism · Indra's net in Huayan</b>: every jewel in the net reflects every other jewel, so what one jewel is can only be told through its relation to the whole. PageRank likewise ignores what a page says and looks only at where it sits in the web of links. The difference: Indra's net is symmetric, "one in all, all in one", with no ranks; PageRank's edges are directed, and its output is precisely a ranking.</li>
+<li><b>Animal behavior · Seeley's house-hunting bees</b>: Thomas Seeley showed that scout bees in a swarm campaign for candidate nest sites with waggle dances, dancing longer for better sites, until one site gathers a quorum (<i>Honeybee Democracy</i>, 2010). Like PageRank, it is distributed weighted voting that finds a global best; unlike it, a bee's vote is weighted by the site's quality, not by how "important" the voter is.</li>
+<li><b>Economics · Keynes's beauty contest</b>: in chapter 12 of the <i>General Theory</i> (1936), Keynes likened the stock market to a contest where you pick not the prettiest face but the one others will pick. PageRank shares that recursion, importance as being deemed important by the important; but it is a fixed point of a static graph, with no players second-guessing each other.</li>
+<li><b>Economics · Goodhart's law</b>: Charles Goodhart's 1975 remark that a statistical regularity collapses once it is used as a control target. Links were spontaneous endorsements; once ranking paid for them, link farms and paid links followed. Unlike a central bank, though, a search engine can keep changing its rules to fight back.</li>
+<li><b>Complexity science · Barabási–Albert preferential attachment</b>: in a 1999 <i>Science</i> paper, Barabási and Albert showed that a growing network whose newcomers prefer already well-connected nodes develops a scale-free shape with a few giant hubs. That is the engine behind PageRank's rich-get-richer bias; but their model explains how a network grows, while PageRank scores a grown one and then feeds back into its growth.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Brin and Page's 1998 paper introduced the prototype search engine Google, built on scoring page quality from the web's link structure.</li>
+<li>Nineties search engines ranked by text matching alone, so containing a word did not mean being a good page, and keyword stuffing gamed the results.</li>
+<li>PageRank treats each link as a weighted vote, where votes from important pages count more, which makes importance a recursive definition.</li>
+<li>A page's PageRank equals the long-run share of time a random surfer spends there, following links 85% of the time and jumping anywhere 15%.</li>
+<li>Mathematically, PageRank is the principal eigenvector of the link matrix, computed by power iteration in about 52 rounds on 322 million links.</li>
+<li>Anchor text credits a link's words to the page it points to, often describing it better than the page itself and covering images and uncrawled pages.</li>
+<li>The prototype's final ranking blends query-independent PageRank with text signals such as word position, font size, titles and proximity.</li>
+<li>Indexing about 24 million pages, the prototype gave clearly more relevant results on broad queries than commercial engines of its day, and became Google the company.</li>
+<li>Its weaknesses: ranking by links invites link farms and anchor-text bombing, and old pages get richer while good new pages stay buried.</li>
+<li>Link spam is Goodhart's law in action: once a measure becomes a target for optimization, it stops being a good measure.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full system implementation and data structures, go to the original.</footer>
 </div>

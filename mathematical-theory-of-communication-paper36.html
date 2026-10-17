@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 36</p>
@@ -164,18 +172,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>以点对点为主</strong>：多用户、相互干扰、组网的「网络信息论」远为困难，许多一般网络的容量至今仍是未解之谜。</li>
 <li><strong>连续情形有微妙处</strong>：连续信源的「微分熵」不具坐标不变性等技术细节，需要小心处理。</li>
 </ul>
-<h2 data-tts="dd4544a282826881">要点</h2>
-<div class="tl">
-<p>① 一句话：香农 1948 年创立信息论，用比特度量信息，并证明压缩与传输的两条基本极限。</p>
-<p>② 抽象：通信 = 从可能的消息里「选中一个」，与语义无关；系统 = 信源→编码→有噪信道→解码→信宿。</p>
-<p>③ 比特：N 选 1 携带 <code>log₂N</code> 比特；1 比特 = 消除一次五五开的不确定。信息 = 消除的不确定量。</p>
-<p>④ 熵 <code>H=−Σp·log p</code>：信源平均每符号的意外量，也是无损压缩的极限；冗余是可挤掉的水分（英文约半是冗余）。</p>
-<p>⑤ 皇冠——有噪信道编码定理：信道有容量 C，R &lt; C 时可把错误率压到任意小、R &gt; C 则不可能；反直觉在于「趋零错误不需趋零速率」。</p>
-<p>⑥ 手法：长码块 + 码字在信号空间里彼此拉远，让噪声被平均纠正；用「随机编码」证明好码只是「存在」。</p>
-<p>⑦ 香农公式 <code>C = W·log₂(1+S/N)</code>：带宽与信噪比决定速度上限，至今是通信设计标尺。</p>
-<p>⑧ 影响：比特成为信息的通用货币，是数字化的理论根；纠错码用半个世纪逼近香农极限。</p>
-<p>⑨ 局限：只证存在不给构造、逼近极限晚了几十年；剔除语义易被误用；点对点、模型已知等假设之外仍是难题。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · Barlow 的冗余削减假说</b>：1961 年 Horace Barlow 提出，感觉通路的中继站在做香农式的事——把感官送来的高度冗余信号重新编码，挤掉可预测的部分。像在「去冗余就是压缩」；不像在大脑并不追求无损，后来的研究发现感觉系统会保留相当的冗余，用来抗神经元自身的噪声、帮助学习结构。</li>
+<li><b>心理学 · Hick–Hyman 定律</b>：Hick 1952 年发现选择反应时间随选项数的对数增长，Hyman 1953 年把它推广为与选项集合的熵成正比——人做选择像在按比特付时间。不像在大量练习后这条斜率会明显变小，人不是一条容量固定的信道。</li>
+<li><b>生物进化 · 遗传密码的抗错</b>：64 个密码子只编 20 种氨基酸和终止信号，冗余排得很巧，单个碱基出错常常仍是同一种或性质相近的氨基酸；Freeland 与 Hurst 1998 年估算它的抗错性在随机密码表里约「百万里挑一」。不像在它靠演化筛选，不靠长码块。</li>
+<li><b>物理学 · Landauer 原理</b>：Rolf Landauer 1961 年指出，擦除 1 比特至少向环境放出 kT·ln2 的热；2012 年 Bérut 等人用单个胶体粒子在实验里测到了这条下限。比特由此有了物理价格；不像在香农管的是「传」，Landauer 管的是「忘」。</li>
+<li><b>哲学 · Bateson 的「造成差别的差别」</b>：人类学家 Gregory Bateson 1970 年的演讲（收入 1972 年的 Steps to an Ecology of Mind）把信息定义为造成差别的差别，和「信息 = 排除了多少可能」同出一源。不像在 Bateson 要求差别对某个心智起作用，而这恰是香农刻意剔掉的语义层。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>香农 1948 年的《通信的数学理论》一手创立了信息论，让「信息」第一次可以被精确度量。</li>
+<li>任何通信都被抽象成信源、编码、有噪信道、解码、信宿五段，消息的语义被刻意排除在工程问题之外。</li>
+<li>信息是从若干可能里选中一个：N 选 1 携带 log₂N 比特，1 比特等于消除一次五五开的不确定。</li>
+<li>熵 H = −Σp·log p 衡量信源平均每个符号的意外量，概率越均匀熵越大，越可预测熵越小。</li>
+<li>无损压缩的极限就是熵，压得再狠也越不过这条线；英文文本约有一半是可挤掉的冗余。</li>
+<li>有噪信道编码定理：传输速率低于信道容量 C 时出错率可任意小，高于 C 则可靠传输不可能。</li>
+<li>随机编码证明了好码一定存在：长码块让码字彼此拉远、噪声被平均掉，但没告诉人怎么构造好码。</li>
+<li>连续信道容量 C = W·log₂(1+S/N) 说明，想传得更快只能加宽带宽或提高信噪比。</li>
+<li>比特成了信息的通用货币，纠错码花了近半个世纪才真正逼近香农极限。</li>
+<li>神经科学里 Barlow 的冗余削减假说认为，感觉通路也在像香农编码那样挤掉信号里的冗余。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的定理证明与数学细节，再去翻原文。</footer>
 </div>

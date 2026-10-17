@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 55</p>
@@ -246,17 +254,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Not invulnerable</strong>: Lee Sedol clawed back game four with "Move 78," exposing brittleness against surprise positions; later (2022) research found blind spots in AlphaGo-style programs via adversarial play, letting even amateurs win — "superhuman" strength still has holes in robustness.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: use a policy network (which moves to consider) plus a value network (who wins) to guide Monte Carlo Tree Search — the first program to beat a professional in full-board Go.</p>
-<p>② The pain: Go's search space is ~<code>250¹⁵⁰</code> (breadth explosion) and no reliable hand-built mid-game evaluation exists (no pruning / early stopping) — both enumeration and classic evaluation fail.</p>
-<p>③ Two scissors: the policy network cuts away most bad moves (breadth), the value network estimates the winner at a glance (depth), squeezing an astronomical search into a computable range.</p>
-<p>④ Three-stage training: SL policy (learn from human records, 57% acc.) → RL policy (self-play, policy gradient, play to win) → value network (regress on self-play outcomes, one position per game to avoid overfitting); plus a very fast rollout policy for simulation.</p>
-<p>⑤ Search: each edge stores Q, N, P; select on <code>Q+u</code> (u∝P/(1+N)) → expand → evaluate (value v mixed with rollout z at λ=0.5) → back up; play the most-visited move.</p>
-<p>⑥ Results: 494/495 wins vs other programs; 5–0 over 2-dan pro Fan Hui in 2015 (first full-board win over a professional); 4–1 over Lee Sedol after publication.</p>
-<p>⑦ Impact: cracked Go a generation early; founded the "networks give intuition + judgment to guide search" paradigm, spawning AlphaGo Zero / AlphaZero / MuZero — a deep-RL landmark.</p>
-<p>⑧ Limits: expensive compute (thousands of CPUs / hundreds of GPUs); reliance on human records (later shown a crutch by the Zero version); fits only perfect-information problems; robustness blind spots (Lee Sedol game four, later adversarial attacks).</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Philosophy · Polanyi's tacit knowledge</b>: In <em>The Tacit Dimension</em> (1966), Michael Polanyi wrote that we know more than we can tell. Go masters can't articulate why a group is "thick," which is why nobody could hand-write an evaluation function; the value network skips the telling and learns judgment straight from wins and losses. The difference: Polanyi rooted tacit knowledge in the body and in practice, while the network's know-how can't be read out even by the people who built it.</li>
+<li><b>Cognitive psychology · de Groot's chess masters</b>: De Groot (1946) found that masters don't consider more candidate moves than weaker players; they simply spot the good ones at a glance, which is exactly the policy network's breadth cut. Where it breaks: a human master rarely looks at more than about a hundred continuations, while AlphaGo still leans on tens of thousands of simulations.</li>
+<li><b>Neuroscience · dopamine and reward prediction error</b>: Schultz, Dayan and Montague (Science, 1997) showed that midbrain dopamine neurons fire like the prediction error in reinforcement learning, so the brain is also learning a value function for "how good is this situation." The difference: the brain updates on the fly via temporal-difference errors, while AlphaGo's value network regresses on final game outcomes.</li>
+<li><b>Evolutionary biology · the Red Queen</b>: Van Valen (1973) argued that species must keep evolving just to hold their place against co-evolving rivals, and self-play raises both sides the same way. Where it breaks: natural arms races can cycle forever, whereas AlphaGo pits each new version against an opponent drawn at random from its past versions, precisely so it doesn't overfit to the current rival.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Go's search space is about <code>250¹⁵⁰</code>, and no one can hand-write a reliable mid-game evaluation, so both brute force and classic pruning fail.</li>
+<li>AlphaGo uses a policy network to shrink the candidate moves and a value network to estimate the winner, supplying what Monte Carlo Tree Search lacked.</li>
+<li>Studies of chess masters likewise found that experts win by spotting good moves at a glance, not by calculating more, the same idea as the policy network's breadth cut.</li>
+<li>The supervised policy network learned from about 30 million positions by strong human players and predicted their moves with roughly 57% accuracy.</li>
+<li>The reinforcement-learning policy network played repeatedly against its own earlier versions and was tuned on wins and losses, shifting from imitating humans to playing to win.</li>
+<li>Each of the value network's 30 million training positions came from a different game, so the network couldn't memorize games and overfit.</li>
+<li>During search, a position's score blends the value network's judgment with a fast rollout's result half and half, and the most-visited move is played.</li>
+<li>In October 2015 AlphaGo beat 2-dan professional Fan Hui 5–0, the first time a program beat a professional on a full board without handicap.</li>
+<li>The paradigm of networks supplying intuition and judgment to guide a selective search led directly to AlphaGo Zero, AlphaZero and MuZero.</li>
+<li>AlphaGo's costs and limits: over a thousand CPUs of compute, reliance on human game records, a fit only for perfect-information problems, and blind spots adversarial play can exploit.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full network configs and experiment details, go to the original.</footer>
 </div>

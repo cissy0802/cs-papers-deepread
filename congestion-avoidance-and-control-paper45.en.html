@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 45</p>
@@ -179,17 +187,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Hard to fill a "fat, long" pipe</strong>: adding just one packet per RTT is far too slow to fill a high-bandwidth, high-latency link, which spurred more aggressive growth curves like CUBIC.</li>
 <li><strong>Depends on everyone playing fair</strong>: the whole stability rests on all senders following AIMD; a single non-yielding flow can crush its well-behaved neighbors, which also drove later model-based approaches (e.g. BBR directly measuring bottleneck bandwidth and RTT).</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: add end-to-end self-regulation to TCP, treat loss as the congestion signal, and keep the internet — which has no central dispatcher — from collapsing together.</p>
-<p>② The pain: the 1986 congestion collapse dropped throughput from 32 Kbps to 40 bps; the culprit was a positive-feedback death spiral of false timeouts → needless retransmits → more jam.</p>
-<p>③ Conservation + self-clocking: pace packets to the returning ACKs, one out and one in, locking the rate to the bottleneck's service rate without knowing the bandwidth.</p>
-<p>④ Slow-start: cwnd starts at 1 and doubles per RTT, gently lighting the ACK clock into equilibrium.</p>
-<p>⑤ Congestion avoidance (AIMD): above the threshold grow only +1 per RTT (additive increase); on loss halve the threshold (multiplicative decrease); the slow-rise, sharp-drop sawtooth converges to fair and efficient.</p>
-<p>⑥ Defusing the fuse: estimate the timeout from RTT mean + deviation (<code>SRTT + 4×dev</code>), plus exponential backoff and Karn's algorithm, cutting the false-retransmit spiral.</p>
-<p>⑦ Impact: shipped with 4.3BSD as TCP's standard; the internet stopped collapsing; Reno/CUBIC/BBR are its descendants, and it defined the end-to-end congestion-control paradigm.</p>
-<p>⑧ Limits: loss ≠ always congestion (wireless suffers), bufferbloat, RTT unfairness, hard to fill fat-long pipes, depends on everyone playing fair.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolutionary biology · Gordon's "anternet"</b>: in 2012 Stanford's Deborah Gordon and Balaji Prabhakar found that red harvester ants set how many foragers to send out by the rate at which loaded foragers come home — faster returns, more departures. That is ACK self-clocking, and they even saw slow-start-like and timeout-like behavior. The difference: the colony is saving water and effort, not sharing a road fairly with other colonies.</li>
+<li><b>Complexity science · phantom jams without bottlenecks</b>: in 2008 Sugiyama and colleagues put 22 cars on a 230-meter circular track at steady speed, and a backward-moving jam soon emerged on its own — past a critical density, small wobbles amplify, the same positive feedback as congestion collapse. Unlike retransmits, though, over-braking drivers never inject duplicate cars.</li>
+<li><b>Economics · Ostrom and the commons</b>: bandwidth is a classic common-pool resource, and AIMD works as a self-imposed norm that dodges Hardin's 1968 "tragedy of the commons." But the durable commons Ostrom catalogued in 1990 relied on mutual monitoring and graduated sanctions; TCP has neither, so a flow that refuses to yield simply wins.</li>
+<li><b>Neuroscience · synaptic scaling</b>: Turrigiano and colleagues showed in 1998 that a neuron whose activity stays too high or too low scales all its synapses down or up by a common factor, holding its firing rate steady through a local rule — proportional adjustment, like multiplicative decrease. The twist: scaling preserves relative differences between synapses, while AIMD exists to erase differences between flows.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Jacobson and Karels's 1988 paper gave TCP end-to-end self-regulation, so an internet with no central dispatcher stopped collapsing.</li>
+<li>In 1986 a link from LBL to Berkeley fell from 32 Kbps to 40 bps, nearly three orders of magnitude, with no hardware fault at all.</li>
+<li>Congestion collapse is a positive-feedback spiral: short timeouts resend packets that were never lost, deepening the jam and the delay.</li>
+<li>Packet conservation plus self-clocking paces new packets to returning ACKs, so the send rate matches the bottleneck without knowing its bandwidth.</li>
+<li>Slow-start opens the congestion window at one packet and doubles it every round trip, gently starting the ACK clock.</li>
+<li>Above the threshold AIMD adds one packet per round trip and halves on loss; the sawtooth drives flows toward fair, efficient sharing.</li>
+<li>Timeouts now use the mean RTT plus four times its mean deviation, with exponential backoff and Karn's algorithm, breaking the false-retransmit spiral.</li>
+<li>Jacobson's algorithms shipped in 4.3BSD Tahoe and became standard TCP; Reno, CUBIC and BBR all build on the end-to-end paradigm they set.</li>
+<li>Treating every loss as congestion makes TCP halve needlessly on wireless links and fill oversized buffers, causing bufferbloat.</li>
+<li>TCP's stability is a commons norm without monitoring or sanctions: one flow that refuses to yield can crush its well-behaved neighbors.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for the full algorithm pseudocode and measured curves, go to the original.</footer>
 </div>

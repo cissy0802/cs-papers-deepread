@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 7</p>
@@ -170,17 +178,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>结构偏复杂</strong>：三门一状态、参数多。Cho 等 2014 年提出只有两扇门的 GRU，很多任务上打平；Greff 等 2017 年系统比较八种 LSTM 变体（LSTM: A Search Space Odyssey），发现<strong>没有谁明显胜过带遗忘门的原味版</strong>，而最关键的部件正是遗忘门与输出激活。</li>
 <li><strong>实验说服力滞后</strong>：原文全是合成任务，其价值直到多年后的大规模真实应用才被盖章。</li>
 </ul>
-<h2 data-tts="aecf951602892972">要点</h2>
-<div class="tl">
-<p>① 病根：RNN 的纠错信号沿时间回传时每步乘一次「权重 × 斜率」，指数级消失或爆炸，学不会相隔十几步以上的依赖（Hochreiter 1991 的诊断）。</p>
-<p>② 核心 idea：恒定误差传送带（CEC）——权重固定为 1 的线性自环，记忆与纠错信号沿它流动，乘数恒为 1、跨千步不衰减。</p>
-<p>③ 第二个 idea：乘法门。输入门管写、输出门管读，解决「同一权重既要写入又要挡噪声」的冲突；门是 0–1 开度、由网络自己学。</p>
-<p>④ 公式：原版 <code>c(t) = c(t−1) + i·g</code>；Gers 等 2000 年补遗忘门后成 <code>c(t) = f·c(t−1) + i·g</code>——今天的标准 LSTM。</p>
-<p>⑤ 结果：人工任务上跨 1000 步时滞照样学会，BPTT/RTRL 几十步就失败；但原文没有真实世界基准。</p>
-<p>⑥ 影响：统治序列建模二十年——手写识别、语音识别、seq2seq 翻译、谷歌语音搜索与 GNMT 全在其上。</p>
-<p>⑦ 思想遗产：门控（GRU、highway network）与「乘数为 1 的不衰减通路」（残差连接）活到今天。</p>
-<p>⑧ 局限：原版缺遗忘门；有效记忆有限；本质串行难并行、训练贵——2017 年被可全并行的 Transformer 接班。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 前额叶–基底节门控</b>：O'Reilly 与 Frank 2006 年的 PBWM 模型认为，前额叶靠自维持活动把信息「存住」，基底节像门一样决定何时更新它——「守得住」和「管得住」分给两套结构，正是 CEC + 门的分工。不像的是：PBWM 用奖励信号学开门，不靠沿时间反向传播；它的皮层下门控也还有实验争议。</li>
+<li><b>复杂性科学 · 临界分支比</b>：Beggs 与 Plenz 2003 年在大鼠皮层切片里测到「神经雪崩」，一个放电平均引出约 1 个后继放电：小于 1 活动熄灭、大于 1 失控。CEC 把回传乘数钉死在 1，是同一道刀锋；不同在于大脑据推测是自组织地徘徊在临界附近，LSTM 则用结构硬编码。</li>
+<li><b>心理学 · Atkinson–Shiffrin 多重存储模型</b>：1968 年这个模型说，短时记忆里的信息要靠「复述」这个循环维持，复述与否由主体的控制过程决定——自环加控制阀，像 CEC 加门。不像在哪：人的复述耗注意力、容量很小，CEC 的保持则不花代价。</li>
+<li><b>佛学 · 唯识的阿赖耶识与种子</b>：唯识宗说，经验「熏习」成种子，藏在阿赖耶识里，等因缘成熟才现行——写入、潜藏、条件满足才读出，结构上像输入门、细胞状态、输出门。不像的是：种子刹那生灭、相续变化，并非原样保存，而且唯识讲的是业与解脱，不是学习。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>RNN 训练时纠错信号沿时间回传，每步乘一次「权重 × 斜率」，于是指数级消失或爆炸。</li>
+<li>因为梯度消失，普通 RNN 实际只能学会相隔十来步以内的依赖，远距离的账算不清。</li>
+<li>LSTM 的心脏是恒定误差传送带：一条权重固定为 1 的线性自环，让纠错信号跨千步不衰减。</li>
+<li>输入门管写、输出门管读，把「存什么」和「何时读写」拆开，化解同一权重既要写入又要挡噪声的冲突。</li>
+<li>每扇门是一个 sigmoid 小神经元，开度在 0 到 1 之间，由网络看着输入和上一步状态自己学。</li>
+<li>1997 年的原版 LSTM 没有遗忘门，状态只加不减；Gers 等人 2000 年补上遗忘门后才成今天的标准形态。</li>
+<li>Hochreiter 与 Schmidhuber 只用合成任务验证，LSTM 学会了跨 1000 步的时滞，而 BPTT、RTRL 几十步就失败。</li>
+<li>LSTM 统治序列建模约二十年，手写识别、语音识别、seq2seq 翻译和谷歌 GNMT 都建在它之上。</li>
+<li>门控思想延续到 GRU 和 highway network，「乘数为 1 的不衰减通路」延续到 ResNet 与 Transformer 的残差连接。</li>
+<li>LSTM 本质串行、无法沿时间并行、有效记忆有限，2017 年被可全并行的 Transformer 接班。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整推导与全部实验，再去翻原文。</footer>
 </div>

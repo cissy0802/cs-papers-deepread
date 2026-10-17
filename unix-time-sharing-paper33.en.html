@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 33</p>
@@ -187,19 +195,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>"Worse is better"</strong>: Richard Gabriel's famous thesis—UNIX won by favoring implementation simplicity over interface perfection, which also left rough edges and inconsistencies; both a critique and a precise account of how it succeeded.</li>
 <li><strong>Not friendly to newcomers</strong>: terse, cryptic commands and stingy error messages, with little early documentation—"pleasant to use" was true for the experienced.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: UNIX used a small set of minimal, orthogonal, freely composable primitives to build a small yet general time-sharing OS.</p>
-<p>② The pain: earlier big systems (e.g. Multics) were all-encompassing, riddled with special-purpose interfaces, non-composable, and demanded expensive hardware.</p>
-<p>③ A file = unstructured byte stream + tree of directories; a directory holds only "name → i-number," and the i-node holds the body—separating name from body gives links, cheap renames, and sharing.</p>
-<p>④ Everything is a file: devices too are special files under <code>/dev</code>, sharing one open/read/write with ordinary files, so programs are device-independent by birth.</p>
-<p>⑤ File descriptors + standard I/O (0/1/2) = the basis of redirection <code>&lt;</code> <code>&gt;</code> and pipes <code>|</code>; the shell is merely a swappable ordinary program.</p>
-<p>⑥ Small tools chained by pipes (<code>who | wc -l</code>)—complexity by composition, not by writing a big program: the UNIX philosophy.</p>
-<p>⑦ A process = <code>fork</code> (copy whole) + <code>exec</code> (replace image), split in two precisely so redirection and pipes can be set up in the gap.</p>
-<p>⑧ The whole system written in C → portable; the authors saw this as the top reason for its success; C went on to conquer the world.</p>
-<p>⑨ Impact: Linux / macOS / Android / iOS / POSIX all descend from it; file descriptors, pipes, fork, and the shell are common vocabulary; 1983 Turing Award.</p>
-<p>⑩ Limits: no networking in this version; coarse permissions with setuid holes; byte streams push structure onto apps; fork criticized in modern settings; the two-sided "Worse is better."</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolution · Jacob's "tinkerer"</b>: In a 1977 <em>Science</em> essay, François Jacob argued that evolution works not like an engineer building new parts from a blueprint but like a tinkerer repurposing whatever odds and ends are at hand—the same move as a pipe stitching existing small tools into a new function. The difference: UNIX tools were deliberately built to compose; evolution has no designer and leaves no interfaces on purpose.</li>
+<li><b>Complexity science · the bow tie</b>: Csete and Doyle described metabolism as a bow tie—many nutrients funnel into a few universal carriers like ATP, then fan out into many products. "Everything is a file" squeezes every device through the same narrow knot of open/read/write. Unlike the cell's knot, which evolution ground out slowly, UNIX's was fixed by its designers at once.</li>
+<li><b>Philosophy · Frege's morning and evening star</b>: In 1892 Frege separated sense from reference—"morning star" and "evening star" name the same planet, Venus. A hard link likewise gives one i-node several names. The difference: Frege's names carry different modes of presentation, while hard links are perfectly equal; none is the "real" name.</li>
+<li><b>Cell biology · division and differentiation</b>: A cell copies its whole genome and splits, and the daughters then go their own way—much like <code>fork</code> copying everything before <code>exec</code> turns the child into something else. But <code>exec</code> discards the old image, while a differentiated cell usually keeps the full genome and merely silences most of it.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>UNIX built a small yet general time-sharing system from a handful of minimal, orthogonal, freely composable primitives.</li>
+<li>Earlier big time-sharing systems such as Multics were sprawling, full of special-purpose interfaces, and made programs hard to combine.</li>
+<li>A UNIX file is just an unstructured stream of bytes; the system imposes no format and leaves interpretation to programs.</li>
+<li>A directory holds only "name → i-number" while the i-node holds the file itself, so separate names enable hard links and cheap renames.</li>
+<li>"Everything is a file" makes devices special files under <code>/dev</code>, sharing the same open/read/write as ordinary files.</li>
+<li>File descriptors and standard input/output keep programs ignorant of what they are connected to, which makes redirection and pipes possible.</li>
+<li>Pipes chain small single-purpose tools into pipelines, so complex jobs come from composition rather than from writing a bigger program.</li>
+<li>Process creation is split into <code>fork</code> (copy) and <code>exec</code> (replace), and the gap between them is where redirection and pipes get wired up.</li>
+<li>Thompson and Ritchie wrote the whole system in C, so porting needed little machine-specific code—what they saw as the main reason for its success.</li>
+<li>Linux, macOS, Android, and POSIX all descend from UNIX, though it also left limits: no networking, coarse permissions, and an awkward fork.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Reading this page ≈ grasping the paper's core; for the full list of system calls and implementation details, go to the original.</footer>
 </div>

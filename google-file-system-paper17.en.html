@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 17</p>
@@ -196,18 +204,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Google itself moved past it</strong>: an official retrospective (McKusick &amp; Quinlan, 2009) admitted the single-master and small-file pains, leading to <strong>Colossus</strong> (multiple masters sharding metadata, smaller chunks, Reed-Solomon erasure coding replacing three-way replication to save storage). GFS is a foundational work, not the endpoint.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1. In one line: a distributed file system designed for huge-scale workloads dominated by "large sequential reads + appends," taking "hardware failure is the norm" as its starting point.</p>
-<p>2. Architecture: a single <strong>master for metadata</strong> + many <strong>chunkservers for data</strong>; files sliced into <strong>64 MB chunks, 3 replicas each</strong>, spread across racks.</p>
-<p>3. Ledger-vs-goods: the master only answers "where is the chunk," and data is hauled <strong>directly between client and chunkserver</strong>, so the master is never a data bottleneck; big chunks → small metadata → all in memory.</p>
-<p>4. Master metadata lives in memory, persisted and recovered via an <strong>operation log + checkpoints</strong>; <strong>chunk locations are not persisted</strong>, reported by chunkserver heartbeats.</p>
-<p>5. <strong>Leases</strong> delegate "ordering mutations" to the primary, keeping the master out of the write path; <strong>data flows pipelined down a chain, control flows through the primary for ordering</strong> — decoupled to maximize bandwidth.</p>
-<p>6. <strong>Atomic record append</strong> lets many clients append concurrently without locks, but guarantees only "at-least-once" (possible duplicates / padding), pushing complexity to apps.</p>
-<p>7. Consistency is <strong>relaxed but sufficient</strong> (consistent / defined), metadata ops are atomic; fault tolerance via re-replication, checksums, version numbers, fast recovery, shadow masters.</p>
-<p>8. Impact: the substrate under MapReduce / Bigtable, inspiration for HDFS, establishing the "cheap machines + replication + software fault tolerance + scale-out" big-data paradigm.</p>
-<p>9. Limits: single-master scaling bottleneck, small-file unfriendliness, relaxed consistency outsourcing complexity, non-general; Google itself succeeded it with Colossus.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Complexity science · von Neumann's unreliable components</b>: In a 1956 paper in <em>Automata Studies</em>, von Neumann argued that if each component fails below some threshold rate, enough redundancy lets you build a reliable whole out of parts that break — exactly the skeleton of GFS, where cheap machines fail daily and three replicas absorb it. Where it differs: he corrects errors on the spot by majority vote at every step; GFS notices a missing replica after the fact and copies it back.</li>
+<li><b>Neuroscience · the silent phase of Parkinson's</b>: A large share of dopamine neurons in the substantia nigra (estimates range from roughly 30% to 80%) can be lost before motor symptoms show — redundancy hides the damage for years, much as GFS shrugs off a few dead machines. The difference: the brain barely regrows those neurons; there is no master to re-replicate.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society" (1945)</b>: Local knowledge scattered across many people cannot be funneled to a central planner. GFS makes the same call by keeping chunk locations out of the log and letting chunkservers be the authority — though, unlike Hayek's market, it still keeps a central master that simply asks instead of remembering.</li>
+<li><b>Political history · the Roman dictator</b>: In a crisis the Republic handed full power to one man, capped at six months and then returned — the same shape as a lease granting ordering authority to the primary for a limited time. The difference: a lease lasts about 60 seconds and is renewed routinely, while a dictator was not meant to be renewed, which is precisely the rule Sulla and Caesar broke.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>GFS (Ghemawat et al., SOSP 2003) is Google's distributed file system, built for large sequential reads and appends on hardware assumed to fail constantly.</li>
+<li>Building a reliable whole from cheap, failing parts gives GFS the same structure as von Neumann's 1956 idea of reliability through redundancy.</li>
+<li>One master holds the metadata while many chunkservers hold the data, split into 64 MB chunks with three replicas spread across racks.</li>
+<li>Clients ask the master only where a chunk lives and move the bytes directly with chunkservers, so the master never becomes a data bottleneck.</li>
+<li>Master metadata lives in memory, recovered from a remotely replicated operation log plus checkpoints, while chunk locations are simply re-learned from chunkserver heartbeats.</li>
+<li>Leases hand mutation ordering to a primary replica for a short term, taking the master off the write path while data is pipelined separately along a chain.</li>
+<li>Atomic record append lets hundreds of clients append to one file without locks, but it is only at-least-once, so applications must handle duplicates and padding.</li>
+<li>The GFS consistency model is deliberately relaxed, trading weaker guarantees for speed and stability on clusters where failures never stop.</li>
+<li>GFS became the foundation for MapReduce and Bigtable and was cloned almost wholesale by open-source HDFS, setting the cheap-machines-plus-replication paradigm of big data.</li>
+<li>The single-master bottleneck and poor small-file handling eventually led Google to replace GFS with Colossus, which shards metadata across many masters.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Reading this page ≈ getting the paper's core; for full protocol details and result tables, go read the original.</footer>
 </div>

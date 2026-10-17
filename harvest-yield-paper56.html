@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 56</p>
@@ -204,17 +212,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>不是所有应用都能降 harvest</strong>：部分 / 过时的答案对搜索无妨，对账户余额、库存扣减却是错误，宁可不答。框架最适用于「软」场景。</li>
 <li><strong>形式不严格</strong>：作为立场短文，它给的是直觉与框架、没有证明；严谨性由后续 CAP 形式化工作补上。</li>
 </ul>
-<h2 data-tts="079c2ffc58a5fbcf">要点</h2>
-<div class="tl">
-<p>① 一句话：把「可用性」拆成产出率（答上几个）与收获度（答得多全）两个可度量、可交易的量，让故障从「撑住 / 倒下」变成「怎么优雅地降级」。</p>
-<p>② 痛点：大规模下故障是常态；二值可用抓不住「大部分好、少数坏」的中间态，uptime 又低估高峰故障；且强一致与高可用在分区下不可兼得。</p>
-<p>③ yield = 完成请求 / 收到请求（按请求加权，故障在高峰更贵）；harvest = 回答覆盖数据 / 完整数据（承认部分答案）。</p>
-<p>④ DQ 原则：满载时 <code>D×Q≈常数</code>（容量守恒）；故障砍掉 DQ 一块，你选砍在 D（降收获度）还是 Q（降产出率）。</p>
-<p>⑤ 复制保收获度、丢容量（产出率）；划分保产出率、丢收获度；满载时两者总 DQ 相同，差别只在保哪个量。</p>
-<p>⑥ 架构招：拆成正交、独立失败的子系统，把强一致硬状态圈进最小范围，其余用软状态。</p>
-<p>⑦ 影响：CAP 定理的直接前身；给「优雅降级 / 最终一致 / 成功率 SLO」以理论名分。</p>
-<p>⑧ 局限：harvest / yield 未成通用词；DQ 只是满载近似；CAP 后被指过粗（PACELC 补全）；硬性场景不能降 harvest。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · Smith–Fretwell 后代大小—数量权衡</b>：Smith 与 Fretwell 1974 年的模型说，繁殖资源有限时，亲代只能在「生得多」和「每个养得壮」之间切同一块蛋糕——和 D×Q≈常数是同一个形状。不像在：那是自然选择慢慢调出来的，DQ 是工程师在故障当下现场选。</li>
+<li><b>神经科学 · 注意力的「变焦镜头」模型</b>：Eriksen 与 St. James 1986 年提出，注意的范围可以放大缩小，但范围越宽、范围内每样东西处理得越粗——覆盖面与精细度分一块固定容量，正像 DQ。不像在：大脑这样调焦是日常，不是坏了才调。</li>
+<li><b>经济学 / 心理学 · Herbert Simon 的「满意解」（satisficing）</b>：Simon 1956 年指出，人受时间和算力所限，不求最优、只取第一个「够好」的选项；harvest 低于 100% 的回答就是系统版的够用就行。不像在：Simon 讲的是常态下的认知局限，这篇讲的是故障时的临时让步。</li>
+<li><b>生物 · Weismann 的种系—体细胞分离</b>：Weismann 1892 年的种质学说把遗传信息只托付给少数种系细胞，身体其余细胞「用完即弃」、每一代再从种系重建——正是把硬状态关进最小的笼子、其余做成可重建软状态的布局。不像在：体细胞的变化不会回写种系，而系统里的软状态常常要回头同步到硬状态。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>可用性不该是非黑即白的开关，而应拆成产出率与收获度两个可度量、可交易的量。</li>
+<li>大规模服务里故障是常态，二值可用抓不住「大部分好、少数坏」的中间态，uptime 又低估高峰故障。</li>
+<li>网络一旦分区，强一致与高可用无法兼得，所以该设计的是失败时怎样体面地降级。</li>
+<li>产出率（yield）是成功完成的请求占比，按请求加权，所以高峰期垮掉代价更大。</li>
+<li>收获度（harvest）是单个回答覆盖的数据占比，它承认不完整的部分答案也算回答。</li>
+<li>DQ 原则：满载时每请求数据量 D 乘每秒请求数 Q 近似为常数，故障只能选砍 D 还是砍 Q。</li>
+<li>复制在故障时保住收获度、丢掉容量，划分保住产出率、丢掉收获度，满载时两者总 DQ 相同。</li>
+<li>把系统拆成正交、独立失败的子系统，把强一致的硬状态圈进最小范围，其余做成软状态。</li>
+<li>Fox 与 Brewer 1999 年这篇 HotOS 短文是 CAP 定理的直接前身，也给优雅降级与最终一致以理论名分。</li>
+<li>降收获度只适合搜索这类软场景，账户余额、库存扣减这类硬场景给出不完整答案就是错。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整论证与更多例子，再去翻原文。</footer>
 </div>

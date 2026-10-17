@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 27</p>
@@ -199,16 +207,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>摘除与降级都有代价。</strong>留观阈值太敏感会让机器反复上下线，摘掉机器又意味着把负载推给别人；「够用就返回」直接牺牲结果质量且文章没量化它——账务、法规查询这类场景根本不适用。</li>
 <li><strong>假设同构可控的环境，且掩盖而非根治。</strong>论述建立在单数据中心低延迟网络、统一软件栈、对全栈有控制权之上；多租户云与异构微服务里，「副本可选、取消可达、延迟可测」都要重新验证。症状消失后抖动源头仍在消耗资源——更好的隔离是互补的另一条路。</li>
 </ul>
-<h2 data-tts="9fbdfc720424fd87">要点</h2>
-<div class="tl">
-<p>① 一句话：大规模扇出下响应时间取决于最慢的那个组件，单机偶发抖动被放大成常态卡顿；应当像做容错那样，做「尾延迟容错」的软件。</p>
-<p>② 放大效应：单机 1% 概率超一秒、并行等 100 台全返回，则 63% 的请求超一秒；实测「等一个叶子」99 分位约 10 毫秒，「等全部」约 140 毫秒。</p>
-<p>③ 抖动源头：资源争抢、后台守护进程、全局共享、维护活动、垃圾回收、多层排队、功耗降频——多是正常运行的副产品，无法根除。</p>
-<p>④ 压小抖动：区分服务等级 + 高层短队列；长请求切片破队头阻塞；后台扰动<strong>同步化</strong>（对齐优于错开，因为你每次都要等所有机器）。</p>
-<p>⑤ 请求内对策：<strong>对冲</strong>（超过预期延迟 95 分位再向第二副本补发，谁快用谁）与<strong>绑定请求</strong>（同时入两队、谁先开工就叫停另一台，吃掉排队时间差）。关键数字：读 1000 个键、10 毫秒后对冲，99.9 分位 1800 毫秒 → 74 毫秒，额外请求仅 2%。</p>
-<p>⑥ 跨请求对策与检索特产：<strong>微分区</strong>、<strong>选择性复制</strong>（只给热分区加副本）、<strong>延迟留观</strong>（摘掉变慢的机器——少一台反而更快）、<strong>够用就返回</strong>、<strong>金丝雀请求</strong>；写操作因可异步、可容忍不一致、多数派提交而不那么急。</p>
-<p>⑦ 局限：经验合集而非理论；用余量换稳定（高负载下重试可能反噬）；依赖幂等与可达的取消；掩盖症状而非根治源头。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>经济学 · Kremer 的 O 形环理论</b>：Michael Kremer 1993 年借挑战者号的 O 形环提出一种生产函数——产品价值是各环节成功率的乘积，任一环出错整件作废。这和 0.99¹⁰⁰ 是同一个乘法：链条越长，单环的小瑕疵越致命。不像在：Kremer 由此推出「高手扎堆」的配对结论，这篇论文给的解药却是冗余绕开。</li>
+<li><b>心理学 · 竞赛模型（race model）</b>：Raab 1962 年用「统计促进」解释冗余信号效应——两个信号同时出现时人反应更快，因为两条通道赛跑、谁先到谁触发，正是对冲请求的「谁先答用谁」。不像在：大脑不会取消落后的那条通道。</li>
+<li><b>生物进化 · 两头下注（bet-hedging）</b>：Cohen 1966 年分析荒漠一年生植物：每年只让部分种子发芽、其余休眠，牺牲一点平均产出，换掉全军覆没的坏年份。对冲请求同样拿约 2% 的额外请求砍掉最坏的尾巴；不像在：种子押的是未知的天气，没法事后撤单。</li>
+<li><b>生态学 · 周期蝉的同步羽化</b>：周期蝉每 13 或 17 年成批同时破土，捕食者一下吃不完，损失被压进一个短窗口——和「让后台维护全体同时做」同构：错开等于天天挨打，对齐只痛一次。不像在：蝉靠同步稀释伤亡比例，集群靠同步缩短受害时长。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>大规模扇出系统里，一次请求的响应时间取决于最慢的那台机器，而不是平均水平。</li>
+<li>单机只有 1% 概率超过一秒，并行等 100 台全部返回时，63% 的请求都会超过一秒。</li>
+<li>尾延迟多来自资源争抢、后台维护、垃圾回收、多层排队和功耗降频，是正常运行的副产品，无法根除。</li>
+<li>Dean 和 Barroso 主张像容错一样做「尾延迟容错」，用响应不可预测的组件拼出可预测的服务。</li>
+<li>让全集群的后台维护同时发生比各自错开更好，因为伤害被压进一个短窗口，其余时间干净。</li>
+<li>对冲请求超时后向第二个副本补发，只多 2% 请求就把 99.9 分位从 1800 毫秒压到 74 毫秒。</li>
+<li>绑定请求同时进入两个副本的队列，谁先开工就取消另一份，直接吃掉机器间的排队时间差。</li>
+<li>微分区、选择性复制和延迟留观跨请求匀负载，主动摘掉一台慢机器反而让整体更快。</li>
+<li>《The Tail at Scale》让业界从看平均延迟转向盯 p99 / p99.9，对冲与离群摘除也成了标准配件。</li>
+<li>尾延迟容错靠余量换稳定、依赖幂等与可取消，集群满负荷时多发的请求反而可能拖垮系统。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的实测表格与更多技术细节，再去翻原文。</footer>
 </div>

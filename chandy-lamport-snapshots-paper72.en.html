@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP READ · PAPER 72</p>
@@ -241,18 +249,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Topology assumptions</strong>: markers must reach every process along channels (the paper argues over strongly connected graphs); in modern systems with members joining and leaving, that premise takes extra work to maintain.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1. In one line: using a special message called a marker, photograph a running distributed system in a <strong>causally consistent</strong> way — without stopping it and without synchronized clocks.</p>
-<p>2. The pain: with no shared memory and no global clock, "look at the current global state" means asking one process at a time, and that makes money appear or vanish — which is where deadlock detection, termination detection and distributed GC all got stuck.</p>
-<p>3. The conceptual swap: give up "the same instant" and aim for a <strong>consistent cut</strong> — the photo must never show a message received that was never sent; "sent but not received" is entirely legal.</p>
-<p>4. Global state = all process states <strong>plus every message in flight in every channel</strong>. That second half is the one people forget, and it is where the money goes missing.</p>
-<p>5. The algorithm is two rules: send — "record yourself, then send a marker on every outgoing channel, and only then any further ordinary message"; receive — "on your first marker, record yourself and forward (that channel's state is empty); otherwise record as that channel's state whatever arrived between recording yourself and this marker."</p>
-<p>6. Why it is correct: treat "recording state" as turning from white to red. The rule ordering puts the marker ahead of every red message, and FIFO keeps the order intact — so the marker is clean scissors: no red message enters the photo, and no white message is lost.</p>
-<p>7. Cost: one marker per channel, <code>|E|</code> in total; fully concurrent with the computation — no pause, no locks, no clock synchronization.</p>
-<p>8. The subtle part: <code>S*</code> may never have really happened, but <code>S_i</code> → <code>S*</code> → <code>S_φ</code> are reachable in order — it is a world that could have happened, which suffices for deciding <strong>stable properties</strong>.</p>
-<p>9. Impact and limits: consistent cuts became standard vocabulary and Flink's barrier snapshots are a direct descendant; but the algorithm needs FIFO, tolerates no failures, covers only stable properties, requires every process to cooperate, and can produce very large states.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Accounting · deposits in transit</b>: to reconcile a company ledger with a bank statement at month end, you must list deposits recorded but not yet received by the bank, and cheques issued but not yet cashed — exactly "global state = every party's books plus messages in the channel." The difference: accountants patch in-transit items by matching line by line after the fact; the snapshot draws its line online with markers.</li>
+<li><b>Neuroscience · postdiction in perception</b>: using the flash-lag illusion, Eagleman and Sejnowski argued in Science (2000) that what we perceive at the moment of a flash depends on events in the following ~80 ms. "Now" is assembled afterwards, much as S* is stitched from pieces taken at different physical times; unlike the algorithm, the brain guarantees no consistency, and illusions are the seams.</li>
+<li><b>Philosophy of mind · Dennett's Multiple Drafts</b>: in Consciousness Explained (1991), Dennett denies a Cartesian theater where all signals converge and "the present" is shown at once; consciousness is parallel drafts finalized at different times. That mirrors "no global clock, no single instant" — but Dennett holds there is no one canonical version, while the snapshot yields a provably consistent one.</li>
+<li><b>Philosophy · possible worlds and accessibility</b>: Kripke's modal semantics defines "possible" via worlds accessible from the actual one. S* is such a world: perhaps not the one that happened, yet reachable from the start and leading to the end, and stable properties carry along that chain somewhat as necessary truths carry along accessibility. Unlike the logician's abstract relation, here accessibility is concretely a causal reordering.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Chandy and Lamport's 1985 snapshot algorithm photographs a running distributed system in a causally consistent way, without stopping it or syncing clocks.</li>
+<li>With no shared memory and no global clock, polling processes one at a time can assemble a global state where money appears or vanishes.</li>
+<li>A global state is not just the sum of process states; it must also include every message still in flight on every channel.</li>
+<li>The paper swaps "the same instant" for a consistent cut: sent-but-unreceived messages are fine, received-but-unsent ones are forbidden.</li>
+<li>The algorithm is two rules: record yourself, then send a marker on every outgoing channel; on a later marker, record what arrived in between as channel state.</li>
+<li>Rule ordering puts each marker ahead of all post-snapshot messages, and FIFO channels keep that order, so consistency falls out automatically.</li>
+<li>The overhead is exactly one marker per channel, and recording runs fully concurrently with the computation, with no pausing and no locks.</li>
+<li>The recorded state may never have actually occurred, but it is reachable from the start and leads to the end, enough to detect deadlock or termination.</li>
+<li>Apache Flink's asynchronous barrier snapshots are a direct descendant of Chandy–Lamport: the barrier in the dataflow is the marker.</li>
+<li>The algorithm needs FIFO, tolerates no crashes and suits only stable properties; its stitched-together "now" resembles the brain's postdicted present.</li>
+</ol>
 </div>
 
 <footer>CS Papers Deep Read · Finish this page and you have the core of the paper; for the full formal model and the correctness proof, go to the original.</footer>

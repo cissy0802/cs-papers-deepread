@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 73</p>
@@ -201,18 +209,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>A pure worst-case result</strong>: it offers no probabilistic characterization — nothing about how likely stalling is or how long a decision is expected to take.</li>
 <li><strong>Very easily misquoted</strong>: the common misreading is "consensus is impossible in asynchronous systems" (the correct statement is that <strong>termination cannot be guaranteed</strong>), as is conflating it with CAP — CAP is about trading consistency against availability under a partition, FLP is about liveness being unguaranteeable without timing assumptions. Adjacent concerns, different propositions.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: in an asynchronous network, if even one process may crash, no deterministic algorithm can guarantee agreement, non-triviality and termination together.</p>
-<p>② The pain: protocols broadly assumed "timeouts are trustworthy" while real networks give no delay bound; 2PC blocking forever when the coordinator vanishes is the symptom.</p>
-<p>③ The core intuition: <strong>a crash and extreme slowness look identical from outside</strong> — wait forever and you may never terminate; stop waiting and you may produce two answers.</p>
-<p>④ Mechanism one: label configurations by valence — univalent (settled) versus bivalent (still hanging); termination is equivalent to "cannot stay bivalent forever."</p>
-<p>⑤ Mechanism two: a bivalent initial configuration must exist — adjacent initial configurations differ in one process's value, and killing that process yields a contradiction.</p>
-<p>⑥ Mechanism three: bivalence can be preserved indefinitely — two events on different processes commute into the same configuration (the diamond), and for events on the same process you hold it still and let the others decide first; both branches end in contradiction.</p>
-<p>⑦ The resulting infinite run is perfectly legal: every message delivered, every process stepping, yet never deciding — and <strong>no process actually crashes in it</strong>; the gap comes from the algorithm having to keep an escape route ready.</p>
-<p>⑧ The boundary is tight: mildest crash fault, guaranteed delivery, only "both values possible" required, failing even if only one process must decide; conversely, if faulty processes are dead from the start and a majority live, it is solvable.</p>
-<p>⑨ Impact and limits: consensus design now runs on "safety unconditional, liveness on assumptions," with four detours — partial synchrony (Paxos / Raft), randomization, failure detectors, weakened problems; but the model is extreme, it binds only deterministic algorithms, and it is often misquoted as "asynchronous consensus is impossible" or conflated with CAP.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Philosophy · Buridan's ass</b>: a perfectly rational donkey stands exactly between two equally good piles of hay, has no reason to favor either, and starves. That is bivalence: both 0 and 1 remain possible, and a deterministic chooser has no reason to move. The difference is that the donkey's symmetry is static, while in FLP an adversary actively rebalances it at every step. The fable is not actually in Buridan's own writings; its roots go back to Aristotle's On the Heavens.</li>
+<li><b>Economics · Arrow's impossibility theorem (Kenneth Arrow, 1951)</b>: Pareto, independence of irrelevant alternatives, non-dictatorship: each requirement looks mild, yet no voting rule meets them all. FLP likewise stacks three of the weakest requirements into an impossibility. The difference: Arrow is stuck on aggregating preferences, FLP on time and information.</li>
+<li><b>Evolutionary biology · honeybee stop signals (Thomas Seeley et al., 2012)</b>: two equally good nest sites can deadlock a swarm; scouts headbutt dancers from the rival camp with "stop signals," and that cross-inhibition breaks the tie. Both must break a symmetry, but the swarm leans on noise and quorum thresholds, i.e. randomness and time, exactly what FLP rules out.</li>
+<li><b>Neuroscience · urgency gating (Paul Cisek, 2009)</b>: in Cisek's model, evidence is multiplied by an "urgency" signal that grows with time, so the longer you wait, the weaker the evidence needed to commit. That writes a timing assumption into the decision circuit. Unlike the brain, which accepts being wrong sometimes, Paxos uses timeouts only to change leaders and never gives up safety.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>The FLP theorem: in an asynchronous system where one process may crash, no deterministic algorithm can guarantee that consensus terminates.</li>
+<li>Protocols of the era quietly trusted timeouts, but real networks give no delay bound, which is why 2PC can block forever when the coordinator vanishes.</li>
+<li>In an asynchronous network, a crashed process and a very slow one look exactly the same to everyone else.</li>
+<li>The proof labels each configuration by valence: univalent means the outcome is settled, bivalent means 0 and 1 are both still possible, like Buridan's ass.</li>
+<li>Adjacent initial configurations differ in one process's value; crashing that process from the start proves a bivalent initial configuration must exist.</li>
+<li>Two events on different processes commute and reach the same configuration, and this "diamond" swap is the sharpest step in the proof.</li>
+<li>An adversary delivers the oldest message each round yet stays bivalent, building a fair run that never decides and in which no process actually crashes.</li>
+<li>The FLP boundary is tight: one mild crash, guaranteed delivery and only "both values possible" are enough for the result to hold.</li>
+<li>The four ways around FLP are partial synchrony, randomization, failure detectors and weakening the problem; Paxos and Raft take partial synchrony.</li>
+<li>FLP says deterministic algorithms cannot guarantee termination, not that asynchronous consensus is impossible, and it is not the CAP theorem.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full formal model and the step-by-step proof, go read the original.</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 4</p>
@@ -152,17 +160,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>词表封闭</strong>：没见过的词（新词、错拼）没有向量；fastText 后来用「子词拼装」补上这一课。</li>
 <li><strong>窗口内不看语序</strong>：「狗咬人」和「人咬狗」贡献完全一样的共现信号，句法结构无从谈起。</li>
 </ul>
-<h2 data-tts="899f1472e381541f">要点</h2>
-<div class="tl">
-<p>① 一句话：两个砍掉隐藏层的浅模型（CBOW / Skip-gram）+ 高效近似，从海量无标注文本里自学出高质量词向量。</p>
-<p>② 痛点：one-hot 把每个词当孤岛、看不出远近；神经语言模型能学好向量但贵到训不动大语料。</p>
-<p>③ 押注：向量质量吃数据量、不吃模型复杂度——「简单模型 × 海量语料」赢。</p>
-<p>④ 机制：完形填空式自监督；预测 = 查表 + 点积（<code>p(o|c) ∝ exp(u_o·v_c)</code>）；「预测要省力」逼着用法相似的词共享相近坐标。</p>
-<p>⑤ 提速：层次 softmax（整表归一化 → 树上约 20 次二选一）、负采样（只区分真邻居与几个随机假邻居）、高频词下采样——单机一天 16 亿词。</p>
-<p>⑥ 现象：空间出现线性结构，king − man + woman ≈ queen，语义关系变成稳定方向。</p>
-<p>⑦ 结果与影响：自建 19,544 题类比测试集上数倍于旧模型；embedding 成为 AI 通用积木，直通 GloVe / fastText / BERT 与今天的向量检索。</p>
-<p>⑧ 局限：一词一向量装不下多义；类比成绩部分靠评测惯例；复制语料偏见；不识新词、不看语序——由上下文化模型接棒。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 概念空间里的网格编码（Constantinescu、O'Reilly、Behrens，2016）</b>：受试者学习一批脖子和腿长短各异的卡通鸟，fMRI 显示内嗅皮层和腹内侧前额叶在这个「鸟空间」里出现六重对称的网格信号，大脑也像在给概念安坐标、按方向移动。不像的是，那张图只有两维、为导航和决策服务；Word2Vec 有几百维，只为猜邻词。</li>
+<li><b>东西方哲学 · 维特根斯坦「意义即用法」</b>：《哲学研究》第 43 节说，一个词的意义在多数情况下就是它在语言中的用法；Word2Vec 把「用法」量化成共现，再压成坐标。不像在于，维特根斯坦的用法嵌在生活形式和行动里，Word2Vec 只看得见窗口里的几个邻词。</li>
+<li><b>佛学 · 龙树的缘起与无自性</b>：中观说诸法没有独立的自性，只在相互依待中成立；词向量也是如此，单个坐标本身毫无意义，意义全在它与其他词的距离和方向里。不像的是，中观连关系本身也说是空，Word2Vec 却把关系凝固成训练后不再变的几何。</li>
+<li><b>心理学 · Osgood 的语义微分</b>：Osgood 等 1957 年在《意义的测量》里让人在「好—坏」「强—弱」「主动—被动」等量表上给词打分，发现意义大体落在评价、力量、活动三个维度上，是「词是空间里的点」的早期版本。不像的是，那三维靠问卷、可解释；Word2Vec 的几百维从文本自学，单看一维说不出含义。</li>
+<li><b>社会心理学 · 内隐联想测验（IAT）</b>：Greenwald 等 1998 年用按键反应的快慢测量两个概念在人心里挨得多近，偏见就藏在这种联想距离里；词向量的余弦距离量的是同一种东西，后来也有研究用词向量重现了 IAT 的多项结果。不像的是，IAT 测的是一个人，词向量测的是整个语料的集体联想。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>在 Word2Vec 之前，one-hot 编码把每个词当孤岛，「猫」与「狗」的距离和「猫」与「冰箱」一样远。</li>
+<li>Mikolov 等押注词向量质量吃数据量、不吃模型复杂度，于是把昂贵的神经语言模型砍到极简去吞海量语料。</li>
+<li>Word2Vec 把「观其伴、知其词」的分布假说变成自监督的完形填空，几十亿词就是几十亿道免费练习题。</li>
+<li>CBOW 用上下文词的平均向量猜中心词，Skip-gram 用中心词逐个猜上下文词，两者都没有隐藏层。</li>
+<li>层次 softmax、负采样和高频词下采样三招绕开整表归一化，让单机一天训完 16 亿词。</li>
+<li>训练出的词向量空间里，语义关系变成稳定方向，king − man + woman 最接近 queen。</li>
+<li>在 19,544 题的类比测试集上，Skip-gram 语义题准确率约 55%，是旧前馈神经语言模型的两倍多。</li>
+<li>Word2Vec 让 embedding 成为 AI 的通用积木，GloVe、fastText、BERT 和今天的向量检索都沿这条线展开。</li>
+<li>静态词向量一词只有一个向量、不识新词、不看语序，还会把语料里的社会偏见变成几何。</li>
+<li>「词义来自邻居」与维特根斯坦的「意义即用法」同构，但词向量只看得见窗口里的几个邻词。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整训练配置与全部对照表，再去翻原文。</footer>
 </div>

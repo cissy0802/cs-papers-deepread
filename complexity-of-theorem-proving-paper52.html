@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 52</p>
@@ -170,17 +178,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>归约口径之别</strong>：Cook 用的是较宽的多项式时间图灵归约；Karp 之后，学界多改用较严格的<em>多对一归约</em>，两种「完全性」定义在细节上不同。</li>
 <li><strong>独立发现与署名</strong>：Levin 在苏联几乎同时（甚至更早）得到「通用搜索问题」的等价结果，长期被西方忽视，故正名为 <strong>Cook–Levin 定理</strong>。</li>
 </ul>
-<h2 data-tts="f1c6fb47f8de825b">要点</h2>
-<div class="tl">
-<p>① 一句话：Cook 定义 NP、用多项式归约比较难度，并证明 SAT 是第一个 NP 完全问题。</p>
-<p>② 痛点：可计算之内仍有天壤——有些问题只会「穷举试遍」，却无法精确说清「更难」到底是什么。</p>
-<p>③ 两个类：P＝能高效求解；NP＝答案能高效验证（等价于非确定多项式时间）；显然 P⊆NP，问 P=NP？</p>
-<p>④ 尺子：多项式时间归约 <code>A ≤ B</code>——「B 好解则 A 好解」，让「最难」第一次有定义。</p>
-<p>⑤ 完全性：NP 完全＝NP 中最难代表；解开任一个，整个 NP 就塌进 P。</p>
-<p>⑥ Cook 定理：SAT 是 NP 完全；证明靠把「某台非确定机是否接受」编码成一个可满足性公式（运行表格 → 布尔子句）。</p>
-<p>⑦ 影响：Karp 随即找出 21 个、如今数以千计；成算法设计路标、催生 SAT 求解器；P vs NP 列千禧难题，Cook 获图灵奖。</p>
-<p>⑧ 局限：P vs NP 仍未解；NP 完全是最坏情况、不等于实际难解；多项式≠总实用；Levin 独立发现（Cook–Levin）。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>统计物理 · 随机 3-SAT 的相变</b>：Kirkpatrick 与 Selman（1994，Science）借统计物理的有限尺寸标度研究随机 k-SAT：子句与变量之比越过临界值（3-SAT 约 4.2），公式从几乎都可满足骤变为几乎都不可满足，求解器最吃力的实例正挤在这道「相变」附近，像水在冰点结冰。不像在于：Cook 的难度是对最坏实例的判决，相变讲的是随机实例的统计行为，正对应「NP 完全 ≠ 实践中不可解」。</li>
+<li><b>量子力学 · 叠加与 Grover 搜索</b>：非确定机「同时分叉试遍所有可能」，乍看像量子叠加。但 Bennett、Bernstein、Brassard、Vazirani（1997）证明，黑箱搜索中量子机最多只把穷举省到平方根，Grover 算法恰好达到这一界。不像在于：叠加的分支一测量就随机坍缩，无法像非确定机那样「直接挑出接受的那条」。</li>
+<li><b>生物学 · Levinthal 佯谬</b>：Levinthal（1969）指出，蛋白质若逐一试遍构象，折叠要比宇宙年龄还久，实际却只需几秒甚至更短；Berger 与 Leighton（1998）证明简化的 HP 格点折叠模型是 NP 完全的。像在都是指数大的搜索空间；不像在于：进化留下的序列有漏斗形的能量地形，大自然并不面对最坏实例。</li>
+<li><b>科学哲学 · 发现的语境与辩护的语境</b>：Reichenbach（1938，《经验与预测》）把「假说怎么想出来」与「假说怎么被证成」分开。NP 正是这道分界的量化版：验证一份证据容易，找到它可能极难。不像在于：Reichenbach 把发现交给心理学、不做逻辑分析，复杂度理论却把「发现比验证难多少」变成可证明的数学问题。</li>
+<li><b>经济学 · 纳什均衡的计算复杂度</b>：Daskalakis、Goldberg、Papadimitriou（2006 年起）用同一套「归约 + 完全性」证明，求博弈的纳什均衡是 PPAD 完全的，这给「市场自然会算出均衡」的假设泼了冷水。不像在于：纳什定理保证均衡一定存在，问题不在「有没有」，所以它落在 PPAD，而不是 NP 完全。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Cook 1971 年的论文第一次给「难解」下了精确定义，把 P 是否等于 NP 变成严格的数学问题。</li>
+<li>到 1960 年代，可计算问题内部仍有天壤之别：有些问题只会穷举，却说不清「更难」指什么。</li>
+<li>P 是能在多项式时间内求解的判定问题，NP 是答案能在多项式时间内被验证的判定问题。</li>
+<li>多项式时间归约 <code>A ≤ B</code> 表示「B 好解则 A 好解」，成了比较问题难度的标尺。</li>
+<li>NP 完全问题是 NP 中最难的代表，只要解开任何一个，整个 NP 就塌进 P。</li>
+<li>Cook–Levin 定理证明 SAT 是第一个 NP 完全问题，Levin 在苏联几乎同时独立得到等价结果。</li>
+<li>证明把非确定图灵机的运行摊成表格，再用布尔子句钉死「起点正确、每步合法、最终接受」。</li>
+<li>Karp 1972 年用同样的归约证明 21 个经典问题都是 NP 完全，如今已知的数以千计。</li>
+<li>NP 完全只刻画最坏情况，现代 SAT 求解器能快速解掉大量典型实例，P vs NP 至今未解。</li>
+<li>「验证容易、发现困难」的不对称，可看作 Reichenbach 区分发现与辩护的量化版本。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式定义与证明细节，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 74</p>
@@ -223,17 +231,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>保证依赖假设</strong>：它建立在「哈希足够随机」与「视图不太偏斜」之上，视图高度失衡、或有人刻意构造 key 去撞同一段弧时，界就不成立了。</li>
 <li><strong>论文的另一半几乎被遗忘</strong>。随机树协议没被工业界照搬——真实 CDN 用的是 DNS 重定向、分层缓存、请求合并等更工程化的手段；今天提起这篇论文，绝大多数人只记得标题的前两个词。</li>
 </ul>
-<h2 data-tts="04c29c9bf5d55444">要点</h2>
-<div class="tl">
-<p>① 一句话：把机器和数据哈希到同一个环上、数据归顺时针遇到的第一台机器，增删机器只波及一段弧。</p>
-<p>② 痛点：<code>hash(key) mod n</code> 在 n 变化时几乎全部重排；且各客户端机器名单不一致时，算出的归属互相冲突。</p>
-<p>③ 真贡献是先把「分得好」定义出来：均衡、单调、分散度、负载——后两条专治「视图不一致」，这才是「一致性」三字的原意（<strong>不是数据一致性</strong>）。</p>
-<p>④ 构造极简：桶与项各自哈希到 <code>[0,1)</code> 环上，顺时针最近即归属；单调性是构造自带的，加入第 n+1 个桶期望只搬 <code>1/(n+1)</code> 的数据、且全部搬进新桶。</p>
-<p>⑤ 虚拟节点：每台机器撒 <code>Θ(log C)</code> 个分身才谈得上均衡，副产品是下线时由多台分头接管、可按容量加权。</p>
-<p>⑥ 随机树：按页面名字随机生成一棵缓存树，扇入恒定、命中即止，把单个热点层层摊薄——这半篇基本被遗忘。</p>
-<p>⑦ 影响：Akamai（两位作者创办）、Chord、Dynamo、Cassandra、ketama、七层负载均衡的共同地基。</p>
-<p>⑧ 局限：只均键数不均热度；虚拟节点的元数据成本；不表达机架 / 可用区约束；rendezvous、jump、Maglev 等替代各有取舍。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>经济学 · 谢林的聚焦点（Schelling point）</b>：谢林在《冲突的策略》（1960）里问学生：没法事先联络，要在纽约和陌生人碰头，去哪、几点？多数人答「中午，中央车站」。一致性哈希同样让互不通信的客户端落到同一个答案；不像在：聚焦点靠共享文化里的「显眼」，哈希靠人人算同一个确定函数，不需要任何默契。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》</b>：哈耶克 1945 年论证，没有哪颗头脑掌握全部信息，分散的局部知识照样能协调出秩序。「名单各不相同、分配大体一致」是同一个形状；不像在：价格靠持续反馈传递信息，环上的规则从不通信、也从不学习。</li>
+<li><b>神经科学 · 果蝇嗅觉的「哈希」</b>：Dasgupta、Stevens、Navlakha 2017 年在 Science 上论证，果蝇嗅觉回路用稀疏随机投影给气味编码，相当于一种局部敏感哈希。都是用随机映射来分工；不像在：果蝇要让相似气味得到相似编码，一致性哈希只求机器增减时归属不乱。</li>
+<li><b>行为生态学 · 罗非鱼的六边形领地</b>：Barlow 1974 年观察到莫桑比克罗非鱼雄鱼在沙底挖出近似蜂窝的领地，这类格局常用 Voronoi 剖分建模——新来者只从紧邻处分走地盘，远处不动，正像单调性。不像在：鱼靠打斗协商边界，环上的位置由哈希随机给定，且新桶只切一个邻居。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>《一致性哈希与随机树》（STOC 1997）出自 MIT 理论组，次年由 Leighton 与 Lewin 落地成 Akamai。</li>
+<li>取模分桶 <code>hash mod n</code> 在机器数一变时几乎全盘重排，扩容那一刻全体缓存失效、请求涌回源站。</li>
+<li>各客户端知道的机器名单不一致时，取模会把同一页面算到不同缓存上，空间和带宽双重浪费。</li>
+<li>论文先把「分得好」定义成四条性质：均衡、单调、分散度、负载，后两条专治视图不一致。</li>
+<li>一致性哈希里的「一致」指不同视图下分配结果大体相同，不是数据一致性。</li>
+<li>机器与数据哈希到同一个环上、数据归顺时针最近的机器，加入第 n+1 台只搬约 <code>1/(n+1)</code> 的数据。</li>
+<li>每台机器在环上撒 <code>Θ(log C)</code> 个虚拟节点才谈得上均衡，还能让多台分头接管下线机器、按容量加权。</li>
+<li>随机树按页面名字生成缓存树，扇入恒定、命中即止，把单个热点层层摊薄，但这半篇几乎被遗忘。</li>
+<li>一致性哈希只均键数不均热度，虚拟节点有元数据成本，rendezvous、jump、Maglev 等替代方案各有取舍。</li>
+<li>让互不通信的客户端落到同一答案，结构上像谢林的聚焦点，只是靠同一个哈希函数而非共享默契。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式化定义与定理证明，再去翻原文。</footer>
 </div>

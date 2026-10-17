@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 58</p>
@@ -215,17 +223,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Time-based retention cuts both ways</strong>: deletion is unrelated to whether anyone read the data — a consumer that falls behind the retention window misses it permanently and silently.</li>
 <li><strong>Coordination cost and a limited evaluation</strong>: building rebalance on ZooKeeper adds a heavyweight external dependency, and any membership change stops the whole group to redistribute (both were later improved, by a self-hosted consensus layer and by incremental rebalancing); and the experiment is a single broker with a single producer / single consumer and no failure or backlog scenarios, better read as a demonstration of a specialized design's ceiling than as a neutral benchmark.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: redesign messaging as "partitions + an append-only log," where the broker records no consumption progress, deletes nothing on read, and the consumer holds its own offset.</p>
-<p>② The pain: activity logs are orders of magnitude larger than business data; enterprise messaging could not take the volume (per-message acks, no batching, weak distribution, degradation under backlog), and log aggregators were hourly and offline.</p>
-<p>③ Storage: a partition is a chain of ~1GB segment files appended at the end; <strong>no message ID — addressing is by byte-position offset</strong>, which removes the random-access index, and the broker keeps only a tiny "first offset per segment" table in memory.</p>
-<p>④ Stateless broker: progress goes to the consumer and deletion becomes <strong>expiry by time (typically 7 days)</strong>; the bonus is rewind-and-replay, which only a pull model makes easy.</p>
-<p>⑤ Where the speed comes from: no application-level cache, living off the page cache; <code>sendfile</code> zero copy; batching on both send and fetch. Coordination uses consumer groups, with <strong>the partition as the smallest unit of parallelism</strong> and no master — consumers rebalance among themselves via ZooKeeper.</p>
-<p>⑥ Results: a single producer at 50,000 msg/sec (batch 1) and 400,000 (batch 50), consumption at 22,000 msg/sec (over 4× the competitors); 9 bytes of per-message overhead versus ActiveMQ's 144. At LinkedIn: hundreds of GB and close to a billion messages a day, end to end in about 10 seconds.</p>
-<p>⑦ Guarantees and limits: at-least-once, ordered within a partition; the paper's version has no replication, the producer does not wait for acks, expiry-based deletion loses data for slow consumers, and ZooKeeper-based rebalancing is a source of churn.</p>
-<p>⑧ Impact: it turned the log into the central abstraction of a company's data pipeline, and became the de facto foundation of stream processing and event-driven architecture.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · hippocampal replay in sleep</b>: Wilson and McNaughton reported in <em>Science</em> in 1994 that place cells which fired together at the same spot while a rat was awake kept firing together more often once it slept — like a consumer rewinding its offset to reread the day's log. Where it breaks: the reactivation fades over the sleep session and is thought to consolidate, even reshape, memory; Kafka's replay exists to return the original, byte for byte.</li>
+<li><b>Complexity science · stigmergy</b>: the French zoologist Pierre-Paul Grassé coined the word in 1959 while studying termite nest building — individuals coordinate not by talking but by reading and writing traces left in the environment. Kafka's producers and consumers never meet either; the log is their shared environment. Where it breaks: a trace spurs the next worker to build on the same spot, a positive feedback loop; the log nudges no reader anywhere.</li>
+<li><b>Business · double-entry bookkeeping</b>: Luca Pacioli's <em>Summa de arithmetica</em>, printed in Venice in 1494, was the first book to set out the "method of Venice." A bookkeeper never erases a mistake but posts a reversing entry, and balances are always derived from the journal — the same shape as Kafka's "the log is the truth, state is a replay." Where it breaks: ledgers are kept for years; Kafka drops whole segments once they expire.</li>
+<li><b>Buddhism · Sarvāstivāda versus Sautrāntika</b>: the Sarvāstivādins held that dharmas exist in all three times, so the past is still real; the Sautrāntikas answered that only the present exists and the past survives only as seeds in it. Kafka inside its retention window is Sarvāstivādin — old messages can still be read as they were; past the window it turns Sautrāntika, the past surviving only in state consumers have computed. Where it breaks: theirs is a metaphysical dispute about existence; this is a deletion policy.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Kafka (LinkedIn, NetDB 2011) rebuilt messaging as a distributed log, split by topic into partitions that are only ever appended to.</li>
+<li>Activity logs dwarf business data by orders of magnitude; enterprise messaging could not take the volume, and log aggregators were hourly and offline.</li>
+<li>Kafka messages carry no explicit ID; they are addressed by their byte position in the log, the offset, which removes the random-access index.</li>
+<li>The broker tracks no one's consumption progress and deletes data by age (typically 7 days), regardless of whether anyone has read it.</li>
+<li>Because consumers hold their own offsets, they can rewind and replay, which is far easier in a pull model than in a push model.</li>
+<li>Kafka's speed comes from relying on the OS page cache instead of an application cache, sendfile zero copy, and batching on both send and fetch.</li>
+<li>Within a consumer group each partition belongs to exactly one consumer at a time, and consumers rebalance among themselves via ZooKeeper with no central master.</li>
+<li>In the paper's tests a single producer reached about 400,000 messages per second at batch size 50, and consumption ran over four times faster than ActiveMQ and RabbitMQ.</li>
+<li>The paper's Kafka had no replication, promised only at-least-once delivery, did not wait for producer acks, and silently lost expired data for lagging consumers.</li>
+<li>The lasting contribution of Kreps and his co-authors was making the log a first-class system abstraction, the foundation of stream processing and event-driven design.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the API details and the rebalance pseudocode, go to the original.</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 60</p>
@@ -217,17 +225,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Write amplification and the log bottleneck</strong>: each change generally needs both redo and undo information, and the log is the one serialized shared resource in the system. In the many-core in-memory era, log contention and flush latency became the scalability limit, prompting group commit, scalable logging work, and alternatives such as <strong>command logging</strong> — record only "which stored procedure ran, with what arguments," which is very cheap at runtime but forces recovery to recompute the entire history.</li>
 <li><strong>Its assumptions are being rewritten</strong>: ARIES assumes pages, disks, update-in-place, and a single node. LSM-trees, copy-on-write, MVCC, non-volatile memory, and cloud architectures that treat the log itself as the database and let the storage layer replay it all sidestep its division of labor to some degree. And as PostgreSQL shows, a different concurrency-control design removes the undo path entirely — the full ARIES shape is tied to "update-in-place plus fine-granularity locking," not the only answer to recovery.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1 · In one line: three-pass recovery (analysis → redo → undo) on top of WAL + LSN, where redo repeats all of history and undo writes redo-only CLRs.</p>
-<p>2 · Root of the pain: performance forces steal + no-force, so REDO and UNDO are both mandatory; record-level locking then kills whole-page rollback and kills physical undo once a B-tree splits.</p>
-<p>3 · The bedrock part: each page's header holds <code>page_LSN</code>, so redo is decided by one numeric comparison — hence idempotent, hence safe when recovery crashes again.</p>
-<p>4 · The counterintuitive move: redo makes <strong>no distinction between winners and losers</strong>, restoring the exact crash-instant state so undo has a scene it recognizes.</p>
-<p>5 · CLR + <code>UndoNxtLSN</code>: undo is logged and never undone, so undo work stays bounded across repeated crashes, and partial rollback to a savepoint comes free.</p>
-<p>6 · Page-oriented redo with logical undo (physiological logging) is the signature compromise; nested top actions keep B-tree splits from being rolled back; fuzzy checkpoints force no pages and quiesce nothing.</p>
-<p>7 · Form of evidence: not benchmarks, but a correctness argument, a capability matrix against prior methods, and deployment in several IBM products and prototypes.</p>
-<p>8 · Impact and limits: DB2, SQL Server, and InnoDB share the skeleton, while PostgreSQL's MVCC drops the undo pass entirely; against that, ARIES is very complex to implement correctly, offers no measurements, and its log became the scalability bottleneck of the many-core era.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Hippocampal replay</b>: Wilson and McNaughton reported in <em>Science</em> (1994) that rat place cells which fired together while running a maze fired together more often in the sleep that followed — the day's experience gets replayed into memory, much as the log is redone into pages. The difference: the brain's replay is selective and fades, while ARIES redo must copy every record exactly.</li>
+<li><b>Accounting · Reversing entries</b>: In double-entry bookkeeping you never scratch out a wrong entry; you post an offsetting one, so both the mistake and the fix stay on the books — a CLR is the database's reversing entry. The difference: no clerk loses power mid-reversal, so accounting needs no UndoNxtLSN saying which entry to reverse next.</li>
+<li><b>Philosophy · Collingwood's re-enactment</b>: In <em>The Idea of History</em> (1946), Collingwood argued that a historian understands the past only by re-enacting the agent's thought in their own mind. ARIES likewise re-enacts all of history before it decides what to undo; the difference is that Collingwood re-enacts reasons and motives, ARIES re-enacts bytes with no understanding at all.</li>
+<li><b>Physics · Bennett's reversible computation</b>: Bennett showed in 1973 that a computation can keep every intermediate result instead of erasing it, copy out the answer, then run backward to "uncompute" the garbage; quantum algorithms clean up ancilla qubits the same way. That is the shape of "replay forward fully, then undo backward". The difference: Bennett's uncompute leaves no trace, while every ARIES undo step logs yet another CLR.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>ARIES recovers from a crash in three passes — analysis, redo, undo — all built on write-ahead logging and log sequence numbers.</li>
+<li>Performance demands steal and no-force buffering, which means recovery must be able to both redo and undo.</li>
+<li>Record-level locking rules out whole-page rollback, and B-tree splits rule out physical undo, so undo has to work logically by key.</li>
+<li>Every data page stores a page_LSN in its header, so one numeric comparison decides whether to redo a record, making redo idempotent.</li>
+<li>Redo replays all of history, losers included, back to the instant of the crash, so undo starts from a state it recognizes.</li>
+<li>Each undo step is logged as a redo-only compensation log record whose UndoNxtLSN skips finished work, keeping undo bounded across repeated crashes.</li>
+<li>Page-oriented redo with logical undo is the signature compromise; nested top actions protect B-tree splits, and fuzzy checkpoints neither flush pages nor pause the system.</li>
+<li>The ARIES paper has no benchmarks; its evidence is a correctness argument, a capability matrix against earlier methods, and deployment in IBM products.</li>
+<li>DB2, SQL Server, and InnoDB all inherit the ARIES recovery skeleton, yet it is hard to implement correctly and its log became a multicore bottleneck.</li>
+<li>Redo resembles the hippocampus replaying the day during sleep, and a CLR resembles a reversing entry in bookkeeping: fix by appending, never by erasing.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Finishing this page ≈ holding the core of the paper; for the full log-record formats, latch protocols, and index algorithms, go to the original.</footer>
 </div>

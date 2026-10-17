@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 50</p>
@@ -184,18 +192,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The Figure-8 "commit only current-term entries" rule is a trap</strong>: miss this counterintuitive detail in an implementation and the system can lose committed data under a specific failure sequence—so Raft, too, is not "correct just by copying the pseudocode."</li>
 <li><strong>Timeouts need tuning</strong>: the randomized-timeout values must match the deployment's network round-trip latency; misconfigured, they cause frequent or sluggish elections—operational experience is still required.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: Raft is a replicated consensus algorithm that lets crashable machines agree irrevocably on "a replicated log"; its headline selling point is being <strong>designed for understandability</strong>.</p>
-<p>② The pain: Paxos is correct but extremely hard to understand, and its path from single-decree to a "log" is vague—everyone improvises and correctness suffers; a correctness-critical algorithm that almost no one truly reads.</p>
-<p>③ Decomposition: split consensus into <strong>leader election / log replication / safety</strong> and explain each; the through-line is the <strong>strong leader</strong>—the log flows only from leader to followers.</p>
-<p>④ Election: use <strong>terms</strong> as a logical clock and step down on any higher term; use <strong>randomized election timeouts</strong> to make split votes rare and fast-healing; a majority of votes wins.</p>
-<p>⑤ Replication: a command is appended by the leader, laid out to all via <code>AppendEntries</code>, and <strong>committed once a majority replicates it</strong>; a "preceding index + term" consistency check forcibly aligns follower logs.</p>
-<p>⑥ Safety: <strong>only a "sufficiently up-to-date" candidate can be elected</strong> (election restriction) + any two majorities intersect ⇒ Leader Completeness: a committed entry lives in every later leader and is never lost.</p>
-<p>⑦ The subtlety: a leader advances commit only by replicating a <strong>current-term</strong> entry; earlier-term entries are committed indirectly (Figure 8)—the single easiest thing to implement wrong.</p>
-<p>⑧ Results &amp; impact: it beat Paxos measurably in an understandability user study; it spawned etcd, Consul, TiKV, CockroachDB, KRaft, and more, becoming the de facto standard and the default teaching choice for consensus.</p>
-<p>⑨ Limits: single-leader bottleneck + an election unavailability window; no gain over Paxos in fault tolerance / performance; no Byzantine tolerance; a membership-change pitfall was found; timeouts need tuning.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolutionary biology · Honeybee nest-site choice (Thomas Seeley)</b>: scouts recruit nestmates to rival candidate sites, and the swarm lifts off only once enough scouts gather at one site to reach a quorum, the same shape as Raft committing once a majority holds an entry. The difference: the bees' threshold is a headcount, not a majority, and there is no leader, just positive-feedback competition between recruiters.</li>
+<li><b>Developmental biology · Notch–Delta lateral inhibition</b>: in a patch of initially identical cells, tiny random differences get amplified; the cell that pulls ahead stops its neighbours from taking the same fate, leaving a single "lead" cell. That echoes randomized timeouts breaking symmetry and a leader's heartbeats suppressing rival elections. Unlike Raft, the outcome is essentially irreversible: no re-election when the winner dies.</li>
+<li><b>Neuroscience · Global workspace theory (Bernard Baars; Stanislas Dehaene's neural version)</b>: countless parallel unconscious processes compete, and one content wins entry to a "workspace" from which it is broadcast brain-wide, much as a strong leader pushes a single log out to every follower. The mismatch: conscious contents are fleeting and constantly overwritten, while a committed Raft entry is never rewritten.</li>
+<li><b>Psychology · Cognitive load theory (John Sweller)</b>: working memory can juggle only a few interacting elements at once, so breaking a task into steps and cutting the cases held in mind speeds learning; Raft's decomposition and state-space reduction lighten exactly that load. The difference: instructional design usually changes only the explanation, whereas Raft actually shrinks the algorithm's own state space.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Raft is a replicated consensus algorithm that lets crash-prone servers agree, irrevocably, on one replicated log.</li>
+<li>Paxos is correct but notoriously hard to grasp, and its path from single-decree to a full log is vague, so every implementation improvises.</li>
+<li>Ongaro and Ousterhout made understandability the primary design goal, pursued through problem decomposition and a smaller state space.</li>
+<li>Raft splits consensus into leader election, log replication, and safety, with the log flowing one way from a single strong leader.</li>
+<li>Term numbers act as a global logical clock, and randomized election timeouts make split votes rare and quick to resolve.</li>
+<li>An entry is committed once a majority stores it, and the AppendEntries consistency check forces follower logs to match the leader's.</li>
+<li>Only a candidate whose log is at least as up to date can win, and since any two majorities overlap, committed entries are never lost.</li>
+<li>A leader may advance the commit point only by replicating an entry from its own term (Figure 8), the rule implementations most often get wrong.</li>
+<li>In a study of 43 students Raft outscored Paxos, and it went on to power etcd, Consul, TiKV, and many other systems.</li>
+<li>Raft's limits include a single-leader write bottleneck, brief unavailability during elections, no Byzantine tolerance, and timeouts that need tuning.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Reading this page ≈ grasping the paper's core; for the full RPC fields, state diagram, and safety proof, go back to the original.</footer>
 </div>

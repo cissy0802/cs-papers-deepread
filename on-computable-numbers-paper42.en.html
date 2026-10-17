@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 42</p>
@@ -214,17 +222,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Priority</strong>: Church reached the same negative result a few months earlier via lambda calculus; it was only that Turing's "simulate a real person computing" definition was the most intuitive and convincing — even Gödel felt it was the one that truly captured "mechanical procedure."</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: to answer Hilbert's "is there a mechanical procedure that decides every mathematical statement," Turing first defined "computing" as a Turing machine, then proved that universal procedure doesn't exist.</p>
-<p>② The pain: without first defining "algorithm / mechanical procedure," you cannot prove "no algorithm can do X" — which stalled the decision problem.</p>
-<p>③ The Turing machine: endless tape + a head scanning one square + finite states + a rigid table, <code>(state, read) → (write, move, new state)</code> — the mathematical definition of "algorithm" itself.</p>
-<p>④ Encoding: each machine can be written as a number and enumerated (countable); the reals are uncountable, so <strong>most reals are uncomputable</strong>.</p>
-<p>⑤ Universal machine: read a "machine's instruction sheet" as data, and one machine simulates any machine — "program is data," the blueprint of the stored-program computer.</p>
-<p>⑥ Undecidability: by a diagonal argument + self-reference, "is a machine circle-free (today's halting problem)" has no deciding algorithm.</p>
-<p>⑦ Reduction: translate a machine's run into a logic statement to prove the <strong>decision problem unsolvable</strong>; an appendix proves equivalence to Church's lambda calculus (Church–Turing thesis).</p>
-<p>⑧ Impact and limits: laid the foundations of the definition of algorithm, the universal-machine blueprint, and the boundary of computation; but the thesis is unprovable, the machine impractical, the original had errors, and it addresses feasibility only, not efficiency.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Biology · von Neumann's self-reproducing automata and DNA</b>: In 1949 von Neumann turned the universal machine into a self-reproducing one: a single description is both executed (to build the offspring) and copied verbatim (to pass on) — the dual role DNA plays, translated and replicated, worked out before DNA's structure was solved. The gap: a cell has no universal interpreter; the ribosome only builds proteins.</li>
+<li><b>Neuroscience · McCulloch–Pitts neurons (1943)</b>: They modeled neurons as all-or-none logic gates and argued such networks could implement a Turing machine program. The gap: Kleene later showed a finite net without an external tape is only a finite automaton, and real neurons are continuous and noisy.</li>
+<li><b>Complexity science · Rule 110</b>: Conjectured by Wolfram in 1985 and proved by Matthew Cook (published 2004), a one-dimensional cellular automaton whose cells see only themselves and two neighbors is as universal as a Turing machine. The gap: no head, no central control — computation emerges from parallel local interactions.</li>
+<li><b>Philosophy of mind · the Lucas–Penrose argument</b>: Lucas (1961) and Penrose (1989) aimed the incompleteness boundary back at us: humans can see some statements are true where machines cannot, so the mind is no Turing machine. Most logicians find the inference flawed — not least because we cannot know our own reasoning is consistent.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Turing's 1936 paper set out to answer Hilbert's decision problem: is there a mechanical procedure deciding every first-order statement?</li>
+<li>Until "algorithm" is precisely defined, you cannot prove that no algorithm can do something — the wall the decision problem hit.</li>
+<li>A Turing machine is an endless tape, a head scanning one square, finitely many states and a rigid rule table — the definition of an algorithm.</li>
+<li>Every machine can be written as a description number and enumerated; machines are countable, reals are not, so most reals are uncomputable.</li>
+<li>The universal machine reads another machine's description as data and simulates it, making "program is data" the stored-program blueprint.</li>
+<li>Using Cantor's diagonal argument and self-reference, Turing proved circle-freeness undecidable — the prototype of the halting problem.</li>
+<li>Translating machine runs into first-order statements turns machine undecidability into a proof that the decision problem has no solution.</li>
+<li>Turing computability and Church's lambda-definability are exactly equivalent, key evidence for the Church–Turing thesis, which itself cannot be proved.</li>
+<li>Computability asks only whether something can be computed, not at what cost in time or space; efficiency came with 1970s complexity theory.</li>
+<li>Von Neumann's self-reproducing automata carried "a description both executed and copied" into biology, before DNA's structure was known.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full machine constructions and proof details, go to the original.</footer>
 </div>

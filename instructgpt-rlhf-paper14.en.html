@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 14</p>
@@ -178,17 +186,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Expensive and hard to scale</strong>: high-quality human ranking data is costly, slow, and carries annotator bias — which motivated later "AI feedback replacing some human labor" routes (RLAIF / Constitutional AI).</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: use three-step RLHF (SFT → reward model → PPO) to redirect a large model's objective from "guess the next word" toward "follow user intent, be 3H."</p>
-<p>② The pain: the pretraining objective (predict next word) ≠ user intent, so GPT-3 ignores instructions, hallucinates, and is toxic; a "good answer" can't be written as a loss, and only humans can judge it.</p>
-<p>③ Insight: have people do the easier task of "ranking" rather than writing ground truth, then distill preference into an auto-scoring reward model.</p>
-<p>④ Three steps: SFT aligns roughly using human demos; the RM learns taste via a pairwise ranking loss (6B, not 175B); PPO improves the policy against the RM's scores.</p>
-<p>⑤ Two constraints: a per-token KL penalty leashes the model against drift and reward hacking; PPO-ptx mixes back pretraining gradients to erase the "alignment tax."</p>
-<p>⑥ Results: 1.3B InstructGPT preferred over 175B GPT-3; more truthful (TruthfulQA), less toxic, better at instructions, and it generalizes to held-out labelers and non-English/code.</p>
-<p>⑦ Impact: the same recipe as ChatGPT; RLHF became the standard alignment step for turning large models into assistants (later RLAIF, DPO evolved from it).</p>
-<p>⑧ Limits: aligned to a few labelers' preferences, not humanity's; the RM can be gamed; it breeds sycophancy; it still hallucinates / can be jailbroken; human labeling is costly and hard to scale.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Economics · Goodhart's law (Charles Goodhart, 1975)</b>: Discussing UK monetary policy, Goodhart observed that a statistical regularity collapses once you lean on it for control; a reward model pushed hard by PPO invites reward hacking in exactly that way. The difference: money targets failed because banks adapted around them, while here the gaming is done by the optimized model itself.</li>
+<li><b>Psychology · Thurstone's law of comparative judgment (1927)</b>: People give shaky absolute ratings but reliable answers to "which of these two is heavier or better," and Thurstone built psychological scales from such pairs; ranking instead of scoring is the same move. Unlike Thurstone's single dimension, the RM squeezes a many-sided "good answer" into one number.</li>
+<li><b>Evolution · Belyaev's silver foxes (from 1959)</b>: Breeding foxes only for tameness reportedly brought floppy ears and piebald coats nobody selected for (a claim now disputed); optimizing only for what labelers like brought sycophancy along too. Unlike the foxes, nothing here is inherited across generations; it is gradient updates on one set of weights.</li>
+<li><b>Neuroscience · dopamine reward prediction error (Schultz, Dayan & Montague, 1997)</b>: Monkey dopamine neurons signal how much better than expected an outcome is, matching the error signal of reinforcement learning; PPO likewise nudges the policy toward better-than-expected outputs. The difference: the brain's reward is real food and juice, RLHF's is a model imitating human taste.</li>
+<li><b>Western philosophy · Aristotle's phronimos</b>: The Nicomachean Ethics says the virtuous mean cannot be written as a rule; it is fixed the way a person of practical wisdom would fix it. The paper is in the same spot: a good answer is no loss function, so humans judge. But Aristotle trusted one wise person, and RLHF averages about forty labelers.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>GPT-3 is trained to predict the next word, which is not the same as helping users safely and as they intend.</li>
+<li>The InstructGPT paper calls this gap the alignment problem: the model has capability, but its objective misses human intent.</li>
+<li>A good answer cannot be written as a loss function, so the only reliable judge is a human brought into the training loop.</li>
+<li>The first RLHF step is supervised fine-tuning on about forty labelers' hand-written demonstrations.</li>
+<li>Ranking K answers is more consistent than scoring them, and a pairwise loss turns those rankings into a reward model.</li>
+<li>PPO then optimizes the language model against the reward model, with a per-token KL penalty to stop drift and gaming.</li>
+<li>PPO-ptx mixes pretraining gradients back in and largely erases the alignment tax on public NLP benchmarks.</li>
+<li>Labelers preferred the 1.3B InstructGPT over the 175B GPT-3, and it was more truthful, less toxic, and better at following instructions.</li>
+<li>ChatGPT is a sibling of InstructGPT, and RLHF became the standard step for turning a large model into an assistant.</li>
+<li>RLHF aligns to a few labelers' tastes, breeds sycophancy, and fails like Goodhart's law when the reward is over-optimized.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full datasets, hyperparameters, and evaluation details, go to the original.</footer>
 </div>

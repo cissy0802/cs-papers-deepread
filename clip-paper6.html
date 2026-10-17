@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 6</p>
@@ -176,17 +184,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>偏见与数据不透明</strong>：4 亿对未经清洗的网络数据把社会偏见一并学了进来（论文自带审计章节，发现了带种族倾向的错误关联）；且 WIT 数据集从未公开，复现只能靠社区自建。</li>
 <li><strong>损失函数并非终点</strong>：后续 SigLIP 把 softmax 对比损失换成 sigmoid、EVA-CLIP 等持续改良，都在原设计上明显再涨——原版远非最优。</li>
 </ul>
-<h2 data-tts="7c4fd58943271be4">要点</h2>
-<div class="tl">
-<p>① 一句话：4 亿对网络图文 + 对比学习，把图像和语言训进同一个向量空间，类别用文字随写随认。</p>
-<p>② 痛点:监督视觉标注贵、类别封闭、换分布就崩；而互联网上有近乎免费的语言监督。</p>
-<p>③ 机制一（对比目标）：N×N 相似度表，真配对拉高、错配压低；「会认就行、不必会写」，比预测配文省 4 倍效率——这是规模推得上去的关键。</p>
-<p>④ 机制二（零样本）：分类器 = 把类别名写成句子过文本编码器；prompt 模板 + 80 模板集成再涨近 5 个点。</p>
-<p>⑤ 结果：零样本 ImageNet 76.2% 追平监督 ResNet-50；27 个数据集赢 16 个；分布偏移下鲁棒性差距最多缩小 75%；但 MNIST 只有 88%。</p>
-<p>⑥ 影响：Stable Diffusion / DALL·E 2 的文本理解、LLaVA 类模型的视觉编码器、开放词汇检测分割检索、OpenCLIP+LAION 开源生态。</p>
-<p>⑦ 局限：数数与细粒度差、组合理解像词袋、贴字条就被骗、网络数据偏见、纯零样本离 SOTA 还差约 1000 倍算力。</p>
-<p>⑧ 站远看：它是「规模 + 弱监督 + 通用接口」信条在视觉上的落地——视觉的 GPT 时刻。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 概念细胞（Quiroga 2005）</b>：Quiroga 等 2005 年在癫痫患者的内侧颞叶里记录到「Halle Berry 神经元」，它对这位演员的照片、素描，甚至印出来的名字都会放电——图和字汇到同一个「概念」上，正是 CLIP 共享空间的结构。不像在：大脑的概念细胞稀疏、几次接触就能形成，CLIP 要靠 4 亿对数据把概念摊进稠密向量里。</li>
+<li><b>发展心理学 · 跨情境词汇学习（Smith &amp; Yu 2008）</b>：12 和 14 个月大的婴儿每次同时听两个词、看两个物体，单次分不清谁配谁，却能靠多次共现的统计在几分钟内学会 6 对词—物映射。CLIP 在 N×N 表里「认亲」是同一招；不像在婴儿只需几十次，CLIP 要几亿次。</li>
+<li><b>语言学 / 哲学 · 索绪尔「语言中只有差异」</b>：索绪尔《普通语言学教程》（1916）主张一个符号的意义由它和其他符号的差别决定。对比损失同样只要求「真配对比错配更近」，向量的意义全由相对位置给出。不像在：索绪尔的差异系统封在语言内部，CLIP 用图像把词锚到了语言之外。</li>
+<li><b>心理学 · Stroop 效应（1935）</b>：字写的是「红」、墨水却是蓝色，让人报墨水颜色就会明显变慢——读字是自动的，会挤进别的判断。贴着「iPod」字条的苹果骗倒 CLIP 是同一种干扰；不像在人只是慢一点仍能答对，CLIP 直接改判，它没有压住读字冲动的控制机制。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>CLIP 用从互联网收集的 4 亿对图文，以对比学习把图像和文字训进同一个向量空间。</li>
+<li>此前的监督视觉模型标注昂贵、类别封闭，换一批分布不同的图性能就崩。</li>
+<li>网上每张图旁边的配文是近乎免费的监督信号，比类别编号携带的语义丰富得多。</li>
+<li>CLIP 不逐词生成配文，只做 N×N 的图文配对判别，同等零样本成绩下效率高约 4 倍。</li>
+<li>零样本分类把类别名写成「一张…的照片」送进文本编码器，取与图向量余弦相似度最高的那一类。</li>
+<li>用提示模板消除词义歧义、再把 80 个模板集成，能把 ImageNet 零样本准确率提高近 5 个百分点。</li>
+<li>最强的 CLIP 在 ImageNet 上零样本达到 76.2%，追平全监督 ResNet-50，分布偏移下的鲁棒性差距最多缩小 75%。</li>
+<li>CLIP 的文本编码器和图文空间成了 Stable Diffusion、DALL·E 2 和 LLaVA 类多模态模型的地基。</li>
+<li>CLIP 数数、细粒度分类和组合关系理解都弱，在苹果上贴一张「iPod」字条就能骗它认错。</li>
+<li>大脑里的「Halle Berry 神经元」对照片和名字都会放电，与 CLIP 的图文共享空间是同一种结构。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整实验矩阵与 30 个数据集明细，再去翻原文。</footer>
 </div>

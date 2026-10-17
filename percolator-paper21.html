@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 21</p>
@@ -202,17 +210,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>时间戳预言机是中心点</strong>：虽经批量分摊与复制缓解，它仍是逻辑上的全局单点，是可扩展性与容错设计里要小心对待的一环。</li>
 <li><strong>懒惰锁清理带来阻塞</strong>：客户端崩溃后残留的锁，要等下一个撞上它的事务、结合超时才被清理；期间相关行会被挡住，最坏情况需等超时。</li>
 </ul>
-<h2 data-tts="8a11e6655376fcd5">要点</h2>
-<div class="tl">
-<p>① 一句话：在 Bigtable 上补出「跨行 ACID 事务 + 观察者通知」，把谷歌网页索引从 MapReduce 整批重建改成增量处理。</p>
-<p>② 痛点：MapReduce 改一个网页也得重扫整个仓库，新网页要等数天才进索引；而没有 DBMS 能在这个规模上做随机事务。</p>
-<p>③ 事务机制：给每列加 <code>data</code>/<code>lock</code>/<code>write</code> 元数据列，两阶段提交——预写上锁（一主一副）、提交时先原子地把<strong>主锁</strong>转成 write 记录（＝生效瞬间），再收尾副锁；读只认 write，半成品不可见。</p>
-<p>④ 快照隔离：事务从<strong>时间戳预言机</strong>拿 start_ts / commit_ts，读一致快照、写时查写写冲突；预言机批量发号、单机约 200 万/秒。</p>
-<p>⑤ 容错：无专用事务管理器，崩溃留下的锁由后续事务顺着<strong>副锁→主锁</strong>懒惰前滚 / 回滚，靠类似 Chubby 的锁服务加超时判死。</p>
-<p>⑥ 通知机制：观察者注册在列上，写→打 notify→worker 随机扫→跑观察者→再写，变化级联「渗」遍索引；每条通知至多触发一次（ack 去重）防死循环。</p>
-<p>⑦ 结果：落地为 Caffeine 索引系统，同吞吐下文档平均年龄降约 50%（新鲜度翻倍）；代价是每文档数十次随机操作、资源效率低。</p>
-<p>⑧ 影响：把「时间戳 + 主锁 2PC」做成分布式事务模板，直接启发 TiKV / TiDB 等；为 Spanner 的全球一致事务铺路。局限：只有快照隔离（有写偏斜）、单事务延迟高、时间戳预言机为逻辑单点。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>复杂性科学 · 渗流理论（percolation theory）</b>：Broadbent 与 Hammersley 开创的渗流理论问的是：随机连通的网络里，局部一步步的「渗」能不能连成贯通全局的通路。Percolator 的观察者级联同样是局部触发、逐步传开；不像在渗流理论关心越过临界值时突然连通的相变，而索引级联是设计者刻意要它有界、可控。</li>
+<li><b>神经科学 · 特克斯勒消逝（Troxler fading）</b>：眼睛死盯一点不动，视野边缘不变的图像会渐渐淡出——视觉系统主要为「变化」报信。Percolator 也只为变了的数据唤醒计算；不像在大脑会丢掉不变的信息，Percolator 却完整保存全部状态。</li>
+<li><b>生物学 · 激酶信号级联（MAPK cascade）</b>：受体被激活后，Raf→MEK→ERK 一级磷酸化下一级，信号逐层传进细胞核、改写基因表达，和「写→通知→观察者→再写」同构。不像在生物级联靠逐级放大，Percolator 反而用 ack 保证每条通知至多触发一次。</li>
+<li><b>法律 · 托伦斯产权登记（Torrens title）</b>：这套土地制度里，合同签得再齐，产权也以登记簿上那一笔为准，登记即生效。主锁转成 write 记录正是这种「一笔定案」；不像在登记处是中心机构，Percolator 的「登记」散落在各行，由后来者懒惰收尾。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Percolator 在 Bigtable 之上补出跨行 ACID 事务和观察者通知，把谷歌网页索引改成增量处理。</li>
+<li>MapReduce 批处理哪怕只改一个网页也要重扫整个网络仓库，新网页要等数天才进索引。</li>
+<li>当时没有任何数据库能在几千台机器上扛住网页索引所需的随机事务吞吐。</li>
+<li>每个数据列另配 lock 和 write 元数据列，读者只认 write 列，看不见未提交的半成品。</li>
+<li>两阶段提交里，主锁被原子地转成 write 记录的那一刻，就是整笔事务生效的瞬间。</li>
+<li>客户端崩溃留下的锁，由后来撞见它的事务顺着副锁查主锁，懒惰地前滚或回滚。</li>
+<li>时间戳预言机批量预留号段、在内存里发号，单机每秒约可发 200 万个时间戳。</li>
+<li>写入触发通知，worker 运行注册在列上的观察者再写下游，变化像渗滤一样级联扩散。</li>
+<li>Percolator 落地为 Caffeine，同吞吐下文档平均年龄降约 50%，代价是资源效率远低于 MapReduce。</li>
+<li>「时间戳 + 主锁两阶段提交」成了 TiKV / TiDB 照搬的事务模板，但快照隔离仍有写偏斜异常。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整协议细节与实验数据，再去翻原文。</footer>
 </div>

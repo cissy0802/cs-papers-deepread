@@ -34,6 +34,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 .q{background:#171b21;border:1px solid rgba(240,180,41,0.18);border-radius:8px;padding:12px 16px;margin:14px 0;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:0.86rem;color:#f5c451;line-height:1.85;overflow-x:auto}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 71</p>
@@ -204,19 +212,26 @@ Select cl.procName, SUM(incr.delta)</div>
 <li><strong>「随口提问」仍有边界。</strong>探点得先存在，能问什么最终受限于那个位置能拿到哪些局部变量——它扩大的是提问空间，不是取消了边界。</li>
 <li><strong>采纳度是最诚实的那条批评。</strong>十年过去，工业界主流依然是 Dapper 式的采样追踪加指标、日志；Pivot Tracing 的<em>完整形态</em>——运行时下发查询、动态织入——并没有被广泛落地。真正扩散出去的是它的抽象（baggage、因果传播），而不是它的产品形态。</li>
 </ul>
-<h2 data-tts="14796751fdad8fa6">要点</h2>
-<div class="tl">
-<p>① 一句话：用 happened-before join 把「底层的数字」与「顶层的身份」沿因果路径配对，再用动态插桩把查询装进运行中的系统——监控从「事前记账」变成「事后提问」。</p>
-<p>② 痛点一：记什么在开发期就冻死了，想问新问题得改代码、重新部署、等它再犯。</p>
-<p>③ 痛点二：信息按组件边界切开——HDFS 只认得直接客户端，答不出「这块盘被哪个高层作业吃掉了」；两半信息分处两个系统。</p>
-<p>④ 核心算子：<code>a ⋈→ b</code>，配对条件不是「值相等」也不是时间戳（时钟对不齐），而是 Lamport 的因果先后——分布式系统里唯一能白拿的可靠关系。</p>
-<p>⑤ 实现关键：baggage——把要 join 的字段塞进请求的随身容器，随线程 / 队列 / RPC 走；下游 Unpack 后<strong>就地</strong>配对聚合，只发结果，不把原始事件运到中心。</p>
-<p>⑥ 便宜的原因：聚合与过滤下推到源头，baggage 只装真正要用的字段——空查询 0 字节，最重的评测查询约 137 字节/请求。</p>
-<p>⑦ 落地机制：查询 → 受限指令 advice（Observe / Unpack / Filter / Pack / Emit）→ 发布订阅下发 → agent 字节码织入探点 → 结果流式回流；撤销即归零。</p>
-<p>⑧ 结果：Hadoop 集群上按高层客户端分解 DataNode 磁盘带宽，定位出软件 bug、配置错误、腿瘸的硬盘三类根因；每个系统改 50–200 行加 baggage 传播；压力测试最坏开销约 16%。</p>
-<p>⑨ 影响：把「跨层归因」形式化成一个算子；「可观测性 = 能回答没想到的问题」这条分界线的源头之一；baggage 进了 OpenTelemetry 的标准接口。</p>
-<p>⑩ 局限：baggage 断链是静默的；只看得见路径上的因果、看不见共享资源上的互相干扰；依赖运行时改写、注入生产进程有安全顾虑；完整形态至今未被工业界广泛采用。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 结合问题（binding problem）</b>：一只飞鸟的颜色、形状和运动由大脑不同区域分别处理，怎么知道它们属于同一个物体？Wolf Singer 等人的著名假说是靠神经放电的时间同步来绑定。归因缺口是同一个难题；不像在于，Pivot Tracing 恰恰拒绝按时间配对，只认同一条因果路径。</li>
+<li><b>佛学 · 缘起</b>：「此有故彼有，此生故彼生」，事物的联系不靠共同本质，而靠条件的先后相依；happened-before join 也不看值是否相等，只看谁可能影响了谁。不像在于，缘起是互相依待的整张网，Pivot Tracing 只看得见单条请求路径。</li>
+<li><b>发育生物学 · CRISPR 谱系追踪（lineage tracing）</b>：在胚胎里植入一段可被反复编辑的条形码，细胞每分裂一次就累积新的突变，最后读每个细胞自带的条形码重建家谱，信息跟着个体走而不靠中心登记，正像 baggage。不像在于，条形码要等到最后才读出，baggage 在路上就地算完。</li>
+<li><b>管理会计 · 作业成本法（activity-based costing）</b>：Robert Kaplan 与 Robin Cooper 主张把车间的共享开销按实际作业动因摊到具体产品上，问的同样是「底层的消耗该记在哪个顶层客户头上」。不像在于，作业成本法靠动因比例估算，Pivot Tracing 逐个请求实测。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Pivot Tracing 让工程师对正在运行的分布式系统即席提问，问完即撤，不必改代码重新部署。</li>
+<li>传统日志、指标和追踪记什么在开发期就定死了，想问一个新问题就得改代码、等故障再犯一次。</li>
+<li>跨层归因难在信息被组件边界切开：磁盘读了多少字节只有 HDFS 知道，为谁读只有上层系统知道。</li>
+<li>happened-before join 按 Lamport 的因果先后配对记录，既不靠值相等，也不靠各机器对不齐的时钟。</li>
+<li>baggage 把 join 要用的字段塞进请求随身携带，下游就地完成配对和聚合，只把结果发出去。</li>
+<li>过滤和聚合被下推到源头，不跑查询时 baggage 为 0 字节，评测中最重的查询约 137 字节每请求。</li>
+<li>查询被编译成受限指令 advice，由各机器上的 agent 用字节码改写织进探点，撤销后系统回到原样。</li>
+<li>在 Hadoop 集群上，Pivot Tracing 定位出软件 bug、配置错误和变慢的硬盘三类根因，压力测试最坏开销约 16%。</li>
+<li>baggage 这个概念已写进 OpenTelemetry 标准，但运行时下发查询的完整形态至今没被工业界广泛采用。</li>
+<li>baggage 断链会静默漏配，而且只看得见请求路径上的因果，看不见抢同一块盘的请求之间的互相干扰。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的查询语言定义与逐条评测数据，再去翻原文。</footer>
 </div>

@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 20</p>
@@ -183,17 +191,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Paxos's engineering detail is glossed over</strong>: the paper focuses on service design and says little about the consensus implementation itself; Google's later <em>Paxos Made Live</em> was written precisely about how hard it is to get Paxos correct — indirectly confirming the value of "make it a service, get it right once."</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: Chubby wraps the error-prone Paxos consensus inside a service and exposes a familiar "file system + coarse-grained advisory locks + events" interface, so apps do leader election and metadata coordination easily.</p>
-<p>② Motivation: consensus (Paxos) is solved in theory but brutal to implement; rather than ship a library, make it a central service — right once, reused everywhere — and locks are more intuitive and give a place to store "who the master is."</p>
-<p>③ Architecture: a cell of 5 replicas runs Paxos to elect a master and replicate (majority commits); the master lease rules out split-brain; clients only talk to the master and never touch consensus.</p>
-<p>④ Interface: a file tree with ephemeral/permanent nodes, whole-file reads/writes of small blobs; locks are advisory and coarse-grained (held for hours) — sparse enough to serve many from few.</p>
-<p>⑤ Sessions renew leases via KeepAlives, whose replies piggyback events and cache invalidations; "lease timeout" replaces "definite death notice," and clients reconnect to a new master within the grace period (~45s).</p>
-<p>⑥ Client caching + active invalidation: the master blocks a write, broadcasts invalidations, then commits — strict consistency; the read-heavy bet lets caching absorb most traffic.</p>
-<p>⑦ Sequencers / lock-delay cure "a stale holder's late write clobbers new data," via a generation-numbered token check or a reacquisition delay window.</p>
-<p>⑧ Impact and limits: the foundation for GFS/Bigtable leader election, and used as a name service too; direct ancestor of ZooKeeper and etcd (the Kubernetes core). But no high-throughput/fine-grained locking, advisory locks don't stop trespassers, failover has brief unavailability, and it's easy to abuse (needs rate limiting).</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Animal behavior · the honeybee quorum (Thomas Seeley)</b>: Seeley and Visscher (2003) found that a swarm doesn't wait for every scout to agree; once roughly 10–15 or more scouts gather at one candidate site, they start signaling the swarm to prepare for takeoff. Like Paxos, it trades completeness for speed: a quorum decides, not unanimity. The difference: the bees' threshold is an absolute head count rather than a majority, so two sites could in principle both clear it — there is no mathematical guarantee against "two masters."</li>
+<li><b>Economics · Coase, "The Nature of the Firm" (1937)</b>: Coase asked why firms exist and answered that market transactions carry costs that internal organization can undercut. Chubby runs the same calculation, pulling every team's private reimplementation of Paxos into one central service. Where it breaks: Coase also said firms have a size limit, and Chubby hit its own when overload forced proxies and partitioning.</li>
+<li><b>Philosophy · David Lewis on convention (1969)</b>: Lewis treated a convention as an equilibrium in a coordination problem, sustained because everyone expects everyone else to conform, yet powerless against someone who doesn't care. An advisory lock likewise binds only processes that check it. Unlike a convention, Chubby adds sequencers so the storage side can catch the trespasser on the spot.</li>
+<li><b>Evolutionary biology · exaptation (Gould and Vrba, 1982)</b>: feathers arose for warmth or display and were only later co-opted for flight; Chubby, built for leader election, was co-opted by developers as a name service. The difference: evolution's repurposing has no one cleaning up after it, while the Chubby team had to add caching and rate limiting to survive the unplanned use.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Chubby is Google's distributed lock service, which hides the error-prone Paxos consensus protocol inside the service.</li>
+<li>Chubby exposes only a file system, coarse-grained advisory locks and event notifications; whoever grabs the lock becomes the master.</li>
+<li>A service beats a consensus library because prototype systems can add high availability with almost no restructuring, and gain a place to record who the master is.</li>
+<li>A Chubby cell has five replicas, and a write commits only once Paxos has made it durable on a majority of them.</li>
+<li>During a master lease the other replicas promise not to elect a new master, which rules out split-brain at the root.</li>
+<li>Locks are advisory and coarse-grained, held for hours at a time, which is why five servers can serve tens of thousands of clients.</li>
+<li>Sessions renew leases through KeepAlives, so a lease timeout replaces an explicit death notice and clients reconnect to a new master within a grace period.</li>
+<li>Client caching with master-driven invalidation means the master blocks a write until every cached copy is discarded, so reads are never stale.</li>
+<li>Sequencers carry a generation number that rises with each new master, letting storage servers reject late writes from a former lock holder.</li>
+<li>Burrows's Chubby unexpectedly became Google's internal name service and inspired ZooKeeper and etcd, but its misuse forced quotas and proxies.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full protocol detail and operational data, go to the original.</footer>
 </div>

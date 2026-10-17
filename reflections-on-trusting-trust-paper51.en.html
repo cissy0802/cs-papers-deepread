@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 51</p>
@@ -169,18 +177,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Real attacks take easier routes</strong>: the supply-chain attacks that actually proliferate in the wild are dependency poisoning, build-server intrusions, and the like; a Thompson-style self-reproducing compiler backdoor remains rare in practice—its value lies mainly at the <strong>conceptual level</strong>: it permanently placed a question mark over the default belief that "auditable = trustworthy."</li>
 <li><strong>The lecture's moral coda is loosely attached</strong>: at the end Thompson pivots to criticize the press for glamorizing "intruders" and argues that "breaking into a computer system should carry the same stigma as breaking into a neighbor's house"—a moral appeal only loosely connected to the technical body, and a personal stance often discussed on its own.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: a self-reproducing, source-invisible compiler backdoor proves that "you can't trust code you did not totally create yourself."</p>
-<p>② The pain: security assumes "clean source = trustworthy"; but you audit source and run a binary, with an un-audited compiler in between.</p>
-<p>③ Step 0: a program can "produce itself" (a quine)—so a backdoor can survive without any source.</p>
-<p>④ Step 1: the compiler "learns"; a capability can live in the binary alone, invisible in source (illustrated by adding the escape sequence <code>\v</code>).</p>
-<p>⑤ Step 2: inject a master-password backdoor when compiling login; when compiling "the compiler itself," copy this logic into the new binary; then delete the malicious code from source—backdoor immortal in the binary, all source clean.</p>
-<p>⑥ Key: infection happens inside the act of compiling; recompiling the whole system won't wash it out.</p>
-<p>⑦ Conclusion: <code>You can't trust code that you did not totally create yourself</code>; and the attack slides down to assembler, microcode, hardware—trust can't be capped by reading code.</p>
-<p>⑧ Impact: the prototype of the supply-chain attack; spurred reproducible builds and Diverse Double-Compiling (DDC); the intellectual echo behind SolarWinds, XZ, and more.</p>
-<p>⑨ Limits: DDC can detect it under reasonable assumptions; requires a one-time poisoning of a trusted binary; real attacks take easier routes; the value is mainly conceptual.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolutionary biology · Endogenous retroviruses (ERVs)</b>: A retrovirus writes its genes into host DNA; once that lands in the germline, it is copied with every cell division and every generation, long after the free virus is gone. Same shape as a backdoor that lives only in the binary and persists through the act of compiling. The difference: most ERVs have decayed into silence, and some were domesticated by the host (syncytin genes help build the placenta), while Thompson's payload only ever serves its author.</li>
+<li><b>Biology · Prions (Stanley Prusiner)</b>: A prion is a misfolded protein that makes the normal proteins it touches fold the same wrong way, while the gene, the "source," stays clean. Alike: the defect lives in the manufacturing step, not the recipe. Unlike: prions carry no information and pick no targets, whereas the backdoor recognizes exactly two programs, login and the compiler.</li>
+<li><b>Philosophy · The Münchhausen trilemma (Hans Albert)</b>: Keep asking any argument for its grounds and you end in infinite regress, circular reasoning, or an arbitrary stop. Thompson's chain of trust has the same shape: somewhere you simply decide to trust. Albert drew a fallibilist moral (keep criticizing); engineers instead shrink the arbitrary step with cross-checks like DDC.</li>
+<li><b>Buddhism · Yogācāra "seeds" and "perfuming"</b>: Yogācāra holds that actions perfume seeds into the storehouse consciousness (ālaya-vijñāna), which later sprout as new actions with no visible origin. That mirrors the compiler's "learning": one compile bakes knowledge into the binary and the source forgets it. Unlike: Yogācāra's exit is transforming the basis itself, while Thompson says you cannot audit from inside and must trust whoever built it.</li>
+<li><b>Neuroscience · Procedural memory and patient H.M.</b>: Brenda Milner found that H.M., missing much of his hippocampus after surgery, got better at mirror drawing over several days yet each time said he had never done it. The skill lived in the executing layer with no declarative trace, just as <code>\v</code> lives only in the binary. Unlike: H.M.'s invisibility was a surgical accident; the backdoor's was engineered by deleting the source.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>In his 1983 Turing Award lecture, Ken Thompson showed that clean source code does not guarantee a backdoor-free program.</li>
+<li>Code review has a blind spot: you audit source but run a binary, and an unaudited compiler sits between them.</li>
+<li>A self-reproducing program (a quine) prints its own complete source, so code can copy itself without any outside source.</li>
+<li>A compiler can "learn": teach it the escape <code>\v</code>, delete the teaching code, and the knowledge lives on only in the binary.</li>
+<li>Thompson's Trojan injects a master password when compiling login, and copies the whole malicious logic when compiling the compiler itself.</li>
+<li>Once the malicious code is deleted from source, the backdoor keeps propagating through binaries, and recompiling everything cannot wash it out.</li>
+<li>The attack can move down to the assembler, microcode and hardware, so trust must be chosen at some layer, not proven by reading code.</li>
+<li>The lecture is the conceptual prototype of the supply-chain attack, echoed by SolarWinds and the XZ Utils backdoor.</li>
+<li>David A. Wheeler's Diverse Double-Compiling (DDC) shows such a backdoor can be detected if one independent, trusted compiler exists.</li>
+<li>Following a chain of trust downward must stop somewhere, the same structure as philosophy's Münchhausen trilemma.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Finish this page ≈ grasp the paper's core; for Thompson's original lecture and the details of that self-reproducing code, go read the source.</footer>
 </div>

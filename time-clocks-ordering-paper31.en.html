@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 31</p>
@@ -176,17 +184,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The total order is arbitrary among concurrent events</strong>: consistent but not "meaningful" — it only guarantees everyone orders them the same way, not that the order reflects any real semantics.</li>
 <li><strong>The physical-clock section is more theoretical</strong>: real engineering clock sync (NTP, GPS, atomic clocks, TrueTime) came decades later.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: a distributed system has no shared clock, so define happens-before by "a message is sent before it's received," then extend it into a total order with logical clocks.</p>
-<p>② The pain: many machines with drifting quartz clocks and variable delays make "who came first" undecidable, so replicas can't agree on a processing order.</p>
-<p>③ happens-before (→): process order + "send→receive" + transitivity; events that can't reach each other are concurrent, left unordered (a partial order, echoing relativity).</p>
-<p>④ Logical clocks: one counter per process, +1 per local event (IR1), <code>max(self, incoming)+1</code> on receive (IR2), so causally related events strictly increase — a ticket counter, not a clock.</p>
-<p>⑤ Total order: break ties by process ID, yielding one unique ordering ⇒ everyone agrees on.</p>
-<p>⑥ Killer app: no-coordinator distributed mutual exclusion; abstracted, it's the replicated state machine — same order + same commands → same state, the universal recipe for fault-tolerant replication.</p>
-<p>⑦ Impact: Lamport timestamps became textbook standard; state-machine replication leads to Paxos, Raft, Spanner; it spawned vector clocks, distributed snapshots, causal consistency.</p>
-<p>⑧ Limits: clocks are one-directional (small number ≠ causality; need vector clocks); the mutex algorithm needs FIFO and is not fault-tolerant; the order is arbitrary among concurrent events; the physical-clock part is theoretical.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Dennett and Kinsbourne's Multiple Drafts model</b>: they reject a "Cartesian theater" where the brain stamps every experience with one official time; order is inferred by distributed brain processes from the content of signals. Same shape as "no global clock, order inferred from causality." Unlike Lamport clocks, though, the brain's inferred order can depart from the real arrival order.</li>
+<li><b>Geology · Steno's law of superposition</b>: in one rock column, lower layers are older, which gives relative order without dates, much like event order inside one process. Distant columns are matched through shared index fossils, the way messages stitch two timelines together; radiometric dating later plays the "physical clocks return" role. Unlike messages, rock layers carry no timestamps.</li>
+<li><b>Philosophy · Leibniz's relational time</b>: against Newton's absolute time, Leibniz argued in his exchange with Clarke that time is nothing but the order of successive things. Lamport demoting "time" to a relation among events is the engineering version of that view; but Leibniz assumed one total order, while Lamport accepts that many events are simply incomparable.</li>
+<li><b>Buddhism · Dependent origination (pratītyasamutpāda)</b>: "when this arises, that arises" — sequence is fixed by conditions, not by an outside clock, mirroring happens-before's "could this affect that." The difference: the twelve links turn in a cycle, while happens-before is a partial order that forbids cycles.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>In a distributed system, quartz clocks drift and network delays vary, so comparing physical times cannot settle which event came first.</li>
+<li>Lamport swapped "which came first" for "which could affect which," defining order by causality rather than physical time.</li>
+<li>The happens-before relation needs only three rules: order within a process, send before receive, and transitivity.</li>
+<li>Happens-before is a partial order: events that cannot influence each other are concurrent, and forcing an order on them is wrong.</li>
+<li>A logical clock adds one per local event and, on receipt, jumps to max(own value, incoming timestamp) + 1.</li>
+<li>A Lamport timestamp is a ticket number, not a clock: it rises along causal chains but measures no real time.</li>
+<li>Breaking ties by process ID turns the partial order into one total order that respects causality and that every machine agrees on.</li>
+<li>When every replica runs the same commands in the same total order, deterministic state machines end in the same state: state-machine replication.</li>
+<li>The paper's distributed mutual-exclusion algorithm assumes reliable FIFO channels and tolerates no crashes, gaps later filled by Paxos and Raft.</li>
+<li>Lamport clocks work in one direction only: a smaller number does not prove causality, which takes vector clocks to capture exactly.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the core of the paper; for the full proofs and the physical-clock synchronization theorem, go to the original.</footer>
 </div>

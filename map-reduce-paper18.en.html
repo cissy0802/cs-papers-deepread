@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 18</p>
@@ -218,19 +226,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Google itself moved past it</strong>: internally it shifted to higher-level, more flexible models like FlumeJava and <strong>Cloud Dataflow</strong> (the precursor to Apache Beam), and classic MapReduce faded to a secondary role. It is a foundational, mind-opening work — not the endpoint.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: a programming model + runtime that lets the user write just two functions, <code>map</code>/<code>reduce</code>, while the framework auto-parallelizes across thousands of machines with end-to-end fault tolerance.</p>
-<p>② Model: <code>map:(k1,v1)→list(k2,v2)</code> emits intermediate pairs per record; the framework groups by key; <code>reduce:(k2,list(v2))→list(v2)</code> folds. Word count is the canonical example.</p>
-<p>③ Execution: input split into <strong>M</strong> map tasks, intermediate keys into <strong>R</strong> buckets as reduce tasks; a <strong>master</strong> assigns and monitors; reduce pulls from map workers' local disks (<strong>shuffle</strong>), sorts, merges, writes to GFS.</p>
-<p>④ Key trade-off: map intermediates land on <strong>local disk</strong> (cheap), final output on <strong>GFS</strong> (reliable) — which dictates how the two failure types are handled.</p>
-<p>⑤ Fault tolerance: master pings workers; failed tasks re-run safely thanks to map/reduce <strong>determinism</strong>; <strong>completed maps must be redone</strong> (output trapped on a dead local disk), completed reduces need not (already on GFS).</p>
-<p>⑥ Locality: schedule map tasks onto the <strong>machine holding an input replica</strong>, so most input reads from local disk and never crosses the network.</p>
-<p>⑦ <strong>Backup tasks</strong> cure stragglers: race slow tasks near the finish, first-to-complete wins; disabling them makes sort ~44% slower. <strong>Combiner</strong> pre-merges on the map side, shrinking the shuffle.</p>
-<p>⑧ Results: on ~1800 machines, 1 TB grep ≈150 s, 1 TB sort ≈891 s; killing 200 machines costs only ~5% more; over a thousand internal programs, and it rewrote the search index.</p>
-<p>⑨ Impact: with GFS/Bigtable it forms the "big three," directly spawned Hadoop and the whole big-data ecosystem, and popularized "restricted model for automatic parallelism, move computation not data."</p>
-<p>⑩ Limitations: batch-only, slow at iteration/real time, rigid model, slammed as "a step backwards" by the DB community; Google itself moved on to Dataflow and beyond.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Economics · Adam Smith's pin factory</b>: In <i>The Wealth of Nations</i> (1776), ten workers split pin-making into about eighteen operations and turned out over 48,000 pins a day, where each working alone might not have made one. MapReduce runs the same play: carve up, parallelize, gather. The difference is that Smith's gains came from each hand specializing, while MapReduce workers are deliberately interchangeable, so anyone can pick up a dead machine's work.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society"</b>: Hayek (1945) argued that the knowledge that matters is scattered, local and held by people on the spot, so decisions should move to where the knowledge is. "Move computation to the data" is the same instinct; the twist is that MapReduce keeps an all-seeing central master: data is decentralized, planning is not.</li>
+<li><b>Neuroscience · the retina compresses before it sends</b>: Over a hundred million photoreceptors feed only about a million optic-nerve fibers, a roughly 100-to-1 convergence inside the eye itself. A combiner merging on the map side before the shuffle is the same "shrink it before the bottleneck" move; unlike the retina, which throws information away, a combiner for sums loses nothing.</li>
+<li><b>Complexity science · Deborah Gordon's harvester ants</b>: Gordon found that red harvester ant colonies have no boss: an ant decides whether to go out based on how often it bumps into returning foragers. As in MapReduce, losing individuals barely matters; unlike MapReduce, the division of labor emerges from local encounters, with no master pinging workers and reassigning tasks.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>MapReduce, from Dean and Ghemawat in 2004, asks users to write only a map and a reduce function and leaves the rest to the framework.</li>
+<li>Google noticed that jobs like word counts and inverted indexes look different but share an almost identical parallel skeleton at thousand-machine scale.</li>
+<li>Map turns each input record into intermediate key-value pairs; the shuffle groups them by key; reduce folds each key's values into a result.</li>
+<li>Intermediate map output sits on local disk while final output goes to GFS, so completed maps on a failed machine are redone and completed reduces are not.</li>
+<li>Because map and reduce are deterministic, failed tasks can simply be re-run; killing 200 workers mid-sort cost only about 5% extra time.</li>
+<li>The master schedules map tasks onto machines that already hold an input replica, so most input is read from local disk without touching the network.</li>
+<li>Near the end of a job, backup copies of slow tasks race the originals; without them, the 1 TB sort took about 44% longer.</li>
+<li>Together with GFS and Bigtable, MapReduce formed Google's "big three" and, through open-source Hadoop, launched the big-data industry.</li>
+<li>MapReduce is good at batch jobs but poor at iteration and real time, and more flexible engines like Spark and Dataflow took over.</li>
+<li>"Move computation to the data" mirrors Hayek's case for pushing decisions to where knowledge lives, though MapReduce still keeps a central master.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Finish this page ≈ get the paper's core; for full implementation details and result tables, go read the original.</footer>
 </div>

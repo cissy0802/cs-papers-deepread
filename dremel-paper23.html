@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 23</p>
@@ -196,17 +204,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>编码复杂、工程门槛高</strong>：repetition/definition level 无损编码优雅但<strong>不好实现、不好调试</strong>，正确处理各种嵌套 + 空值边界是出了名的容易错。</li>
 <li><strong>存算耦合与近似的取舍</strong>：早期执行树把存储与计算绑得较紧、树形也较固定；近似早停虽降延迟，但返回的是<strong>不完整结果</strong>，不适合要求精确的场景。这些都在后续十年被逐步重构（存算分离、列式向量化等）。</li>
 </ul>
-<h2 data-tts="501eb13acc776269">要点</h2>
-<div class="tl">
-<p>① 一句话：列式存储（吃嵌套数据）+ 多级执行树（摊到几千台机器），对万亿行只读数据做秒级交互式聚合查询。</p>
-<p>② 痛点：MapReduce 批处理延迟以分钟计，打断探索；且谷歌数据是嵌套 + 重复的树状记录，传统列存只会扁平表。</p>
-<p>③ 核心一（编码）：用<strong>重复层级 r</strong>（新的一组从哪断开）+ <strong>定义层级 d</strong>（NULL 在哪层空）两个整数，把嵌套记录无损打散成列、又能无损拼回——全文最硬核、被 Parquet 继承。</p>
-<p>④ 核心二（执行）：借搜索引擎的多级树，根→中间→叶子逐层下发；叶子读分片做局部聚合、结果层层上汇合并；聚合天然「分而合之」，故并行度极高。</p>
-<p>⑤ 工程点：in-situ 原地读 GFS，不搬数据；副本改派治 straggler；近似早停用精度换延迟。</p>
-<p>⑥ 结果：85 亿行/87TB 表上列式快一个数量级以上；万亿行秒级返回；约三千节点、PB 级、上千用户；远快于 MapReduce。</p>
-<p>⑦ 影响：产品化为 BigQuery，开创 Serverless 数据仓库；嵌套列式编码成 Parquet/ORC 的思想源，是现代数据湖存储标准。</p>
-<p>⑧ 局限：只读聚合专才、不做事务；早期几乎不做大表 JOIN（后加 shuffle）；无索引故点查也得扫；编码工程门槛高。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>佛学 · 五蕴</b>：佛教把「人」拆成色、受、想、行、识五蕴，说其中没有独立的「我」，和把记录拆成列是同一个动作。不像在哪：佛学拆完是为了放下整体，Dremel 靠 (r, d) 随时原样拼回。</li>
+<li><b>生物 · Anfinsen 的蛋白质折叠</b>：Anfinsen 让变性的核糖核酸酶在试管里自己折回原样，证明一维的氨基酸序列就带着三维结构的信息（1972 年诺贝尔化学奖）。(r, d) 也让扁平的列自带「怎么拼回那棵树」的信息；不像的是，蛋白靠物理自发折叠、条件不对会折错，列的重组是确定性的状态机。</li>
+<li><b>经济学 · Hayek 的价格信号</b>：Hayek 1945 年说，散在各人手里的局部知识无法集中到一个脑袋，价格把它压成一个数往外传；叶子本地聚合、只往上交小结果，是同一种压缩。不像在哪：Dremel 有根服务器总揽全局，市场没有。</li>
+<li><b>心理学 · Simon 的满意化（satisficing）</b>：Herbert Simon 说真实的决策者不求最优，够好就停；Dremel 处理完 99% 分片就收工，正是这种取舍。不像在哪：人常说不清自己差了多少，Dremel 知道扫过了多大比例。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Dremel 对万亿行只读嵌套数据跑秒级交互式聚合查询，是谷歌 BigQuery 的前身。</li>
+<li>当时的主力工具 MapReduce 是批处理，延迟以分钟计，打断了边想边问的数据探索。</li>
+<li>列式存储让查询只读用得到的那几列，省掉大部分 I/O，同类数据也更好压缩。</li>
+<li>重复层级 r 标出「新的一组从哪一层断开」，定义层级 d 标出「空值在哪一层空掉」。</li>
+<li>凭 (r, d) 两个整数，嵌套记录能被无损打散成列，再由有限状态机无损拼回。</li>
+<li>多级执行树把查询从根服务器摊到几千台叶子，叶子做局部聚合，结果逐层向上合并。</li>
+<li>Dremel 原地读取 GFS 上的列数据，把掉队机器的活改派给副本，并可近似早停。</li>
+<li>在 85 亿条记录、约 87TB 的表上，只读少数字段时列式读取快一个数量级以上。</li>
+<li>Dremel 的嵌套列式编码被 Parquet、ORC 继承，成了开源大数据栈的存储标准。</li>
+<li>近似早停很像 Simon 的满意化：处理完 99% 的分片就收工，用一点精度换一大截延迟。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的编码算法与实验细节，再去翻原文。</footer>
 </div>

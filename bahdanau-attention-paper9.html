@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 9</p>
@@ -199,17 +207,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>软对齐 ≠ 语言学对齐</strong>：α 权重常常发散、并不总落在「正确」的词上，把它直接当「模型的解释」有风险——后来 NLP 界「attention is not explanation」之争即源于此。</li>
 <li><strong>词表问题没碰</strong>：生僻词仍是未知符号（UNK），上面「追平 Moses」只在不含生僻词的子集成立；这个坑后来由 BPE 子词切分（2016）填上。</li>
 </ul>
-<h2 data-tts="aef59379fd4ff583">要点</h2>
-<div class="tl">
-<p>① 痛点：encoder–decoder 把整句压进一个固定长度向量，容量固定、句子越长丢得越多，长句 BLEU 急坠。</p>
-<p>② 核心 idea：解码器每生成一个词，<strong>动态回看源句</strong>——打分 → softmax → 加权求和，得到该词专属的上下文向量。</p>
-<p>③ 机制：<code>eᵢⱼ = a(s₍ᵢ₋₁₎, hⱼ)</code>，<code>α = softmax(e)</code>，<code>cᵢ = Σ αᵢⱼ·hⱼ</code>；打分器是个跟着一起学的小网络（加性注意力）。</p>
-<p>④ 「软」是关键：处处可微，「往哪看」与「怎么翻」端到端联合训练，无需人工对齐标注——对齐成了翻译学好的副产品。</p>
-<p>⑤ 配套：双向 RNN 编码器给每个源词一个带前后文的注解 hⱼ，注意力才有得可取。</p>
-<p>⑥ 结果：WMT'14 英法 RNNsearch-50 26.75 vs 固定向量 17.82；长句几乎不退化；无生僻词子集上 36.15 超过 Moses 35.63。</p>
-<p>⑦ 影响：注意力成为通用架构原语，经 Luong、GNMT 一路长成 Transformer 与今天所有大模型的 self-attention。</p>
-<p>⑧ 局限：RNN 串行慢；打分开销 n×m；软对齐不是真对齐、当解释有争议；UNK 词表问题留给了 BPE。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 偏置竞争（Desimone &amp; Duncan 1995）</b>：视觉皮层里众多刺激争夺有限的表征，自上而下的任务信号给其中一个加码、让它胜出——和解码器状态给源句各位置打分、再由 softmax 定输赢是同一结构。不像在：大脑容量有硬上限，竞争常是赢者通吃；softmax 只重分比例，每个词都分到一点。</li>
+<li><b>哲学 · 延展心灵（Clark &amp; Chalmers 1998）</b>：失忆的 Otto 随身翻笔记本找地址，两位哲学家主张那本子就是他记忆的一部分；注意力同样把源句从「必须背下」变成「随手可查的外存」。不像在：Otto 的本子长期留存，这份外存翻完一句就清空。</li>
+<li><b>佛学 · 作意（manaskāra）</b>：唯识列作意为五遍行心所之一，每一念心都伴着它，把心引向所缘境；解码器每写一个词都重算注意力，正是「念念皆作意」。不像在：作意引心专注一境，softmax 却把目光同时撒向整句。</li>
+<li><b>经济学 · 注意力稀缺（Herbert Simon 1971）</b>：信息过剩时稀缺的是注意力，必须在众多来源间分配；softmax 把权重总和锁死为 1，正是一份必须分完的预算。不像在：人的注意力要花时间，这份预算每步免费重发。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>2014 年的神经翻译把整句压进一个固定长度向量，句子越长丢得越多，长句 BLEU 急坠。</li>
+<li>Bahdanau、Cho 与 Bengio 的 RNNsearch 让解码器每生成一个词，都动态回看整个源句。</li>
+<li>注意力分三步：用一个小网络给源句每个位置打相关度分，softmax 成权重，再加权求和出上下文向量。</li>
+<li>软对齐处处可微，「往哪看」和「怎么翻」得以端到端联合训练，无需任何人工对齐标注。</li>
+<li>双向 RNN 编码器给每个源词一个带前后文的注解，注意力才拎得起单个词及其语境。</li>
+<li>注意力让长句不再退化：信息不必过独木桥，纠错信号也有了直达源句任意位置的捷径。</li>
+<li>WMT'14 英法翻译上，RNNsearch-50 得 26.75 BLEU，固定向量模型只有 17.82。</li>
+<li>在不含生僻词的句子上，Bahdanau 注意力模型以 36.15 略超统计系统 Moses 的 35.63。</li>
+<li>「打分、softmax、加权求和」三步经 Luong、GNMT 长成了 Transformer 的自注意力。</li>
+<li>softmax 把注意力权重之和锁死为 1，像 Herbert Simon 说的稀缺注意力预算。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整模型配置与推导，再去翻原文。</footer>
 </div>

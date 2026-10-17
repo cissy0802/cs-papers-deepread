@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 22</p>
@@ -191,17 +199,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>纯内存、受内存约束</strong>：全图连同消息缓冲要装进集群总内存，超大或高通信密度的图会吃紧；Combiner 能缓解消息压力但并非总能用（只适用可结合可交换的汇总）。</li>
 <li><strong>顶点视角非万能</strong>：需要「一次看到全局结构」或天然非局部的算法，硬塞进逐顶点、逐超步的模型会很别扭——后续 Giraph++「像图一样思考」等工作正是对这一点的补充。</li>
 </ul>
-<h2 data-tts="4f32f62364410ac4">要点</h2>
-<div class="tl">
-<p>① 一句话：以顶点为中心 + BSP 的分布式图计算框架，你只写「一个顶点一轮该干嘛（<code>Compute()</code>）」，系统包办分区、调度、同步、容错。</p>
-<p>② 痛点：图算法要迭代几十上百轮，MapReduce 每轮都把全图状态搬进搬出磁盘、慢且绕；专用图库又不为分布式容错设计。</p>
-<p>③ 核心范式：「像顶点一样思考」。顶点持有 value + 出边 + 活跃态；一超步内读上轮消息 → 改自身值 / 边 → 沿边发消息（下轮送达）→ 可投票挂起。</p>
-<p>④ 超步 + 栅栏（BSP）：严格同步，本轮消息保证下轮才读到，无需加锁、无竞态；选消息传递而非共享内存，因贴合图算法且可批量发消息摊薄网络。</p>
-<p>⑤ 停机语义：全体顶点非活跃且无消息在途即终止；顶点收到消息会被重新唤醒。</p>
-<p>⑥ 实用机件：Combiner 本地合并同目标消息（省网络）；Aggregator 做全局归约统计（下轮全局可见）；支持拓扑变更（增删点 / 边）。</p>
-<p>⑦ 实现与容错：master / worker，图哈希分区常驻各 worker 内存；靠检查点回滚 + 受限恢复容错，master 只协调不碰图数据。</p>
-<p>⑧ 影响与局限：确立「think like a vertex」范式，催生 Giraph（脸书跑过万亿边）/ GraphX 等，为谷歌新三驾马车之一。局限：同步栅栏有掉队者问题、哈希分区通信量大、对幂律图不友好（PowerGraph 以 vertex-cut + GAS 改进）、纯内存受限。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>复杂性科学 · 康威「生命游戏」</b>：每个格子只看八个邻居、全体同一拍更新，简单的局部规则就涌现出会移动的「滑翔机」——和「像顶点一样思考」加超步齐步走是同一个结构。不像在：生命游戏是固定网格、规则处处相同，没有消息，也没有投票挂起。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》（1945）</b>：哈耶克认为没有哪个中央计划者能掌握散落在每个人手里的局部知识，价格把这些知识压成信号，人人只凭身边的信号行动，整体就被协调起来。Pregel 的顶点同样只凭邻居发来的消息做决定。不像在：Pregel 仍留着一个 master 敲栅栏、统一节拍，市场里没有这根指挥棒。</li>
+<li><b>生物 · 细菌的群体感应（quorum sensing）</b>：费氏弧菌不断分泌信号分子，浓度累积过阈值，整群才一起发光——像 Aggregator 把全体的值归约成一个全局量，个体再据此决定下一步。不像在：细菌靠化学扩散，没有「下一轮全员同时可见」的精确语义。</li>
+<li><b>复杂性科学 · 无标度网络（Barabási 与 Albert，1999）</b>：「富者愈富」的优先连接让少数枢纽的连接数远超常人，这正是拖慢 Pregel 栅栏的「超级顶点」的来历。不像在：Barabási 解释枢纽怎么长出来，Pregel 的局限讲的是枢纽长出来以后谁来买单。</li>
+<li><b>佛学 · 华严宗「因陀罗网」</b>：网上每颗宝珠都映出其他所有宝珠，一珠的模样由他珠决定；PageRank 里一个网页的重要度也全由链向它的网页来定义，反复迭代才稳定。不像在：因陀罗网是「一即一切」的同时互映，Pregel 要一轮轮传递、靠栅栏分出先后。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Pregel（Google，SIGMOD 2010）是一个以顶点为中心、基于 BSP 模型的分布式图计算框架。</li>
+<li>用 MapReduce 跑迭代式图算法，每一轮都要把整张图的状态写回磁盘再读出来，又慢又绕。</li>
+<li>「像顶点一样思考」：程序员只写一个顶点每轮做什么的 <code>Compute()</code>，分区、调度、容错全由系统包办。</li>
+<li>一个顶点在一个超步里读上一轮的消息、更新自己的值和出边、沿边发消息，还可以投票挂起。</li>
+<li>超步之间的全局栅栏保证本轮发出的消息下一轮才被读到，所以不用加锁、也没有竞态。</li>
+<li>当所有顶点都已挂起、且没有消息在途时，Pregel 的整个计算终止；收到消息的顶点会被重新唤醒。</li>
+<li>Combiner 在本地合并发往同一顶点的消息来省网络，Aggregator 做全局归约、结果下一超步全体可见。</li>
+<li>Pregel 采用 master / worker 架构，图按哈希分区常驻 worker 内存，靠检查点回滚和受限恢复来容错。</li>
+<li>「像顶点一样思考」成了图计算的通用范式，催生 Apache Giraph、GraphX 等，Facebook 用 Giraph 算过万亿条边。</li>
+<li>同步栅栏每轮都要等最慢的 worker，幂律图里的超级顶点会拖慢全场，PowerGraph 改用按边切来补救。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整协议细节与实验数据，再去翻原文。</footer>
 </div>

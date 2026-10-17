@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 28</p>
@@ -196,19 +204,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Fixed Gaussians and a fixed schedule are not optimal</strong>: the linear β schedule suffices at small resolutions, but later work found cosine schedules better. "How should the noise be added" turned out to be a design space of its own.</li>
 <li><strong>The capability carries risk</strong>: high-fidelity image synthesis was quickly turned to forgery and landed in the middle of copyright disputes — an unavoidable social cost of this line of work.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One sentence: a fixed thousand-step chain blurs images into Gaussian noise; a network is trained to play it backwards; the key is rewriting the objective as "predict the noise added at this step."</p>
-<p>② The pain: GANs look great but train unstably and collapse modes; VAEs and autoregressive models are stable but blurry or slow; diffusion existed since 2015 with terrible samples.</p>
-<p>③ The forward chain has no parameters and a closed form, <code>x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε</code> — training draws a random t, builds the noisy image instantly, and gets the answer key free.</p>
-<p>④ Each reverse step is approximately Gaussian, so the network need only emit a mean with the variance fixed — one impossible task becomes 1000 gentle ones.</p>
-<p>⑤ The decisive move: predict the noise, collapsing the loss to <code>‖ε − ε_θ(x_t,t)‖²</code>, a plain regression — and equivalently denoising score matching, making sampling an annealed Langevin walk.</p>
-<p>⑥ Dropping the bound's t-weights down-weights the near-clean steps, focusing capacity on heavy-noise steps: slightly worse likelihood, clearly better images.</p>
-<p>⑦ Implementation: U-Net with self-attention at 16×16 and a sinusoidal embedding of t; one parameter set for all 1000 steps; sampling mixes fresh noise back in at each step.</p>
-<p>⑧ Results: unconditional CIFAR-10 IS 9.46 / FID 3.17, the first diffusion win over GANs on quality; LSUN 256×256 on par with ProgressiveGAN; likelihood ~3.75 bits/dim, not a lead.</p>
-<p>⑨ Impact: DDIM, classifier-free guidance, Latent/Stable Diffusion, DALL·E 2, Imagen and video generation all descend from this method.</p>
-<p>⑩ Limits: a thousand passes per sample; likelihood not competitive; the weighting simplification is empirical; the original is unconditional and small-scale; misuse is a real cost.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Buddhism · Shenxiu and Huineng</b>: DDPM sampling is almost Shenxiu's verse made literal — wipe the mirror diligently so no dust gathers, a thousand times, a little dust each time. The foundations differ, though: Shenxiu assumes the mirror is bright underneath and wiping restores it; DDPM starts from pure noise with no mirror waiting beneath, and the image grows out of the wiping itself — closer to Huineng's "originally there is not a single thing," except reached by a thousand gradual steps rather than one sudden awakening.</li>
+<li><b>Neuroscience · Predictive coding (Rao &amp; Ballard, 1999)</b>: both make the residual the learning signal. Higher visual areas send predictions down and lower areas pass up only the prediction error; DDPM's network likewise learns only "the noise that doesn't belong." The difference: predictive-coding residuals flow between cortical levels in real time, while DDPM's flow between time steps and are frozen after training.</li>
+<li><b>Perception · Navon's "forest before trees" (1977)</b>: Navon found people grasp the shape of a large letter before the small letters composing it. DDPM likewise shows that the coarse structure deciding whether an image looks real costs few bits, with the noisy early steps fixing layout and the last ones adding detail. Unlike Navon, this is the order of drawing rather than seeing, set by noise level rather than attention.</li>
+<li><b>Finance · Fischer Black's "Noise" (1986)</b>: Black saw prices as value plus noise — noise trading is what keeps markets liquid, yet it makes value very hard to extract. DDPM's job is also separating signal from noise; the difference is that markets never hand out an answer key, while DDPM sprinkles its own noise and gets the answer free, which is what turns denoising into ordinary regression.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>DDPM frames image generation as a fixed thousand-step noising chain plus a learned denoising chain that plays it backwards.</li>
+<li>Around 2020, GANs looked great but trained unstably and collapsed modes, VAEs were blurry, autoregressive models slow, and diffusion samples poor.</li>
+<li>The forward noising chain has no learnable parameters, and a closed form jumps from a clean image to any noise level in one shot.</li>
+<li>When each step adds only a little noise, the reverse step is nearly Gaussian, so the network predicts just a mean with the variance fixed.</li>
+<li>DDPM's decisive move is predicting the noise added at each step, collapsing the variational bound into a plain mean-squared-error regression.</li>
+<li>Predicting the noise is equivalent to denoising score matching, which turns sampling into annealed Langevin dynamics.</li>
+<li>Dropping the bound's step-dependent weights focuses the network on heavy-noise steps: slightly worse likelihood, clearly better images.</li>
+<li>DDPM reached FID 3.17 and Inception Score 9.46 on unconditional CIFAR-10, the first time diffusion beat GANs on image quality.</li>
+<li>DDIM, classifier-free guidance, Stable Diffusion and DALL·E 2 all descend from this recipe, whose cost is a thousand network passes per image.</li>
+<li>Diffusion sampling resembles Shenxiu's patient mirror-wiping, except no image lies waiting underneath; it grows out of the denoising itself.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full derivation and training hyperparameters, go to the original.</footer>
 </div>

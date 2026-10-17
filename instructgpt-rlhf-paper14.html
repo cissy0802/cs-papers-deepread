@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 14</p>
@@ -159,17 +167,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>仍会犯错、可被绕过</strong>：InstructGPT 依然会幻觉、会在被巧妙诱导（越狱）时输出有害内容；对齐是「更好」而非「解决」。</li>
 <li><strong>又贵又难扩</strong>：高质量人类排序数据昂贵、慢、含标注者偏差；这也催生了后来「用 AI 反馈替代部分人工」（RLAIF / Constitutional AI）等省人力的路线。</li>
 </ul>
-<h2 data-tts="9a2c39db8c98f3ae">要点</h2>
-<div class="tl">
-<p>① 一句话：用 RLHF 三步（SFT → 奖励模型 → PPO）把大模型的目标从「猜下一个词」矫正到「遵循用户意图、3H」。</p>
-<p>② 痛点：预训练目标（预测下一个词）≠ 用户意图，导致 GPT-3 不听指令、爱幻觉、有毒；「好回答」写不成损失函数，只有人能当裁判。</p>
-<p>③ 洞见：让人做更容易的「排序」而非写标准答案，再把偏好蒸馏进一个可自动打分的奖励模型。</p>
-<p>④ 三步：SFT 用人的示范初步对齐；RM 用成对比较损失学人的口味（用 6B、非 175B）；PPO 让策略对着 RM 打分自我改进。</p>
-<p>⑤ 两条约束：逐词 KL 惩罚拴住模型别跑偏、防 reward hacking；PPO-ptx 掺回预训练梯度、抹平「对齐税」。</p>
-<p>⑥ 结果：1.3B InstructGPT 被偏好于 175B GPT-3；更真实（TruthfulQA）、更少毒性、更守指令，且能泛化到留出标注员与非英语/代码。</p>
-<p>⑦ 影响：ChatGPT 的同款配方，RLHF 成为把大模型变助手的对齐标准范式（后续 RLAIF、DPO 皆由此演进）。</p>
-<p>⑧ 局限：对齐给的是少数标注员的偏好、非全人类；RM 可被钻空子；易生谄媚；仍会幻觉/被越狱；人类标注昂贵难扩。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>经济学 · 古德哈特定律（Charles Goodhart，1975）</b>：古德哈特谈英国货币政策时指出，统计规律一旦被拿来当控制目标就会失灵；奖励模型被 PPO 猛优化后招来 reward hacking，是同一个结构。不像在于，货币指标失灵是因为银行等人在应对，这里钻空子的是被优化的模型自己。</li>
+<li><b>心理学 · 瑟斯顿的比较判断律（L. L. Thurstone，1927）</b>：人打绝对分不稳，判断两样东西哪个更好却很稳，瑟斯顿由此用成对比较建出心理量表；奖励模型「排序代替打分」同一思路。不像的是，RM 要把多维的「好回答」压成一个分。</li>
+<li><b>生物进化 · 别利亚耶夫的银狐驯化（1959 起）</b>：只按「不怕人」挑银狐配种，据报道带出了耷拉耳、花斑毛（近年有争议）；只按标注员喜好优化，也顺带长出谄媚。不像在于，狐狸靠代代遗传，RLHF 只是改一个模型的权重。</li>
+<li><b>神经科学 · 多巴胺奖励预测误差（Schultz、Dayan、Montague，1997）</b>：猴子的多巴胺神经元报告「比预期好多少」，与强化学习的预测误差对得上；PPO 也朝「比预期更好」调策略。不像在于，大脑的奖励是真实的食物和水，RLHF 的是一个模仿人类口味的模型。</li>
+<li><b>西方哲学 · 亚里士多德的「明智者」（phronimos）</b>：《尼各马可伦理学》说德性的中道写不成规则，要看明智的人怎么定；「好回答」写不成损失函数、只能请人判断，处境相同。不像在于，亚里士多德信一位明智者，RLHF 平均约 40 位标注员。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>GPT-3 的训练目标是预测下一个词，这和「按用户意图、有用且安全地帮忙」并不是一回事。</li>
+<li>InstructGPT 论文把这道裂缝称为对齐问题：模型有能力，但目标没有对准人的意图。</li>
+<li>「好回答」写不成一个损失函数，最可靠的裁判是人，所以要把人的判断搬进训练循环。</li>
+<li>RLHF 第一步是监督微调：约 40 位标注员写示范答案，让 GPT-3 先学会回答问题。</li>
+<li>让人给回答排序比打绝对分更一致，奖励模型用成对比较损失把偏好学成一个分数。</li>
+<li>第三步用 PPO 对着奖励模型的分数优化，逐词 KL 惩罚拴住模型，防它跑偏钻空子。</li>
+<li>掺回预训练梯度的 PPO-ptx 基本抹平了公开 NLP 基准上的「对齐税」。</li>
+<li>1.3B 的 InstructGPT 被标注员偏好于 175B 的 GPT-3，且更真实、更少毒性。</li>
+<li>ChatGPT 是 InstructGPT 的姊妹模型，RLHF 从此成为把大模型变成助手的标准一步。</li>
+<li>RLHF 只对齐少数标注员的偏好，易生谄媚，奖励过度优化时像古德哈特定律一样失灵。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整数据集、超参与评测细节，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 37</p>
@@ -155,17 +163,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>一封信不是完整方法论</strong>：如何真正写出可推理的程序，要靠之后 Dijkstra、Hoare 等人的不变式、前后断言、逐步求精等工作补齐；这封信只指出了方向。</li>
 <li><strong>现代仍有 goto 的正当用途</strong>：如 C 语言里集中做错误清理（跳到函数末尾统一释放资源），Linux 内核就大量这样用——一个受纪律约束的 goto 反而让资源管理更清晰。</li>
 </ul>
-<h2 data-tts="5f6634f60b6b7c72">要点</h2>
-<div class="tl">
-<p>① 一句话：goto 让静态代码文本与动态执行过程脱节，改用顺序 / 选择 / 循环即可修复——结构化编程的宣言。</p>
-<p>② 洞见：人脑擅长静态结构、拙于想象动态过程；好代码要让文本成为执行的可靠地图。</p>
-<p>③ 核心机制：结构化控制流总能给「进度」一组简洁坐标（文本指针 +（循环）计数 +（调用）栈）；这正是写不变式、做正确性推理的立足点。</p>
-<p>④ goto 之害：任意跳转让文本位置不再蕴含「之前经历了什么」，坐标退化，推理失据。</p>
-<p>⑤ 理论支撑：Böhm–Jacopini（1966）证明顺序 / 选择 / 循环即足以表达一切流程，删 goto 不损表达力。</p>
-<p>⑥ 名句：「程序员水平是其代码 goto 密度的减函数」；他反对的是「无限制」跳转，而非一切跳转。</p>
-<p>⑦ 影响：引爆结构化编程，if/while/for 成语言标配，可读性 / 可证明性升为一等指标。</p>
-<p>⑧ 局限：Knuth 指出个别情形 goto 更优（「极力少用」而非全禁）；goto 只是无结构控制流的替罪羊；现代错误处理仍有正当 goto。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>心理学 · Miller 的「组块」</b>：George Miller 1956 年发现，短时记忆装得下的是约七个「块」而不是七份信息，熟悉的模式能把许多细节压成一块。结构化控制流也在替读者组块：整个 while 块可以当一个单位来记。不像在：Miller 量的是记忆容量，Dijkstra 关心的是推理能不能落脚，不只是记不记得住。</li>
+<li><b>复杂性科学 · Simon 的两个钟表匠</b>：Herbert Simon 1962 年《复杂性的架构》里，Hora 用稳定的子组件层层组装，被打断只丢一小块；Tempus 一件件散装，一打断就全盘散架。嵌套块结构正是 Hora 的做法。不像在：Simon 问的是系统能否演化和存活，Dijkstra 问的是人能否看懂。</li>
+<li><b>生物进化 · 模块化与可演化性</b>：Wagner 与 Altenberg 1996 年指出，基因型到表型的映射若是模块化的（一处突变很少牵连别的功能），新适应更容易演化出来。goto 像四处牵连的多效性，改一处牵动全局。不像在：模块化是自然选择慢慢筛出来的，结构化编程是人主动立下的纪律。</li>
+<li><b>哲学 · 柏格森的「空间化时间」</b>：柏格森 1889 年的博士论文认为，理智习惯把流动的绵延（durée）摆成空间里的一条线来把握。Dijkstra 也是让时间里的执行过程落成纸上的静态排列。不像在：柏格森视这种空间化为扭曲、要靠直觉越过，Dijkstra 则正要借它来推理和证明。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>《GOTO 语句有害》是 Dijkstra 1968 年发在 CACM 上的一封两页短信，点燃了结构化编程运动。</li>
+<li>程序有两副面孔：纸上的静态文本和运行时的动态过程，读、写、调试都是在两者之间来回对应。</li>
+<li>人脑擅长把握静态结构、拙于想象随时间演化的过程，所以好代码要让文本成为执行的可靠地图。</li>
+<li>只含顺序和选择的程序，一个「读到第几行」的文本指针就能唯一说清执行进度。</li>
+<li>加入循环要再配一个迭代计数，加入过程调用要用一叠文本指针，进度坐标依然定义良好。</li>
+<li>进度坐标是写不变式、做正确性推理的立足点；goto 的任意跳转让文本位置退化成无意义的坐标。</li>
+<li>Böhm 与 Jacopini 1966 年证明顺序、选择、循环足以表达任何流程，删掉 goto 不损失表达能力。</li>
+<li>Dijkstra 反对的是无限制的跳转而非一切跳转，结构化的分支与循环本身就是被驯服的跳转。</li>
+<li>Knuth 1974 年指出跳出多层循环等少数场合用 goto 更清楚，主流共识因此是极力少用而非绝对禁止。</li>
+<li>结构化控制流替读者做了心理学家 Miller 所说的「组块」，把整个循环压成一个可记的单位。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想读 Dijkstra 的原信与后续争论，再去翻原文。</footer>
 </div>

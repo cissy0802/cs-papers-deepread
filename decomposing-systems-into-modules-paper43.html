@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 43</p>
@@ -178,17 +186,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>抽象会泄漏</strong>：接口再干净，性能特征、错误行为等仍可能「漏」出实现细节，使用者被迫了解内部；信息隐藏是理想，现实中难做到绝对。</li>
 <li><strong>KWIC 是玩具例子</strong>：用一个小系统说清了原理，但把准则用在超大系统上，还需要额外的组织手段（分层、依赖管理、团队边界）配合。</li>
 </ul>
-<h2 data-tts="d79bb35058ef2c31">要点</h2>
-<div class="tl">
-<p>① 一句话：拆模块别按「处理步骤/流程图」切，按「信息隐藏」切——每个模块藏一个「最可能变的设计决定」，只露稳定接口。</p>
-<p>② 痛点：按步骤切出的模块共享同一份数据格式，一个存储决定改动就波及全部模块，难改也难分工。</p>
-<p>③ 核心：先列「难的/会变的设计决定」，每个决定封进一个模块当「秘密」，别人只能隔着一组函数（接口）用它，看不见实现。</p>
-<p>④ 三大收益：可改性（改动被关在盒内）、可独立开发（只需约定接口）、可理解（每个模块单独可懂）。</p>
-<p>⑤ 两点澄清：模块是「职责分派」不是「流程图一步」；该藏的恰是核心难题、接口要尽量少暴露。</p>
-<p>⑥ 论证方式：拿 KWIC 索引对照两种拆法，逐条比可改/可分工/可理解——按秘密切完胜。</p>
-<p>⑦ 影响：封装、抽象数据类型、面向对象的 class、API / 微服务边界，全是这条准则的后代。</p>
-<p>⑧ 局限：成败押在「猜对什么会变」；多层抽象有开销、易过度设计；抽象会泄漏；只给准则未给整体结构（后由 uses 层次 / 程序族补足）。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>复杂性科学 · Herbert Simon 的「近可分解性」（1962）</b>：Simon 在《复杂性的架构》里讲两个钟表匠：Hora 先把零件装成稳定的小部件，被电话打断只损失一个部件；Tempus 一件件装，一被打断整只表就散了。复杂系统多是组内交互强、组间交互弱的层级。像在都用弱耦合换稳定；不像在 Simon 讲系统如何熬过干扰，Parnas 讲如何挡住将来的设计改动。</li>
+<li><b>进化生物学 · 模块化与可进化性（Wagner 与 Altenberg，1996）</b>：好的基因型—表型映射让多效性（一个基因影响多个性状）大多留在同一功能模块内，改一个功能不连累别的，物种因此更能进化。不像的是，没有设计者先列「会变的决定」，模块是自然选择慢慢筛出来的。</li>
+<li><b>心灵哲学 · Fodor 的心智模块与「信息封装」（1983）</b>：视觉这类输入模块看不到你的信念，用尺子量过、知道 Müller-Lyer 图里两条线等长，看上去仍不一样长。方向恰好相反：Parnas 是外界看不见模块内部，Fodor 是模块看不见外界的知识。</li>
+<li><b>经济学 · Hayek《知识在社会中的运用》（1945）</b>：锡变稀缺时，用户不必知道原因，只看到价格上涨就会省着用；价格像一个只暴露一个数字的接口，具体知识留在各人手里。不像的是，市场里的秘密没人分派，Parnas 的秘密是设计者刻意指派给模块的。</li>
+<li><b>商业 · Baldwin 与 Clark《设计规则》（2000）</b>：两位哈佛商学院学者借用信息隐藏，把设计分成人人遵守的「可见设计规则」和各模块自己演化的「隐藏参数」，用模块带来的期权价值解释计算机产业的分化。不像的是，他们算的是产业价值，Parnas 只问一个程序好不好改。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Parnas 1972 年这篇论文问的不是要不要拆模块，而是该按什么标准拆模块。</li>
+<li>当时最流行、最自然的拆法，是照流程图的处理步骤切，每一步做成一个模块。</li>
+<li>KWIC 例子里，按步骤切出的模块共享同一份存储格式，一个存储决定变了就波及全部模块。</li>
+<li>信息隐藏准则：先列出难做或最可能变的设计决定，让每个模块各藏一个这样的秘密。</li>
+<li>按秘密切出的模块之间只通过一组函数接口打交道，接口尽量少暴露内部实现。</li>
+<li>信息隐藏带来三项收益：改动关在单个模块内，团队约定接口即可各自开发，每个模块能单独读懂。</li>
+<li>模块是一份职责的分派，不是流程图上的一步；该藏起来的恰是核心难题，而非细枝末节。</li>
+<li>封装、抽象数据类型、面向对象的 class，以及 API 和微服务边界，都是信息隐藏准则的后代。</li>
+<li>信息隐藏的成败押在猜对哪些决定会变，还要承担抽象泄漏和过度设计的代价。</li>
+<li>Herbert Simon 的近可分解性与 Parnas 的模块化同构：组内强耦合、组间弱耦合，换来整体稳定。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要 KWIC 两种拆法的完整模块清单与原始论证，再去翻原文。</footer>
 </div>

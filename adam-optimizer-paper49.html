@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 49</p>
@@ -159,18 +167,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>常需学习率预热（warmup）</strong>：训练 Transformer 时若不做预热，早期不可靠的二阶矩估计会导致训练不稳（<strong>RAdam</strong> 等对此有分析与修正）。</li>
 <li><strong>内存开销</strong>：每个参数要额外存 <code>m</code>、<code>v</code> 两份状态，约 <strong>3 倍参数内存</strong>——在千亿参数级别是实打实的负担，也催生了大量省显存的优化器变体。</li>
 </ul>
-<h2 data-tts="35b635a44032c0d2">要点</h2>
-<div class="tl">
-<p>① 一句话：Adam = 动量（一阶矩）+ 逐参数自适应步长（二阶矩）+ 偏差校正，更新 <code>θ ← θ − α·m̂/(√v̂+ε)</code>。</p>
-<p>② 痛点：SGD 单一学习率一刀切——太大震荡、太小奇慢，稀疏与陡缓不同方向需要不同步长，手调很痛。</p>
-<p>③ 前辈：AdaGrad 按历史梯度平方缩放但学习率衰减到零「熄火」；RMSProp 用滑动平均救熄火，但缺动量与偏差校正。</p>
-<p>④ 机制：m 记方向（抹平噪声）、v 记幅度（做尺子）；朝 m 走、除以 √v——梯度尺度被自动约掉，每步约走「一个合适的距离」。</p>
-<p>⑤ 信噪比 + 自动退火：<code>m/√v</code> 近似信噪比，确定就大胆、不定就小步；近最优时比值自然变小、步子自己收。</p>
-<p>⑥ 偏差校正：m、v 从 0 起步前期偏小，<code>÷(1−βᵗ)</code> 抹平开局偏差、让最初几步也走对，是相对 RMSProp 的关键补丁。</p>
-<p>⑦ 默认超参 <code>α=.001, β₁=.9, β₂=.999</code> 几乎开箱即用；变体 AdaMax 用 L∞ 范数。</p>
-<p>⑧ 影响：成为深度学习默认优化器，Transformer/BERT/GPT/扩散模型多由 Adam 或 AdamW 训练。</p>
-<p>⑨ 局限：原收敛证明有误（AMSGrad 修补）；有时泛化不如 SGD；权重衰减需解耦（AdamW）；常需 warmup；多存两份状态吃内存。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · BCM 滑动阈值</b>：Bienenstock、Cooper 与 Munro 1982 年提出，突触被增强还是削弱取决于一个阈值，而这个阈值随神经元近期活动的滑动平均升降（教科书常写成活动平方的平均）。这和 Adam 用二阶矩 v 的滑动平均给自己定尺子是同一个结构：都拿「最近的自己」做参照，防止越学越失控。不像在哪：BCM 的阈值决定改动的方向，Adam 的 √v 只缩放步长、不改方向。</li>
+<li><b>心理学 · 韦伯定律</b>：19 世纪的 Ernst Weber 发现，刚能察觉的变化量与原刺激大小成比例，人感知的是相对变化而不是绝对差。Adam 除以 √v，同样让步长只看梯度的相对大小、对整体尺度不敏感；不像的是，韦伯定律在极弱刺激处失效，Adam 则用 ε 兜住分母接近零的一端。</li>
+<li><b>投资 · 夏普比率</b>：William Sharpe 1966 年提出的「超额回报除以波动」，和 m/√v 这个近似信噪比同构：方向确定就下重注，波动大就收手。不像在哪：夏普比率的分母是标准差、先扣掉均值，Adam 的 √v 是未中心化的二阶矩，不扣均值。</li>
+<li><b>心理学 · 锚定效应</b>：Tversky 与 Kahneman 1974 年指出，人估计数值时从一个起点出发、调整得不够，结果被起点拖着走。m、v 从 0 起步而被拉低，正是一种「锚在零上」；不像的是，人看不见自己的锚，Adam 却精确知道偏差是 1−βᵗ，能一除了之。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>朴素 SGD 用一个全局学习率一刀切：太大会震荡发散，太小又慢得离谱，而不同参数需要的步长天差地别。</li>
+<li>AdaGrad 按历史梯度平方的累加和缩放步长，但分母只增不减，学习率会衰减到零而过早「熄火」。</li>
+<li>RMSProp 改用指数滑动平均解决了熄火，却既没有动量，也没有对滑动平均起步偏差的校正。</li>
+<li>Kingma 与 Ba 提出的 Adam 为每个参数维护两个滑动平均：一阶矩 m 记方向，二阶矩 v 记幅度与抖动。</li>
+<li>Adam 朝平滑后的方向 m 迈步、再除以 √v 逐维缩放步长，梯度整体的尺度因此被自动约掉。</li>
+<li>比值 m/√v 近似信噪比：方向确定就大步走，接近最优时比值变小，步子自然收住，相当于自动退火。</li>
+<li>偏差校正把从 0 起步的 m、v 除以 1−βᵗ，让最初几步也走出正确步长，是 Adam 相对 RMSProp 的关键补丁。</li>
+<li>默认超参 α=0.001、β₁=0.9、β₂=0.999 几乎开箱即用，Adam 和 AdamW 成了训练 Transformer、GPT 等模型的默认优化器。</li>
+<li>Adam 的原收敛证明有误（AMSGrad 修补），有时泛化不如调好的 SGD，还要多存两份状态、吃掉额外内存。</li>
+<li>m/√v 与投资里的夏普比率同构，都是「回报除以波动」，区别是 Adam 的分母不扣均值。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整算法伪代码与收敛证明，再去翻原文。</footer>
 </div>

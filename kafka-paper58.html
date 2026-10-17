@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 58</p>
@@ -215,17 +223,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>按时间保留是双刃剑</strong>：删不删与有没有人读过无关——消费者掉队超过保留期，数据就静悄悄地永久错过了。</li>
 <li><strong>协调代价与实验局限</strong>：重平衡建在 ZooKeeper 上多背一个重量级依赖，组内成员一变动就全组停下重分配（后来分别由自研共识层与增量重平衡改进）；实验也只是单 broker、单生产者 / 单消费者、无故障与积压场景，更适合读作「专用设计的上限演示」而非中立评测。</li>
 </ul>
-<h2 data-tts="004acc7b7ab473fb">要点</h2>
-<div class="tl">
-<p>① 一句话：把消息系统重做成「分区 + 只追加日志」，broker 不记消费进度、不因被读而删，消费者自持 offset。</p>
-<p>② 痛点：行为日志比业务数据大几个数量级；企业消息系统扛不住量（逐条确认、无批量、积压即劣化），日志聚合器只能小时级离线。</p>
-<p>③ 存储：分区 = 一串约 1GB 的段文件，只往末尾追加；<strong>没有消息 ID，用字节位置 offset 寻址</strong>，省掉随机访问索引，内存里只留「每段首条 offset」的小表。</p>
-<p>④ 无状态 broker：进度交给消费者，删除改为<strong>按时间到期（典型 7 天）</strong>；红利是可以倒带重放，而倒带在拉模型里才好做。</p>
-<p>⑤ 快的来源：不做应用层缓存、直接吃页缓存；<code>sendfile</code> 零拷贝；收发都批量。协调上用消费者组，<strong>分区是并行最小单位</strong>，不设 master 而靠 ZooKeeper 自行重平衡。</p>
-<p>⑥ 结果：单生产者 5 万条/秒（批 1）、40 万条/秒（批 50），消费 2.2 万条/秒（超对手四倍）；每条消息开销 9 字节 vs ActiveMQ 的 144 字节。LinkedIn 每天数百 GB、近十亿条，端到端约 10 秒。</p>
-<p>⑦ 保证与局限：至少一次、分区内有序；论文版本无复制、生产者不等确认、到期即删会让慢消费者永久错过、ZooKeeper 依赖与重平衡抖动。</p>
-<p>⑧ 影响：把「日志」变成公司数据管道的中枢抽象，成了流处理与事件驱动架构的事实底座。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 海马体的睡眠重放</b>：Wilson 与 McNaughton 1994 年在《Science》报告，大鼠白天在同一位置一起放电的位置细胞，睡着后仍更常一起放电——像消费者把 offset 拨回去，把当天的日志再读一遍。不像在：这种重新激活在睡眠中逐渐减弱，被认为是在巩固乃至改写记忆；Kafka 的重放要的却是一字节不差的原件。</li>
+<li><b>复杂性科学 · stigmergy（痕迹协调）</b>：法国动物学家 Grassé 1959 年研究白蚁筑巢时造了这个词：个体不直接对话，只读写环境里留下的痕迹来协作。Kafka 的生产者和消费者也互不相识，只通过日志这块共享环境对接。不像在：痕迹会刺激后来者往同一处继续堆，形成正反馈；日志对读者不施加任何引导。</li>
+<li><b>商业 · 复式记账</b>：Pacioli 1494 年在威尼斯印行的《算术、几何、比与比例概要》首次把「威尼斯记账法」印成书。记错账不涂改，而是补一笔冲正分录，余额永远从流水推出来——和 Kafka「日志是真相、状态靠重放推导」同构。不像在：账簿要长期留存，Kafka 的流水到期就整段扔掉。</li>
+<li><b>佛学 · 说一切有部与经量部</b>：有部主张「三世实有」，过去的法仍真实存在；经量部反驳说只有当下存在，过去只作为种子留在现在里。保留期内的 Kafka 像有部，旧消息原样可读；过了保留期就成了经量部，过去只剩消费者算出的状态。不像在：那是关于存在本身的形上学之争，这里只是一条删除策略。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Kafka（LinkedIn，NetDB 2011）把消息系统重做成按主题分区、只往末尾追加的分布式日志。</li>
+<li>行为日志比业务数据大几个数量级；企业消息系统扛不住这个量，日志聚合器又只能小时级离线。</li>
+<li>Kafka 的消息没有显式 ID，直接用日志里的字节位置 offset 寻址，省掉了随机访问索引。</li>
+<li>broker 不记录谁消费到哪儿，消息按时间到期（典型 7 天）整段删除，与有没有人读过无关。</li>
+<li>消费者自己保管 offset，可以往回拨来倒带重放，而倒带在拉模型里比推模型容易得多。</li>
+<li>不做应用层缓存、直接用操作系统页缓存，加上 sendfile 零拷贝和收发批量，是 Kafka 快的来源。</li>
+<li>消费者组内一个分区同一时刻只归一个消费者，不设中央 master，靠 ZooKeeper 自行重平衡。</li>
+<li>论文实测单生产者批量 50 条时每秒约 40 万条，消费约 2.2 万条每秒，是 ActiveMQ 与 RabbitMQ 的四倍多。</li>
+<li>论文版本的 Kafka 没有复制、只保证至少一次、生产者不等确认，到期即删会让掉队的消费者永久错过数据。</li>
+<li>Kreps 等人的真正贡献是把「日志」提升为一等系统抽象，成了流处理和事件驱动架构的底座。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要 API 细节与重平衡算法伪码，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 53</p>
@@ -162,18 +170,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只适合离散动作的反应式游戏</strong>：连续控制（如机械臂力矩）需要另一套方法（DDPG 等）。</li>
 <li><strong>没有收敛保证、对超参敏感</strong>：能 work 更多是工程与经验的胜利，而非理论上被证明稳定。</li>
 </ul>
-<h2 data-tts="1f8ac2dcb067f065">要点</h2>
-<div class="tl">
-<p>① 一句话：用卷积网络近似 Q-learning 的动作价值函数 <code>Q(s,a)</code>，只从像素和分数、端到端学会打雅达利游戏。</p>
-<p>② 痛点：RL 数据稀疏、滞后、强相关且分布随策略漂移；"神经网络 + Q-learning + 自举"易发散（致命三角）。</p>
-<p>③ 目标：贝尔曼式 <code>y = r + γ·max Q(s',a')</code> 当"答案"，最小化 <code>(y−Q(s,a))²</code>，把 RL 变成朝自算目标回归的监督学习。</p>
-<p>④ Q 网络：输入最近 4 帧（带上运动信息），一次前向为每个动作输出一个 Q 值，挑最大者执行。</p>
-<p>⑤ 关键稳定器：经验回放——把 (s,a,r,s') 存回放池、随机抽小批训练，打散相关性、复用数据、抹平分布抖动。</p>
-<p>⑥ 工程：ε-贪心探索、奖励裁剪到 {−1,0,+1}、7 款游戏同一套超参；2015《Nature》版再加目标网络才真正稳。</p>
-<p>⑦ 结果：7 款游戏 6 款超此前最好、3 款超人类高手，全靠同一架构零定制。</p>
-<p>⑧ 影响：开创深度强化学习，直通 Nature 人类水平版、AlphaGo 及后续一整波方法。</p>
-<p>⑨ 局限：极耗样本、会高估、搞不定稀疏奖励/长程规划、仅限离散动作、无收敛保证。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 海马体回放（Wilson &amp; McNaughton，1994）</b>：大鼠白天跑迷宫时一起放电的位置细胞，睡眠中会再次成对共振，像把白天的经历重播一遍来巩固记忆；经验回放就是这本「睡梦日记」的工程版。不像在于：大脑的重播有选择、会压缩时间，DQN 的回放池是均匀随机抽样。</li>
+<li><b>神经科学 · 多巴胺的奖励预测误差（Schultz、Dayan、Montague，1997）</b>：猴子意外拿到果汁时多巴胺神经元猛放电，等奖励变得可预期，放电就提前到预示信号上，正好对上时序差分里「实际减预期」的误差。不像的是，多巴胺是全脑广播的一个标量，DQN 的误差只回传给一个网络。</li>
+<li><b>心理学 · 交错练习（Kornell &amp; Bjork，2008）</b>：把 12 位画家的画混着学，比一位一位分块学更能认出新画的作者，可近八成被试反而觉得分块学更有用。经验回放的「打乱了复习」是同一个道理；只是网络没有这种「感觉学得顺」的错觉要克服。</li>
+<li><b>哲学 · 纽拉特之船（Otto Neurath）</b>：水手只能在海上一块块换船板，永远没法回船坞从龙骨重建；自举就是这样，用自己对未来的估计修正自己。不像在于：纽拉特的船不会因为换板而越修越歪，Q 网络会，所以需要回放和后来的目标网络来稳住船身。</li>
+<li><b>行为经济学 · 双曲贴现（George Ainslie，1975）</b>：人和鸽子给未来打的折扣近处陡、远处缓，于是会在临近时反悔、改选眼前的小奖励；DQN 的 γ=0.99 是指数贴现，偏好前后一致，不会临阵变卦，但也因此学不到人类那种「先给自己上锁」的预先承诺。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>DQN 用卷积网络近似 Q-learning 的动作价值函数，只从屏幕像素和分数学会打雅达利游戏。</li>
+<li>强化学习的数据奖励滞后、前后强相关、分布还随策略漂移，深度学习的老假设一条都不满足。</li>
+<li>神经网络、Q-learning 和自举三者凑在一起容易发散，后人称之为「致命三角」。</li>
+<li>训练目标取贝尔曼式 r + γ·max Q(s′,a′)，把强化学习变成朝自己算出的目标做回归。</li>
+<li>Q 网络输入最近 4 帧叠起来的画面以带上运动信息，一次前向就给每个动作打出 Q 值。</li>
+<li>经验回放把每条经历存进百万级回放池、随机抽小批训练，打散相关性、复用数据、稳住训练。</li>
+<li>ε-贪心探索、奖励裁剪到 {−1,0,+1}，7 款游戏共用同一套网络和超参数，不为任何一款调参。</li>
+<li>结果是 7 款游戏中 6 款超过此前最好方法，Breakout、Enduro、Pong 3 款超过人类高手。</li>
+<li>DQN 开创了深度强化学习，2015 年 Nature 版加目标网络后，谱系一路延伸到 AlphaGo。</li>
+<li>DQN 极耗样本、会高估 Q 值、搞不定稀疏奖励和长程规划；它的经验回放像海马体在睡眠中重播白天经历。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整网络配置与实验细节，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 10</p>
@@ -175,17 +183,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只会理解、不会生成</strong>：encoder-only 架构无法逐词写出长文本，摘要、翻译、对话都不擅长——后来 GPT 系（decoder-only）在规模化后既能生成、理解也不差，抢走了主赛道。</li>
 <li><strong>工程限制</strong>：输入最长 512 个 token，长文档得切块；预训练成本当年即需大量 TPU 资源，非大厂难以复现。</li>
 </ul>
-<h2 data-tts="2796b79da23aea15">要点</h2>
-<div class="tl">
-<p>① 一句话：用完形填空（MLM）预训练深度双向 Transformer 编码器，再逐任务加一层输出头微调，11 项任务全破纪录。</p>
-<p>② 痛点：「预测下一个词」的旧题型与双向天然矛盾（多层注意力会让词绕道看见自己、抄到答案），所以 GPT-1 只能单向、ELMo 只能两个单向浅拼。</p>
-<p>③ 核心机制：挖掉 15% 的词让模型猜——答案被挖走就无从作弊，而猜对必须融合左右上下文，双向从禁忌变成必需。</p>
-<p>④ 细节补丁：被选位置 80% 换 [MASK]、10% 换随机词、10% 保留原词，缓解「[MASK] 只在训练时出现」的失配。</p>
-<p>⑤ 范式：预训练一次（33 亿词、大成本）+ 每任务微调（小数据、单 TPU 不到 1 小时）；[CLS] 输出当整句表示，架构不换、只加薄输出头。</p>
-<p>⑥ 结果：GLUE 80.5%（+7.7）、SQuAD v1.1 F1 93.2 超人类；消融证明双向是涨分主力。</p>
-<p>⑦ 影响：NLP 的 ImageNet 时刻，「预训练 + 微调」成统治范式；进了 Google 搜索；今天的检索 embedding 模型多是它的后代。</p>
-<p>⑧ 局限：NSP 被证明没用、原版欠训练（RoBERTa）、MLM 低效（ELECTRA）、掩码独立假设（XLNet）、不会生成（后被 GPT 路线反超）、输入限 512 token。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>心理学 · 音素恢复效应（Warren 1970）</b>：Warren 把录音句子里的一个音素换成咳嗽声，被试仍「听见」完整的词，也说不准咳嗽在哪；后续实验发现，连空缺之后才出现的词都能决定补出哪个音。人脑天生在做双向完形填空；不像在哪：人是实时、无意识地补，BERT 是离线把挖空当成训练题来做。</li>
+<li><b>神经科学 · 预测编码（Rao &amp; Ballard 1999）</b>：这派理论认为皮层不断预测输入、靠「预测误差」学习，和 MLM「猜被挖的词、按猜错多少改参数」是同一个自监督结构。不像在哪：大脑的预测是层级反馈、随时间展开，BERT 只在静态文本上挖空。</li>
+<li><b>哲学 · 维特根斯坦「意义即用法」</b>：《哲学研究》第 43 节说，在大量情形下，一个词的意义就是它在语言中的用法。BERT 给不同句子里的 bank 不同的向量，正是让上下文决定意义。不像在哪：维特根斯坦的「用法」嵌在生活形式和行动里，BERT 只见过文字。</li>
+<li><b>生物进化 · 扩展适应（exaptation，Gould &amp; Vrba 1982）</b>：羽毛可能最初为保温或求偶而生，后来才被挪去飞行。BERT 为完形填空练出的表示被挪去做问答、推理，也是「为甲练成、为乙所用」。不像在哪：进化的挪用无人设计，BERT 的预训练本来就是为日后挪用而做。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>BERT 用完形填空式的掩码语言模型预训练深度双向的 Transformer 编码器，再针对每个任务微调。</li>
+<li>「预测下一个词」与双向天然矛盾：多层自注意力会让每个词绕道看见自己、直接抄到答案。</li>
+<li>GPT-1 只能从左往右读，ELMo 只把两个单向 LSTM 浅浅拼接，都没有做到真正的深度双向。</li>
+<li>掩码语言模型随机挖掉 15% 的 token：答案被挖走就无从作弊，猜对又必须融合左右上下文。</li>
+<li>被选中的位置 80% 换成 [MASK]、10% 换随机词、10% 保留原词，用来缓解预训练与微调的失配。</li>
+<li>预训练只做一次，微调时给整个模型加一层输出头再训 2–4 轮，单块 TPU 不到 1 小时。</li>
+<li>BERT 在 11 项任务上刷新纪录，GLUE 提升 7.7 个百分点，SQuAD v1.1 的 F1 达到 93.2、超过人类。</li>
+<li>消融实验显示，换回从左往右的训练目标后 SQuAD 暴跌约 10 分 F1，深度双向是涨分的主力。</li>
+<li>局限：下一句预测被 RoBERTa 证明基本没用，原版训练不足，encoder-only 架构也不会生成长文本。</li>
+<li>人听录音时会借前后语境补出被咳嗽盖掉的音素，和 BERT 的双向完形填空是同一种结构。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整超参与实验细节，再去翻原文。</footer>
 </div>

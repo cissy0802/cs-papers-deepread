@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 69</p>
@@ -246,16 +254,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>时代局限</strong>：1975 年的威胁模型没有互联网规模的匿名对手、没有侧信道，也没有供应链攻击（对读 Thompson 1984《信任的信任》：编译器本身可能带毒，八条没一条能救你）。三类违规里的「拒绝使用」几乎没展开，今天的 DDoS 正落在这片空白。</li>
 <li><strong>它点名的难题至今未解</strong>：阶梯最高一级「给信息拴上绳子」，即 Lampson 1973 的<em>限制问题</em>与隐蔽信道。DRM、数据防泄漏、污点追踪都只是部分答案——数据一旦交出去，你依然管不住。</li>
 </ul>
-<h2 data-tts="d8f071e58787ca43">要点</h2>
-<div class="tl">
-<p>① 定位：1975 年的教程综述，不发明算法，发明的是「怎么谈论系统安全」的词汇与框架。</p>
-<p>② 背景：分时系统让互不信任的人共用一台机器，「墙」第一次必须建在机器内部；三类违规（泄露 / 篡改 / 拒绝使用）即 CIA 三性的雏形。</p>
-<p>③ 八条：机制经济性、失败即拒、完全仲裁、开放设计、权限分离、最小权限、最少公共机制、心理可接受性。</p>
-<p>④ 门卫模型：认证与授权分开、完全仲裁不留旁路；硬件靠两态机加描述符，把查权限变成寻址的顺带动作。</p>
-<p>⑤ 访问矩阵两种切法：按列切是访问控制表（撤销易、查全局难），按行切是能力（快且易委托、撤销难）。</p>
-<p>⑥ 证据不是实验，而是 Multics 渗透评估的复盘：被攻破处多是违反原则处。</p>
-<p>⑦ 影响与局限：默认拒绝、零信任、可信计算基最小化、双因素、IAM 一一对应；但原则不可度量、彼此冲突，「给信息拴绳子」至今未解。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 血脑屏障</b>：脑毛细血管内皮细胞以紧密连接封住缝隙，默认什么都不放，葡萄糖等必需物质只能经专门的转运体进入——这正是失败即拒加受保护入口：允许清单之外一律挡住，进出只走少数受检的门。不像的是，脂溶性小分子能直接溶过细胞膜，屏障天生留着旁路；完全仲裁恰恰不容许任何旁路。</li>
+<li><b>免疫学 · T 细胞的双信号激活</b>：T 细胞要同时收到抗原信号和共刺激信号才会激活，只有前者反而会进入无反应状态，结构上就是权限分离。不像在：两个信号常由同一个抗原呈递细胞给出，独立性远不如双人双钥。</li>
+<li><b>行为经济学 · 默认效应</b>：多数人会停在默认选项上，器官捐献采用「默认同意、可退出」的国家登记率远高于「默认不同意」的国家。它解释了失败即拒为何要紧：默认值就是大多数人的最终设置。不像在：助推用默认值引导人向善，安全默认则是替人少做决定。</li>
+<li><b>生态学 · 单一栽培</b>：基因整齐划一的作物共享同一个弱点，一种病害就能扫光整片田，正是最少公共机制警告的「共用部件一破全完」。不像在：自然多样性是演化顺带的，系统里的隔离与冗余要付真金白银，云的多租户正是为省这笔钱。</li>
+<li><b>政治哲学 · 孟德斯鸠的分权</b>：把立法、行政、司法分给不同机构，让任何一方都无法独自滥权，与权限分离、最小权限同出一个直觉：别把全部权力放进同一只手。不像在：分权要各方长期互相牵制，权限分离只在放行那一刻要求两个条件同时成立。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Saltzer 与 Schroeder 1975 年的教程综述不发明算法，而是确立了谈论系统安全的词汇。</li>
+<li>分时系统让互不信任的人共用一台机器，未授权的泄露、篡改、拒绝使用成了要防的三类违规。</li>
+<li>八条设计原则是违反时就该停下来想清楚的警示牌，而不是可以证明的定理。</li>
+<li>失败即拒要求按允许清单决策，让遗漏的错误倒向某功能用不了，而不是某个洞没堵上。</li>
+<li>门卫模型把认证与授权分开，完全仲裁要求每次访问都查权限、不留任何旁路。</li>
+<li>Multics 式硬件用两态机加描述符，把查权限变成寻址的顺带动作，每次都查才不至于太慢。</li>
+<li>访问矩阵按列切成访问控制表、撤销容易，按行切成能力、委托方便但撤销极难。</li>
+<li>论文的证据来自 Multics 渗透评估的复盘：被攻破处大多正是违反原则的实现细节。</li>
+<li>八条原则不可度量、彼此冲突，给信息拴上绳子的限制问题至今仍未解决。</li>
+<li>权限分离和 T 细胞须同时收到抗原与共刺激两个信号才激活，是同一个结构。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的机制分类与当年的技术前沿讨论，再去翻原文。</footer>
 </div>

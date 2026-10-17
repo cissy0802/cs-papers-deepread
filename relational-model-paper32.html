@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 32</p>
@@ -199,17 +207,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>SQL ≠ Codd 的纯关系模型</strong>：现实的 SQL 在几处背离了原始理论——它<strong>允许重复行</strong>（不是严格的集合）、<strong>NULL 与三值逻辑</strong>带来诸多语义争议。Codd 本人后来专门写了「十二条规则」并撰文批评 SQL 对模型的偏离。</li>
 <li><strong>1970 原文只是起点</strong>：论文本身简短而数学化，规范化理论（2NF/3NF/BCNF）、关系完备性、以及可用的查询语言，都是 Codd 与他人在其后多年逐步补全的——单看这一篇，离一个能用的系统还很远。</li>
 </ul>
-<h2 data-tts="7feafb2ab672fc8f">要点</h2>
-<div class="tl">
-<p>① 一句话：把数据统一表示成关系（行列规整、每格单值的表），表间靠<strong>共享的值</strong>而非指针关联，实现逻辑与物理分离。</p>
-<p>② 痛点：网状 / 层次模型把数据与存储焊死，程序背着<strong>排序、索引、存取路径</strong>三种依赖，一改存储就得重写。</p>
-<p>③ 机制一——关系即表：本质是集合，故无重复行、无固定行序，你永远不该依赖物理排序。</p>
-<p>④ 机制二——值代替指针：主键唯一认行，外键存同一个值来引用另一张表；<strong>值相等即相关</strong>，联系写在数据里，不在存储布局里。</p>
-<p>⑤ 机制三——规范化：把带重复组的嵌套结构拆成若干平表，统一形状并减少易错冗余（1NF 雏形）。</p>
-<p>⑥ 机制四——关系运算（选择 / 投影 / 连接）让查询从「教它怎么走」变成「说清要什么」，声明式，孕育了 SQL 与查询优化器。</p>
-<p>⑦ 结果：无实验的理论论文，其正确性由 System R / Ingres、SQL 与数十年工业统治验证；Codd 获 1981 图灵奖。</p>
-<p>⑧ 局限：初期性能被质疑（Codd–Bachman 大辩论）；平表不擅嵌套 / 图数据（NoSQL 反弹）；SQL 的重复行与 NULL 偏离了纯模型。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · Hopfield 的内容可寻址记忆</b>：Hopfield 1982 年的网络按「内容」而不是「地址」取回记忆，给半截线索就能补全整个模式，和「按值找行、不顺指针跳」是同一个思路。不像在：Hopfield 网络容忍残缺、做近似匹配，关系连接要求值严格相等。</li>
+<li><b>生物 · 激素与受体</b>：激素（Starling 1905 年命名）被释放进血液，并不「接线」到某个细胞，谁身上有匹配的受体谁就响应，关联靠对上号而不靠专线，正像外键对上主键。不像在：受体结合是亲和力的连续程度，而且是广播；表连接是精确的、按查询发起的。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》</b>：哈耶克 1945 年论证，价格把散落各处的局部知识压缩成一个信号，人们不必知道背后原因就能行动，就像声明式查询让程序不必知道数据怎么存。方向却恰好相反：哈耶克借此反对中央计划，Codd 的声明式恰恰把「怎么找」交给一个中央计划者——查询优化器。</li>
+<li><b>复杂性科学 · 西蒙的近可分解性</b>：Herbert Simon 1962 年的《复杂性的架构》指出，复杂系统靠「子系统内部联系紧、之间联系松」才能稳定演化；数据独立性正是在逻辑层和物理层之间切出这样一道松耦合的缝。不像在：西蒙看重层级嵌套，Codd 却把层次模型的树压平成了表。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Codd 1970 年的《A Relational Model of Data》把数据统一表示成数学上的关系，也就是行列规整、每格单值的表。</li>
+<li>网状与层次数据库让程序背着排序、索引、存取路径三种依赖，存储一改，程序就得重写。</li>
+<li>数据独立性的目标，是让程序只依赖数据的逻辑内容，把物理存储的调整挡在门外。</li>
+<li>关系本质上是集合，所以没有重复行、行与行之间没有顺序，程序永远不该依赖物理排序。</li>
+<li>表与表靠主键和外键的共享值关联：值相等即相关，联系写在数据里，而不在存储布局里。</li>
+<li>规范化把带重复组的嵌套结构拆成每格单值的平表，统一了形状、减少了冗余，是第一范式的雏形。</li>
+<li>选择、投影、连接等关系运算让查询从「教它怎么走」变成「说清要什么」，孕育了 SQL 和查询优化器。</li>
+<li>这是一篇没有实验的理论论文，靠 System R、Ingres 和数十年的工业统治得到验证，Codd 因此获 1981 年图灵奖。</li>
+<li>关系模型初期被批性能太差，平表不擅长嵌套与图数据，SQL 的重复行和 NULL 也偏离了纯模型。</li>
+<li>按值关联而非按地址跳转，和 Hopfield 网络的内容可寻址记忆是同一种结构，只是后者容忍近似匹配。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的形式定义与关系运算细节，再去翻原文。</footer>
 </div>

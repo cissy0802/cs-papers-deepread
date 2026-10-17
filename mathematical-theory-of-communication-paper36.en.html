@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 36</p>
@@ -163,18 +171,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>It is largely point-to-point</strong>: the "network information theory" of multiple users, mutual interference, and networking is far harder, and the capacity of many general networks remains an open problem.</li>
 <li><strong>The continuous case has subtleties</strong>: the "differential entropy" of a continuous source is not coordinate-invariant, among other technicalities that require care.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: Shannon founded information theory in 1948, measuring information in bits and proving two fundamental limits — on compression and on transmission.</p>
-<p>② Abstraction: communication = "choosing one" out of possible messages, independent of meaning; the system = source → encode → noisy channel → decode → destination.</p>
-<p>③ The bit: choosing 1 of N carries <code>log₂N</code> bits; 1 bit = removing one fifty-fifty uncertainty. Information = the uncertainty removed.</p>
-<p>④ Entropy <code>H=−Σp·log p</code>: a source's average surprise per symbol, also the lossless-compression limit; redundancy is the squeezable filler (English is about half redundant).</p>
-<p>⑤ The crown — the noisy-channel coding theorem: a channel has capacity C; when R &lt; C the error rate can be made arbitrarily small, when R &gt; C it's impossible. The counterintuitive part: zero-ish error needs no zero-ish rate.</p>
-<p>⑥ The method: long code blocks + code words pulled far apart in signal space so noise is averaged out and corrected; "random coding" proves a good code merely "exists."</p>
-<p>⑦ The Shannon formula <code>C = W·log₂(1+S/N)</code>: bandwidth and signal-to-noise fix the speed ceiling — still the yardstick for communication design.</p>
-<p>⑧ Impact: the bit became information's universal currency, the theoretical root of digitization; error-correcting codes spent half a century chasing the Shannon limit.</p>
-<p>⑨ Limits: existence without construction, so approaching the limit came decades later; excising meaning invites misuse; point-to-point and known-model assumptions leave hard open problems.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Barlow's redundancy reduction</b>: in 1961 Horace Barlow proposed that relays in the sensory pathways do something Shannon-like — recode the highly redundant input from the senses and squeeze out what is predictable. The match is "removing redundancy is compression"; the mismatch is that brains don't aim for lossless coding, and later work found sensory systems keep plenty of redundancy to fight their own neural noise and to learn structure.</li>
+<li><b>Psychology · the Hick–Hyman law</b>: Hick found in 1952 that choice reaction time grows with the log of the number of options, and Hyman in 1953 generalized it to the entropy of the choice set — we pay for decisions in bits. Unlike a channel, though, the slope shrinks sharply with practice.</li>
+<li><b>Evolution · the error-tolerant genetic code</b>: 64 codons encode just 20 amino acids plus stop, and the redundancy is arranged so a single-base error often yields the same or a similar amino acid; Freeland and Hurst (1998) put its robustness at roughly one in a million among random codes. The difference: selection built it, not long code blocks.</li>
+<li><b>Physics · Landauer's principle</b>: Rolf Landauer argued in 1961 that erasing one bit must dump at least kT·ln2 of heat into the environment, and Bérut and colleagues measured that bound with a single colloidal particle in 2012. The bit thus has a physical price — but where Shannon priced sending, Landauer priced forgetting.</li>
+<li><b>Philosophy · Bateson's "difference that makes a difference"</b>: anthropologist Gregory Bateson, in a 1970 lecture collected in Steps to an Ecology of Mind (1972), defined information as a difference that makes a difference — kin to "information is possibilities ruled out." But Bateson insists the difference must matter to some mind, the very semantic layer Shannon cut away.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Shannon's 1948 paper "A Mathematical Theory of Communication" founded information theory and made information precisely measurable for the first time.</li>
+<li>Every communication system reduces to source, encoder, noisy channel, decoder and destination, with meaning deliberately left out of the engineering problem.</li>
+<li>Information is the selection of one message from many: one of N carries log₂N bits, and one bit resolves a fifty-fifty uncertainty.</li>
+<li>Entropy H = −Σp·log p measures a source's average surprise per symbol; it peaks when outcomes are equally likely.</li>
+<li>Entropy is the hard floor for lossless compression, and English text is roughly half squeezable redundancy.</li>
+<li>The noisy-channel coding theorem says error can be made arbitrarily small below the channel capacity C and cannot be above it.</li>
+<li>Random coding proves good codes exist — long blocks keep codewords far apart so noise averages out — without showing how to build one.</li>
+<li>The continuous-channel capacity C = W·log₂(1+S/N) means faster transmission needs either more bandwidth or a better signal-to-noise ratio.</li>
+<li>The bit became the universal currency of information, and error-correcting codes took nearly half a century to approach the Shannon limit.</li>
+<li>Barlow's redundancy-reduction hypothesis in neuroscience holds that sensory pathways, too, squeeze redundancy out of their signals.</li>
+</ol>
 </div>
 <footer>IT Paper Deep-Read · Finishing this page ≈ grasping the paper's core; for the full theorem proofs and mathematical detail, go to the original.</footer>
 </div>

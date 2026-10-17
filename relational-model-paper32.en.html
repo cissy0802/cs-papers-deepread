@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 32</p>
@@ -198,17 +206,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>SQL ≠ Codd's pure relational model</strong>: real-world SQL departs from the original theory in places—it <strong>permits duplicate rows</strong> (not a strict set) and its <strong>NULLs and three-valued logic</strong> raise many semantic disputes. Codd himself later wrote his "twelve rules" and published critiques of SQL's deviations from the model.</li>
 <li><strong>The 1970 paper is only a starting point</strong>: the paper itself is terse and mathematical; normalization theory (2NF/3NF/BCNF), relational completeness, and a usable query language were all filled in by Codd and others over the following years—on its own, this one paper is still far from a working system.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1. One line: represent all data uniformly as relations (tidy tables, one value per cell), link tables by <strong>shared values</strong> rather than pointers, and separate the logical from the physical.</p>
-<p>2. Pain: network/hierarchical models weld data to storage; programs carry <strong>ordering, indexing, and access-path</strong> dependences, so changing storage forces rewrites.</p>
-<p>3. Mechanism I—relation as table: it's a set, so no duplicate rows and no fixed row order; never depend on physical ordering.</p>
-<p>4. Mechanism II—values over pointers: a primary key uniquely identifies a row, a foreign key stores the same value to reference another table; <strong>equal values are related</strong>, and the link lives in the data, not the layout.</p>
-<p>5. Mechanism III—normalization: decompose nested structures with repeating groups into flat tables, unifying shape and reducing error-prone redundancy (the 1NF seed).</p>
-<p>6. Mechanism IV—relational operations (selection / projection / join) turn queries from "teach it how to walk" into "state what you want": declarative, and the germ of SQL and query optimization.</p>
-<p>7. Results: a theory paper with no experiments; its correctness was validated by System R / Ingres, SQL, and decades of industrial dominance; Codd won the 1981 Turing Award.</p>
-<p>8. Limits: early performance was doubted (the Codd–Bachman debate); flat tables suit nested/graph data poorly (the NoSQL backlash); SQL's duplicate rows and NULLs deviate from the pure model.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Hopfield's content-addressable memory</b>: Hopfield's 1982 network retrieves a memory by its content, not its address; feed it half a pattern and it fills in the rest. Same move as finding rows by value instead of chasing pointers. The difference: a Hopfield net tolerates noise and settles on the nearest match, while a relational join demands exact equality.</li>
+<li><b>Biology · Hormones and receptors</b>: A hormone (Starling coined the word in 1905) is released into the blood rather than wired to one cell; whichever cell carries a matching receptor responds. The link is a match, not a dedicated line, much like a foreign key meeting a primary key. Unlike a join, though, receptor binding is graded affinity and broadcast, not an exact, on-demand lookup.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society"</b>: Hayek argued in 1945 that prices compress scattered local knowledge into one signal, so people can act without knowing the reasons behind it, just as a declarative query spares the program from knowing how data is stored. Yet the politics run the other way: Hayek used this against central planning, whereas Codd's declarative style hands the "how to find it" to a central planner, the query optimizer.</li>
+<li><b>Complexity science · Simon's near-decomposability</b>: In "The Architecture of Complexity" (1962), Herbert Simon argued that complex systems evolve stably when parts are tightly coupled inside and loosely coupled between. Data independence cuts exactly such a loose seam between the logical and physical layers. The contrast: Simon prized nested hierarchy, while Codd flattened the hierarchical model's trees into tables.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Codd's 1970 paper "A Relational Model of Data" represents all data uniformly as mathematical relations: tidy tables with one value per cell.</li>
+<li>Network and hierarchical databases saddled programs with ordering, indexing and access-path dependences, so any storage change forced rewrites.</li>
+<li>Data independence means programs depend only on the logical content of data, shielded from changes in physical storage.</li>
+<li>A relation is a set, so it has no duplicate rows and no row order, and programs should never rely on physical ordering.</li>
+<li>Tables are linked by shared primary-key and foreign-key values: equal values mean related, and the link lives in the data, not the storage layout.</li>
+<li>Normalization breaks nested structures with repeating groups into flat single-valued tables, unifying shape and cutting redundancy; it is the seed of first normal form.</li>
+<li>Relational operations such as selection, projection and join turn queries from step-by-step navigation into stating what you want, the germ of SQL and query optimizers.</li>
+<li>The paper is pure theory with no experiments; System R, Ingres and decades of industrial dominance proved it out, and Codd won the 1981 Turing Award.</li>
+<li>Critics first called the relational model too slow, flat tables handle nested and graph data awkwardly, and SQL's duplicate rows and NULLs stray from the pure model.</li>
+<li>Linking by value rather than by address shares its structure with Hopfield's content-addressable memory, though the brain-inspired version tolerates approximate matches.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full formal definitions and relational-operation details, go to the original.</footer>
 </div>

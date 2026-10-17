@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 66</p>
@@ -228,17 +236,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Synchrony without buffering couples the two sides, and performance isn't uniformly better</strong>: the sender must wait for the receiver, and across machines every communication costs a round trip; channel communication also pays scheduling and copying, so on a shared-memory multicore a plain mutex is often faster. CSP sells reasoning and discipline, not speed — the Go community's own experience is often "don't force a channel where a mutex says it clearly".</li>
 <li><strong>The CSP people talk about today isn't this paper</strong>: this is a proposal about how to write programs, with no formal semantics, whereas the "CSP" of textbooks and tools usually means the 1985 process algebra.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1 · In one sentence: write a concurrent program as a set of sequential processes with <strong>no shared variables</strong>, interacting only through a pair of simultaneously executed input / output commands (a rendezvous).</p>
-<p>2 · The old world's pain: shared memory splits "handing over data" and "lining up timing" into two mechanisms, bugs live in the seam and don't reproduce, and reasoning must enumerate every interleaving.</p>
-<p>3 · Idea one: <code>east!x</code> / <code>west?c</code> must pair up; whoever arrives first blocks, and on pairing both execute at once — hand-over and synchronisation in one act, with nothing shared there is nothing to race over. Synchronous and unbuffered is a deliberate choice.</p>
-<p>4 · Idea two: <strong>an input may sit in a guard</strong>, so a process can wait on "whichever of several is ready" and take any one (no fairness promised) — the basis of server processes and buffers, and the ancestor of Go's <code>select</code>. This version forbids output guards.</p>
-<p>5 · Idea three: add the parallel command <code>[P1 || P2]</code> and semaphores, monitors, subroutines, coroutines and pipelines all become "just add another process" — the selling point is economy of concepts.</p>
-<p>6 · Results: no experimental numbers; the evidence is a run of short examples covering the classic concurrency problems, plus the promissory note "no sharing ⇒ reasoning separately", honoured seven years later as a process algebra with machine-checkable verification.</p>
-<p>7 · Influence: occam and the Transputer, Ada's task rendezvous, Newsqueak→Limbo→<strong>Go's channels and select</strong> (Erlang / actors share the ancestry but take asynchronous mailboxes).</p>
-<p>8 · Limitations: hard-coded process names don't compose, input guards only, a static process set, <strong>it cures races but not deadlock</strong>, synchronous coupling, and performance often below a plain mutex.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Cell biology · Membranes and receptor signalling</b>: cells don't share their insides either; the membrane walls off the cytoplasm, and a signal gets in only when a molecule fits a receptor — CSP's "keep it private, talk through the interface". The difference: a hormone is released and forgotten, an asynchronous broadcast with no rendezvous where both sides stop and line up.</li>
+<li><b>Philosophy · Leibniz's monads</b>: the Monadology (1714) says monads "have no windows" — nothing gets in or out, much as a CSP process's variables are touched by no one else. The difference: Leibniz abolishes real interaction altogether and lets God's pre-established harmony keep the monads in step; CSP keeps state private precisely so it can open one door, the rendezvous, where alignment happens at the moment of contact.</li>
+<li><b>Economics · Hayek's dispersed knowledge</b>: in "The Use of Knowledge in Society" (1945) Hayek argues no central mind can hold all the knowledge, so coordination must travel as price signals between dispersed actors — the same refusal as CSP's refusal of a shared, everyone-writes memory. The difference: prices are an anonymous broadcast; CSP messages are point to point and demand that someone take them on the spot.</li>
+<li><b>Consciousness studies · Global workspace</b>: Baars's 1988 global workspace theory pictures consciousness as a blackboard that unconscious specialist modules compete for, the winner's content broadcast to all — exactly the shared-memory design CSP tears down. The contrast is instructive: global visibility needs a common space; local reasoning needs no sharing.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>CSP writes a concurrent program as sequential processes with no shared variables, interacting only by input and output commands.</li>
+<li>Shared memory splits handing over data and lining up timing into two mechanisms, and concurrency bugs live in the seam, rarely reproducible.</li>
+<li>Hoare's rendezvous pairs a send with a receive: whoever arrives first blocks, and then both commands execute together.</li>
+<li>One rendezvous both transfers data and synchronises, and with state kept private there is nothing to race over and each process can be reasoned about alone.</li>
+<li>Letting an input sit inside Dijkstra's guarded command lets a process wait on whichever of several inputs is ready first — the ancestor of Go's select.</li>
+<li>Buffers, semaphores, monitors, subroutines and pipelines all become "just add another process" in CSP; the selling point is economy of concepts.</li>
+<li>The 1978 CSP paper has no experiments or performance figures; its evidence is short examples, and its promise of provability was redeemed by the 1985 process algebra.</li>
+<li>CSP went all the way into the occam language and the Transputer chip, and through Newsqueak and Limbo into Go's goroutines and channels.</li>
+<li>Sharing nothing cures data races but not deadlock, so the dining philosophers need a doorkeeper; hard-coded process names and input-only guards also limit composition.</li>
+<li>CSP's private-state processes resemble Leibniz's windowless monads, except that Hoare keeps one real point of contact: the rendezvous.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full example code and notational details, go to the original.</footer>
 </div>

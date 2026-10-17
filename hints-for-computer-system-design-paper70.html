@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 70</p>
@@ -224,18 +232,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>端到端那条表述偏硬。</strong>「中间层的错误恢复只是性能优化」在链路质量极差时近乎空话——重传率高到一定程度，「纯性能优化」实际上决定了系统能不能用。</li>
 <li><strong>不可证伪。</strong>没法度量「遵守这些箴言」是否真的提高了成功率。它更接近一位优秀工程师的自述与教学材料，而非可验证的结论——这正是作者叫它 hints 而非 rules 的原因：<strong>它自己就是一条 hint，可能是错的，请自行查验。</strong></li>
 </ul>
-<h2 data-tts="5665d00cc41f33bf">要点</h2>
-<div class="tl">
-<p>① 一句话：Lampson 把造系统的判断力提炼成三十来条带口号的「提示」，用 3×3 的表组织，并明说它们可能错、需自验。</p>
-<p>② 痛点：系统设计没有可计算的正确答案，翻车多半翻在判断而非算法上，而这类知识只在老手脑子里、靠项目失败传递。</p>
-<p>③ 组织法：三问（功能 / 速度 / 容错）× 三处（做多少 / 接口 / 实现），几乎所有设计争论都能归位到这九格里。</p>
-<p>④ 接口：简单、完备、实现得又小又快，三者不可兼得；于是「只做一件事、别泛化」「别藏起底层能力」「拿不准就把决定权交给客户」「基本接口要稳定」。</p>
-<p>⑤ 速度：「与其通用，不如做快」——快的小原语能被拼装，慢的大功能拆不快；配套是缓存、批处理、后台计算与「拿不准就用蛮力」。</p>
-<p>⑥ hint：可能错、但能便宜验证的猜测，全错时系统仍正确只是变慢；分支预测、乐观并发、路由与名字缓存都是它，也是标题的双关。</p>
-<p>⑦ 容错：端到端（只有应用层的恢复是逻辑必需）、记日志、操作原子或可重启、安全第一、过载就主动卸载、正常与最坏情况分两条路。</p>
-<p>⑧ 结果与影响：没有实验，靠真实系统的正反例（含作者自己的失败）立论；后来以「被当口诀背」的方式流传，成了系统课教材与工程师的共享词汇。</p>
-<p>⑨ 局限：轶事式证据与幸存者偏差；箴言互相冲突却无仲裁规则；「固定切分资源」等已被云计算改写；缺席分布式共识与安全；整体不可证伪。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 预测编码（Rao &amp; Ballard 1999）</b>：视觉皮层高层不断向低层发出「猜测」，低层只把预测误差往上传——和 hint 一样先猜后验，猜中就省事。不像在哪：hint 全错系统照样正确，大脑的错误预测却可能直接变成错觉。</li>
+<li><b>心理学 · 快速节俭启发式（Gigerenzer &amp; Goldstein 1996）</b>：「Take the Best」只看一条最有区分力的线索就下判断，模拟中准确率不输综合全部线索的方法，呼应「保持简单、拿不准就用蛮力」。不像在哪：人的启发式背后没有一条可退回的权威慢路径兜底。</li>
+<li><b>经济学 · Roy 的「安全第一」准则（1952）</b>：A. D. Roy 在《Econometrica》上提出，持有资产的首要目标是把跌破灾难线的概率压到最小，而不是把期望收益做到最大——几乎就是「先别出灾难，再谈最优」的金融版。不像在哪：Roy 有一个可以计算的概率模型，Lampson 的「安全第一」只是一句经验判断，没给出灾难线该划在哪。</li>
+<li><b>生物进化 · 相机眼的趋同演化</b>：脊椎动物和章鱼、乌贼各自独立长出相机式眼睛，每次按自家条件实现（章鱼的视神经走在视网膜后面，没有盲点），像「好点子多用几次、别泛化」。不像在哪：演化没有设计者，不是有意复用想法，而是被相同的光学约束逼到同一个解。</li>
+<li><b>佛学 · 《卡拉玛经》（AN 3.65）</b>：佛陀劝卡拉玛人别只因传统、经典或「这是我们的老师」就接受一个说法，要看它实行起来带来伤害还是利益——像 Lampson 把箴言叫作 hint、请读者自行查验。不像在哪：经文检验的是心念与行为的善恶，不是工程取舍。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Lampson 1983 年的《Hints for Computer System Design》把造系统的判断力提炼成三十来条带口号的箴言。</li>
+<li>系统设计没有可计算的正确答案，翻车多半翻在判断上，而这类经验过去只靠老手和失败项目口耳相传。</li>
+<li>论文用「功能、速度、容错」乘「完备性、接口、实现」的 3×3 表，把几乎所有设计争论归进九个格子。</li>
+<li>好接口要简单、完备、又有小而快的实现，三者难以兼得，所以宁可只做一件事，也别把底层能力藏起来。</li>
+<li>做得快比做得通用更要紧：快的小原语能被客户拼装成想要的功能，慢的大功能却没法拆快。</li>
+<li>hint 是可能出错但能便宜验证的猜测，全错时系统仍然正确、只是变慢，分支预测和名字缓存都属此类。</li>
+<li>容错靠应用层的端到端检查、记日志、原子或可重启的操作，以及过载时主动卸载负载，免得有效吞吐塌掉。</li>
+<li>《Hints》没有实验数据，靠 Alto、Grapevine 等真实系统的正反例立论，其中包括 Lampson 自己的失败。</li>
+<li>《Hints》的局限是证据轶事化、箴言互相冲突却无仲裁、整体不可证伪，固定切分资源等条目也已被云计算改写。</li>
+<li>hint 的先猜后验和神经科学的预测编码同构：大脑高层发出预测，低层只把预测误差往上报。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的箴言原表与逐条案例，再去翻原文。</footer>
 </div>

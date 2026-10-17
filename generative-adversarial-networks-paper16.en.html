@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 16</p>
@@ -171,18 +179,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Later supplanted</strong>: diffusion models (DDPM, etc.), with more stable training and higher sample quality, replaced GANs on many generation tasks — its throne was not permanent.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: learn to generate data via an adversarial game between generator G and discriminator D, writing no realism function — the evaluation criterion emerges from the contest.</p>
-<p>② The pain: explicit-density generative models are intractable/unstable; and "does it look real" has no simple differentiable scoring formula.</p>
-<p>③ Core: G forges to fool D, D tells real from fake, <code>min_G max_D E[log D(x)] + E[log(1−D(G(z)))]</code>, trained alternately to push each other stronger.</p>
-<p>④ Analogy: counterfeiter vs. bill-inspecting police, chasing each other until the inspector can only guess.</p>
-<p>⑤ Theoretical landing: optimal <code>D*=p_data/(p_data+p_g)</code>; the game's optimum is at <code>p_g=p_data</code>, <code>D≡1/2</code>, equivalent to minimizing the JS divergence between the two distributions.</p>
-<p>⑥ Key fix: G instead maximizes <code>log D(G(z))</code> (non-saturating) to avoid early vanishing gradients so the forger can learn.</p>
-<p>⑦ Results: crisp samples on MNIST/TFD/CIFAR-10, smooth latent-space interpolation; one-pass generation with no Markov chain; the quantitative metric (Parzen window) was weak at the time.</p>
-<p>⑧ Impact: spawned DCGAN, CycleGAN, StyleGAN, deepfakes, and a whole field; the adversarial idea became a general-purpose tool.</p>
-<p>⑨ Limits: unstable training, mode collapse, hard to evaluate, idealized theory; later surpassed by diffusion models on many tasks.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolution · Batesian mimicry</b>: In 1862 Henry Walter Bates reported harmless Amazonian butterflies that look like toxic ones and so escape birds. The mimic is G, the bird is D, the toxic model species is the real data. The difference: birds that get fooled too often pay a price, which caps the mimicry, whereas a GAN's ideal end state is a D that cannot tell at all.</li>
+<li><b>Evolutionary biology · the Red Queen</b>: Leigh Van Valen (1973) framed competition between species as a zero-sum game in which everyone must keep evolving just to stay in place. G and D run exactly this arms race; but the Red Queen never finishes, while a GAN has a mathematically defined equilibrium at <code>p_g = p_data</code>.</li>
+<li><b>Neuroscience · the generative adversarial brain</b>: In "The Generative Adversarial Brain" (2019), Samuel Gershman hypothesized that the brain tells imagination from perception with a discriminator-like stage that judges whether a signal came from the world or from within, and that its failure may underlie some delusions. The structure maps almost one-to-one onto a GAN; the difference is that the brain's generator is not trained to fool anyone.</li>
+<li><b>Economics · Goodhart's law</b>: Charles Goodhart observed in 1975 that a statistical regularity tends to break down once it is used as a control target. Mode collapse is G treating D's score as the target and gaming it by painting the same "safe" image again and again. The difference: D keeps updating and closes the loophole, so the yardstick is alive.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>GANs learn to generate data through an adversarial game between a generator and a discriminator, with no hand-written realism score.</li>
+<li>Before 2014, generative models struggled because high-dimensional densities were intractable and "looks real" had no differentiable formula.</li>
+<li>Training on pixel-level error pushes a model to paint the average of all plausible answers, which comes out blurry.</li>
+<li>The generator turns random noise into fakes to fool the discriminator, which outputs the probability a sample is real; the two train in alternation.</li>
+<li>Goodfellow and colleagues' own analogy is a counterfeiter versus the police, ending when the police can only flip a coin.</li>
+<li>For a fixed generator the optimal discriminator is p_data/(p_data+p_g), making the game equivalent to shrinking the Jensen–Shannon divergence.</li>
+<li>The ideal endpoint is a generated distribution equal to the real one with the discriminator at 1/2 everywhere, assuming infinite capacity.</li>
+<li>In practice the generator maximizes log D(G(z)) instead, which avoids vanishing gradients early in training.</li>
+<li>GANs are notoriously hard to train: imbalance causes oscillation, and mode collapse games the score much like Goodhart's law.</li>
+<li>GANs spawned DCGAN, CycleGAN, StyleGAN and deepfakes, and were later overtaken by diffusion models on many image tasks.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for full training details and proofs, go to the original.</footer>
 </div>

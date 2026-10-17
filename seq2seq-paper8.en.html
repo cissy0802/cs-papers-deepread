@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 8</p>
@@ -207,17 +215,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The idea wasn't conjured from nothing</strong>: Kalchbrenner &amp; Blunsom (2013) and Cho et al. (2014, a few months earlier) had proposed similar encoder–decoder frameworks; this paper's distinct contribution was using <strong>deep-enough LSTMs + reversal + serious compute</strong> to make end-to-end translation actually beat SMT for the first time — proof the road was passable.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One sentence: two deep LSTMs form an encoder–decoder that exchanges only a fixed-length vector v, learning "variable-length sequence → variable-length sequence" end to end.</p>
-<p>② Pain point: deep networks only handled fixed-size inputs and outputs, while core problems like translation are variable-length both ways; the SMT pipeline had too many modules to optimize jointly.</p>
-<p>③ Mechanism: the decoder is a language model "set in key" by v — <code>p(y|x) = ∏ p(yₜ|v, y₁…yₜ₋₁)</code> — generating word by word and stopping at &lt;EOS&gt;, so the model decides its own output length.</p>
-<p>④ The big trick: feed the source reversed, turning start-of-sentence alignment into short-range dependencies; BLEU 25.9 → 30.6.</p>
-<p>⑤ Results: BLEU 34.8 on WMT'14 English–French, beating the 33.3 SMT baseline — the first neural win; rescoring reached 36.5.</p>
-<p>⑥ Evidence: sentence-vector visualization clusters by meaning and ignores voice — v really encodes "meaning."</p>
-<p>⑦ Impact: established the seq2seq paradigm; spawned GNMT, attention, and the Transformer; today's LLM question-answering shape is its direct descendant.</p>
-<p>⑧ Limits: the fixed vector loses information on long sentences (attention was born to fix it), reversal is an empirical hack, UNK vocabulary problems, and the hard-to-parallelize RNN was ultimately replaced by the Transformer.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Broca's and Wernicke's areas</b>: the classic aphasia model splits language into comprehension (Wernicke's area) and production (Broca's area) — the same split as the encoder's "reading" and the decoder's "speaking." Where it breaks: the two regions talk back and forth over pathways like the arcuate fasciculus and are now seen as part of a distributed network, not a single-vector handoff.</li>
+<li><b>Psychology · Memory for gist, not wording</b>: Jacqueline Sachs's classic experiment showed that people soon can't tell whether a sentence they read was active or passive, yet keep its meaning. Seq2Seq's sentence vectors cluster by meaning and ignore voice in just this way; the difference is that a person can go back and reread, and the fixed vector can't.</li>
+<li><b>Evolutionary neuroscience · The genomic bottleneck (Anthony Zador)</b>: the genome holds far too little information to spell out every synapse, so it passes on compressed wiring rules — and that narrow channel is what forces structure that generalizes. The thought vector v is a similar squeeze; the difference is that the genomic bottleneck spans generations and compresses how to learn, while v compresses one sentence's content.</li>
+<li><b>Philosophy · Quine's indeterminacy of translation</b>: with the "gavagai" thought experiment, Quine argued that behavioral evidence alone can never fix a unique correct translation, and that "meaning" is not a ready-made thing to be carried across. Seq2Seq never asks what meaning is — it learns correspondences purely from the usage in millions of sentence pairs, oddly on Quine's side; yet it still assumes a shared, compressible "meaning" v.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Seq2Seq pairs two deep LSTMs as an encoder and a decoder, learning to map variable-length sequences to variable-length sequences end to end.</li>
+<li>Before Seq2Seq, deep networks needed fixed-size inputs and outputs, and translation was ruled by SMT, a modular pipeline that resisted joint optimization.</li>
+<li>The encoder reads a whole sentence into one fixed-length vector v, and this "thought vector" is the only interface between the two networks.</li>
+<li>The decoder is a language model conditioned on v: it emits one word at a time, feeds each back in, and stops at an end token, choosing its own output length.</li>
+<li>Feeding the source sentence in reverse puts its first words right next to the translation's first words, and that trick alone lifted BLEU from 25.9 to 30.6.</li>
+<li>An ensemble of five models from Sutskever and colleagues scored 34.8 BLEU on WMT'14 English–French, the first pure neural system to beat a 33.3 SMT baseline.</li>
+<li>Visualized sentence vectors cluster by meaning and ignore active versus passive voice, much as people remember the gist of what they read rather than its wording.</li>
+<li>The paper set the "everything is sequence to sequence" paradigm, whose descendants include GNMT, attention, the Transformer, and today's prompt-in, answer-out language models.</li>
+<li>Squeezing a whole sentence into one fixed vector loses information on long inputs, and reversal is only an empirical hack; both gaps led directly to attention.</li>
+<li>Rare words outside the fixed vocabulary collapse into UNK, and RNNs must compute step by step, which is why the Transformer eventually replaced Seq2Seq.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · reading this page ≈ getting the paper's core; for full training configs and experiment details, go to the original.</footer>
 </div>

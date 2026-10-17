@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 17</p>
@@ -170,18 +178,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>非 POSIX、场景专用</strong>：它不是通用文件系统，随机写、低延迟、小文件、强一致都不是它的菜；照搬到别的负载会水土不服。</li>
 <li><strong>Google 自己也超越了它</strong>：官方回顾（McKusick &amp; Quinlan，2009）坦承单 master 与小文件之痛，后续用 <strong>Colossus</strong>（多 master 分片元数据、更小的块、Reed-Solomon 纠删码替代三副本以省存储）接棒。GFS 是奠基之作，但并非终点。</li>
 </ul>
-<h2 data-tts="f528973efe264658">要点</h2>
-<div class="tl">
-<p>① 一句话：为超大规模、以「大文件顺序读 + 追加写」为主的负载设计的分布式文件系统，把「硬件故障是常态」当出发点。</p>
-<p>② 架构：单一 <strong>master 管元数据</strong> + 大量 <strong>chunkserver 存数据</strong>；文件切成 <strong>64 MB 大块、每块存 3 副本</strong>、跨机架分散。</p>
-<p>③ 账货分离：master 只回答「块在哪」，数据由客户端与 chunkserver <strong>直连搬运</strong>，master 永不成为数据瓶颈；大块 → 元数据小 → 可全放内存。</p>
-<p>④ master 元数据在内存，靠<strong>操作日志 + 检查点</strong>持久化与恢复；<strong>块位置不持久化</strong>，靠 chunkserver 心跳上报。</p>
-<p>⑤ <strong>租约</strong>把「给变更排序」下放给 primary，master 退出写路径；<strong>数据流沿链流水线推送、控制流走 primary 定序</strong>，两者解耦以拉满带宽。</p>
-<p>⑥ <strong>原子记录追加</strong>让多客户端并发追加无需加锁，但只保证「至少一次」（可能重复 / 填充），复杂度推给应用。</p>
-<p>⑦ 一致性<strong>松弛但够用</strong>（consistent / defined），元数据操作原子；容错靠再复制、校验和、版本号、快速恢复、影子 master。</p>
-<p>⑧ 影响：MapReduce / Bigtable 的底座，启发 HDFS，确立「廉价机器 + 多副本 + 软件容错 + 横向扩展」的大数据范式。</p>
-<p>⑨ 局限：单 master 扩展瓶颈、小文件不友好、松弛一致外包复杂度、非通用；Google 自己以 Colossus 接棒。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>复杂性科学 · 冯·诺依曼的「不可靠元件」</b>：冯·诺依曼 1956 年在《自动机研究》里论证，只要单个元件出错率低于某个阈值，堆足冗余就能用会坏的零件拼出可靠的整体——这正是 GFS「廉价机器天天坏、靠三副本兜住」的骨架。不像在哪：他靠多数表决在每一步当场纠错，GFS 则是事后发现副本不足再复制补齐。</li>
+<li><b>神经科学 · 帕金森病的代偿期</b>：黑质里的多巴胺神经元要丢掉相当一部分（常见估计从三成到八成不等）才出现运动症状，冗余把损失藏了很多年，像 GFS 丢几台机器上层无感。不像在哪：大脑几乎不会补生这些神经元，没有 master 去「再复制」。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》（1945）</b>：散在各处的局部知识无法汇总给中央计划者。GFS 不把块位置写进日志、让 chunkserver 说了算，是同一个判断；不像在哪：GFS 仍留着一个中央 master，只是让它定期去问，而不是自己记。</li>
+<li><b>政治史 · 罗马共和国的独裁官</b>：危急时把全权交给一人，但任期上限六个月、到期交还，和租约把定序权限时交给 primary 同构。不像在哪：租约约 60 秒、可以反复续，独裁官本不该续任，苏拉、凯撒恰恰破了这条。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>GFS（Ghemawat 等，SOSP 2003）是 Google 为「大文件顺序读 + 追加写」、且默认硬件天天坏的负载量身定做的分布式文件系统。</li>
+<li>用会坏的廉价零件拼出可靠整体，GFS 和冯·诺依曼 1956 年的冗余容错思想是同一个结构。</li>
+<li>GFS 用单一 master 管元数据、大量 chunkserver 存数据，文件切成 64 MB 大块，每块默认存三副本并跨机架放。</li>
+<li>客户端只向 master 问「块在哪」，数据直接和 chunkserver 搬运，所以 master 不会成为数据瓶颈。</li>
+<li>master 的元数据全放内存，靠复制到远程机器的操作日志和检查点恢复；块位置不落盘，靠心跳向 chunkserver 现问。</li>
+<li>租约把变更排序权限时交给主副本，让 master 退出写路径；数据沿链流水线推送，控制流与数据流彻底分离。</li>
+<li>原子记录追加让成百个客户端无锁地并发追加同一文件，但只保证至少写入一次，重复和填充由应用自己处理。</li>
+<li>GFS 的一致性模型松弛但够用，用更弱的承诺换来在故障频发的大集群上又快又稳。</li>
+<li>GFS 是 MapReduce 和 Bigtable 的底座，又被开源的 HDFS 几乎照样复刻，确立了「廉价机器 + 多副本 + 软件容错」的大数据范式。</li>
+<li>单 master 的扩展瓶颈和对小文件不友好是 GFS 的硬伤，Google 后来用多 master 分片元数据的 Colossus 接棒。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整协议细节与实验表格，再去翻原文。</footer>
 </div>

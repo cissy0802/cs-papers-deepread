@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 62</p>
@@ -234,16 +242,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The danger of snapshot isolation was understated.</strong> The paper names write skew, but nobody then foresaw how many production incidents would come from shipping SI under the SERIALIZABLE label; the real fix was more than a decade away.</li>
 <li><strong>Narrow scope.</strong> It covers only read-write transactions in a single-node database: not distributed consistency, not session guarantees (read-your-writes, monotonic reads), not the correctness of the application-level "compute on a snapshot, then retry" pattern. Those still need a different vocabulary.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>1. In one sentence: SQL-92 defined four isolation levels via three "phenomena"; this paper proved that definition both ambiguous and incomplete, and closed the gaps.</p>
-<p>2. The pain and the method: the standard aimed at implementation independence but was reverse-engineered from locking, so an engineer picking a level from it does not know what they allowed; the paper rewrites every anomaly as a precise event sequence (<code>w1[x] … r2[x] … c1</code>), moving the argument from wording to checkable patterns.</p>
-<p>3. The ambiguity: read literally (A1), a dirty read requires T1 to abort; a counterexample — a half-finished transfer observed while T1 goes on to commit — forces the strict reading (P1). Only under the strict reading does excluding the three phenomena amount to serializability.</p>
-<p>4. The gaps: dirty write P0 (every level must forbid it, or rollback itself breaks), lost update P4 and its cursor variant P4C, read skew A5A, write skew A5B — none of them in the standard.</p>
-<p>5. Snapshot isolation: read from a snapshot frozen at your start-timestamp, keep writes in your own versions, and at commit apply first-committer-wins; readers and writers never block each other. But it does not exclude write skew — the conflict check only asks "did we write the same item", while the conflict lives on the read side; hence SI is not serializable.</p>
-<p>6. Structural result: SI and REPEATABLE READ are <strong>incomparable</strong> (one stops phantoms but not write skew, the other the reverse) — isolation levels form a partially ordered net, not a line.</p>
-<p>7. Impact and limitations: it left the industry its anomaly vocabulary, named snapshot isolation and made it where most databases actually run, and led straight to Fekete (2005) → SSI (2008) → PostgreSQL 9.1; but its definitions remain lock-flavored (generalized by Adya in 1999 via serialization graphs), enumerating anomalies can never be complete, and the SQL standard itself was never amended.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Buddhism · Sarvāstivāda's "all three times exist"</b>: the Sarvāstivādins held that past, present and future dharmas are all real, differing only in whether their activity is spent, ongoing or yet to come; a multiversion store likewise keeps old versions alive and readable, and a snapshot read is a read of the past. Where it breaks: databases garbage-collect old versions, which makes the Sautrāntika view that only the present exists closer to a plain overwrite-in-place.</li>
+<li><b>Legal philosophy · Hart's "no vehicles in the park"</b>: in 1958 Hart asked whether a ban on vehicles covers bicycles or toy cars; rules have a clear core and a fuzzy penumbra, and SQL-92's prose on dirty reads sat squarely in the penumbra. Where it breaks: law absorbs the penumbra case by case through judges, while this paper replaces the prose with mechanically checkable patterns.</li>
+<li><b>Economics · Tragedy of the commons</b>: Hardin (1968) described herders each rationally adding one more cow until the shared pasture is ruined; write skew is the same shape, every step legal and the sum a violated constraint. Where it breaks: the commons is driven by self-interest, whereas in write skew nobody is greedy, they are just acting on stale snapshots.</li>
+<li><b>Evolution · From ladder to tree</b>: the old Great Chain of Being ranked all creatures on one ladder, until Darwin wrote "I think" in Notebook B in 1837 and sketched a branching tree; isolation levels likewise went from a ladder to a partial order. Where it breaks: an evolutionary tree only splits, while the two branches of the isolation lattice rejoin at SERIALIZABLE.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>SQL-92 defined four isolation levels through three phenomena, and that definition turns out to be both ambiguous and incomplete.</li>
+<li>The standard claimed implementation independence, yet its phenomena were reverse-engineered from Gray's 1976 locking degrees.</li>
+<li>Rewriting every anomaly as a precise sequence of reads and writes moves the debate from wording to checkable patterns.</li>
+<li>Read literally, a dirty read only counts if the writer aborts; a half-finished transfer seen mid-flight forces the strict reading.</li>
+<li>Dirty write, absent from the standard, must be forbidden at every level, or rollback cannot restore the right old value.</li>
+<li>Lost update, read skew and write skew are common anomalies the standard never listed; in write skew nobody reads uncommitted data.</li>
+<li>Snapshot isolation reads from a snapshot taken at transaction start and uses first-committer-wins to stop concurrent writes to the same item.</li>
+<li>Snapshot isolation cannot stop write skew, because its conflict check looks only at write sets while the conflict lives in the reads.</li>
+<li>Snapshot isolation and REPEATABLE READ are incomparable, so isolation levels form a partial order, much as the tree of life replaced the ladder.</li>
+<li>The paper gave the industry its anomaly vocabulary and led to serializable snapshot isolation (SSI), shipped in PostgreSQL 9.1.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full phenomena tables and the locking-level derivations, go to the original.</footer>
 </div>

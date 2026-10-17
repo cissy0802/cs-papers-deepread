@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 18</p>
@@ -193,19 +201,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>shuffle 是瓶颈、调优是门玄学</strong>：跨网按键搬运海量中间数据（shuffle）常是全程最慢的一环；M、R、分区、combiner 怎么设，很吃经验。</li>
 <li><strong>Google 自己也超越了它</strong>：内部逐步转向 FlumeJava、<strong>Cloud Dataflow</strong>（Apache Beam 的前身）等更高层、更灵活的模型，经典的 MapReduce 已退居次要。它是奠基之作与思想启蒙，而非终点。</li>
 </ul>
-<h2 data-tts="22fab39071952089">要点</h2>
-<div class="tl">
-<p>① 一句话：一套编程模型 + 运行时，让用户只写 <code>map</code>／<code>reduce</code> 两个函数，框架自动把计算并行摊到上千台机器并全程容错。</p>
-<p>② 模型：<code>map:(k1,v1)→list(k2,v2)</code> 逐条产出中间键值对；框架按键归堆；<code>reduce:(k2,list(v2))→list(v2)</code> 归并。数词频是典型例子。</p>
-<p>③ 执行：输入切 <strong>M</strong> 个 map 任务，中间键分 <strong>R</strong> 桶做 reduce 任务；一个 <strong>master</strong> 派活监控，reduce 从各 map 本地磁盘拉数据（<strong>shuffle</strong>）、排序、归并、写回 GFS。</p>
-<p>④ 关键取舍：map 中间结果落<strong>本地磁盘</strong>（便宜），最终结果落 <strong>GFS</strong>（可靠）——这决定了两类失败的不同处理。</p>
-<p>⑤ 容错：master ping worker；失败任务因 map/reduce <strong>确定性</strong>而可安全重跑；<strong>已完成的 map 也要重做</strong>（产出困在挂掉的本地磁盘），已完成的 reduce 不必（已在 GFS）。</p>
-<p>⑥ 本地性：把 map 任务调度到<strong>输入副本所在的机器</strong>，大量输入从本地磁盘读、不过网。</p>
-<p>⑦ <strong>备份任务</strong>治 straggler：临近收尾给慢任务找人抢跑、先完成者胜；关掉它排序慢约 44%。<strong>combiner</strong> 在 map 端预归并、削减 shuffle 量。</p>
-<p>⑧ 结果：约 1800 机集群上，1 TB grep ≈150 秒、1 TB 排序 ≈891 秒；杀 200 台仅多花约 5%；内部上千个程序、并用它重写了搜索索引。</p>
-<p>⑨ 影响：与 GFS/Bigtable 合成老三件套，直接催生 Hadoop 与整个大数据生态，普及「受限模型换自动并行、移动计算而非数据」的范式。</p>
-<p>⑩ 局限：只擅批处理、迭代/实时慢、模型死板、被数据库界批为「倒退」；Google 自己以 Dataflow 等接棒。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>经济学 · 亚当·斯密的制针工场</b>：《国富论》（1776）里，十个工人把制针拆成约十八道工序，一天能做四万八千多枚，若各自单干，可能一天一枚都做不成。MapReduce 也是「拆细、并行、再汇总」；不像在斯密的分工靠每人专精一道工序，MapReduce 的 worker 却彼此可替换，谁坏了都能由别人接手。</li>
+<li><b>经济学 · 哈耶克〈知识在社会中的运用〉</b>：哈耶克（1945）说关键知识散在各地、只在当时当地的人手里，中央计划者收不齐，所以决策该下放到知识所在处。「把计算送到数据身边」是同一个直觉；不像的是，MapReduce 偏偏留着一个全知的 master——数据分散，调度依旧集中。</li>
+<li><b>神经科学 · 视网膜的就地压缩</b>：人眼一亿多个感光细胞，只经约一百多万根视神经纤维送进大脑，平均先在视网膜里汇聚约百比一。combiner 在 map 端先合并再过网，是同一种「过瓶颈前先压缩」；不像在视网膜的压缩有损，combiner 对求和这类运算一点不丢。</li>
+<li><b>复杂性科学 · 戈登的收获蚁</b>：Deborah Gordon 发现红收获蚁没有指挥者，巢里的蚂蚁按触角碰到归巢觅食者的频率决定要不要出门。像 MapReduce 一样个体失效无碍大局；不像在蚁群没有 master，分工从局部相遇里涌现，MapReduce 的容错则靠中央 ping 和重新派活。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Dean 与 Ghemawat 在 2004 年提出的 MapReduce，让用户只写 map 和 reduce 两个函数，其余全交给框架。</li>
+<li>Google 发现词频、倒排索引等计算五花八门，但摊到上千台机器时的「并行骨架」几乎一样。</li>
+<li>map 把每条输入变成中间键值对，框架经 shuffle 按键归堆，reduce 再把同一键的所有值归并成结果。</li>
+<li>map 的中间结果放本地磁盘、最终结果写进 GFS，所以已完成的 map 遇机器故障要重做，reduce 不必。</li>
+<li>因为 map 和 reduce 是确定性函数，失败任务可以放心重跑；实验中杀掉 200 个 worker 只多花约 5% 时间。</li>
+<li>master 把 map 任务派到存着输入副本的机器上，让大部分输入从本地磁盘读、不占网络带宽。</li>
+<li>收尾时为慢任务启动备份任务、先完成者胜，关掉这一机制，1 TB 排序要多花约 44% 的时间。</li>
+<li>MapReduce 与 GFS、Bigtable 合成 Google 老三件套，并经开源的 Hadoop 点燃了整个大数据产业。</li>
+<li>MapReduce 擅长批处理却不擅迭代和实时、模型死板，后被 Spark、Dataflow 等更灵活的引擎接棒。</li>
+<li>「把计算送到数据身边」与哈耶克主张把决策下放到知识所在处同构，只是 MapReduce 仍保留中央 master。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整实现细节与实验表格，再去翻原文。</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 34</p>
@@ -156,17 +164,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>量子威胁</strong>：Shor 算法能在量子计算机上高效解离散对数与大数分解，<strong>一旦大规模量子机成真，DH / RSA 都会被攻破</strong>，学界正转向「后量子密码」。</li>
 <li><strong>慢、只能配角用</strong>：公钥运算比对称加密慢很多，实际系统里通常<strong>只用它协商一把对称密钥</strong>，正文的数据仍用快速的对称密码加密（混合加密）。</li>
 </ul>
-<h2 data-tts="eb96d4ccaa8ac701">要点</h2>
-<div class="tl">
-<p>① 一句话：把加解密拆成「公钥 + 私钥」一对，绕开「必须先安全送密钥」的千年死结——公钥可公开，私钥自留。</p>
-<p>② 痛点：对称密码里密钥必须事先线下共享，既难安全送达、又随人数 n²/2 爆炸，进不了「陌生人随时保密通信」的时代。</p>
-<p>③ 机制一：公钥像「敞开的挂锁」，人人能锁、唯你能开；反着用（私钥盖章、公钥验章）就是数字签名。</p>
-<p>④ 机制二（可落地）：Diffie–Hellman 密钥交换——各留秘密指数、只公开 <code>g^a</code>/<code>g^b</code>，双方一乘方殊途同归到 <code>g^(ab)</code>；偷听者卡在离散对数上。</p>
-<p>⑤ 范式转向：安全性从 Shannon 的「信息上不可能」改为「<strong>计算上不可行</strong>」——密钥可短可半公开，只要反推贵到算不起。</p>
-<p>⑥ 结果：提出公钥体制、数字签名、单向陷门函数三大概念 + 一个可用协议；陷门函数的具体实例（RSA）两年后补上。</p>
-<p>⑦ 影响：现代密码学开端，HTTPS / SSH / 证书 / 比特币的共同地基；作者获 2015 图灵奖。</p>
-<p>⑧ 局限：安全性未获证明、基础版挡不住中间人（需 PKI）、公钥慢只作配角、量子计算是长期威胁。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · Zahavi 的障碍原理</b>：Zahavi 1975 年提出，孔雀大尾巴可信，因为弱者付不起、装不出。数字签名也是「别人伪造不了、人人能核验」的信号；不像在于，签名防伪靠私钥这一秘密，对持有者几乎零成本，障碍信号却全靠实打实的代价。</li>
+<li><b>经济学 · Becker 的犯罪经济学</b>：Becker 1968 年把犯罪当成本—收益计算：威慑不必让犯罪不可能，只要不划算。「计算安全」同理，只让破解贵到没人付得起；不同的是 Becker 的代价是边际的，密码学把它推到天文数字。</li>
+<li><b>物理 · 熵与不可逆</b>：颜料混合容易、拆回原色几乎不可能，和热力学的混合不可逆同形。不像在于，物理不可逆是统计意义的；单向函数是确定的运算，「倒推难」只是还没人找到快办法，并无定律担保。</li>
+<li><b>量子力学 · BB84 量子密钥分发</b>：Bennett 与 Brassard 1984 年解同一道「公开信道分发密钥」的题，但把安全押在物理定律上：测量会扰动量子态、未知态无法克隆，偷听必留痕。它把安全从「计算难」拉回「物理上不可能」，却仍需一条已认证的经典信道，躲不开 DH「先确认对方是谁」的难题。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Diffie 和 Hellman 1976 年的《密码学新方向》提出公钥密码学，把加密和解密拆成一对不同的密钥。</li>
+<li>对称密码要求双方事先线下共享同一把密钥，传密钥本身就需要一次安全通信。</li>
+<li>对称体制下 n 个人两两保密通信需要约 n²/2 把密钥，人一多就无法管理。</li>
+<li>公钥像一把敞开的挂锁，人人都能锁上，只有握私钥的人能打开，公钥被偷看也无妨。</li>
+<li>把公私钥反过来用，私钥盖章、公钥验章，就得到不可抵赖的数字签名。</li>
+<li>Diffie–Hellman 密钥交换让双方各留秘密指数、只公开取模幂结果，最终殊途同归到同一个共享密钥。</li>
+<li>偷听者想算出 Diffie–Hellman 的共享密钥，就得先解离散对数，而这被认为极难。</li>
+<li>安全的标准从 Shannon 的「信息上不可能」转为「计算上不可行」，这是现代密码学的范式转向。</li>
+<li>论文只给出陷门函数的概念而没有具体实例，基础版 DH 也挡不住中间人，安全性同样未获证明。</li>
+<li>「计算安全」和 Becker 的犯罪经济学同构：不必让破坏不可能，只要让它贵到不划算。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的协议细节与安全性讨论，再去翻原文。</footer>
 </div>

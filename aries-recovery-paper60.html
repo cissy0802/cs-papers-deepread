@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 60</p>
@@ -217,17 +225,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>写放大与日志瓶颈</strong>：每笔改动通常既要 redo 又要 undo 信息，而日志是全系统唯一、必须串行化的共享资源。到多核内存数据库时代，日志争用与刷盘延迟成了扩展瓶颈，才有成组提交、可扩展日志等后续工作，以及<strong>命令日志（command logging）</strong>这类替代——只记「执行了哪个存储过程、参数是什么」，运行期极省，代价是恢复得把整段历史重算一遍。</li>
 <li><strong>前提假设正在被改写</strong>：ARIES 假定「页 + 磁盘 + 就地更新 + 单机」。LSM-tree、写时复制、MVCC、非易失内存，以及把日志本身当数据库主体、由存储层自行重放的云原生架构，都在不同程度上绕开了它的分工。而如 PostgreSQL 所示，换一套并发控制就能整条省掉撤销通道——ARIES 的完整形态与「就地更新 + 细粒度锁」绑定，不是恢复问题的唯一解。</li>
 </ul>
-<h2 data-tts="95517087ba093fdf">要点</h2>
-<div class="tl">
-<p>① 一句话：WAL + LSN 之上的三趟恢复（分析 → 重做 → 撤销），重做原样重演全部历史，撤销写只重做、不被撤销的 CLR。</p>
-<p>② 痛点根源：为性能必须 steal + no-force，REDO 与 UNDO 一个不能少；记录级锁又让整页回退失效、让物理撤销在 B 树分裂后失效。</p>
-<p>③ 地基零件：每页页头存 <code>page_LSN</code>，重做时比一次数值就知道该做还是跳过——重做因此幂等，途中再崩也安全。</p>
-<p>④ 最反直觉的一招：重做<strong>不分赢家输家</strong>，先把数据库精确复原到崩溃瞬间，撤销才有认得的现场可依。</p>
-<p>⑤ CLR + <code>UndoNxtLSN</code>：撤销自身也写日志且永不被撤销，反复崩溃下撤销工作量有界，部分回滚顺带免费得到。</p>
-<p>⑥ 页级重做 + 逻辑撤销（physiological logging）是招牌折中；嵌套顶层动作让 B 树分裂不被外层回滚抹掉；模糊检查点不刷脏页也不停机。</p>
-<p>⑦ 证据形态：不是跑分，而是正确性论证 + 与前人的能力矩阵对照 + 在 IBM 产品与原型中的落地。</p>
-<p>⑧ 影响与局限：DB2、SQL Server、InnoDB 骨架同源，PostgreSQL 靠 MVCC 省掉 undo 那趟；而它极复杂难实现对、无量化评估，日志更成了多核时代的扩展瓶颈。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 海马体回放</b>：Wilson 与 McNaughton 1994 年在《Science》报告，大鼠跑迷宫时一起放电的位置细胞，随后睡眠中会更频繁地一起重新放电——白天的经验被「重放」进记忆系统，很像日志被重做进数据页。不像在哪：大脑的重放有挑选、会逐渐衰减，ARIES 的重做要求一条不漏、原样照抄。</li>
+<li><b>会计 · 冲销分录</b>：复式记账记错了不涂改原账，而是补记一笔方向相反的冲销分录，错账和更正都留在账本上——CLR 就是数据库版的冲销分录。不像在哪：会计没有「冲销途中断电」的问题，也就不需要 UndoNxtLSN 这种「下一笔该冲谁」的指针。</li>
+<li><b>哲学 · Collingwood 的「重演」</b>：Collingwood 在《历史的观念》（1946）里主张，史家要理解过去，得先在自己心里重演当事人的思想。ARIES 也是先把全部历史重演一遍，才有资格判断哪些该撤销；不像在哪：Collingwood 重演的是理由与动机，ARIES 重演的是不带理解的字节。</li>
+<li><b>物理 · Bennett 的可逆计算</b>：Bennett 1973 年证明，计算可以先保留全部中间结果以免擦除，抄出答案后再倒着走一遍，把中间垃圾「撤算」掉；量子算法清理辅助比特也用这招。这和「先完整重演、再倒着撤销」同构；不像在哪：Bennett 撤算后不留痕迹，ARIES 每撤一步还要再记一笔 CLR。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>ARIES 用分析、重做、撤销三趟恢复收拾崩溃现场，全部建在预写日志（WAL）与日志序号（LSN）之上。</li>
+<li>为了性能必须允许 steal 与 no-force，代价是崩溃后重做和撤销一个都不能少。</li>
+<li>记录级锁让整页回退失效，B 树分裂又让物理撤销失效，撤销只能按键逻辑地进行。</li>
+<li>每个数据页的页头存 page_LSN，重做前比一次数值就知道该做还是跳过，重做因此幂等。</li>
+<li>重做阶段不分赢家输家，把全部历史原样重演到崩溃瞬间，撤销才有认得的现场可依。</li>
+<li>撤销本身写成只重做、永不被撤销的补偿日志 CLR，靠 UndoNxtLSN 跳过已撤部分，反复崩溃下工作量也有界。</li>
+<li>页级重做配逻辑撤销是招牌折中，嵌套顶层动作保住 B 树分裂，模糊检查点既不刷脏页也不停机。</li>
+<li>ARIES 论文没有跑分表，证据是正确性论证、与前人方案的能力矩阵对照，以及在 IBM 产品中的落地。</li>
+<li>DB2、SQL Server、InnoDB 的恢复骨架都源自 ARIES，但它极难实现正确，日志也在多核时代成了扩展瓶颈。</li>
+<li>重做像海马体在睡眠中重放白天的经验，CLR 则像会计记错后补记的冲销分录：纠错靠追加，不靠涂改。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的日志记录格式、latch 协议与索引配套算法，再去翻原文。</footer>
 </div>

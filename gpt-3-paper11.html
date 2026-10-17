@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 11</p>
@@ -162,18 +170,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>不听指挥</strong>：原始 GPT-3 只会接龙、不会听话，得靠精心构造提示才能用对——这正是后来 InstructGPT / RLHF 要解决的问题。</li>
 <li><strong>闭源与成本</strong>：训练花费以百万美元计、权重不公开，学界批评它加剧了研究资源的不平等，也让结果难以独立复现。</li>
 </ul>
-<h2 data-tts="18c00cac2c0b1d53">要点</h2>
-<div class="tl">
-<p>① 一句话：1750 亿参数的「接龙」模型，不改参数、只看几个例子就能上手几十种任务。</p>
-<p>② 痛点：「预训练 + 微调」每个任务都要上万条标注、产出窄专家；人类只要一句说明加个示范。</p>
-<p>③ 机制：上下文学习（in-context learning）——任务描述和示范作为普通文字放进输入，模型冻结、零梯度更新，答案在接龙中产生。</p>
-<p>④ 机制来源：语料里本就充满「示范 → 答案」的模式，接词训练逼模型内化它们；提示只是「点歌」，唤起已录好的能力。</p>
-<p>⑤ 实验设计：8 个模型（1.25 亿 → 1750 亿）× 三种设定 × 几十个基准；架构照抄 GPT-2，变量只有规模。</p>
-<p>⑥ 核心发现：few-shot 成绩随规模涨得最陡、与 zero-shot 的差距越拉越大——「看例子上手」是随规模变强的能力。</p>
-<p>⑦ 结果：LAMBADA 86.4%、TriviaQA 71.2% 超闭卷微调模型、生成新闻人类辨别率≈瞎猜；但 SuperGLUE 71.8 仍逊于微调 SOTA，推理类任务偏弱。</p>
-<p>⑧ 影响：提示词范式 + 模型即服务 + 规模竞赛；加上指令微调与 RLHF 即是 ChatGPT。</p>
-<p>⑨ 局限：幻觉、偏见、上下文学习机制存疑、Chinchilla 证明其配比欠优、原始模型不听指挥、闭源难复现。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 预测编码（predictive coding）</b>：Rao 与 Ballard 1999 年的视觉皮层模型里，高层不断向下预测低层活动，只把预测误差往上传；GPT-3 也只凭「猜下一个词」这一个目标长出一身本领。像在都把预测当作学习的发动机；不像在大脑的预测服务于身体和行动、误差时时回流改写自己，GPT-3 推理时参数冻结，猜错了也不更新。</li>
+<li><b>心理学 · Harlow 的学习定势（learning set）</b>：Harlow 1949 年让猴子连做几百道辨别题，后来遇到新题常常一次就会，他称之为「学会如何学习」。GPT-3 从几个示范认出任务是同一种本事；不像在猴子靠奖励反馈练成，GPT-3 只练接词，从没被告知过「这是一道题」。</li>
+<li><b>复杂性科学 · Anderson「多即不同」</b>：物理学家 Anderson 1972 年论证：大量粒子聚在一起会出现单个粒子没有的性质，每个层级需要自己的规律。few-shot 能力随规模变强与此同构；不像在论文里的规模曲线大多平滑上升，并非相变式的突跳。</li>
+<li><b>佛学 · 唯识的「种子」（bīja）</b>：瑜伽行派说阿赖耶识含藏种子，遇缘才现行；GPT-3 的本领在预训练时已录进参数，提示就是那个「缘」。不像在种子是业的熏习、关乎轮回与解脱，模型里存的只是文本统计留下的权重。</li>
+<li><b>哲学 · 维特根斯坦的「语言游戏」</b>：《哲学研究》（1953）说词义在于用法、在于此刻玩的是哪一局；few-shot 示范正是告诉模型「现在玩英译法这一局」。不像在维特根斯坦的游戏扎根于人的生活形式，GPT-3 只见过文字——这正是「随机鹦鹉」批评的要害。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>GPT-3 把只做「预测下一个词」的 decoder-only Transformer 放大到 1750 亿参数，在约 3000 亿 token 文本上预训练。</li>
+<li>「预训练 + 微调」范式每个新任务都要上万条人工标注，产出的是容易钻分布捷径的窄专家。</li>
+<li>上下文学习把任务描述和几个示范当普通文字写进输入，模型参数冻结、零梯度更新，答案在接龙中产生。</li>
+<li>网络语料里本就充满「示范 → 答案」形状的文字，接词训练逼模型内化这些模式，提示只是唤起它们。</li>
+<li>论文训练了从 1.25 亿到 1750 亿参数的 8 个模型，架构沿用 GPT-2，真正的变量是规模。</li>
+<li>few-shot 成绩随规模涨得最陡、与 zero-shot 的差距越拉越大，「看例子上手」是随规模变强的能力。</li>
+<li>GPT-3 在 LAMBADA 和闭卷 TriviaQA 上成绩亮眼，但 SuperGLUE 与自然语言推理类任务仍明显逊于微调模型。</li>
+<li>与模型交互的方式从「收数据、微调」变成「写提示词」，再加上指令微调和 RLHF 就通向了 ChatGPT。</li>
+<li>一本正经地编造、偏见、闭源难复现，以及 Chinchilla 指出的参数偏多数据偏少，是这条路线的主要局限。</li>
+<li>few-shot 很像 Harlow 猴子的「学会如何学习」，区别在于猴子靠奖励练成，而语言模型只练接词。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整评测表格与污染分析，再去翻原文。</footer>
 </div>

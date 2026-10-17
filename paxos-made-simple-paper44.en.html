@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 44</p>
@@ -172,19 +180,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>No liveness guarantee</strong>: bounded by FLP, under pure asynchrony it may never settle; in practice you must layer on leader election and timeouts, or the "dueling proposers" will stall the system.</li>
 <li><strong>Multi-Paxos is described vaguely</strong>: the paper gives only a sketch of how to extend single-value Paxos into a practical replicated log, leaving many details to later work — another reason it was long "heard of by everyone, truly understood by few."</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① Problem: make a set of machines that crash, can only talk over an unreliable network, but never lie, agree on a single value — uniquely and irreversibly.</p>
-<p>② Trade-off: FLP rules out having both — Paxos keeps <strong>safety always true</strong> and redeems liveness once the network recovers.</p>
-<p>③ Definition of "chosen": a value accepted by a <strong>majority</strong> of acceptors.</p>
-<p>④ Key design one: the majority — any two majorities overlap, and that overlap is the "witness" preventing two coexisting values.</p>
-<p>⑤ Key design two: two phases (prepare/promise → accept/accepted) + increasing proposal numbers; acceptors honor only the bigger number.</p>
-<p>⑥ The heart of safety: before pushing its own value a proposer <strong>must ask around and reuse the highest-numbered already-accepted value</strong> — so a chosen value never changes.</p>
-<p>⑦ Fault-tolerance detail: an acceptor need only persist "largest promised number" and "highest accepted proposal"; it never reneges after a restart.</p>
-<p>⑧ Liveness via a leader: elect one leading proposer to break the "duel"; election need not be perfect and never affects safety.</p>
-<p>⑨ Practical form: Multi-Paxos (one instance per slot, a stable leader skipping Phase 1) + state machine replication — the real industrial use.</p>
-<p>⑩ Impact and limits: bedrock of Chubby / Spanner and forerunner of Raft; but hard to grasp, far from a running system, and survives crashes not lies.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Biology · Honeybee nest-site selection</b>: when a swarm moves house, scouts dance for rival candidate sites, and once enough scouts gather at one site (quorum sensing) the whole swarm commits — like Paxos, a quorum rather than unanimity settles it. The difference: the bees' threshold is a fixed head count, not a majority, so two sites could in principle both reach it; their safety is only probabilistic.</li>
+<li><b>Quantum physics · Zurek's quantum Darwinism</b>: a measurement outcome becomes "objective" because it is redundantly copied into many fragments of the environment, so any observer sampling any fragment reads the same answer — much as a chosen value sits in a majority of acceptors, and any later majority must surface it. The difference: the environment copies spontaneously; Paxos's redundancy is deliberate and proven by quorum intersection.</li>
+<li><b>Philosophy · Ulysses and the Sirens (precommitment)</b>: Ulysses has himself tied to the mast so that his present self binds a future self that will waver; a Paxos acceptor writes "never accept a smaller number" to stable storage so its rebooted self cannot renege. The difference: Ulysses guards against weakness of will, the acceptor only against amnesia.</li>
+<li><b>Law · Stare decisis</b>: a judge checks prior rulings and follows what has been decided, just as a proposer must poll a majority and adopt the highest-numbered accepted value before pushing its own. The difference: a higher court can overturn precedent, while a chosen Paxos value can never change — law keeps an exit for correcting errors; consensus seals it shut for consistency.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Lamport's "Paxos Made Simple" tackles how machines that crash and talk over an unreliable network, but never lie, can agree on one value, uniquely and irreversibly.</li>
+<li>Because the FLP impossibility rules out having both, Paxos keeps safety always true and defers liveness until the network behaves.</li>
+<li>In Paxos, a value counts as chosen once a majority of acceptors have accepted it.</li>
+<li>Any two majorities share at least one member, and that overlapping "witness" is what stops two different values from both being chosen.</li>
+<li>The protocol runs two phases, prepare/promise then accept/accepted, with increasing proposal numbers that acceptors honor only upward.</li>
+<li>The heart of safety: before pushing its own value, a proposer must poll a majority and reuse the highest-numbered value already accepted.</li>
+<li>An acceptor only needs to persist its highest promised number and its highest accepted proposal to stay true to its word after a crash.</li>
+<li>Dueling proposers can stall Paxos forever; electing a single leader fixes this, and a wrong election costs only efficiency, never safety.</li>
+<li>Multi-Paxos runs one instance per log slot with a stable leader skipping Phase 1, and paired with state machine replication it is how industry actually uses consensus.</li>
+<li>Lamport's Paxos underpins Chubby and Spanner and inspired Raft, yet it is notoriously hard to grasp, far from a running system, and tolerates crashes but not lies.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Read this page ≈ grasp the paper's core; for the full invariant derivation and proofs, go to the original.</footer>
 </div>

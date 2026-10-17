@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 65</p>
@@ -253,17 +261,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Attribution is contested</strong>: the key ideas of pure datagrams and end-point reliability owe a great deal to Louis Pouzin's CYCLADES, as Cerf himself has publicly acknowledged. This paper's contribution lies in <strong>integrating those ideas into one implementable, evolvable whole</strong>.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: translate at the borders with gateways, plus one internetwork packet format and global address everyone honors, stitching incompatible networks into a network of networks — with reliability handed entirely to the ends.</p>
-<p>② The pain: by 1974 several packet networks existed with different packet sizes, addressing, reliability assumptions and delays; unification was politically impossible and pairwise translation is an n² dead end.</p>
-<p>③ Gateway and encapsulation: a gateway is built in two halves, one belonging to each network, so to each it is merely a local host; the common packet rides inside each network's local packet and only the outer envelope is swapped — so <strong>neither network has to change itself</strong>.</p>
-<p>④ Addressing: two-part "network number + identifier within that network", so a gateway forwards on the network number alone; today's prefix-based IP routing is its direct descendant.</p>
-<p>⑤ The decisive cut: the middle is <em>best-effort</em> and gateways keep no conversation state; a reliable byte stream is built at the ends from <strong>per-byte sequence numbers, cumulative acknowledgements, timeout retransmission, windows and an end-to-end checksum</strong>. Because only the ends know whether everything arrived, and stateless intermediaries are faster and more scalable.</p>
-<p>⑥ Supporting pieces: gateways fragment when needed and the destination reassembles (to keep gateways stateless); ports let many programs on one host communicate in parallel.</p>
-<p>⑦ Validation: not an experimental paper — RFC 675, interoperating implementations from Stanford, BBN and UCL, the 1977 packet-radio / ARPANET / satellite demonstration, and the 1983 ARPANET cutover to TCP/IP.</p>
-<p>⑧ Impact and limits: it created the internet's hourglass waist — thin and unintelligent, so both ends could grow without permission. The costs: an address field far too small (8-bit network number → IPv4 exhaustion → IPv6); TCP and IP fused until the 1978 split made UDP possible; gateway fragmentation as a lasting liability; flow control without congestion control (collapse in 1986, fixed in 1988); no security at all; and routing left open.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Complexity science · bow-tie architecture (Csete and Doyle)</b>: Cellular metabolism funnels a huge variety of nutrients into a handful of universal carriers such as ATP and NADH, which then fan out into thousands of products. That narrow knot is the same shape as the internet's hourglass. The difference: the cell's waist evolved, and it is wrapped in feedback control, nothing like a dumb pipe.</li>
+<li><b>Evolutionary biology · the "frozen accident" (Francis Crick)</b>: Crick argued that once every organism shares the genetic code, changing a single codon would scramble thousands of proteins at once, so early accidents got frozen in place. An 8-bit network number, then IPv4, locked in with IPv6 still unfinished, is the same kind of lock-in. Unlike the code, though, which has slightly altered variants in mitochondria, the internet's waist has almost no dialects.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society"</b>: Hayek argued that the knowledge that matters is scattered among individual actors, beyond any central planner's reach, so decentralized decisions must be coordinated through prices. Kahn's "no global control" and intelligence at the edges is the same bet. Unlike a market, though, the 1974 network passed no price-like signal at all: the ends could not tell the middle was jammed until congestion control began reading packet loss as a price.</li>
+<li><b>Eastern philosophy · Laozi, "it is the emptiness that makes the room useful"</b>: The Tao Te Ching observes that a room is useful because of the empty space cut for doors and windows. The IP waist works the same way: because it carries no intelligence and does nothing for you, both ends can hold things invented decades later. The difference is that Laozi states a general truth about emptiness, while this emptiness was a costly engineering trade-off, with congestion and security patched in afterwards.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Cerf and Kahn's 1974 paper tackled not how to build one network but how to make several incompatible packet networks talk to each other.</li>
+<li>The networks differed structurally in addressing, maximum packet size, reliability and delay; unifying them was politically impossible, and pairwise translation needs n² converters.</li>
+<li>A gateway is built in two halves, each belonging to one network, so to each network it is just a local host and no network has to change.</li>
+<li>A common internetwork packet rides inside each network's local packet and gateways swap only the outer envelope; hierarchical "network + host" addresses prefigure IP prefix routing.</li>
+<li>Cerf and Kahn made the networks and gateways in the middle best-effort and stateless, pushing all reliability to TCP on the end hosts.</li>
+<li>TCP builds a reliable byte stream over an unreliable path from per-byte sequence numbers, cumulative acks, retransmission on timeout, windows and an end-to-end checksum.</li>
+<li>Gateways fragment packets and destinations reassemble them, the price of keeping gateways stateless; ports let many programs on one host communicate in parallel.</li>
+<li>TCP/IP was validated not by benchmarks but by RFC 675, three interoperating implementations, the 1977 three-network demo and the 1983 ARPANET cutover.</li>
+<li>The dumb hourglass waist let new networks join without permission, at the cost of tiny addresses, no congestion control, no security and unspecified routing.</li>
+<li>Cellular metabolism's bow-tie architecture likewise links countless inputs and products through a few universal carriers, the same shape as the internet's narrow waist.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Finish this page and you have the paper's core; for the full header fields and state machine, go read the original.</footer>
 </div>

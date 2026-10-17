@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 12</p>
@@ -138,17 +146,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Read as "scale is everything"</strong>: it is often flattened to "bigger is better," fueling a compute-and-data arms race, with attendant worries about energy, cost, and centralization.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: a Transformer LM's loss is a smooth power law in parameters N, data D, and compute C — straight across many orders of magnitude, and extrapolable.</p>
-<p>② The pain: "bigger is better" was only intuition — no one could say how much better, where it plateaus, or whether to spend on model or data; every run was expensive trial-and-error.</p>
-<p>③ Power laws: <code>L(N)∝N^−0.076</code>, <code>L(D)∝D^−0.095</code>, <code>L(C)∝C^−0.050</code> — straight lines on log–log axes; small exponents mean steady returns but multiplicative investment.</p>
-<p>④ Scale beats shape: at fixed parameter count, depth-vs-width and other shapes barely affect loss; total parameters decide the score.</p>
-<p>⑤ Big models are more sample-efficient; given compute, the optimum is "train a very large model and stop early on data" (this paper: about N∝C^0.73, D∝C^0.27, model-heavy).</p>
-<p>⑥ Validation: hundreds of points fall onto lines holding across six–seven orders of magnitude; small-scale fits extrapolate to large models — GPT-3's direct basis.</p>
-<p>⑦ Impact: turned big models from alchemy into engineering, shaped the "scale is all you need" era; scaling laws became a standard tool for frontier training.</p>
-<p>⑧ Limits: Chinchilla corrected the split (model/data should scale equally, ~20 tokens/param), so many models were undertrained; loss ≠ downstream ability; extrapolation isn't unlimited; it explains what, not why.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Biology · Kleiber's law</b>: from mice to elephants, basal metabolic rate grows roughly as body mass to the 3/4 power, another straight line on log–log axes spanning many orders of magnitude. Alike: a smooth power law that lets size alone predict the outcome. Unlike: biologists later tried to derive that exponent from fractal supply networks such as blood vessels, while the exponents of language-model scaling still have no accepted theory.</li>
+<li><b>Psychology · The power law of practice</b>: the time to perform a skill shrinks as a power law of practice trials, a regularity Newell and Rosenbloom framed as the "law of practice." Alike: like loss versus data, each further step costs multiplicatively more practice. Unlike: a person drills one fixed brain, whereas a model can simply be built bigger.</li>
+<li><b>Economics · Wright's law (the experience curve)</b>: aircraft engineer Theodore Wright found that every doubling of cumulative production cut unit cost by a roughly constant fraction. Alike: a "fixed gain per doubling" rule that lets you plan investment in advance. Unlike: Wright's law has a single axis, accumulated experience, while scaling laws split it into model, data and compute that can be traded off.</li>
+<li><b>Neuroscience · The human brain as a scaled-up primate brain</b>: Suzana Herculano-Houzel's cell counts show human neuron numbers sit right on the primate scaling curve, so what sets us apart is mostly quantity, not a unique design. Alike: scale over shape. Unlike: rodents and primates scale by different rules, so a lineage's "architecture" governs how it scales; shape is not wholly irrelevant.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Kaplan et al.'s 2020 Scaling Laws paper found that a Transformer language model's test loss falls smoothly and predictably with scale.</li>
+<li>Before this paper, "bigger is better" was intuition: no one could say how much better, where it saturates, or whether to spend on model or data.</li>
+<li>Loss follows a separate power law in parameters N, data D and compute C, a straight log–log line across six to seven orders of magnitude.</li>
+<li>The exponents are only 0.05 to 0.1, so returns are steady but every small gain demands a multiplicative increase in resources.</li>
+<li>At a fixed parameter count, making a network deeper or wider barely changes loss; total parameter count is what decides performance.</li>
+<li>Large models are more sample-efficient, so under a fixed compute budget the paper's optimum is a very large model stopped well before convergence.</li>
+<li>Curves fitted on small models extrapolated the loss of much larger ones fairly accurately, giving OpenAI the quantitative case for GPT-3.</li>
+<li>Scaling laws turned large-model training from alchemy into calculate-first engineering and moved research focus from clever architectures to scale.</li>
+<li>DeepMind's Chinchilla showed the paper underweighted data: compute-optimal training scales model and data roughly equally, about 20 tokens per parameter.</li>
+<li>Scaling laws are empirical fits to prediction loss: they are not downstream ability, cannot be extrapolated forever, and do not explain the exponents.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full fitting details and all experiment curves, go to the original.</footer>
 </div>

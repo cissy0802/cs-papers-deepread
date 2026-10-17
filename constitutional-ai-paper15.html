@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 15</p>
@@ -167,17 +175,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>不等于真正安全</strong>：它改善的是「按这份宪法自我约束」的倾向，并未消除越狱、被诱导绕过原则等风险；红队提问的覆盖面也决定了它能防住什么。</li>
 <li><strong>有用仍靠人类反馈</strong>：本文只把「无害」半边换成 AI 反馈，有用度的监督仍依赖人工——并非完全摆脱人类标注。</li>
 </ul>
-<h2 data-tts="7abedb21901e719b">要点</h2>
-<div class="tl">
-<p>① 一句话：用一小份「宪法」原则取代人工有害标注，让 AI 按原则自我批评、改写、评判来对齐自己。</p>
-<p>② 痛点：RLHF 训无害助手要人逐条标注有害内容（贵、折磨、难规模化），且训出的模型爱「装死」回避。</p>
-<p>③ SL 阶段：模型对刁钻提问作答 → 按随机原则<strong>自我批评</strong> → <strong>改写</strong>，多轮洗净后用改写版<strong>监督微调</strong>得 SL-CAI。</p>
-<p>④ RL 阶段（RLAIF）：模型对同一问题给两个答案 → 按原则<strong>自己判哪个更好</strong> → 这批 AI 偏好训偏好模型 → 强化学习得 RL-CAI；<strong>思维链</strong>让评判更准。</p>
-<p>⑤ 分工：无害信号几乎全由 AI 产出，有用信号仍用人类反馈；宪法是几十条可读可改的自然语言原则。</p>
-<p>⑥ 结果：RL-CAI 在「有用×无害」前沿上优于标准 RLHF，<strong>回避显著减少</strong>，且全程无一条人工有害标注。</p>
-<p>⑦ 影响：开创 RLAIF 范式，把人的角色从「打标签」上移到「写原则」，是 Claude 的训练基石之一。</p>
-<p>⑧ 局限：「谁的宪法」未解、AI 评判继承模型偏差、原则→行为不完全可控、不等于真安全、有用仍靠人。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>佛学 · 戒律与布萨</b>：比丘的波罗提木叉是一份成文戒条，每半月布萨时诵出，诵者每诵完一段就问在场者有无违犯，像「拿原则逐条对照自己」的自我批评。不像在哪：律藏里的戒条多是佛陀针对一桩桩具体事件逐条制定的，来路反倒更像 RLHF 的「逐案积累」。</li>
+<li><b>心理学 · 维果茨基的内部言语</b>：维果茨基认为儿童先出声地自言自语来调节行为，这种私语后来「转入地下」，成为无声的内部言语。SL-CAI 也是先把批评—改写写出来，再微调进参数，之后不必每次现场批评。不像在哪：儿童的私语源自与成人的对话，CAI 的批评源自一份书面清单。</li>
+<li><b>哲学 · 康德的「自律」</b>：康德在 1785 年的《道德形而上学奠基》里把道德主体界定为「自己给自己立法」的理性存在者，CAI 让模型照原则自我约束，看上去正是自律。但关键的不像恰恰在这里：宪法不是模型自己立的，而是研究者写好交给它的，按康德的分法更接近他律——这也正是正文「谁的宪法」那条批评的哲学版本。</li>
+<li><b>经济学 · 古德哈特定律</b>：古德哈特 1975 年谈货币政策时指出，任何统计规律一旦被拿来当控制目标就会失灵。RL-CAI 去最大化偏好模型的打分，AI 评委的偏差就可能被优化放大。不像在哪：古德哈特讲的是被监管者主动钻空子，这里的「钻空子」只是优化压力的副作用。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Constitutional AI 用一小份写明原则的「宪法」取代人工有害标注，让模型照原则自己监督自己。</li>
+<li>RLHF 训无害助手要人逐条标注有害内容，既昂贵又折磨人，还难以规模化。</li>
+<li>只用「无害」信号硬训出的模型容易回避，对敏感问题一律拒绝而不解释理由。</li>
+<li>SL 阶段让模型按随机抽取的原则批评并改写自己的回答，多轮洗净后用改写版微调出 SL-CAI。</li>
+<li>RL 阶段由模型按原则判断两个回答哪个更好，这批 AI 偏好训练偏好模型，再做强化学习，即 RLAIF。</li>
+<li>让做评判的模型先写出思维链再下结论，能让 RLAIF 的判断更准、更稳。</li>
+<li>最终模型由 AI 反馈负责无害、人类反馈负责有用，宪法本身只有几十条可读可改的原则。</li>
+<li>RL-CAI 比标准 RLHF 更无害且有用度相当，会解释拒绝理由，全程没用一条人工有害标注。</li>
+<li>Constitutional AI 把人的角色从逐条打标签上移到写原则，RLAIF 由此成为与 RLHF 并列的对齐范式。</li>
+<li>原则由谁来定、AI 评判的偏差会被放大进训练信号，是 Constitutional AI 留下的两个核心问题。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的宪法条文、提示词与实验细节，再去翻原文。</footer>
 </div>

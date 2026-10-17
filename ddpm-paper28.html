@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 28</p>
@@ -194,16 +202,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只做了无条件生成、图像也小</strong>：没有文本条件与引导机制，主结果在 32×32；变成今天的文生图靠的是后续一连串工作（条件注入、引导、隐空间、超分级联）。噪声表也未必最优——线性 β 表小图够用，后续发现余弦表更好，「噪声该怎么加」本身成了一个设计空间。</li>
 <li><strong>能力带来的风险</strong>：高保真图像生成很快被用于伪造，并卷入版权争议，是这条路线绕不开的社会成本。</li>
 </ul>
-<h2 data-tts="7af99abbf6bd3ee6">要点</h2>
-<div class="tl">
-<p>① 一句话：固定的千步加噪链把图糊成高斯噪声，再训练网络逐步倒放；关键是把目标重写成「预测每步加进去的噪声」。</p>
-<p>② 痛点：GAN 画质好但训练不稳、易塌缩；VAE / 自回归稳但糊或慢；扩散自 2015 年就有，只是出图太差。</p>
-<p>③ 前向链无参数可学，有闭式 <code>x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε</code>——随机抽 t 直接造脏图、答案免费；反向每步近似高斯，网络只需给均值。</p>
-<p>④ 核心一手：改为预测噪声，损失塌缩成 <code>‖ε − ε_θ(x_t,t)‖²</code> 的回归，同时等价于去噪分数匹配、采样即退火 Langevin；顺带丢掉下界里随 t 变化的权重，让网络专攻重噪声的难步——似然稍差，图明显更好。</p>
-<p>⑤ 实现：U-Net + 16×16 自注意力 + 步数 t 的正弦嵌入，1000 步共用一套参数；采样每步掺回一点随机噪声。</p>
-<p>⑥ 结果：CIFAR-10 无条件 IS 9.46 / FID 3.17，首次在画质上赢过 GAN；LSUN 256×256 与 ProgressiveGAN 同档；似然 3.75 bits/dim 并不领先。</p>
-<p>⑦ 影响与代价：DDIM、classifier-free guidance、Stable Diffusion、DALL·E 2、Imagen 乃至视频生成都自此而来；代价是采样上千次前向，且原版只做无条件小图。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>佛学 · 神秀与慧能</b>：DDPM 的采样几乎就是神秀那句「时时勤拂拭，勿使惹尘埃」——一千步，每步只擦掉一点尘。根基却不同：神秀预设镜子本来明净，擦拭是还原；DDPM 的起点是纯噪声，并没有一面预先存在的「镜」，图是在擦的过程中长出来的，反倒更近慧能的「本来无一物」——只是它走的是千步渐修，不是一念顿悟。</li>
+<li><b>神经科学 · 预测编码（Rao &amp; Ballard 1999）</b>：两者都把学习信号定成「残差」：视觉皮层高层往下发预测，低层只往上传预测误差；DDPM 的网络也只学「脏图里多出来的那团噪声」。不像在：预测编码的残差在脑区层级之间实时流动，DDPM 的残差在时间步之间，训练完就固定了。</li>
+<li><b>知觉心理学 · Navon「先见森林后见树」（1977）</b>：Navon 发现人先认出大字母的整体形状，再看清组成它的小字母；DDPM 也显示决定「像不像」的粗结构只占很少比特，噪声重的早期步定轮廓、末几步才补细节。不像在：Navon 讲的是「看」的先后，DDPM 是「画」的先后，粗细由噪声强度而非注意力决定。</li>
+<li><b>金融 · Fischer Black《Noise》（1986）</b>：Black 把价格看成价值加噪声，市场靠噪声交易才转得起来，可要从价格里剥出价值极难。DDPM 的工作同样是把信号和噪声分开；不像在：市场从不发标准答案，DDPM 的噪声是自己撒的、答案免费，这才让「分离噪声」变成一次普通回归。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>DDPM 把图像生成写成一条固定的千步加噪链加一条学出来的去噪链，生成就是把加噪倒着放。</li>
+<li>2020 年前后 GAN 画质好但训练不稳、易模式塌缩，VAE 偏糊、自回归太慢，扩散模型则出图很差。</li>
+<li>前向加噪链没有任何可学参数，且能用闭式公式从原图一步算出任意时刻的脏图。</li>
+<li>每步加的噪声足够小时，反向一步近似高斯，网络只需预测均值，方差固定成常数即可。</li>
+<li>DDPM 的关键一手是让网络预测每步加进去的噪声，变分下界于是塌缩成普通的均方误差回归。</li>
+<li>预测噪声在数学上等价于去噪分数匹配，采样过程因此就是带退火的 Langevin 迭代。</li>
+<li>丢掉下界里随步数变化的权重，让网络专攻噪声重的难步：似然稍差，图明显更好。</li>
+<li>DDPM 在 CIFAR-10 上拿到 FID 3.17，扩散模型首次在画质上赢过 GAN。</li>
+<li>Stable Diffusion、DALL·E 2 等文生图系统都源自这套扩散配方，代价是每张图要跑上千次网络。</li>
+<li>扩散采样像神秀「时时勤拂拭」的渐修，但图并不预先存在，而是在一步步去噪中长出来的。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整推导与训练超参，再去翻原文。</footer>
 </div>

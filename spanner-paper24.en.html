@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 24</p>
@@ -175,17 +183,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>The CAP tradeoff</strong>: under a network partition Spanner chooses consistency and sacrifices availability (it is essentially a CP system). Google argues that because its private network is so reliable it is "effectively CA" — a contested framing (Brewer later wrote a note clarifying the boundary).</li>
 <li><strong>SQL was shallow at publication</strong>: the 2012 version's query/SQL capability was limited; the full distributed SQL engine came only with the 2017 follow-up, "Spanner: Becoming a SQL System."</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One line: Spanner is the first database that is both globally distributed and supports externally-consistent distributed transactions; the key is TrueTime.</p>
-<p>② Pain: under global replication, machine clocks drift and NTP error has no upper bound; without trustworthy time you can't order cross-data-center transactions by timestamp — so "global vs. strong consistency" was deemed impossible together.</p>
-<p>③ Core idea: TrueTime returns not a point but an interval <code>[earliest, latest]</code> guaranteed to contain the true time; ε is the uncertainty, squeezed to a few ms by GPS + atomic clocks.</p>
-<p>④ Ordering mechanism: external consistency = the real-time-earlier committer gets the smaller timestamp; enforced by commit wait — pick <code>s=now().latest</code>, wait until <code>TT.after(s)</code> (~2ε), then release, waiting the uncertainty out.</p>
-<p>⑤ Architecture: data sliced into tablets, replicas across zones form a Paxos group (majority writes); contiguous same-prefix keys form a directory, the placement/movement unit.</p>
-<p>⑥ Cross-group transactions: 2PC on top of Paxos — every participant/coordinator is a Paxos group, so a single-node crash is absorbed by in-group consensus and 2PC never blocks forever.</p>
-<p>⑦ Dividend: global timestamps + multi-version → read-only transactions and snapshot reads are fully lock-free and can read any caught-up, nearby replica.</p>
-<p>⑧ Impact &amp; limits: proved "global + strong consistency" can coexist and spawned NewSQL/global databases; but writes have a ~2ε latency floor, it depends on GPS+atomic clocks, cross-group goes through 2PC, it chooses C over A under partition, and its first SQL was limited.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Physics · Relativity of simultaneity</b>: Einstein showed that whether two distant events are "simultaneous" depends on the observer's frame — the universe has no single shared "now." Spanner hits the same wall: distant machines can't agree on the present. The difference: in relativity simultaneity is itself relative, while Spanner assumes one true time that is merely hard to measure, which is why an interval can box it in.</li>
+<li><b>Neuroscience · Postdiction</b>: Eagleman and colleagues used the flash-lag effect to argue that the brain doesn't declare "I saw it" the instant a signal lands; it gathers a short window of evidence before settling — much like commit wait. The difference: the brain rewrites order after the fact, while a Spanner timestamp never changes.</li>
+<li><b>Confucianism · Knowing what you don't know</b>: Confucius counted admitting "I don't know" as part of real knowledge. TrueTime likewise refuses to fake a precise instant and hands over its ignorance as a number, ε. The difference: Confucius meant personal honesty; TrueTime's honesty comes with a hard bound a system can build on.</li>
+<li><b>Investing · Graham's margin of safety</b>: Benjamin Graham advised against betting on a precise estimate of value and for leaving a buffer between price and value. Spanner takes the interval's upper bound and waits the error out — absorbing uncertainty rather than eliminating it. The difference: a margin of safety only lowers the odds of being wrong; commit wait is a guarantee whenever ε holds.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Spanner was the first database to spread data across the globe while supporting externally-consistent distributed transactions.</li>
+<li>Physical clocks drift and NTP error has no reliable bound, so without trusted time you can't order cross-data-center transactions.</li>
+<li>TrueTime returns not an instant but an interval guaranteed to contain true time, with GPS and atomic clocks keeping the uncertainty ε to a few milliseconds.</li>
+<li>External consistency means a transaction that finishes committing earlier in real time always gets the smaller timestamp.</li>
+<li>Commit wait stamps a transaction with the interval's upper bound, then waits about 2ε before releasing locks — waiting the clock error out.</li>
+<li>Replicas across data centers form Paxos groups, and two-phase commit runs on top of those groups, so a single crash can't stall a cross-group transaction.</li>
+<li>Global timestamps plus multi-version storage make read-only transactions and snapshot reads fully lock-free and servable from nearby replicas.</li>
+<li>Spanner proved global distribution and strongly consistent transactions can coexist, inspiring global databases such as CockroachDB and TiDB.</li>
+<li>The price: every write waits at least ~2ε, the design depends on GPS and atomic clocks, and under partition it picks consistency over availability.</li>
+<li>TrueTime works like Graham's margin of safety: rather than eliminating error, it leaves a buffer that absorbs it.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the paper's core; for the full TrueTime implementation and transaction protocol, go to the original.</footer>
 </div>

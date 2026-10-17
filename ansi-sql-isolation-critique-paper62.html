@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 62</p>
@@ -223,16 +231,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>快照隔离的危险被低估了。</strong>论文点出了写偏斜，但当年没人预料到「把 SI 标成 SERIALIZABLE 卖」会造成多少生产事故；真正的解法要等十多年后的 SSI。</li>
 <li><strong>覆盖面有限。</strong>全文只谈单机数据库里的读写事务，不涉及分布式一致性、会话保证（读己之写、单调读），也不涉及应用侧「拿快照算完再重试」这类模式的正确性。</li>
 </ul>
-<h2 data-tts="10c4241a7667c617">要点</h2>
-<div class="tl">
-<p>① SQL-92 用三种「现象」定义四档隔离级别，本文证明这套定义既含糊又不完备，并补齐了缺口。</p>
-<p>② 痛点与方法：标准想做到实现无关，实际是从封锁行为倒推的，工程师照它选级别并不知道自己放过了什么；论文把每种异常改写成精确的事件序列（<code>w1[x] … r2[x] … c1</code>），争论从措辞挪到可逐条检验的模式上。</p>
-<p>③ 歧义：字面窄读（A1）要求 T1 最后回滚才算脏读；「转账转了一半被看到、T1 却提交了」的反例证明必须取宽读（P1）——也只有宽读下，排除三现象才等价于可串行化。</p>
-<p>④ 缺口：脏写 P0（每一档都必须禁，否则回滚都做不对）、丢失更新 P4 与游标版 P4C、读偏斜 A5A、写偏斜 A5B——标准全没写。</p>
-<p>⑤ 快照隔离：读定格在开始时间戳的快照上、写各存各的版本、提交时「先提交者获胜」；读写互不阻塞。但它挡不住写偏斜——冲突检查只看「写了同一项」，而写偏斜的冲突藏在读上，所以 SI 不可串行化。</p>
-<p>⑥ 结构性结论：SI 与 REPEATABLE READ <strong>互不包含</strong>（前者挡幻读不挡写偏斜，后者反之）——隔离级别是一张偏序的网，不是一条直线。</p>
-<p>⑦ 影响与局限：它留下了全行业通用的异常词汇，快照隔离在此得名并成为多数数据库的实际工作档，并直接催生 Fekete(2005) → SSI(2008) → PostgreSQL 9.1；但定义仍偏锁语义（1999 年被 Adya 以串行化图通用化），清单式定义补不完，SQL 标准本身至今未改。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>佛学 · 说一切有部「三世实有」</b>：有部主张过去、现在、未来的法都真实存在，差别只在「作用」已灭、正起还是未起；多版本存储同样让旧版本继续存在、可读，快照隔离读的正是一个「已经过去」的版本。不像在哪：数据库的旧版本终会被垃圾回收，倒是经量部「只有当下存在」更像普通的原地覆盖写。</li>
+<li><b>法哲学 · Hart 的「公园禁车」</b>：Hart 1958 年问，「禁止车辆入园」管不管自行车、玩具车？规则有清晰的核心，也有模糊的半影，SQL-92 的「脏读」散文正落在半影里。不像在哪：法律靠法官逐案裁量消化半影，这篇论文则干脆把散文换成可机械检验的事件模式。</li>
+<li><b>经济学 · 公地悲剧</b>：Hardin 1968 年写牧民各自理性地多放一头牛，合起来毁掉公共草场；写偏斜同样是每一步都合法、合起来破坏约束。不像在哪：公地悲剧源自各人的利益驱动，写偏斜里没人自私，只是每人依据的快照都已过期。</li>
+<li><b>生物进化 · 从阶梯到树</b>：旧观念把万物排成一条「存在巨链」，Darwin 1837 年在 Notebook B 写下「I think」并画出分叉的树，物种从此排不成一列；隔离级别也从一条阶梯变成偏序的网。不像在哪：进化树只分不合，级别网里的两条支路最终在 SERIALIZABLE 重新汇合。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>SQL-92 用脏读、不可重复读、幻读三种现象定义四档隔离级别，这套定义既含糊又不完备。</li>
+<li>标准号称与实现无关，三种现象其实是从 Gray 1976 年的封锁级别倒推出来的。</li>
+<li>论文把每种异常改写成精确的读写事件序列，争论从措辞挪到了可逐条检验的模式上。</li>
+<li>脏读的字面窄读要求写方最终回滚才算违规，「转账转了一半被读到」的反例证明必须取宽读。</li>
+<li>标准漏掉的脏写在每一档都必须禁止，否则回滚时无法恢复正确的旧值。</li>
+<li>丢失更新、读偏斜、写偏斜是标准未列却很常见的异常，写偏斜里谁也没读到未提交数据。</li>
+<li>快照隔离让事务只读开始时刻的快照，提交时按「先提交者获胜」拦下写同一项的冲突。</li>
+<li>快照隔离挡不住写偏斜，因为冲突检查只看写了哪些项，而写偏斜的冲突藏在读上。</li>
+<li>快照隔离与 REPEATABLE READ 互不包含，隔离级别是一张偏序网，就像进化树取代了存在巨链。</li>
+<li>这篇论文留下了全行业通用的异常词汇，并引出可串行化快照隔离 SSI 及其在 PostgreSQL 9.1 的落地。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的现象定义表与封锁级别推导，再去翻原文。</footer>
 </div>

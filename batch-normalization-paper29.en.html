@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 29</p>
@@ -206,17 +214,27 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>A poor fit for sequence models</strong>: sentence lengths vary and statistics differ across time steps, so BN is hard to use well in RNNs — which is precisely why Layer Normalization appeared and ultimately took over in Transformers.</li>
 <li><strong>Not irreplaceable</strong>: later work such as NFNets (Brock et al. 2021) matched the same accuracy without normalization by using adaptive gradient clipping, showing BN is an extremely convenient shortcut rather than the only road.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one sentence: make "standardize activations with mini-batch statistics + a learned γ, β scale and shift" a backpropagatable layer, placed before every nonlinearity.</p>
-<p>② The pain: parameters below keep changing, so a layer's input distribution keeps drifting (the authors call it internal covariate shift), forcing tiny learning rates and fussy initialization, and pushing sigmoids into saturation.</p>
-<p>③ Key design one: normalization must be <strong>inside the model with gradients flowing through it</strong> — otherwise the optimizer pushes forever in a direction the normalization erases (the bias blows up).</p>
-<p>④ Key design two: <code>x̂ = (x − μ_B)/√(σ²_B + ε)</code> must be followed by <code>y = γx̂ + β</code> — two learned parameters let the network recover the identity, so <strong>normalization is proposed, not imposed</strong>.</p>
-<p>⑤ Engineering details: convolutional layers normalize per channel (across all samples and pixel positions); inference switches to moving-average population statistics, at which point BN is a linear transform that folds into the weights at zero cost.</p>
-<p>⑥ Why big learning rates become safe: <code>BN(Wu) = BN((aW)u)</code> — scaling weights by a leaves the output unchanged while shrinking the gradient by 1/a, an automatic negative feedback; plus a Dropout-like noise regularizer (which is why the authors deleted Dropout).</p>
-<p>⑦ Results: with BN, Inception needs 2.3× fewer steps to hit the baseline, 14× fewer with a 5× learning rate; BN-x30 tops out at 74.8%; the ensemble reaches 4.9% top-5 error, under the ~5.1% human estimate; the sigmoid version does not train at all without BN.</p>
-<p>⑧ Impact and reversal: it established the normalization layer and spawned LayerNorm / GroupNorm and kin; but the internal-covariate-shift explanation was overturned by Santurkar et al., with "it smooths the loss landscape" now the mainstream account. Limits: batch-size dependence, train/inference mismatch, coupling between samples, poor fit for sequence models.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Neuroscience · Synaptic scaling (Turrigiano et al., 1998)</b>: Silence a cortical neuron for days and it strengthens all of its excitatory synapses by a common factor until its firing rate returns to set point, a classic case of homeostatic plasticity. BN likewise pulls a layer back to a standard scale while keeping the relative sizes of its inputs. The difference: the neuron works from its own days-long firing history and needs no batch mates, which makes it closer to BN&#39;s inference-time running average.</li>
+<li><b>Neuroscience · Divisive normalization (Carandini &amp; Heeger, 2012)</b>: They argue the brain reuses one standard operation everywhere: divide a neuron&#39;s response by the pooled activity of its neighbours. That is BN&#39;s division by the standard deviation, except the pool is neighbours at the same instant, closer to LayerNorm than to normalizing across examples.</li>
+<li><b>Psychology · Range-frequency theory (Allen Parducci)</b>: Whether a stimulus is judged large or small depends on its rank and position within the set it appears in. A BN output likewise depends on who else is in the batch; but in people this context effect is a bias to correct, while BN turns the batch jitter into a regularizer.</li>
+<li><b>Economics · Hume on the neutrality of money (&ldquo;Of Money&rdquo;, 1752)</b>: Double a nation&#39;s money and, in the long run, every price simply doubles while real wealth stays put; scaling BN&#39;s weights by a and getting the same output is the same structure. Unlike Hume, who granted new money a short-run kick to industry, BN&#39;s invariance is exact, leaving only a gradient shrunk by 1/a.</li>
+<li><b>History of medicine · Aspirin</b>: Felix Hoffmann at Bayer synthesized it in 1897; only in 1971 did John Vane show it blocks prostaglandin synthesis, work that earned him a share of the 1982 Nobel. With BN too, that it works and why it works came apart; the twist is that aspirin had no mechanism for decades, while BN shipped with a wrong one.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Batch Normalization, proposed by Ioffe and Szegedy in 2015, turns standardizing activations with mini-batch mean and variance, plus a learned γ and β, into a backpropagatable layer.</li>
+<li>As earlier layers keep updating, each layer&#39;s input distribution drifts; the authors called this internal covariate shift and blamed it for tiny learning rates and fussy initialization.</li>
+<li>Normalization has to live inside the model with gradients flowing through it, or the optimizer keeps pushing in a direction the normalization erases and the bias blows up.</li>
+<li>The learned γ and β let the network recover the identity whenever it wants, so BN proposes normalization rather than imposing it.</li>
+<li>In convolutional layers BN normalizes per channel, pooling every example and every pixel position into one set of statistics with one γ and β.</li>
+<li>At inference BN switches to running-average population statistics, becoming a fixed linear map that folds into the previous layer&#39;s weights at zero cost.</li>
+<li>Scaling the weights by a leaves BN&#39;s output unchanged and shrinks the gradient by 1/a, a built-in negative feedback that makes large learning rates safe; batch noise adds a regularizing effect.</li>
+<li>With BN and a 5× learning rate, Inception reached baseline accuracy in about 14× fewer steps, and a BN ensemble hit 4.9% top-5 error on ImageNet.</li>
+<li>Santurkar et al. (2018) re-injected distribution shift and training still went fine, undercutting internal covariate shift; the mainstream view now credits a smoother loss landscape.</li>
+<li>Dependence on batch size, a train/inference mismatch and a poor fit for sequence models are BN&#39;s weak spots, and they gave rise to LayerNorm, GroupNorm and other successors.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full algorithm derivation and experimental setup, go to the original.</footer>
 </div>

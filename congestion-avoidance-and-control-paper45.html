@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 45</p>
@@ -185,17 +193,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>难填「又粗又长」的管道</strong>：每 RTT 只加一个包，在高带宽大时延链路上爬满带宽太慢，催生了 CUBIC 等更激进的增长曲线。</li>
 <li><strong>依赖大家都守规矩</strong>：整套稳定建立在所有发送方都遵循 AIMD 之上；一个不退让的流可以挤垮守规矩的邻居，这也推动了后来对模型化（如 BBR 直接测量瓶颈带宽与 RTT）的探索。</li>
 </ul>
-<h2 data-tts="41313a7d5a394bf7">要点</h2>
-<div class="tl">
-<p>① 一句话：给 TCP 加一套端到端自我调速算法，把丢包当拥塞信号，让没有中央调度的互联网不再一起崩溃。</p>
-<p>② 痛点：1986 年拥塞崩溃，吞吐从 32 Kbps 崩到 40 bps；祸首是误判超时→无谓重传→更堵的正反馈死亡螺旋。</p>
-<p>③ 包守恒 + 自时钟：以返回的 ACK 为拍子，一出一进地放包，速率自动锁定瓶颈处理速率，无需知道带宽。</p>
-<p>④ 慢启动：cwnd 从 1 起步、每 RTT 翻倍，温和地点着 ACK 时钟、进入平衡态。</p>
-<p>⑤ 拥塞避免 AIMD：过阈值后每 RTT 只 +1（加性增），丢包则阈值减半（乘性减）；慢升骤降的锯齿收敛到公平又高效。</p>
-<p>⑥ 拆引信：用 RTT 均值＋偏差估超时（<code>SRTT + 4×偏差</code>）＋指数退避＋Karn 算法，掐断误判重传的螺旋。</p>
-<p>⑦ 影响：随 4.3BSD 落地成 TCP 标准，互联网从此不再拥塞崩溃；Reno/CUBIC/BBR 皆其后裔，确立端到端拥塞控制范式。</p>
-<p>⑧ 局限：丢包≠一定拥塞（无线吃亏）、缓冲区膨胀、RTT 不公平、难填高带宽长时延管道、依赖人人守规矩。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>生物进化 · Gordon 的「蚂蚁互联网」</b>：斯坦福的 Deborah Gordon 与 Balaji Prabhakar 2012 年发现，红收获蚁按觅食者带粮回巢的速率决定再派多少只出门——回得快就多派、回得慢就少派，这正是用 ACK 打拍子的自时钟；他们还在蚁群里看到了类似慢启动和超时的行为。不像的是：蚁群调节是为了不白耗体力和水分，不是和别的蚁群公平分享一条路。</li>
+<li><b>复杂性科学 · 没有瓶颈的幽灵堵车</b>：Sugiyama 等人 2008 年让 22 辆车在 230 米环形跑道上匀速行驶，不久便自发出现向后传播的堵车团——密度一过临界，小扰动就被放大，和拥塞崩溃的正反馈同构。不像在：司机刹过头只会降速，不会像重传那样往路上塞进「重复的车」。</li>
+<li><b>经济学 · Ostrom 与公地治理</b>：带宽是典型的公共池塘资源，AIMD 像一条人人自律的公地规范，躲开了 Hardin 1968 年说的「公地悲剧」。不像在：Ostrom 1990 年总结的长寿公地都靠相互监督和分级惩罚，TCP 却没人监督，不退让的流照样占便宜。</li>
+<li><b>神经科学 · 突触缩放（synaptic scaling）</b>：Turrigiano 等 1998 年发现，神经元活动长期偏高或偏低时，会把全部突触强度按同一比例整体调低或调高，靠局部规则守住放电率——和乘性减一样「按比例收放」。不像在：突触缩放要保留突触间的相对差异，AIMD 的加乘配合却恰恰要抹平各连接的差异、收敛到公平。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Jacobson 与 Karels 1988 年的这篇论文给 TCP 加上端到端自我调速，让没有中央调度的互联网不再拥塞崩溃。</li>
+<li>1986 年 LBL 到伯克利的一条链路，吞吐从 32 Kbps 崩到 40 bps，掉了近三个数量级，却没有任何硬件故障。</li>
+<li>拥塞崩溃是一个正反馈螺旋：超时估得太短，没丢的包被重发，网络更堵、RTT 更长、误判更多。</li>
+<li>包守恒加自时钟：以返回的 ACK 为节拍，出去一个包才放一个新包，速率自动贴合瓶颈，无需知道带宽。</li>
+<li>慢启动让拥塞窗口从 1 个包起步、每个 RTT 翻一倍，温和地把 ACK 时钟点着、进入平衡态。</li>
+<li>AIMD 在阈值之上每个 RTT 只加 1 个包、一丢包就砍半，慢升骤降的锯齿让各连接收敛到公平又高效。</li>
+<li>超时改用 RTT 均值加 4 倍平均偏差，再配指数退避与 Karn 算法，掐断了误判重传的螺旋。</li>
+<li>Jacobson 的算法随 4.3BSD Tahoe 成为 TCP 标准，Reno、CUBIC、BBR 都在它确立的端到端范式上迭代。</li>
+<li>把所有丢包都当拥塞，让 TCP 在无线链路上白白减半，还会灌满大缓冲区、造成缓冲区膨胀。</li>
+<li>TCP 的稳定像一条没有监督和惩罚的公地规范：一个不退让的流就能挤垮守规矩的邻居。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整算法伪码与实测曲线，再去翻原文。</footer>
 </div>

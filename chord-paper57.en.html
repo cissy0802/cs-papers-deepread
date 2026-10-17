@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT PAPER DEEP-READ · PAPER 57</p>
@@ -195,18 +203,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Industry mostly settled on Kademlia</strong>: real large-scale DHT deployments (BitTorrent's Mainline DHT, IPFS, Ethereum peer discovery) mostly chose <strong>Kademlia</strong> — its XOR distance metric is symmetric, its routing table is simpler to maintain, and it tolerates churn more gracefully. Chord reads more as "the clearest classic in the textbook" than the deployed winner.</li>
 </ul>
 
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: Chord is a fully decentralized DHT solving one primitive, <code>lookup(key)→responsible node</code>, with <code>O(log N)</code> routing per machine and <code>O(log N)</code> hops per lookup.</p>
-<p>② Pain: P2P lookup was either a central index (single point of failure / shutdown) or flooding (<code>O(N)</code> messages, no guarantee) — missing a decentralized, scalable, guaranteed primitive.</p>
-<p>③ Consistent hashing + ring: keys and nodes hashed onto a <code>2<sup>m</sup></code> ring; a key goes to "the first node clockwise (successor)"; a join/leave moves only the adjacent slice of keys (<code>O(K/N)</code>).</p>
-<p>④ Correctness via successor: each node knows its successor; forwarding around the ring always finds the target — correct but <code>O(N)</code> slow.</p>
-<p>⑤ Speed via finger table: <code>finger[i]=successor(n+2<sup>i−1</sup>)</code>, distances doubling; a lookup jumps to the nearest finger not past the target, halving the distance each hop → <code>O(log N)</code> hops.</p>
-<p>⑥ Self-healing via stabilization: successor pointers fixed periodically (correctness), finger table fixed lazily (speed), successor list against sudden death; no central coordinator, only local updates.</p>
-<p>⑦ Results: <code>O(log N)</code> lookup / <code>O(log²N)</code> join in theory; simulation agrees; resilient to large simultaneous failures; virtual nodes smooth load.</p>
-<p>⑧ Impact: the consistent-hashing ring became the bedrock of a generation of NoSQL (Dynamo/Cassandra) and P2P systems; a model for "abstract into a provable minimal primitive."</p>
-<p>⑨ Limits: no defense against malicious nodes, fragile under heavy churn, ignores physical proximity, exact-match only; large-scale DHTs mostly use Kademlia.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Social psychology · Milgram's small world and Kleinberg</b>: in Milgram's 1967 letter-passing study, each person forwarded a letter only to an acquaintance likelier to know the target, and letters often arrived in about six steps. Kleinberg showed in 2000 that greedy forwarding on local knowledge is fast only if long-range ties thin out with distance, one per distance scale; Chord's doubling fingers are a deterministic version of that. Unlike: human "distance" blends geography and occupation, with no provable hop bound.</li>
+<li><b>Neuroscience · grid-cell modules</b>: grid cells in the entorhinal cortex cluster into a few scale modules, each roughly 1.4 times coarser than the last (Stensola et al., 2012), so position is read off several rulers of different grain, much like the finger table's doubling ticks. Unlike: the brain encodes one location at all scales at once, while Chord uses its scales to close in hop by hop.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society"</b>: Hayek argued in 1945 that dispersed local knowledge can never be gathered into one central board, so coordination has to be decentralized. Chord likewise drops the central directory: each machine knows only <code>O(log N)</code> peers, yet any key can be found. Unlike: prices compress information and broadcast it to everyone, whereas Chord just relays one query along.</li>
+<li><b>Buddhism · dependent origination and emptiness</b>: which keys a Chord node owns is not intrinsic to it; it falls out of where the node sits relative to its predecessor, and shifts the moment that neighbor changes, close to the idea that things arise from conditions and lack inherent nature. Unlike: a node's hashed ID stays fixed, a lasting "name" of exactly the kind Buddhist thought sets out to dissolve.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>Chord solves exactly one primitive: given a key, return the node responsible for it; storage and replication sit on top.</li>
+<li>P2P lookup used to mean either a Napster-style central index that could be shut down, or Gnutella-style flooding that could not scale.</li>
+<li>Consistent hashing places keys and nodes on one ring with the same hash, and each key goes to the first node clockwise.</li>
+<li>When a node joins or leaves, only the adjacent slice of keys on the ring moves; everything else stays put.</li>
+<li>Forwarding along successor pointers alone always finds the right node, but can take <code>O(N)</code> steps in the worst case.</li>
+<li>Fingers point 1, 2, 4, 8… positions away, so each hop halves the remaining distance and lookups take <code>O(log N)</code> hops.</li>
+<li>Stabilization repairs successor pointers promptly for correctness, refreshes fingers lazily for speed, and keeps a successor list against sudden failures.</li>
+<li>The consistent-hashing ring with virtual nodes became how Dynamo, Cassandra and similar NoSQL stores spread their data.</li>
+<li>Chord trusts every node, ignores physical network distance and supports only exact-match lookups; large real DHTs mostly chose Kademlia.</li>
+<li>A finger table with doubling spacing is exactly the long-range link pattern Kleinberg showed makes navigation on local knowledge fast.</li>
+</ol>
 </div>
 
 <footer>IT Paper Deep-Read · Finish this page ≈ grasp the paper's core; for the full pseudocode and proofs, go read the original.</footer>

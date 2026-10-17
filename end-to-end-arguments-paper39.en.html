@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 39</p>
@@ -175,17 +183,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>"Where the endpoint is" isn't always clear</strong>: as an application grows complex (multi-tier proxies, caches, service meshes), which node counts as the true "end" gets blurry, and applying the principle needs reinterpretation.</li>
 <li><strong>It's a principle, not an algorithm</strong>: it can't be applied mechanically and still relies on the designer's judgment — which is both its flexibility and the reason it is often misused (invoked to support contradictory conclusions).</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① One line: if a function can be implemented completely and correctly only with the knowledge and help of the applications at the two ends, it belongs at the endpoints, not built into the low-level network.</p>
-<p>② The pain: designing layered systems, there's always the temptation to stuff reliability, encryption, etc. into the low level to "do it once, share it with all" — but that's often wrong.</p>
-<p>③ The decisive example: careful file transfer — data crosses disk, memory, network, memory, disk, every link can fail, and the network can't see the disk/memory errors.</p>
-<p>④ Mechanism: the only reliable way is an end-to-end check (each end computes the file checksum, compares, resends on mismatch); since it's indispensable, lower-level reliability is redundant for correctness.</p>
-<p>⑤ But the low level can "help": on a bad network, low-level retransmission can <strong>reduce</strong> (not eliminate) the chance of an end-to-end retry — a legitimate performance optimization; whether to add it is an engineering trade-off.</p>
-<p>⑥ The same logic extends to encryption/authentication, delivery acknowledgment, and dedup/ordering — all pointing to the endpoints.</p>
-<p>⑦ Impact: it shaped TCP/IP's "best-effort IP + TCP in the hosts" hourglass, the "dumb network, smart endpoints" consensus, and the technical basis of network neutrality.</p>
-<p>⑧ Limits: real networks are eroded by middleboxes; pure end-to-end is inefficient on high-loss links; "where the endpoint is" can blur; it's a judgment-requiring principle, not a mechanical formula.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Molecular biology · layered fidelity in DNA replication</b>: base selection by the polymerase, exonuclease proofreading, and post-replication mismatch repair each cut the error rate, together reaching roughly one mistake per billion bases copied or better; each layer is like link-level retransmission, reducing errors but never zeroing them. The difference: a cell has no final compare-and-resend check, so what slips through becomes a mutation, which is the raw material of evolution.</li>
+<li><b>Economics · Hayek, "The Use of Knowledge in Society" (1945)</b>: Hayek argued that knowledge of particular circumstances is scattered among the people on the spot, beyond any central planner's reach; the end-to-end argument likewise holds that only the endpoint application knows what "correct" means. Unlike a market, though, the network aggregates nothing: there is no price signal, just bytes moved.</li>
+<li><b>Political philosophy · the principle of subsidiarity</b>: Pius XI's 1931 encyclical Quadragesimo Anno held that larger bodies should not take over what smaller ones can do, stepping in only to give aid (subsidium), much as lower-layer reliability is merely a helper. The difference: subsidiarity is about autonomy and dignity, the end-to-end argument about which layer can guarantee correctness at all.</li>
+<li><b>Complexity science · bow-tie architecture (Csete &amp; Doyle, 2004)</b>: they described metabolism as a bow tie, with many nutrients funneling into a few universal carriers such as ATP and NADH and fanning out into many products, the same shape as the IP narrow waist. Unlike IP, the metabolic knot is tightly regulated, anything but dumb, and the design is robust yet carries predictable fragilities.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>The end-to-end argument says a function that needs the endpoints' knowledge to be done completely and correctly belongs at the endpoints, not in the network.</li>
+<li>Saltzer, Reed and Clark at MIT distilled scattered early-Internet intuitions into one principle that can be stated and argued over.</li>
+<li>The instinct to push reliability or encryption into a low layer, "do it once and share it", is often wrong.</li>
+<li>In careful file transfer, the disk, memory and network can each corrupt data, and the network cannot see errors inside the hosts.</li>
+<li>The only reliable fix is an end-to-end check: both ends checksum the whole file, compare, and resend it on a mismatch.</li>
+<li>Low-level reliable delivery is only a performance optimization: it cuts end-to-end retries on a bad network but never replaces the end-to-end check.</li>
+<li>Applied to encryption and authentication, delivery acknowledgment, and duplicate suppression and ordering, the same reasoning points to the endpoints.</li>
+<li>The end-to-end argument underlies TCP/IP's hourglass of best-effort IP plus TCP in the hosts, and the "dumb network, smart endpoints" consensus.</li>
+<li>Middleboxes such as NAT, firewalls and CDNs push functions back into the network, and pure end-to-end is inefficient on lossy links, so the principle needs judgment.</li>
+<li>DNA replication's layered proofreading drives errors very low without eliminating them, the same shape as lower-layer reliability that reduces but cannot remove errors.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ grasping the paper's core; for the full argument and more examples, go to the original.</footer>
 </div>

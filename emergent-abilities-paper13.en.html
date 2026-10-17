@@ -32,6 +32,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 13</p>
@@ -139,17 +147,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Limited comparability</strong>: comparing across model families, data, training details, and evaluation protocols can't be fully aligned, so the steepness of individual curves should be read with care.</li>
 </ul>
 
-<h2>The essentials</h2>
-<div class="tl">
-<p>① In one line: some abilities are absent in small models and appear "suddenly" past a scale threshold, unpredictably — the authors name these "emergent abilities."</p>
-<p>② The pain: scaling laws say "overall error falls smoothly and predictably," but on specific tasks scores are often "a long flat line + a cliff," not extrapolable.</p>
-<p>③ Definition: absent in small, present in large; the key is the phase-transition shape + unpredictability, not merely "bigger is stronger."</p>
-<p>④ Method: a lineup of same-family models of different sizes, uniform few-shot prompts on the same tasks, scale on the x-axis and accuracy on the y-axis, yielding "flat line + cliff" repeatedly.</p>
-<p>⑤ Tricks emerge too: chain-of-thought and instruction tuning are useless or harmful on small models and only work once big enough.</p>
-<p>⑥ Results: a dozen-plus tasks (arithmetic, obscure-language QA, MMLU, etc.) emerge around 10²²–10²⁴ FLOPs; recurs across GPT-3, LaMDA, Gopher, Chinchilla, PaLM.</p>
-<p>⑦ Impact: pushed "emergence" into common vocabulary, fueling the "keep scaling" drive, igniting safety concern over unpredictable risks, and raising the stakes of task-by-task evaluation.</p>
-<p>⑧ Limits: Schaeffer et al. 2023's "mirage" rebuttal — many jumps are artifacts of discontinuous metrics, smooth under continuous ones; "unpredictability" weakened; the paper only observes, without explaining the mechanism.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Evolution · Punctuated equilibrium</b>: Eldredge and Gould (1972) argued that species sit in long stasis in the fossil record while new species appear "suddenly" — the same long-flat-then-cliff shape. Even the dispute rhymes: critics blamed the jumps partly on a sparse record. Unlike LLMs, evolution's "sudden" still spans tens of thousands of years.</li>
+<li><b>Psychology · The learning curve</b>: Gallistel and colleagues (PNAS, 2004) reanalyzed animal conditioning data and found that individual subjects mostly learn in a single step; the smooth group curve comes from averaging steps that happen at different times. It mirrors the "mirage" debate: there a coarse metric turns gradual gains into a cliff, here averaging turns cliffs into a slope. The ruler can fool you in both directions.</li>
+<li><b>Philosophy · Weak vs. strong emergence</b>: Chalmers separates weak emergence — derivable from the low level in principle, just surprising — from strong emergence, which is not derivable even in principle. Defining emergence as "can't be extrapolated from small models" puts this paper on the weak side: a failure of the observer's forecast, not a new law.</li>
+<li><b>Complexity · The giant component</b>: Erdős and Rényi (1960) showed that once a random graph's average degree passes 1, a connected cluster spanning a sizable fraction of all nodes appears abruptly. The paper's hunch that an ability clicks once every sub-step is in place has the same structure; the difference is that the graph's threshold can be computed exactly, while a model's is only measured after the fact.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>An emergent ability is one that is absent in small models and appears suddenly once model scale crosses some threshold.</li>
+<li>Jason Wei and colleagues' 2022 paper proposes no new model; it names the phenomenon and gathers the evidence systematically.</li>
+<li>Scaling laws make average loss fall smoothly and predictably, but on individual tasks scores often show a long flat line and then a cliff.</li>
+<li>The defining feature of emergence is unpredictability: the flat stretch on small models gives no hint of whether or where a jump will come.</li>
+<li>The method runs same-family models of different sizes on the same tasks with uniform few-shot prompts and plots accuracy against training compute.</li>
+<li>A dozen-plus tasks, including arithmetic, Persian QA, and MMLU, turn emergent around 10²²–10²⁴ training FLOPs, across several model families.</li>
+<li>Prompting techniques such as chain-of-thought and instruction tuning are useless or even harmful on small models and only help at large scale.</li>
+<li>The emergence picture both fuels the drive to keep scaling and warns safety researchers that harmful abilities could also appear unannounced.</li>
+<li>Schaeffer and colleagues (2023) showed that many jumps are artifacts of all-or-nothing metrics and turn smooth under continuous metrics.</li>
+<li>In animal learning, smooth group curves are often averages of individual one-step jumps, a reminder that measurement can mislead in both directions.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ the paper's core; for the full task list and every curve, go to the original.</footer>
 </div>

@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">CS PAPERS DEEP-READ · PAPER 27</p>
@@ -199,16 +207,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Ejection and degradation both cost something.</strong> A too-sensitive probation threshold makes machines flap in and out, and ejecting a machine pushes its load onto others; "good enough" directly sacrifices result quality, which the article never quantifies — and it simply doesn't apply to accounting or regulatory lookups.</li>
 <li><strong>It assumes a homogeneous, controllable environment, and it masks rather than cures.</strong> The argument rests on a single datacenter's low-latency network, a unified software stack, and control over the whole stack; in multi-tenant clouds and heterogeneous microservices, "replicas are choosable, cancellations arrive, latency is measurable" all need re-verifying. And once the symptom is hidden, the sources of variability still consume resources — better isolation is the complementary path.</li>
 </ul>
-<h2>Takeaways</h2>
-<div class="tl">
-<p>① In one line: under wide fan-out, response time is set by the slowest component, so occasional per-machine variability becomes a permanent stall; build "tail-tolerant" software the way we build fault-tolerant software.</p>
-<p>② Amplification: 1% chance of exceeding a second per machine, waiting on 100 in parallel, means 63% of requests exceed a second; measured, one leaf is about 10 ms at p99 versus about 140 ms waiting for all.</p>
-<p>③ Sources of variability: resource contention, background daemons, global sharing, maintenance activity, garbage collection, multi-layer queueing, power throttling — mostly by-products of normal operation, not removable.</p>
-<p>④ Shrinking it: service classes plus short high-level queues; slicing long requests to break head-of-line blocking; throttling background work and <strong>synchronizing</strong> the disruption (aligned beats staggered, because you always wait for every machine).</p>
-<p>⑤ Within-request: <strong>hedged requests</strong> (send a second copy past the 95th percentile of expected latency, take whoever's first) and <strong>tied requests</strong> (enqueue on two, first to start cancels the other, consuming the queueing difference). Key number: reading 1,000 keys, hedging after 10 ms took p99.9 from 1,800 ms to 74 ms for 2% extra requests.</p>
-<p>⑥ Cross-request and retrieval specialties: <strong>micro-partitions</strong>, <strong>selective replication</strong> of hot partitions, <strong>latency-induced probation</strong> (eject the slow machine — fewer machines, faster service), <strong>good enough</strong>, and <strong>canary requests</strong>; writes are less urgent because they can go async, tolerate brief inconsistency, and commit on a quorum.</p>
-<p>⑦ Limitations: experience rather than theory; it buys stability with slack (retries can backfire under load); it depends on idempotence and deliverable cancellation; and it masks the symptom rather than curing the source.</p>
-</div>
+<h2>Crossovers</h2>
+<div class="crossx"><ul>
+<li><b>Economics · Kremer's O-ring theory</b>: In 1993 Michael Kremer named a production function after the Challenger O-ring: output is the product of every step's success rate, and one failed step ruins the whole thing. That is the same multiplication as 0.99¹⁰⁰ &mdash; the longer the chain, the deadlier a small per-link flaw. The difference: Kremer derives that skilled workers cluster together, while this paper's remedy is redundancy that routes around the weak link.</li>
+<li><b>Psychology · the race model</b>: Raab (1962) explained the redundant-signals effect as statistical facilitation &mdash; people react faster to two simultaneous signals because two channels race and whichever arrives first triggers the response. That is a hedged request's "first answer wins." Unlike a server, the brain never cancels the losing channel.</li>
+<li><b>Evolution · bet-hedging</b>: Cohen (1966) modeled desert annuals that germinate only part of their seeds each year and keep the rest dormant, giving up a little average yield to avoid a year of total wipeout. Hedged requests likewise spend about 2% extra load to cut off the worst tail; a seed, though, bets on unknown weather and can't cancel afterwards.</li>
+<li><b>Ecology · periodical cicadas</b>: Periodical cicadas emerge en masse every 13 or 17 years, so predators can eat only a fraction and the losses are packed into one short window &mdash; the same shape as synchronizing background maintenance: stagger it and you get hit every day; align it and it hurts once. The cicadas use synchrony to dilute the casualty rate; the cluster uses it to shorten the time spent suffering.</li>
+</ul></div>
+<h2>Ten takeaways</h2>
+<ol class="takeaways">
+<li>In a wide fan-out system, a request's latency is set by the slowest machine it waits on, not by the average.</li>
+<li>If each server exceeds one second just 1% of the time, waiting on 100 of them in parallel pushes 63% of requests past a second.</li>
+<li>Tail latency comes from contention, background maintenance, garbage collection, layered queueing and power throttling &mdash; by-products of normal operation that can't be eliminated.</li>
+<li>Dean and Barroso argue for "tail-tolerant" software, built like fault tolerance, that assembles predictable services from unpredictable parts.</li>
+<li>Running heavy background work on every machine at once beats staggering it, because the damage is squeezed into one short window.</li>
+<li>Hedged requests resend to a second replica after a delay, cutting p99.9 from 1,800 ms to 74 ms for only 2% extra requests.</li>
+<li>Tied requests enqueue on two replicas at once, and whichever starts first cancels the other, absorbing the difference in queueing delay.</li>
+<li>Micro-partitions, selective replication and latency-induced probation rebalance load across requests; benching one slow machine makes the whole service faster.</li>
+<li>"The Tail at Scale" moved the industry from watching average latency to watching p99 and p99.9, and made hedging and outlier ejection standard parts.</li>
+<li>Tail tolerance buys stability with spare capacity and needs idempotent, cancellable operations; on a saturated cluster, extra requests can make things worse.</li>
+</ol>
 </div>
 <footer>CS Papers Deep-Read · Reading this page ≈ getting the core of the paper; for the full measurement tables and further detail, go to the original.</footer>
 </div>

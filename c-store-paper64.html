@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 64</p>
@@ -217,18 +225,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>物理设计成了新负担</strong>：建哪些投影、按什么排序、冗余几份直接决定性能；论文把这件难事推给一个自动设计工具，选型错了就退化成「又占空间又不快」。</li>
 <li><strong>不适合 OLTP</strong>：改一行要触及多个投影与多处编码，只读查询看到的又是几秒前的快照——这是设计的自觉取舍，不是疏漏。</li>
 </ul>
-<h2 data-tts="f0dc354a5bce6b96">要点</h2>
-<div class="tl">
-<p>① 一句话：按列存 + 重压缩 + 排序冗余投影 + 写读分离，为「读远多于写」的分析负载重做一套数据库。</p>
-<p>② 痛点：行存把整行摆在一起，而分析查询只碰少数列，磁盘被迫搬运大量无人查看的字段。</p>
-<p>③ 列存机制：每列连续存放，只读要用的列；拼回一行靠「第 i 个值属于第 i 行」的位置对齐，值上不存行号。</p>
-<p>④ 压缩：按「是否排序键 × 取值多不多」选 RLE / 位图 / 差分 / 不编码；关键在算子直接吃压缩表示，省空间同时省 CPU。</p>
-<p>⑤ 投影：不存表、只存按不同排序键排好的重叠列组，水平切段；排好序的副本同时充当索引、压缩加速器和容错副本，跨投影拼行靠 join index。</p>
-<p>⑥ 写入：新数据进不压缩的 WS，后台搬运工批量归并进压实的 RS，查询两边同读——「小写区 + 大读区 + 后台合并」的祖型之一。</p>
-<p>⑦ 并发与容错：只读查询按 epoch 取过去时刻的快照、全程不加锁；RS 不记日志，靠 K-safety 副本互相「查」回丢失的数据。</p>
-<p>⑧ 结果：7 条 TPC-H 风格查询上比商用行存快约 164 倍、比商用列存快约 21 倍，占空间约为行存四成；但原型的写入侧未完整实现，作者自称初步。</p>
-<p>⑨ 影响与局限：商业化为 Vertica，成为 ClickHouse / Redshift / Snowflake / BigQuery 与 Parquet、ORC 的共同底座；但那组对比不对等、收益来源当时未拆清、join index 在工程上基本没落地、物理设计的难题被转嫁给了设计工具。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>神经科学 · 互补学习系统（McClelland、McNaughton、O'Reilly，1995）</b>：海马体快速记下新经历，再反复「重放」，把它们慢慢并进新皮层的长期知识——正是 WS 先收写入、搬运工后台批量归并进 RS 的形状。不像在于：皮层合并会提炼共性、丢掉细节，搬运工一行都不能丢。</li>
+<li><b>生物学 · 简并性（Edelman 与 Gally，2001）</b>：「冗余」是相同部件干同一件事，「简并」是结构不同的部件给出同样输出，后者才是生物稳健的来源。排序各异却能答同一查询、互为备份的投影更像简并；只是它由设计工具算出，不是演化攒下的。</li>
+<li><b>神经科学 · Barlow 冗余消减假说（1961）</b>：感觉通路每一级都去掉冗余、重新编码，下游直接在压缩后的码上工作，和 C-Store 算子直接吃 RLE 是同一招。区别是神经编码可以有损，数据库压缩必须原样还原。</li>
+<li><b>语言哲学 · 索绪尔的「价值」（1916）</b>：符号的价值不在自身，而在它在系统里的位置；列存里的值属于哪一行，也只看它排第几。不像的是，索绪尔的位置是一张差异网，列存的位置只是个序号。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>C-Store 用列存、重压缩、排序投影和读写分离，为读多写少的分析负载重做数据库。</li>
+<li>分析查询只碰少数几列，行存却搬整行，大半磁盘 I/O 浪费在没人看的字段上。</li>
+<li>列存每列单独连续存放，拼回一行靠「第 i 个值属于第 i 行」，不存行号。</li>
+<li>C-Store 按是否排序、取值多少，为每列选 RLE、位图、差分或不编码。</li>
+<li>算子直接在压缩数据上计算、不先解压，压缩同时省下 I/O 和 CPU。</li>
+<li>投影是按不同排序键存的重叠列组，同时充当索引、压缩加速器和容错副本。</li>
+<li>写入先进不压缩的 WS，后台搬运工再批量归并进压实的 RS，读时两边合并。</li>
+<li>只读查询读稍早的 epoch 快照、不加锁；RS 不记日志，靠 K-safety 副本恢复。</li>
+<li>初步实验比商用行存快约 164 倍，但写入侧没做完，对比也不对等。</li>
+<li>C-Store 商业化为 Vertica，列式加重压缩从此成为数据仓库的默认设计。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想要完整的编码细节与查询执行器设计，再去翻原文。</footer>
 </div>

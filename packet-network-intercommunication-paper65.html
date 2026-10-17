@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 65</p>
@@ -233,17 +241,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>路由基本没谈</strong>：网关凭什么知道往哪转？论文只说它有一张表，这张表怎么建、怎么在网关之间同步则留白，后来才由 EGP、BGP 填上——域间路由至今仍是互联网最脆弱的环节之一。</li>
 <li><strong>原创性归属有争议</strong>：纯数据报、可靠性归端点这两个关键思想很大程度来自 Pouzin 的 CYCLADES，Cerf 本人也公开承认受其影响；本文的贡献更在于<strong>把它们整合成一套可实现、可演进的完整方案</strong>。</li>
 </ul>
-<h2 data-tts="fd1128fb91182bca">要点</h2>
-<div class="tl">
-<p>① 一句话：用网关在边界翻译 + 一种谁都认的统一内网包与全局地址，把互不兼容的网络拼成「网络的网络」，可靠性全交给两端。</p>
-<p>② 痛点：1974 年已有多张分组网，但包长、地址、可靠性假设、延迟全不同；统一改造在政治上不可能，逐对翻译是 n² 的死路。</p>
-<p>③ 网关 + 封装：网关由两半构成、各属一张网，对每张网来说只是台本地主机；统一内网包嵌在各网本地包里，网关只换外层信封、内层原封不动——<strong>于是两张网都不必改动自己</strong>。</p>
-<p>④ 地址：「网络号 + 网内标识」的两段式分层寻址，网关只看网络号就能转发；今天 IP 的前缀路由是它的直系后代。</p>
-<p>⑤ 最关键的一刀：中间只<em>尽力而为</em>、网关不保存会话状态；靠端上的<strong>逐字节序号 + 累积确认 + 超时重传 + 窗口 + 端到端校验和</strong>造出可靠字节流。理由是只有两端知道「齐没齐」，且无状态的中间设备更快、更好扩展。</p>
-<p>⑥ 配套：网关按需切片、由目的端重组（为保住网关无状态）；端口让一台主机上的多个程序并行通信。</p>
-<p>⑦ 验证：不是实验论文——靠 RFC 675 规范、斯坦福/BBN/UCL 的独立实现互通、1977 年三网演示，以及 1983 年 ARPANET 全网切换到 TCP/IP。</p>
-<p>⑧ 影响与局限：造出互联网的「沙漏细腰」，腰上不带智能，两头才能无许可地疯长；代价是地址开得太小（8 位网络号 → IPv4 耗尽 → IPv6）、TCP 与 IP 本是一体（1978 才拆开，才有 UDP）、网关分片成包袱、只有流量控制没有拥塞控制（1986 崩溃、1988 补上）、毫无安全设计、路由留白。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>复杂性科学 · 领结结构（bow-tie，Csete 与 Doyle）</b>：细胞代谢先把五花八门的养料汇成 ATP、NADH 等少数几种通用载体，再由它们造出千百种产物，中间那一小撮就是「细腰」，和互联网的沙漏同一个形状。不像在于：细胞的腰是演化出来的，还挂满反馈调控，一点也不「愚笨」。</li>
+<li><b>生物进化 · 「冻结的偶然」（Francis Crick）</b>：Crick 提出，遗传密码一旦被所有生物共用，改任何一个密码子都会同时打乱成千上万个蛋白，早期的偶然选择就此冻住；8 位网络号、IPv4 地址被锁死而 IPv6 至今迁不完，是同一种锁定。不像的是，线粒体等处仍有略作改动的变体密码，互联网的腰却几乎没有方言。</li>
+<li><b>经济学 · 哈耶克《知识在社会中的运用》</b>：哈耶克认为要紧的知识散落在各个当事人手里，中央计划者收集不来，只能让分散的决策经由价格去协调；Kahn「不设全局控制」、把智能留在两端，是同一个判断。不像的是，1974 年的网络连价格这样的信号都不传——中间堵了两端毫不知情，要等拥塞控制把丢包当作「涨价」信号才补上。</li>
+<li><b>东方哲学 · 老子「当其无，有室之用」</b>：《道德经》说凿出门窗、留出空处，屋子才有用；IP 这层腰正因为不带智能、什么都不替你做，上下两头才装得进几十年后才出现的东西。不像在于：老子讲的是「无」的普遍道理，这里的「空」却是有价钱的工程取舍，拥塞和安全都得事后补。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Cerf 与 Kahn 1974 年的这篇论文要解决的不是一张网怎么建，而是几张互不兼容的分组网怎么互通。</li>
+<li>各网在地址、包长上限、可靠性假设和延迟上的差异是结构性的，统一改造政治上不可能，逐对翻译要 n² 个转换器。</li>
+<li>网关由两半构成、各属一张网，对每张网来说只是一台本地主机，所以任何一张网都不必改动自己。</li>
+<li>统一内网包嵌在各网本地包里，网关只换外层信封；「网络号＋网内标识」的分层地址是今天 IP 前缀路由的前身。</li>
+<li>Cerf 与 Kahn 让中间的网络和网关只尽力而为、不保存会话状态，可靠性整体推给两端主机上的 TCP。</li>
+<li>TCP 靠逐字节序号、累积确认、超时重传、窗口和端到端校验和，在不可靠的路上造出一条可靠字节流。</li>
+<li>网关按需分片、由目的端重组，是为保住网关无状态付的代价；端口则让一台主机上的多个程序并行通信。</li>
+<li>TCP/IP 的验证不靠实验数字，而靠 RFC 675、三家独立实现互通、1977 年三网演示和 1983 年 ARPANET 全网切换。</li>
+<li>不带智能的「沙漏细腰」让新网络无需许可就能接入，代价是地址太小、没有拥塞控制、毫无安全设计、路由留白。</li>
+<li>细胞代谢的领结结构同样用少数通用载体连起万千输入与产物，形状和互联网的细腰如出一辙。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想看完整的包头字段与状态机细节，再去翻原文。</footer>
 </div>

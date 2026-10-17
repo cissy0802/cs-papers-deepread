@@ -33,6 +33,14 @@ figcaption{margin-top:10px;font-size:0.82rem;color:#7c8593;text-align:center;fon
 .glossary li{margin:5px 0;font-size:0.96rem}
 .tl{background:rgba(240,180,41,0.06);border-left:3px solid #f0b429;border-radius:6px;padding:14px 18px;margin-top:10px}
 footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.16);font-size:0.82rem;color:#5a6069}
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
 </style></head><body>
 <div class="container">
 <p class="top">IT 论文精读 · PAPER 67</p>
@@ -204,18 +212,26 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>作为工业论文不可复现</strong>：Lambda 真实的密度、超卖比例、槽位回收策略这些关键运营参数并未公开，外部研究者只能照论文的定性描述推测。</li>
 <li><strong>它解决的是隔离与密度，不是 serverless 的结构性问题</strong>：Berkeley View 与同年 Hellerstein 那篇指出的「函数之间无法直接通信、必须把数据运到代码那儿」依旧成立——砖烧得再好，也不改变房子的户型。</li>
 </ul>
-<h2 data-tts="012e2633584329ab">要点</h2>
-<div class="tl">
-<p>① 一句话：把虚拟机的设备模型削到只剩 virtio 网卡、块设备、串口和一个关机键，用 5 万行 Rust 重写 VMM，于是虚拟机级别的隔离拿到了容器级别的密度与启动速度。</p>
-<p>② 旧世界的痛：Lambda 早期一个客户账号独占一台实例，隔离干净但粒度太粗——密度低、开机以秒计、机器空转，与「按毫秒计费」的生意直接冲突。</p>
-<p>③ 被否决的路线：容器（边界是三百多个系统调用，太宽）、语言级沙箱（限定语言，兼容性不够）、用户态内核（兼容与性能双重代价）、通用 VMM（百万行代码、秒级开机、几十 MB 常驻）。</p>
-<p>④ 关键判断：<strong>慢的不是虚拟化，是设备模型</strong>。KVM 把 CPU 与内存虚拟化交给硬件后已经很轻，秒级开机花在 BIOS 自检与 PCI/USB 枚举上；而 serverless 的兼容性要求只是「任意 Linux 二进制」，减法才做得动。</p>
-<p>⑤ 机制：不跑 BIOS、直接装入未压缩内核跳进去；设备只剩四件；一台 microVM 一个进程、vCPU 是线程；外面套 jailer（chroot + namespace + cgroup + seccomp 白名单 + 非 root）做第二层边界。</p>
-<p>⑥ 运营旋钮：内存按需分页支撑<strong>超卖</strong>，块设备与网卡内置令牌桶<strong>限速</strong>治吵闹邻居；控制面是 Unix socket 上的 REST API，上层 MicroManager 管槽位，槽位从不跨客户复用。</p>
-<p>⑦ 结果：VMM 开销 &lt; 5 MiB、约 125 ms 到用户代码、单机每秒 150 台；启动与内存胜过 QEMU，IO 当时不如，论文照实写；最硬的证据是 Lambda 与 Fargate 的生产全量运行。</p>
-<p>⑧ 影响：拆掉了「安全 vs 快」的假两难，坐实了 serverless 的成本模型，并带出 rust-vmm 这一批「用 Rust 拼 VMM」的生态。</p>
-<p>⑨ 局限：没有 GPU / PCI 直通、IO 性能有欠账、冷启动大头在客户运行时（后来靠快照恢复解决）、KVM 仍在 TCB 内、侧信道挡不住、运营参数不公开、也不改变 serverless「把数据运到代码那儿」的结构性缺陷。</p>
-</div>
+<h2>越界 · 跨学科的联想</h2>
+<div class="crossx"><ul>
+<li><b>合成生物学 · JCVI-syn3.0 最小基因组</b>：2016 年 Venter 研究所把支原体基因组削到 473 个基因，细胞仍能复制；和 Firecracker 一样，「最小」只在营养齐全的培养基里成立。不像在哪：首版删过头、细胞活不成，才发现一批「准必需」基因。</li>
+<li><b>安全科学 · 瑞士奶酪模型</b>：James Reason 1990 年提出：每层防线都有洞，洞对齐才出事故；KVM 外再套 jailer 正是这种叠片。不像在哪：奶酪的洞随机分布，攻击者却专找对齐的路。</li>
+<li><b>神经科学 · 血脑屏障</b>：脑毛细血管靠紧密连接封住缝隙，营养只能经专门转运体进出，像 seccomp 白名单加 virtio 窄接口。不像在哪：脂溶性小分子能直接穿过，漏洞出自化学而非代码。</li>
+<li><b>经济学 · Diamond–Dybvig 挤兑模型</b>：1983 年的模型说明，银行拿活期存款做长期投资，大家同时取钱就崩；内存超卖赌的也是租户不会同时用满。不像在哪：挤兑靠恐慌自我实现，租户彼此看不见。</li>
+</ul></div>
+<h2>十条要点</h2>
+<ol class="takeaways">
+<li>Lambda 早期一个客户独占一台 EC2 实例，隔离干净，但密度低、开机以秒计。</li>
+<li>容器共用宿主内核，边界是三百多个系统调用，隔不开互不信任的租户。</li>
+<li>语言级沙箱限定语言，用户态内核兼容难，通用 VMM 又太重，都不合用。</li>
+<li>Firecracker 的关键判断：虚拟机慢的不是虚拟化，而是设备模型的模拟。</li>
+<li>设备只剩 virtio 网卡、块设备、串口和关机键，不跑 BIOS，直接装入内核。</li>
+<li>5 万行 Rust 的 VMM 外再套 jailer 的 seccomp 等限制，构成两层隔离。</li>
+<li>内存按需分页支撑超卖，令牌桶限速治同机的吵闹邻居。</li>
+<li>Firecracker 开销小于 5 MiB、约 125 ms 开机，IO 当时不如 QEMU。</li>
+<li>没有 GPU 直通，冷启动大头仍在客户运行时，KVM 仍在可信计算基内。</li>
+<li>双层隔离像 Reason 的瑞士奶酪模型：承认每层都有洞，只求洞不对齐。</li>
+</ol>
 </div>
 <footer>IT 论文精读 · 读完这页 ≈ 拿到这篇论文的核心；想看完整的实验配置与设备实现细节，再去翻原文。</footer>
 </div>
