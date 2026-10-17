@@ -15,9 +15,9 @@
 
 **每页两种模式，顶部一个 `.modebar` 药丸切换（默认落在科普版，localStorage 记住选择；见 paper1 的 CSS + 页尾内联切换脚本）：**
 - **科普版（`.mode-pop`）**：给零基础读者的**纯类比、零数学、零公式**短版（~600–900 字，5–6 节）。**深度按四层阶梯控制：① 现象（旧世界的痛）→ ② 点子（核心想法）→ ③ 机制直觉（它「怎么」做到——用生活比喻讲，如 QKV=「找什么/我是什么」两张标签、残差=「批注文稿不重抄」）→ ④ 机制精确（公式/复杂度记号/结构细节）。科普版必须讲到 ③、绝不进 ④**（连 `O(n²)` 记号都不出现，只说人话「词一多两两互看、计算量涨得快」）。每个概念要过「饭桌复述测试」：非技术读者听完能转述给第三人；锚不到生活经验的内容属于 ④，挪去精读版。保留**恰好一句**诚实的代价/局限，防营销腔，但别展开。结构参照 paper1/2：干了什么（用读者听过的东西如 ChatGPT 作锚）→ 打个比方/先说个怪事 → 新在哪（对比旧世界）→ 怎么做到的（机制直觉）→ 带来了什么 → 一句话记住。末尾放 `.switch-hint` 链到精读版。这是默认视图。
-- **精读版（`.mode-deep`，`hidden`）**：下面这**八节**深读，**分量压在第 4 节**。Glossary 小节放在精读版里。
+- **精读版（`.mode-deep`，`hidden`）**：下面这**九节**深读，**分量压在第 4 节**。Glossary 小节放在精读版里。越界、十条要点只进精读版，科普版不加。
 
-两种模式都用 `<h2>` 分节（同样的金色标题风）。八节：
+两种模式都用 `<h2>` 分节（同样的金色标题风）。九节：
 
 1. **一句话** — 这篇论文提出了什么、解决了什么。
 2. **坐标（一两句）** — 作者/团队 + 场合/年份 + 它接续谁、又被谁接续；别展开生平、别堆客套。
@@ -26,7 +26,8 @@
 5. **关键结果** — 用什么实验/数据证明它 work：数据集、指标、基线、代表性数字。诚实给数字。
 6. **为什么重要 / 影响** — 它如何改变领域、催生了什么、成了什么的基石。
 7. **局限与批评** — 诚实写局限、后来被发现的问题、有力的反对/超越工作。不吹捧。
-8. **要点收尾** — 把整篇最该记住的揉成 6–10 条要点（问题、核心 idea、机制、结果、影响、局限都点到）。
+8. **越界 · 跨学科的联想**（`.crossx`，**必写**，3–5 条，~400 字，2026-10-16 起）— `<div class="crossx"><ul><li><b>学科 · 概念/人物</b>：…</li></ul></div>`。写这篇论文里的某个想法和另一个领域的什么东西是同一个结构，一两句说清像在哪、不像在哪。每页可以有 **1 条**写到约 120 字。**往 CS 之外挂**：读者本身是资深分布式系统 / AI 工程师，「Dynamo 像 Chord」这种挂到别的 CS 论文上的联想对她没有新东西；优先挂意识、佛学、量子力学、神经科学、东西方哲学、心理学、生物进化、复杂性科学、经济学，旁支领导力、投资、商业思维。每条里提到的具体研究、人物、概念**必须真实存在、说得准确**，拿不准就换一条。**论文作者自己带进来的类比/渊源**（如 Lamport 拿狭义相对论讲事件先后）进正文；**我们自己联想到的只进越界，绝不写进正文主线**——读者必须分得清哪些是作者说的、哪些是我们加的。英文页 h2 `Crossovers`。**每条约 60–90 字（一两句）**，只有展开的那 1 条可到约 120 字；超了就砍论证，不砍「不像在哪」。
+9. **十条要点**（`<ol class="takeaways">`，**必写，正好 10 条**，~350 字，2026-10-16 起；取代原来 `.tl` 框里的 ①…⑧「要点」）— 读者拿它直接记笔记。每条一句完整的话，约 20–45 字，**单独抄出去也能看懂**：写出论文名、人名和概念名，不用「它」「这个结构」这类要靠上下文的代词。覆盖问题、核心 idea、机制、结果、影响、局限里最值得记的，以及越界里的一两条；顺序跟正文走。**只总结正文已经写过的东西**，不加新信息，不放引语。英文页 h2 `Ten takeaways`。人名不必每条都当主语开头：全组里主角的名字出现两三次就够，其余各条直接写观点、机制或事实（写「欺诈的最优数量大于零」，不写「X 认为欺诈的最优数量大于零」）。
 
 **不写「谁该读 / 怎么复现 / 读完读什么」。**
 
@@ -37,6 +38,18 @@
 - **配图是硬要求**：凡涉及**架构、数据流、机制的空间结构**（如网络结构、注意力流程、编码器-解码器、共识流程、哈希环、时序），**必须配示意图**。默认用**内联 SVG 自绘**（自包含、跟随本页配色、不依赖外链、可离线）——参照 `attention-is-all-you-need-paper1.html` 里的 `<figure><svg>…</svg><figcaption>…</figcaption></figure>` 写法。每张图配一句中文/英文 `figcaption` 说明。只有当存在**权威且授权明确**的现成图（如 Wikimedia Commons，遵守 hub 的 Commons 规则）时才用外链图，否则一律自绘。英文页的图用英文标注。
 - **版式向 system-design 看齐**：无衬线字体（`-apple-system` / SF Pro / Noto Sans SC）、渐变标题、等宽字体（mono）做小标签与元信息、玻璃拟态卡片——**直接复用 paper1 的内联 `<style>` 块**，别退回 deep-reading 的衬线风。
 - **配色是本站专属的琥珀/铜色**（gold `#f0b429` → copper `#e8794b` 渐变，冷暗底 `#0f1216`）——**别改成青绿**（那是姊妹站的）。复用 paper1 的 style。
+- **越界 / 十条要点的 CSS**（2026-10-16 起；paper1 的 style 里没有，复用 paper1 的 style 后在 `</style>` 前**原样追加**这两段）：
+
+```css
+.crossx{border:1px solid rgba(232,121,75,.32);border-radius:12px;padding:6px 22px;margin:22px 0;background:rgba(232,121,75,.05)}
+.crossx ul{list-style:none;margin-left:0}
+.crossx li{margin:14px 0;font-size:.95rem}
+.crossx b{color:#e8794b}
+.takeaways{counter-reset:tk;list-style:none;margin:18px 0 0;padding:0;border:1px solid rgba(240,180,41,.3);border-radius:12px;background:rgba(240,180,41,.04)}
+.takeaways li{counter-increment:tk;position:relative;margin:0;padding:11px 18px 11px 52px;border-top:1px solid rgba(240,180,41,.12);font-size:.96rem;line-height:1.75}
+.takeaways li:first-child{border-top:none}
+.takeaways li::before{content:counter(tk,decimal-leading-zero);position:absolute;left:18px;top:12px;font-family:"SF Mono",Menlo,monospace;font-size:.78rem;color:#f0b429}
+```
 - **真实准确、严禁编造**：不杜撰实验数字/架构细节/引用；把机制和结构讲对——这是技术站的生命线。技术细节拿不准就讲保守。批评/局限诚实写。
 - **中英双语，两版都地道**：split 模式，`{slug}-paper{N}.html` + `.en.html` 各自独立成页、langbar 互链。**英文页除 langbar 的「中文 →」外不得出现汉字**（含 SVG 里的标注）。
 - **中文页术语首次出现补英文**：`中文术语（English）`，如 自注意力（self-attention）、残差连接（residual connection）。缩写/英文名（Transformer、BLEU、CAP、RSA）照原样。
@@ -46,7 +59,7 @@
 ## 3. 文件约定 / 发布（同所有 routine 站）
 - 文件名 `{slug}-paper{N}.html` + `{slug}-paper{N}.en.html`，放仓库根目录。
 - 发布前更新 `index.html`（在 `<!-- entries -->` 前插入新条目）+ `index.en.html`（插入 `.en` 条目）。
-- **index 条目的 `.title` 是「简介」不是「摘要」——一句话、一个钩子，只点出那一两个核心 idea，`标题 — 一个 clause` 到句号即止（对标 paper1「Attention Is All You Need — 用纯注意力取代 RNN，一个架构成了当代所有大模型的地基」的分量，中文 ≤ 约 50 字、英文一行）。别把整页的问题、机制、结果、影响、局限全塞进 index——那些留给正文八节。宁短勿长。
+- **index 条目的 `.title` 是「简介」不是「摘要」——一句话、一个钩子，只点出那一两个核心 idea，`标题 — 一个 clause` 到句号即止（对标 paper1「Attention Is All You Need — 用纯注意力取代 RNN，一个架构成了当代所有大模型的地基」的分量，中文 ≤ 约 50 字、英文一行）。别把整页的问题、机制、结果、影响、局限全塞进 index——那些留给正文九节。宁短勿长。
 - **不要**手动在内容页里加 `comments.js` / `search.js` / `index-button.js` / `i18n-tts.js` / `lightbox.js`（GitHub Action 自动注入，含右上角中英切换药丸 + TTS 朗读 + 图片/内联 SVG 点开放大）；也别硬写 `← Hub`。（index 页可硬写这些脚本，与姊妹站一致。）**图只管照常写 `<figure><svg>…</svg><figcaption>`，注入的 `lightbox.js` 会自动让每张图可点开、滚轮缩放、拖拽平移——不用你加任何 class 或 onclick。**
 - **TTS 由 CI 自动烘焙（Azure），你什么都不用做**：内容页 push 到 `main` 后，`bake-tts.yml` 调 `bake-tts.py` 按 `<h2>` 分段调 Azure TTS，生成 `audio/<lang>/<hash>.mp3` 并把 `data-tts-{lang}=<hash>` 自动写回锚点元素（`h1` 为封面段、每个 `h2` 一段），然后以 `Auto-bake TTS audio [skip bake]` 回推提交。所以：**别手写 `data-tts` 属性、别手动碰 `audio/` 目录、别删 `bake-tts.py` / `bake-tts.yml`**——它们是在役系统。`index.html` / `index.en.html` 按设计不烘焙（`bake-tts.py` 显式排除 `index.*`），所以只改 index 的提交会触发 workflow 但无产出，属正常。没有 mp3 时 `i18n-tts.js` 才回退到浏览器 Web Speech。
 - 用 `./publish.sh` 发布：自动 add/commit/push 到 `main`，并校验体量、index 引用、div 平衡、重复编号、TOPICS 未被改等。
