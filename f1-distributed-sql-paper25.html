@@ -187,14 +187,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>乐观事务在高冲突下吃亏</strong>：热点行被反复并发修改时，乐观事务会频繁中止重试，吞吐下降；此时需退回悲观（加锁）事务或更细粒度的冲突跟踪。</li>
 <li><strong>强依赖 Spanner</strong>：F1 的一致性、可用性、扩展性几乎全建立在 Spanner 之上——而 Spanner 又依赖 TrueTime 那套 GPS + 原子钟的专用授时基础设施，这是 Google 的家底，别处未必复制得来。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="fc60b5774c29077c">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>复杂性科学 · Herbert Simon 的「近可分解性」（1962）</b>：Simon 在《复杂性的架构》里说，层级系统之所以稳，是因为子系统内部相互作用强、子系统之间相互作用弱。层级式 schema 正是把「一个客户」做成这样的子系统，让绝大多数事务留在树内。不像在于：Simon 的层级是演化或组织自然长出来的，F1 的树是设计者用主键前缀硬性声明的，而全局索引恰好是刺穿这层可分解性的那根线，所以它才贵。</li>
 <li><b>法经济学 · Shavell 的「事后责任 vs 事前管制」（1984）</b>：Steven Shavell 比较两种控制风险的办法：先放手做、出事再追责，或者事前审批设限。乐观事务就是前者，悲观加锁就是后者；冲突稀少时事后核对更便宜。不像的是，事务中止只是重试一次，法律里的损害往往已经无法撤回。</li>
 <li><b>会计 · 复式记账的日记账（Pacioli，1494）</b>：Luca Pacioli 写下的记账法是先按时间记流水分录，再由流水过入分类账、编出报表。F1 把变更历史当一等公民，索引和缓存就像从流水派生出的账簿。不同在于，会计按期结账、对一次账，F1 的变更记录是实时流出去供下游订阅的。</li>
 <li><b>生物进化 · 内共生学说（Lynn Margulis，1967）</b>：真核细胞把产能这件最难的事交给线粒体，自己专心做更复杂的事；F1 也把扩展与复制整个交给 Spanner，自己只做 SQL 层。不像在于：线粒体与宿主是互相离不开，F1 对 Spanner 的依赖却是单向的。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="1a8a39380ee66541">十条要点</h2>
 <ol class="takeaways">
 <li>F1 是 Google 为 AdWords 建的分布式关系数据库，在 Spanner 之上重新提供完整 SQL、ACID 事务和一致的索引。</li>
 <li>过去大规模系统只能二选一：关系库有 SQL 和事务却扩不动，NoSQL 能扩却丢掉事务、SQL 与强一致。</li>
@@ -213,9 +213,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>
