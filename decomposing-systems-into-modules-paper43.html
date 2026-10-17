@@ -186,7 +186,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>抽象会泄漏</strong>：接口再干净，性能特征、错误行为等仍可能「漏」出实现细节，使用者被迫了解内部；信息隐藏是理想，现实中难做到绝对。</li>
 <li><strong>KWIC 是玩具例子</strong>：用一个小系统说清了原理，但把准则用在超大系统上，还需要额外的组织手段（分层、依赖管理、团队边界）配合。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="a5c0bf5c4163077b">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>复杂性科学 · Herbert Simon 的「近可分解性」（1962）</b>：Simon 在《复杂性的架构》里讲两个钟表匠：Hora 先把零件装成稳定的小部件，被电话打断只损失一个部件；Tempus 一件件装，一被打断整只表就散了。复杂系统多是组内交互强、组间交互弱的层级。像在都用弱耦合换稳定；不像在 Simon 讲系统如何熬过干扰，Parnas 讲如何挡住将来的设计改动。</li>
 <li><b>进化生物学 · 模块化与可进化性（Wagner 与 Altenberg，1996）</b>：好的基因型—表型映射让多效性（一个基因影响多个性状）大多留在同一功能模块内，改一个功能不连累别的，物种因此更能进化。不像的是，没有设计者先列「会变的决定」，模块是自然选择慢慢筛出来的。</li>
@@ -194,7 +194,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><b>经济学 · Hayek《知识在社会中的运用》（1945）</b>：锡变稀缺时，用户不必知道原因，只看到价格上涨就会省着用；价格像一个只暴露一个数字的接口，具体知识留在各人手里。不像的是，市场里的秘密没人分派，Parnas 的秘密是设计者刻意指派给模块的。</li>
 <li><b>商业 · Baldwin 与 Clark《设计规则》（2000）</b>：两位哈佛商学院学者借用信息隐藏，把设计分成人人遵守的「可见设计规则」和各模块自己演化的「隐藏参数」，用模块带来的期权价值解释计算机产业的分化。不像的是，他们算的是产业价值，Parnas 只问一个程序好不好改。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="652a557cf2584302">十条要点</h2>
 <ol class="takeaways">
 <li>Parnas 1972 年这篇论文问的不是要不要拆模块，而是该按什么标准拆模块。</li>
 <li>当时最流行、最自然的拆法，是照流程图的处理步骤切，每一步做成一个模块。</li>
@@ -213,9 +213,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

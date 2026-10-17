@@ -164,14 +164,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>量子威胁</strong>：Shor 算法能在量子计算机上高效解离散对数与大数分解，<strong>一旦大规模量子机成真，DH / RSA 都会被攻破</strong>，学界正转向「后量子密码」。</li>
 <li><strong>慢、只能配角用</strong>：公钥运算比对称加密慢很多，实际系统里通常<strong>只用它协商一把对称密钥</strong>，正文的数据仍用快速的对称密码加密（混合加密）。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="158105f268ea150c">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生物进化 · Zahavi 的障碍原理</b>：Zahavi 1975 年提出，孔雀大尾巴可信，因为弱者付不起、装不出。数字签名也是「别人伪造不了、人人能核验」的信号；不像在于，签名防伪靠私钥这一秘密，对持有者几乎零成本，障碍信号却全靠实打实的代价。</li>
 <li><b>经济学 · Becker 的犯罪经济学</b>：Becker 1968 年把犯罪当成本—收益计算：威慑不必让犯罪不可能，只要不划算。「计算安全」同理，只让破解贵到没人付得起；不同的是 Becker 的代价是边际的，密码学把它推到天文数字。</li>
 <li><b>物理 · 熵与不可逆</b>：颜料混合容易、拆回原色几乎不可能，和热力学的混合不可逆同形。不像在于，物理不可逆是统计意义的；单向函数是确定的运算，「倒推难」只是还没人找到快办法，并无定律担保。</li>
 <li><b>量子力学 · BB84 量子密钥分发</b>：Bennett 与 Brassard 1984 年解同一道「公开信道分发密钥」的题，但把安全押在物理定律上：测量会扰动量子态、未知态无法克隆，偷听必留痕。它把安全从「计算难」拉回「物理上不可能」，却仍需一条已认证的经典信道，躲不开 DH「先确认对方是谁」的难题。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="47ca86a1d7206fa1">十条要点</h2>
 <ol class="takeaways">
 <li>Diffie 和 Hellman 1976 年的《密码学新方向》提出公钥密码学，把加密和解密拆成一对不同的密钥。</li>
 <li>对称密码要求双方事先线下共享同一把密钥，传密钥本身就需要一次安全通信。</li>
@@ -190,9 +190,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

@@ -226,14 +226,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>内存是硬约束</strong>：工作集放不进集群内存时优势迅速消退；JVM 的对象开销与 GC 压力也是长期痛点，这直接催生了后来 Spark 的 Tungsten（堆外内存 + 代码生成）改造。</li>
 <li><strong>RDD 接口对优化器是黑箱</strong>：算子里装的是任意用户函数，引擎看不透语义，做不了谓词下推、列裁剪这类关系式优化。<strong>Spark 自己后来也承认了这点</strong>——2015 年起 DataFrame / Dataset + Catalyst 成为推荐接口，裸 RDD API 退居底层。某种意义上，RDD 的成功正是「通用到足以长出更高层抽象」。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="8ac9cf14420581fa">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>佛学 · 缘起</b>：「此有故彼有」——一法没有独立自性，只由因缘生起；RDD 也不「独立存在」，它就是「父 RDD + 一个变换」这条来历。不像在哪：缘起是无始、相互依待的网，血统却是有根（稳定存储里的原始数据）、单向无环的 DAG。</li>
 <li><b>神经科学 · 记忆再巩固（reconsolidation）</b>：大脑存下的更像重建记忆的线索而非录像，每次回忆都重新生成一遍，这很像照血统重算。但最关键处恰好相反：回忆在重新激活时可能被改写，结果不再相同；RDD 的全部前提，正是变换确定、重算出的分区与丢失的那块逐字节等价。</li>
 <li><b>生物 · 美西螈断肢再生</b>：美西螈（axolotl）断了腿，伤口处细胞重跑一段发育程序，只长回缺掉的那截，身体其他部分不动——正像只重算丢失的分区。不像：再生的「配方」分散写在每个细胞的基因组里，RDD 的血统则集中由调度器掌握。</li>
 <li><b>哲学 · 忒修斯之船</b>：普鲁塔克记下的老问题——木板全换过一遍，还是原来那条船吗？RDD 给了个工程答案：输入不变、配方不变，重算出的分区就「是」原来那块。不像：忒修斯之船追问的是材料的延续，RDD 根本不认材料，只认生成过程。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="08b512c68f4e93ac">十条要点</h2>
 <ol class="takeaways">
 <li>迭代算法和交互式查询在 MapReduce 上很慢，因为每一轮都要经 HDFS 读写硬盘并做三副本。</li>
 <li>已有的集群内存系统允许细粒度更新，只能靠跨机器复制数据或记更新日志来容错，代价太高。</li>
@@ -252,9 +252,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

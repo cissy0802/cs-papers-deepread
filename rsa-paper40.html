@@ -171,14 +171,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>量子计算的达摩克利斯之剑</strong>：Shor 算法（1994）表明<strong>足够大的量子计算机能高效分解大整数</strong>，从而彻底攻破 RSA——这正是当下<strong>后量子密码（PQC）</strong>迁移的直接动因。</li>
 <li><strong>并非最早</strong>：GCHQ 的 Cocks 早在 1973 年已私下得到等价构造，只是因保密未公开——RSA 是独立且第一个<strong>公开</strong>的发明。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="8ac6cf5bcdc02c2a">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>中国史 · 虎符</b>：战国虎符一剖两半，君王与将领各持一半，合得上才认令，像 RSA 拆成两半、配对验证。不像在于：虎符两半都得保密，偷到一半就能冒充，信陵君窃符救赵正是如此；RSA 的公钥那半却能满世界公开。</li>
 <li><b>进化生物学 · Zahavi 的累赘原理（handicap principle）</b>：孔雀大尾巴可信，因为弱者付不起、装不出来，和签名「伪造不出」同属防伪信号。不像的是，RSA 签名几乎不花代价，诚实靠独有的秘密而非昂贵。</li>
 <li><b>物理 · 麦克斯韦妖与 Szilard 引擎</b>：Szilard 指出，一比特「分子在哪边」的信息就能让妖精倒转看似不可逆的过程；RSA 里「知道 p、q」也让单向变可逆。不像在于：热力学不可逆是统计定律，分解之难只是未证的假设。</li>
 <li><b>免疫学 · 「缺失自我」（missing self，Klas Kärre）</b>：自然杀伤细胞检查细胞表面的 MHC-I 分子，亮不出这张「自我证明」就清除，像验签失败即拒收。不像的是，它只看有没有出示、不验能否伪造，一些病毒就演化出了仿冒 MHC 的分子。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="fef9b86e116839ab">十条要点</h2>
 <ol class="takeaways">
 <li>Rivest、Shamir、Adleman 的 RSA 是第一套实用公钥密码：公钥公开，私钥自己保管。</li>
 <li>对称密码有密钥分发的死结：想安全通信，得先有一条安全通道把密钥送到对方手里。</li>
@@ -197,9 +197,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

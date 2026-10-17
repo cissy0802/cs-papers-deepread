@@ -212,14 +212,14 @@ Select cl.procName, SUM(incr.delta)</div>
 <li><strong>「随口提问」仍有边界。</strong>探点得先存在，能问什么最终受限于那个位置能拿到哪些局部变量——它扩大的是提问空间，不是取消了边界。</li>
 <li><strong>采纳度是最诚实的那条批评。</strong>十年过去，工业界主流依然是 Dapper 式的采样追踪加指标、日志；Pivot Tracing 的<em>完整形态</em>——运行时下发查询、动态织入——并没有被广泛落地。真正扩散出去的是它的抽象（baggage、因果传播），而不是它的产品形态。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="f45624c13c08da23">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 结合问题（binding problem）</b>：一只飞鸟的颜色、形状和运动由大脑不同区域分别处理，怎么知道它们属于同一个物体？Wolf Singer 等人的著名假说是靠神经放电的时间同步来绑定。归因缺口是同一个难题；不像在于，Pivot Tracing 恰恰拒绝按时间配对，只认同一条因果路径。</li>
 <li><b>佛学 · 缘起</b>：「此有故彼有，此生故彼生」，事物的联系不靠共同本质，而靠条件的先后相依；happened-before join 也不看值是否相等，只看谁可能影响了谁。不像在于，缘起是互相依待的整张网，Pivot Tracing 只看得见单条请求路径。</li>
 <li><b>发育生物学 · CRISPR 谱系追踪（lineage tracing）</b>：在胚胎里植入一段可被反复编辑的条形码，细胞每分裂一次就累积新的突变，最后读每个细胞自带的条形码重建家谱，信息跟着个体走而不靠中心登记，正像 baggage。不像在于，条形码要等到最后才读出，baggage 在路上就地算完。</li>
 <li><b>管理会计 · 作业成本法（activity-based costing）</b>：Robert Kaplan 与 Robin Cooper 主张把车间的共享开销按实际作业动因摊到具体产品上，问的同样是「底层的消耗该记在哪个顶层客户头上」。不像在于，作业成本法靠动因比例估算，Pivot Tracing 逐个请求实测。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="11fe88bcc05d8478">十条要点</h2>
 <ol class="takeaways">
 <li>Pivot Tracing 让工程师对正在运行的分布式系统即席提问，问完即撤，不必改代码重新部署。</li>
 <li>传统日志、指标和追踪记什么在开发期就定死了，想问一个新问题就得改代码、等故障再犯一次。</li>
@@ -238,9 +238,9 @@ Select cl.procName, SUM(incr.delta)</div>
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

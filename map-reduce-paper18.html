@@ -201,14 +201,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>shuffle 是瓶颈、调优是门玄学</strong>：跨网按键搬运海量中间数据（shuffle）常是全程最慢的一环；M、R、分区、combiner 怎么设，很吃经验。</li>
 <li><strong>Google 自己也超越了它</strong>：内部逐步转向 FlumeJava、<strong>Cloud Dataflow</strong>（Apache Beam 的前身）等更高层、更灵活的模型，经典的 MapReduce 已退居次要。它是奠基之作与思想启蒙，而非终点。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="06ec1a0a6a6e7771">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>经济学 · 亚当·斯密的制针工场</b>：《国富论》（1776）里，十个工人把制针拆成约十八道工序，一天能做四万八千多枚，若各自单干，可能一天一枚都做不成。MapReduce 也是「拆细、并行、再汇总」；不像在斯密的分工靠每人专精一道工序，MapReduce 的 worker 却彼此可替换，谁坏了都能由别人接手。</li>
 <li><b>经济学 · 哈耶克〈知识在社会中的运用〉</b>：哈耶克（1945）说关键知识散在各地、只在当时当地的人手里，中央计划者收不齐，所以决策该下放到知识所在处。「把计算送到数据身边」是同一个直觉；不像的是，MapReduce 偏偏留着一个全知的 master——数据分散，调度依旧集中。</li>
 <li><b>神经科学 · 视网膜的就地压缩</b>：人眼一亿多个感光细胞，只经约一百多万根视神经纤维送进大脑，平均先在视网膜里汇聚约百比一。combiner 在 map 端先合并再过网，是同一种「过瓶颈前先压缩」；不像在视网膜的压缩有损，combiner 对求和这类运算一点不丢。</li>
 <li><b>复杂性科学 · 戈登的收获蚁</b>：Deborah Gordon 发现红收获蚁没有指挥者，巢里的蚂蚁按触角碰到归巢觅食者的频率决定要不要出门。像 MapReduce 一样个体失效无碍大局；不像在蚁群没有 master，分工从局部相遇里涌现，MapReduce 的容错则靠中央 ping 和重新派活。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="06268863e0240ec3">十条要点</h2>
 <ol class="takeaways">
 <li>Dean 与 Ghemawat 在 2004 年提出的 MapReduce，让用户只写 map 和 reduce 两个函数，其余全交给框架。</li>
 <li>Google 发现词频、倒排索引等计算五花八门，但摊到上千台机器时的「并行骨架」几乎一样。</li>

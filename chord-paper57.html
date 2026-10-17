@@ -188,14 +188,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只支持精确匹配</strong>：<code>lookup(key)</code> 只能精确定位一个 key，天然做不了范围查询、前缀/关键词搜索——这是哈希摆放的固有代价。</li>
 <li><strong>工业界最终多用 Kademlia</strong>：真实的大规模 DHT 部署（BitTorrent Mainline DHT、IPFS、以太坊节点发现）大多选了 <strong>Kademlia</strong>——它的 XOR 距离度量对称、路由表维护更简单、对 churn 更宽容。Chord 更像「教科书里最清晰的经典」，而非落地赢家。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="d0ae7bf85eac979f">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>社会心理学 · Milgram 小世界实验与 Kleinberg</b>：1967 年 Milgram 的传信实验里，每人只把信转给更可能认识收信人的熟人，信常在六步左右送到。Kleinberg 2000 年证明，只凭局部信息贪心转发要快，远程联系须按距离衰减、每个距离尺度都有——Chord 翻倍的 finger 正是它的确定性版本。不像在：人的「距离」混着地理与职业，也没有可证明的跳数上限。</li>
 <li><b>神经科学 · 网格细胞的多尺度模块</b>：内嗅皮层的网格细胞分成少数几个尺度模块，相邻模块的空间尺度约差 1.4 倍（Stensola 等 2012），几把粗细不同的「尺子」合起来定位，像 finger 表的翻倍刻度。不像在：大脑用多尺度同时编码一个位置，Chord 用多尺度一跳跳逼近目标。</li>
 <li><b>经济学 · 哈耶克《知识在社会中的运用》</b>：哈耶克 1945 年论证，分散的局部知识无法汇总到任何中央机构，只能靠去中心机制协调。Chord 同样不要中央目录，每台机器只知道 <code>O(log N)</code> 个邻居，全网仍能找到任意 key。不像在：价格把信息压缩后人人可见，Chord 只是把一次查询逐跳传下去。</li>
 <li><b>佛学 · 缘起与无自性</b>：Chord 里一台节点「负责哪些 key」不是它本身固有的，而由它和前驱在环上的位置关系决定，前驱一变职责就变，近于「因缘而生、无有自性」。不像在：节点 ID 由哈希固定，仍留着一个不变的「名」，而佛学要破的恰恰是这种自性。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="13838838c613afd1">十条要点</h2>
 <ol class="takeaways">
 <li>Chord 只解决一个原语：给定一个 key，返回负责它的节点，存储和复制都建在这之上。</li>
 <li>当年 P2P 查找要么靠 Napster 式中央索引、怕单点被关，要么靠 Gnutella 式洪泛、无法扩展。</li>
@@ -214,9 +214,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

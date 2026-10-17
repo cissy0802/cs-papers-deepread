@@ -202,14 +202,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只做了无条件生成、图像也小</strong>：没有文本条件与引导机制，主结果在 32×32；变成今天的文生图靠的是后续一连串工作（条件注入、引导、隐空间、超分级联）。噪声表也未必最优——线性 β 表小图够用，后续发现余弦表更好，「噪声该怎么加」本身成了一个设计空间。</li>
 <li><strong>能力带来的风险</strong>：高保真图像生成很快被用于伪造，并卷入版权争议，是这条路线绕不开的社会成本。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="d82c8d1110b7d35e">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>佛学 · 神秀与慧能</b>：DDPM 的采样几乎就是神秀那句「时时勤拂拭，勿使惹尘埃」——一千步，每步只擦掉一点尘。根基却不同：神秀预设镜子本来明净，擦拭是还原；DDPM 的起点是纯噪声，并没有一面预先存在的「镜」，图是在擦的过程中长出来的，反倒更近慧能的「本来无一物」——只是它走的是千步渐修，不是一念顿悟。</li>
 <li><b>神经科学 · 预测编码（Rao &amp; Ballard 1999）</b>：两者都把学习信号定成「残差」：视觉皮层高层往下发预测，低层只往上传预测误差；DDPM 的网络也只学「脏图里多出来的那团噪声」。不像在：预测编码的残差在脑区层级之间实时流动，DDPM 的残差在时间步之间，训练完就固定了。</li>
 <li><b>知觉心理学 · Navon「先见森林后见树」（1977）</b>：Navon 发现人先认出大字母的整体形状，再看清组成它的小字母；DDPM 也显示决定「像不像」的粗结构只占很少比特，噪声重的早期步定轮廓、末几步才补细节。不像在：Navon 讲的是「看」的先后，DDPM 是「画」的先后，粗细由噪声强度而非注意力决定。</li>
 <li><b>金融 · Fischer Black《Noise》（1986）</b>：Black 把价格看成价值加噪声，市场靠噪声交易才转得起来，可要从价格里剥出价值极难。DDPM 的工作同样是把信号和噪声分开；不像在：市场从不发标准答案，DDPM 的噪声是自己撒的、答案免费，这才让「分离噪声」变成一次普通回归。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="37ad7f6bd4c3208e">十条要点</h2>
 <ol class="takeaways">
 <li>DDPM 把图像生成写成一条固定的千步加噪链加一条学出来的去噪链，生成就是把加噪倒着放。</li>
 <li>2020 年前后 GAN 画质好但训练不稳、易模式塌缩，VAE 偏糊、自回归太慢，扩散模型则出图很差。</li>
@@ -228,9 +228,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

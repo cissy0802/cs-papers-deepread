@@ -193,14 +193,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>难填「又粗又长」的管道</strong>：每 RTT 只加一个包，在高带宽大时延链路上爬满带宽太慢，催生了 CUBIC 等更激进的增长曲线。</li>
 <li><strong>依赖大家都守规矩</strong>：整套稳定建立在所有发送方都遵循 AIMD 之上；一个不退让的流可以挤垮守规矩的邻居，这也推动了后来对模型化（如 BBR 直接测量瓶颈带宽与 RTT）的探索。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="270a03f508dfccf0">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生物进化 · Gordon 的「蚂蚁互联网」</b>：斯坦福的 Deborah Gordon 与 Balaji Prabhakar 2012 年发现，红收获蚁按觅食者带粮回巢的速率决定再派多少只出门——回得快就多派、回得慢就少派，这正是用 ACK 打拍子的自时钟；他们还在蚁群里看到了类似慢启动和超时的行为。不像的是：蚁群调节是为了不白耗体力和水分，不是和别的蚁群公平分享一条路。</li>
 <li><b>复杂性科学 · 没有瓶颈的幽灵堵车</b>：Sugiyama 等人 2008 年让 22 辆车在 230 米环形跑道上匀速行驶，不久便自发出现向后传播的堵车团——密度一过临界，小扰动就被放大，和拥塞崩溃的正反馈同构。不像在：司机刹过头只会降速，不会像重传那样往路上塞进「重复的车」。</li>
 <li><b>经济学 · Ostrom 与公地治理</b>：带宽是典型的公共池塘资源，AIMD 像一条人人自律的公地规范，躲开了 Hardin 1968 年说的「公地悲剧」。不像在：Ostrom 1990 年总结的长寿公地都靠相互监督和分级惩罚，TCP 却没人监督，不退让的流照样占便宜。</li>
 <li><b>神经科学 · 突触缩放（synaptic scaling）</b>：Turrigiano 等 1998 年发现，神经元活动长期偏高或偏低时，会把全部突触强度按同一比例整体调低或调高，靠局部规则守住放电率——和乘性减一样「按比例收放」。不像在：突触缩放要保留突触间的相对差异，AIMD 的加乘配合却恰恰要抹平各连接的差异、收敛到公平。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="b53e6d01e8eb2f71">十条要点</h2>
 <ol class="takeaways">
 <li>Jacobson 与 Karels 1988 年的这篇论文给 TCP 加上端到端自我调速，让没有中央调度的互联网不再拥塞崩溃。</li>
 <li>1986 年 LBL 到伯克利的一条链路，吞吐从 32 Kbps 崩到 40 bps，掉了近三个数量级，却没有任何硬件故障。</li>
@@ -219,9 +219,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

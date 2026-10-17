@@ -180,14 +180,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>无活性保证</strong>：受 FLP 约束，纯异步下可能一直定不下来；实践必须叠加 leader 选举与超时等时序假设，否则"决斗的提议者"会让系统卡住。</li>
 <li><strong>Multi-Paxos 讲得含糊</strong>：论文对如何把单值 Paxos 扩成实用的日志复制只给了梗概，大量细节留给了后人——这也是它长期"人人听说、少有人真懂"的原因之一。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="6e96e10db1ac1d95">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生物学 · 蜜蜂分群选巢</b>：蜂群搬家时，侦察蜂各自为不同候选巢址跳舞拉票，某处聚集的侦察蜂一旦达到阈值（群体感应，quorum sensing），整群就拍板出发——和 Paxos 一样靠「法定人数」而非全体一致定案。不像在哪：蜂群的阈值是一个固定数目而非过半数，两处候选理论上可以同时达标，安全性只是概率意义上的。</li>
 <li><b>量子物理 · Zurek 的量子达尔文主义</b>：测量结果之所以「客观」，是因为它被冗余复制进环境的许多碎片里，任何观察者随手取一片都读到同一答案——正像选定值写进过半数接受者，后来者问任意一个过半数都必然读到它。不像在哪：环境的复制是物理过程自发发生的，Paxos 的冗余是刻意安排、靠集合必然重叠来证明的。</li>
 <li><b>哲学 · 尤利西斯与塞壬（预先承诺）</b>：尤利西斯让水手把自己绑上桅杆，用此刻的约束锁住未来会动摇的自己；Paxos 接受者把「不再接受更小编号」写进持久存储，重启后的自己也无法反悔。不像在哪：尤利西斯防的是意志软弱，接受者防的只是失忆。</li>
 <li><b>法学 · 遵循先例（stare decisis）</b>：法官判案前先查已有判例、照既定裁决走，就像提议者推值前必须先问一圈、沿用已被接受的最高编号值。不像在哪：上级法院可以推翻先例，而 Paxos 被选定的值永远不可更改——法律为纠错留了出口，共识算法为一致性把它封死。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="75e3db98afbac538">十条要点</h2>
 <ol class="takeaways">
 <li>Lamport 在《Paxos Made Simple》里要解决的是：让会崩溃、靠不可靠网络通信但不撒谎的机器，就单个值达成唯一且不反悔的一致。</li>
 <li>受 FLP 不可能性限制，Paxos 让安全性永远成立，而把「一定选出结果」的活性留到网络恢复时兑现。</li>
@@ -206,9 +206,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

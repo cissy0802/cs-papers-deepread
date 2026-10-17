@@ -248,14 +248,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>「自动化」没有消灭人的猜测，只是搬了个家</strong>：代价函数里超限与浪费的相对权重、模型池怎么构造、边际给多少，仍是人定的全局判断。它把「每个作业猜一次」变成了「全局猜几个超参」——巨大的进步，但不是问题的消失。</li>
 <li><strong>一份生产报告，不是通用算法</strong>：所有数字来自 Google 的 Borg 与它相对同质、监控完备的负载，没有公开代码与数据集，外部难以复现；在负载更杂、监控更差、隔离更弱的环境里能拿到多少收益，是开放问题。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="ba96ee01fc90af91">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>进化医学 · 烟雾报警器原理（Randolph Nesse）</b>：Nesse 在 2001 年论证，漏报一次危险可能致命、误报一次只费点力气，所以自然选择让防御反应宁可过敏。Autopilot 内存取峰值、CPU 只取分位，记的是同一笔不对称账；不同在于进化把权重藏进本能，Autopilot 把它写成了明文、能回放检验的代价函数。</li>
 <li><b>经济学 · 火箭与羽毛（Bacon 1991）</b>：Robert Bacon 发现英国油价对成本「涨如火箭、跌如羽毛」，这和水平伸缩上调立刻跟、下调小步慢降是同一条曲线。不像在动机：加油站靠定价权多赚一段，Autopilot 是怕流量回来时手里没副本。</li>
 <li><b>公共财政 · 「不用就丢」的预算（Liebman &amp; Mahoney 2017）</b>：美国联邦机构财年最后一周的采购额是平时周均的 4.9 倍，因为结余要上缴、还可能招来减预算。人工把 limit 往大了填是同一种激励扭曲；不同在于 Autopilot 没去改激励，而是直接替人填数。</li>
 <li><b>生理学 · 应变稳态（Sterling &amp; Eyer 1988）</b>：应变稳态说身体的调节目标不是钉死的设定点，而是随需求移动、「在变化中求稳定」。Autopilot 让配额跟着用量漂，正是从固定设定点走向这一步；但应变稳态强调提前预判需求，Autopilot 只会回看历史。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="14d5ebd369f1f5a2">十条要点</h2>
 <ol class="takeaways">
 <li>人工填资源配额时，填少会被 OOM 杀掉或被节流，填多只是账单难看，于是人人往大了填。</li>
 <li>Google 人工管理的作业里，配额与实际用量之差（slack）高达约 46%，近一半预定资源没人用。</li>
@@ -274,9 +274,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

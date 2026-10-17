@@ -214,7 +214,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>与序列模型不合</strong>：句子长度可变、各时间步统计量也不同，BN 在 RNN 上很难用好——这正是 Layer Normalization 出现并最终统治 Transformer 的原因。</li>
 <li><strong>并非不可替代</strong>：后来的 NFNet（Brock 等 2021）用自适应梯度裁剪替代归一化也能达到同等精度，说明 BN 是一条极好用的捷径，而非唯一出路。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="513a732d06c108d6">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 突触缩放（Turrigiano 等，1998）</b>：把皮层神经元的放电压住几天，它会把自己所有兴奋性突触按同一比例调强，让放电率回到原来的设定点，这是稳态可塑性的经典证据。BN 同样把一层的整体幅度拉回标准，又保留各输入之间的相对大小。不像在于：神经元凭自己几天的放电史慢慢调，不需要「同批的其他样本」，更像推理时那份滑动平均。</li>
 <li><b>神经科学 · 除法归一化（Carandini &amp; Heeger，2012）</b>：两人把「神经元响应除以周围一群神经元的合计活动」称为大脑反复复用的标准运算。像 BN 的除以标准差；不像的是，它在同一时刻的邻居之间归一化，更接近 LayerNorm，而不是跨样本的 BN。</li>
@@ -222,7 +222,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><b>经济学 · 休谟的货币中性（《论货币》，1752）</b>：休谟认为全国货币量整体翻倍，长期只是所有价格同比上涨，实际财富不变；BN 的权重整体放大 a 倍、输出不变是同一结构。不像的是，休谟承认短期里新钱会刺激生产，BN 的不变是精确的，只留下梯度缩小到 1/a。</li>
 <li><b>医学史 · 阿司匹林</b>：1897 年 Bayer 的 Felix Hoffmann 合成它，七十多年后 John Vane（1971）才查明它抑制前列腺素合成，并因此分享 1982 年诺奖。BN 的「有效」与「为何有效」也是两回事；不同在于阿司匹林是机理空白，BN 是先给了一个错的机理。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="4751e350e8597507">十条要点</h2>
 <ol class="takeaways">
 <li>Ioffe 与 Szegedy 2015 年提出的 Batch Normalization，把「按小批量均值方差标准化激活值，再用可学的 γ、β 缩放平移」做成可反向传播的一层。</li>
 <li>训练中前面各层参数不断变化，本层输入分布随之漂移，作者称之为内部协变量偏移，它逼得学习率很小、初始化很讲究。</li>
@@ -241,9 +241,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

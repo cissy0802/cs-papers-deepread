@@ -236,14 +236,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>同步无缓冲带来耦合，性能也不普遍占优</strong>：发方必须等收方，跨机器时每次通信要一个来回；而通道通信要走调度与拷贝，在共享内存的多核机器上一把互斥锁常常更快。CSP 卖的是可推理性与纪律，不是速度——Go 社区的经验也常是「能用互斥锁说清的地方别硬上 channel」。</li>
 <li><strong>今天说的 CSP 已不是这篇</strong>：这篇是程序写法提案、没有形式语义；教科书与工具里的「CSP」多指 1985 年那套进程代数。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="8fdbfcfe5fb99966">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>细胞生物学 · 细胞膜与受体信号</b>：细胞也不共享内部状态，胞质被膜隔开，外界只能靠分子与受体对上才把信号递进来——像 CSP 的「各自私有、只走接口」。不像在：激素扩散出去就不管了，是异步广播，没有双方停下来对齐的会合。</li>
 <li><b>哲学 · 莱布尼茨的单子</b>：《单子论》（1714）说单子「没有窗户」，什么都进不去出不来，像 CSP 进程的变量只有自己能碰。不像在：莱布尼茨索性取消了真实的交互，靠上帝的预定和谐让各单子步调一致；CSP 恰好相反，私有之后专门留一个会合口，让对齐在交互那一刻当场发生。</li>
 <li><b>经济学 · 哈耶克的分散知识</b>：哈耶克《知识在社会中的运用》（1945）认为没有谁能把全部知识收进一个中央大脑，协调只能靠价格这种信号在分散的个体间传递——像 CSP 拒绝那块人人可写的共享内存。不像在：价格是匿名广播，CSP 的消息点对点、要求双方当场接手。</li>
 <li><b>意识研究 · 全局工作空间</b>：Baars 1988 年的全局工作空间理论把意识想成一块「黑板」：众多无意识的专家模块抢占它，赢家的内容被广播给所有模块——正是 CSP 想拆掉的共享内存模型。反差说明两种协作各有用处：要全局可见就得有公共区，要局部可推理就得无共享。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="474ab54278dcc621">十条要点</h2>
 <ol class="takeaways">
 <li>CSP 把并发程序写成一组没有共享变量的顺序进程，进程间只靠输入 / 输出命令交互。</li>
 <li>共享内存把「传数据」和「对时间」拆成两套机制，并发 bug 恰好长在两者的缝里且难以复现。</li>
@@ -262,9 +262,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

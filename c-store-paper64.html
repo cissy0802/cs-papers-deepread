@@ -225,14 +225,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>物理设计成了新负担</strong>：建哪些投影、按什么排序、冗余几份直接决定性能；论文把这件难事推给一个自动设计工具，选型错了就退化成「又占空间又不快」。</li>
 <li><strong>不适合 OLTP</strong>：改一行要触及多个投影与多处编码，只读查询看到的又是几秒前的快照——这是设计的自觉取舍，不是疏漏。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="eb96023379ac4131">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 互补学习系统（McClelland、McNaughton、O'Reilly，1995）</b>：海马体快速记下新经历，再反复「重放」，把它们慢慢并进新皮层的长期知识——正是 WS 先收写入、搬运工后台批量归并进 RS 的形状。不像在于：皮层合并会提炼共性、丢掉细节，搬运工一行都不能丢。</li>
 <li><b>生物学 · 简并性（Edelman 与 Gally，2001）</b>：「冗余」是相同部件干同一件事，「简并」是结构不同的部件给出同样输出，后者才是生物稳健的来源。排序各异却能答同一查询、互为备份的投影更像简并；只是它由设计工具算出，不是演化攒下的。</li>
 <li><b>神经科学 · Barlow 冗余消减假说（1961）</b>：感觉通路每一级都去掉冗余、重新编码，下游直接在压缩后的码上工作，和 C-Store 算子直接吃 RLE 是同一招。区别是神经编码可以有损，数据库压缩必须原样还原。</li>
 <li><b>语言哲学 · 索绪尔的「价值」（1916）</b>：符号的价值不在自身，而在它在系统里的位置；列存里的值属于哪一行，也只看它排第几。不像的是，索绪尔的位置是一张差异网，列存的位置只是个序号。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="c46ecca6cffed415">十条要点</h2>
 <ol class="takeaways">
 <li>C-Store 用列存、重压缩、排序投影和读写分离，为读多写少的分析负载重做数据库。</li>
 <li>分析查询只碰少数几列，行存却搬整行，大半磁盘 I/O 浪费在没人看的字段上。</li>
@@ -251,9 +251,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

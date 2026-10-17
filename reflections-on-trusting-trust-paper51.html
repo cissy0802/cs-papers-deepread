@@ -177,7 +177,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>现实攻击多走更省事的路</strong>：野外真正高发的供应链攻击是依赖库投毒、构建服务器入侵等，Thompson 式的编译器自繁殖后门至今罕见于实战——它的价值主要在<strong>思想层面</strong>：给「可审计 = 可信」这个默认信念永久打上问号。</li>
 <li><strong>演讲的道德尾声较松散</strong>：文末 Thompson 转而批评媒体美化「入侵者」、主张「闯入计算机系统应与闯入邻居家一样可耻」——这段道德呼吁与前面的技术主体关系较松，属个人立场，常被后世单独讨论。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="05358b0ef2fc2741">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生物进化 · 内源性逆转录病毒（ERV）</b>：逆转录病毒把自己的基因写进宿主 DNA，一旦嵌进生殖细胞，就随每次复制和繁殖代代相传，外面早已没有那只病毒——和后门只活在二进制、靠「编译」这个复制动作延续是同一个结构。不像的是，ERV 大多已经失活，有些还被宿主收编派上正用（如参与胎盘形成的 syncytin），后门却始终只为攻击者服务。</li>
 <li><b>生物 · 朊病毒（Stanley Prusiner）</b>：朊病毒是折错的蛋白质，会让碰到的正常蛋白照着自己折错，而基因这份「源码」毫无异常。像在病变藏在制造过程、不在配方里；不像在朊病毒不带信息也不挑目标，后门却精确认出 login 和编译器两个目标。</li>
@@ -185,7 +185,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><b>佛学 · 唯识的「种子」与「熏习」</b>：唯识宗说行为熏习成种子藏进阿赖耶识，日后再生出新的行为，表层意识看不到来处。这像编译器的「学习」：一次编译把知识烙进二进制，源码里已无痕。不像在于唯识的出路是「转依」、从根上转化，Thompson 却认为无法从内部自查，只能去信造它的人。</li>
 <li><b>神经科学 · 程序性记忆与患者 H.M.</b>：Brenda Milner 发现，大部分海马被切除的 H.M. 连练几天镜像描图越描越好，却每次都说自己从没做过。能力活在「执行层」、陈述记忆里查不到，正如 <code>\v</code> 的知识只活在二进制里。不像的是，H.M. 的隐形是手术意外，后门的隐形是刻意删掉源码。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="ced8c9af10d2a3c6">十条要点</h2>
 <ol class="takeaways">
 <li>Ken Thompson 在 1983 年图灵奖演讲中证明：把源代码读干净，并不能保证运行的程序没有后门。</li>
 <li>源码审查有个盲点：你审的是源代码，运行的是二进制，中间隔着一个没被审过的编译器。</li>
@@ -204,9 +204,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

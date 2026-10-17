@@ -210,14 +210,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>时间戳预言机是中心点</strong>：虽经批量分摊与复制缓解，它仍是逻辑上的全局单点，是可扩展性与容错设计里要小心对待的一环。</li>
 <li><strong>懒惰锁清理带来阻塞</strong>：客户端崩溃后残留的锁，要等下一个撞上它的事务、结合超时才被清理；期间相关行会被挡住，最坏情况需等超时。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="bf170a171e9af20a">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>复杂性科学 · 渗流理论（percolation theory）</b>：Broadbent 与 Hammersley 开创的渗流理论问的是：随机连通的网络里，局部一步步的「渗」能不能连成贯通全局的通路。Percolator 的观察者级联同样是局部触发、逐步传开；不像在渗流理论关心越过临界值时突然连通的相变，而索引级联是设计者刻意要它有界、可控。</li>
 <li><b>神经科学 · 特克斯勒消逝（Troxler fading）</b>：眼睛死盯一点不动，视野边缘不变的图像会渐渐淡出——视觉系统主要为「变化」报信。Percolator 也只为变了的数据唤醒计算；不像在大脑会丢掉不变的信息，Percolator 却完整保存全部状态。</li>
 <li><b>生物学 · 激酶信号级联（MAPK cascade）</b>：受体被激活后，Raf→MEK→ERK 一级磷酸化下一级，信号逐层传进细胞核、改写基因表达，和「写→通知→观察者→再写」同构。不像在生物级联靠逐级放大，Percolator 反而用 ack 保证每条通知至多触发一次。</li>
 <li><b>法律 · 托伦斯产权登记（Torrens title）</b>：这套土地制度里，合同签得再齐，产权也以登记簿上那一笔为准，登记即生效。主锁转成 write 记录正是这种「一笔定案」；不像在登记处是中心机构，Percolator 的「登记」散落在各行，由后来者懒惰收尾。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="a9773a87e6a649e1">十条要点</h2>
 <ol class="takeaways">
 <li>Percolator 在 Bigtable 之上补出跨行 ACID 事务和观察者通知，把谷歌网页索引改成增量处理。</li>
 <li>MapReduce 批处理哪怕只改一个网页也要重扫整个网络仓库，新网页要等数天才进索引。</li>

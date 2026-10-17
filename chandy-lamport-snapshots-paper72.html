@@ -230,14 +230,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>状态与通道可能很大</strong>：论文不关心记录一次状态要花多少钱，而工程上这正是主要成本——高吞吐通道的在途消息可能极多，大状态算子的快照可以是 GB 级。Flink 后来的增量快照与 <em>unaligned checkpoint</em>（放弃 barrier 对齐、把在途数据一并记下）都是在偿还这笔账。</li>
 <li><strong>拓扑假设</strong>：要求 marker 能沿边到达所有进程（论文按强连通图讨论）；成员动态进出的现代系统里，这个前提要额外维护。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="64135fd80758102f">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>会计 · 银行对账里的「在途存款」</b>：月末把公司账和银行对账单对平，必须单列已入账、银行尚未收到的在途存款和已开出未兑付的支票——这正是「全局状态 = 各方账本 + 通道里的在途消息」。不像的是，会计靠事后逐笔核对补齐在途项，快照靠 marker 在线划界。</li>
 <li><b>神经科学 · 知觉的「后述」（postdiction）</b>：Eagleman 与 Sejnowski 2000 年在 Science 上用闪光滞后错觉论证，大脑归到闪光那一刻的知觉，取决于此后约 80 毫秒内发生的事。「此刻」是事后拼出来的，像 S* 由不同物理时刻的碎片拼成；不像的是大脑不保证一致，错觉正是拼错的结果。</li>
 <li><b>意识哲学 · Dennett 的多重草稿模型</b>：Dennett 在《意识的解释》（1991）里否认存在一个所有信号同时汇合、「此刻」被统一呈现的笛卡尔剧场，意识是各处并行、在不同时间定稿的草稿。这和「没有全局时钟、不存在同一瞬间」同构；但 Dennett 认为不存在唯一正确的版本，快照算法却给出了一个可证明一致的版本。</li>
 <li><b>哲学 · 可能世界与可达关系</b>：Kripke 的模态语义用「从当前世界可达的可能世界」来定义「可能」。S* 正是这样一个世界：它未必是实际发生的那个，却从起点可达、又能通向终点；稳定性质在这条可达链上的保持，有点像模态逻辑里沿可达关系传递的必然命题。不像的是，这里的可达关系由因果重排具体给出，不是抽象设定。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="0a6c786d027a67a8">十条要点</h2>
 <ol class="takeaways">
 <li>Chandy 与 Lamport 1985 年的快照算法，不停机、不对表，就能给运行中的分布式系统拍一张因果一致的全局照片。</li>
 <li>没有共享内存和全局时钟时，挨个询问各进程会拼出钱凭空多或凭空少的错误全局状态。</li>
@@ -256,9 +256,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

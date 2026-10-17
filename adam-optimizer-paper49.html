@@ -167,14 +167,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>常需学习率预热（warmup）</strong>：训练 Transformer 时若不做预热，早期不可靠的二阶矩估计会导致训练不稳（<strong>RAdam</strong> 等对此有分析与修正）。</li>
 <li><strong>内存开销</strong>：每个参数要额外存 <code>m</code>、<code>v</code> 两份状态，约 <strong>3 倍参数内存</strong>——在千亿参数级别是实打实的负担，也催生了大量省显存的优化器变体。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="3ec116f14ca8700f">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · BCM 滑动阈值</b>：Bienenstock、Cooper 与 Munro 1982 年提出，突触被增强还是削弱取决于一个阈值，而这个阈值随神经元近期活动的滑动平均升降（教科书常写成活动平方的平均）。这和 Adam 用二阶矩 v 的滑动平均给自己定尺子是同一个结构：都拿「最近的自己」做参照，防止越学越失控。不像在哪：BCM 的阈值决定改动的方向，Adam 的 √v 只缩放步长、不改方向。</li>
 <li><b>心理学 · 韦伯定律</b>：19 世纪的 Ernst Weber 发现，刚能察觉的变化量与原刺激大小成比例，人感知的是相对变化而不是绝对差。Adam 除以 √v，同样让步长只看梯度的相对大小、对整体尺度不敏感；不像的是，韦伯定律在极弱刺激处失效，Adam 则用 ε 兜住分母接近零的一端。</li>
 <li><b>投资 · 夏普比率</b>：William Sharpe 1966 年提出的「超额回报除以波动」，和 m/√v 这个近似信噪比同构：方向确定就下重注，波动大就收手。不像在哪：夏普比率的分母是标准差、先扣掉均值，Adam 的 √v 是未中心化的二阶矩，不扣均值。</li>
 <li><b>心理学 · 锚定效应</b>：Tversky 与 Kahneman 1974 年指出，人估计数值时从一个起点出发、调整得不够，结果被起点拖着走。m、v 从 0 起步而被拉低，正是一种「锚在零上」；不像的是，人看不见自己的锚，Adam 却精确知道偏差是 1−βᵗ，能一除了之。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="897610058441c5cc">十条要点</h2>
 <ol class="takeaways">
 <li>朴素 SGD 用一个全局学习率一刀切：太大会震荡发散，太小又慢得离谱，而不同参数需要的步长天差地别。</li>
 <li>AdaGrad 按历史梯度平方的累加和缩放步长，但分母只增不减，学习率会衰减到零而过早「熄火」。</li>
@@ -193,9 +193,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

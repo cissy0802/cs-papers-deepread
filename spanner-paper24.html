@@ -184,14 +184,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>CAP 上的取舍</strong>：网络分区时 Spanner 选一致性、牺牲可用性（本质是 CP 系统）。Google 辩称因其专网极可靠而「实际近似 CA」，这个说法有争议（Brewer 后来专门撰文澄清边界）。</li>
 <li><strong>发表时 SQL 尚浅</strong>：2012 版的查询/SQL 能力有限，完整的分布式 SQL 引擎是 2017 年的续作《Spanner: Becoming a SQL System》才补齐。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="1362947fd63868a4">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>物理学 · 狭义相对论的同时性</b>：爱因斯坦指出，相隔遥远的两件事是否「同时」取决于观察者的参照系，宇宙没有统一的「此刻」。Spanner 撞上的是同一堵墙：异地之间对不齐「现在」。不像在哪：相对论里同时性本身就是相对的，Spanner 却假定存在唯一的真实时间、只是测不准，所以能用一个区间把它框住。</li>
 <li><b>神经科学 · 后测（postdiction）</b>：Eagleman 等人用闪光滞后效应论证，大脑不是信号一到就宣布「看到了」，而是先攒一小段时间的信息再定稿，很像 commit wait 的「多等一拍」。不像在哪：大脑会回头改写先后，Spanner 定下的时间戳永不改。</li>
 <li><b>儒家 · 知之为知之，不知为不知</b>：孔子把坦白「我不知道」算作真知的一部分。TrueTime 也不报假装精确的时刻，而把自己的无知量化成 ε 交出来。不像在哪：孔子讲的是做人的诚实，TrueTime 的诚实还附带一个系统可以依赖的硬上界。</li>
 <li><b>投资 · 格雷厄姆的安全边际</b>：Benjamin Graham 主张别押注对价值的精确估计，而在价格与估值之间留出缓冲。Spanner 取区间上界作时间戳、再等误差过去，同样是用缓冲吸收误差而非消灭误差。不像在哪：安全边际只降低出错概率，commit wait 在 ε 成立时给出确定保证。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="1d94e21eec96f180">十条要点</h2>
 <ol class="takeaways">
 <li>Spanner 是第一个既把数据分布到全球、又支持外部一致分布式事务的数据库。</li>
 <li>物理时钟会漂移、NTP 误差没有可靠上界，没有可信时间就无法给跨机房事务定序。</li>
@@ -210,9 +210,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

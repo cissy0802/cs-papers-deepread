@@ -236,14 +236,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>范式高度受限</strong>：这套方法吃「完美信息、确定性、离散、有明确胜负」的棋类；对不完全信息（如扑克）、连续控制、无清晰奖励的现实任务，不能直接照搬——它需要一个能快速模拟的规则/模型。</li>
 <li><strong>并非无懈可击</strong>：李世石在第四局凭「第 78 手」扳回一城，暴露了它面对意外局面的脆弱；后来（2022）有研究用对抗性下法找到 AlphaGo 式程序的盲区，让业余选手也能取胜——「超人」棋力在鲁棒性上仍有窟窿。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="2dece2c6fe8bdb39">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>哲学 · 波兰尼的「默会知识」</b>：Michael Polanyi 在 1966 年的《默会的维度》里说「我们知道的比我们能说出的多」。围棋高手说不清一块棋为什么「厚」，所以人写不出估值函数；价值网络干脆跳过「说出来」这一步，直接从胜负里学会判断。不像的是：波兰尼的默会知识扎根于身体与实践，而网络学到的「懂」，连它的设计者也读不出来。</li>
 <li><b>认知心理学 · de Groot 的象棋大师研究</b>：de Groot（1946）发现，大师考虑的候选着法并不比弱棋手多，强在一眼挑中好棋——正是策略网络「砍宽度」的路子。不像在：人类大师每步很少看超过一百个变化，AlphaGo 仍要靠上万次模拟兜底。</li>
 <li><b>神经科学 · 多巴胺与奖赏预测误差</b>：Schultz、Dayan、Montague 1997 年在 Science 上指出，中脑多巴胺神经元的放电很像强化学习里的「预测误差」，大脑也在学一个「这个局面值多少」的价值函数。不像在：大脑靠时序差分边走边改，AlphaGo 的价值网络是拿整盘终局胜负做回归。</li>
 <li><b>进化生物学 · 红皇后假说</b>：Van Valen 1973 年提出，物种必须不停进化，才能在与对手的共同进化里保住原位；自我对弈也是和对手一起水涨船高。不像在：自然界的军备竞赛可能原地兜圈，AlphaGo 让新版本对阵从历代旧版本里随机挑的对手，正是为了不只针对眼前这一个对手过拟合。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="02eb343fc468c841">十条要点</h2>
 <ol class="takeaways">
 <li>围棋的搜索空间约 <code>250¹⁵⁰</code>，人又写不出可靠的中间局面估值函数，穷举和传统剪枝双双失效。</li>
 <li>AlphaGo 用策略网络缩小每步的候选范围、用价值网络直接估胜率，补上蒙特卡洛树搜索缺的「往哪走」和「谁会赢」。</li>
@@ -262,9 +262,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

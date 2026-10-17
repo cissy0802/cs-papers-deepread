@@ -195,14 +195,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>「Worse is better」</strong>：Richard Gabriel 的著名论断——UNIX 靠「实现简单优先于接口完美」的取舍胜出，但也因此留下不少粗糙边角与不一致；这既是对它的批评，也是对它成功之道的精准描述。</li>
 <li><strong>对新手不友好</strong>：命令晦涩简短、报错惜字如金，早期文档也少——好用是对熟手而言的。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="9e602238e3a44406">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生物进化 · Jacob 的「修补匠」</b>：François Jacob 1977 年在《Science》上撰文说，进化不像工程师照图纸造新件，而像修补匠拿手边的旧零件拼出新用途；管道把现成小工具串成新功能，是同一种思路。不像在哪：UNIX 的小工具是刻意为可组合而设计的，进化没有设计者，也不预留接口。</li>
 <li><b>复杂性科学 · 领结结构（bow tie）</b>：Csete 与 Doyle 指出代谢网络呈领结形：各种养分先汇成 ATP 等少数通用分子，再散成各种产物；「一切皆文件」同样把五花八门的设备收进 open/read/write 这条细腰。不像在哪：细胞的腰是演化慢慢磨出来的，UNIX 的腰是设计者一次定下的。</li>
 <li><b>哲学 · Frege 的「晨星与昏星」</b>：Frege 1892 年区分「意义」与「指称」：「晨星」「昏星」两个名字指的是同一颗金星；UNIX 的硬链接也是多个名字指向同一个 i-node。不像在哪：Frege 的两个名字带着不同的呈现方式，硬链接却完全对等，没有哪个是「本名」。</li>
 <li><b>生物学 · 细胞分裂与分化</b>：细胞先完整复制基因组、一分为二，子细胞再走上各自的分化道路，像 fork 先整个复制、再由 exec 变成别的程序。不像在哪：exec 把旧映像整个换掉，分化的细胞却通常保留全套基因，只是关掉了大部分。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="c93b4965f8087adb">十条要点</h2>
 <ol class="takeaways">
 <li>UNIX 用一小组极简、彼此正交、可自由组合的原语，搭出了一个小而通用的分时操作系统。</li>
 <li>UNIX 之前的大型分时系统如 Multics 大而全、专用接口林立，程序之间难以互相组合。</li>
@@ -221,9 +221,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

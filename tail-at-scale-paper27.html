@@ -207,14 +207,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>摘除与降级都有代价。</strong>留观阈值太敏感会让机器反复上下线，摘掉机器又意味着把负载推给别人；「够用就返回」直接牺牲结果质量且文章没量化它——账务、法规查询这类场景根本不适用。</li>
 <li><strong>假设同构可控的环境，且掩盖而非根治。</strong>论述建立在单数据中心低延迟网络、统一软件栈、对全栈有控制权之上；多租户云与异构微服务里，「副本可选、取消可达、延迟可测」都要重新验证。症状消失后抖动源头仍在消耗资源——更好的隔离是互补的另一条路。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="f0679d947d281006">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>经济学 · Kremer 的 O 形环理论</b>：Michael Kremer 1993 年借挑战者号的 O 形环提出一种生产函数——产品价值是各环节成功率的乘积，任一环出错整件作废。这和 0.99¹⁰⁰ 是同一个乘法：链条越长，单环的小瑕疵越致命。不像在：Kremer 由此推出「高手扎堆」的配对结论，这篇论文给的解药却是冗余绕开。</li>
 <li><b>心理学 · 竞赛模型（race model）</b>：Raab 1962 年用「统计促进」解释冗余信号效应——两个信号同时出现时人反应更快，因为两条通道赛跑、谁先到谁触发，正是对冲请求的「谁先答用谁」。不像在：大脑不会取消落后的那条通道。</li>
 <li><b>生物进化 · 两头下注（bet-hedging）</b>：Cohen 1966 年分析荒漠一年生植物：每年只让部分种子发芽、其余休眠，牺牲一点平均产出，换掉全军覆没的坏年份。对冲请求同样拿约 2% 的额外请求砍掉最坏的尾巴；不像在：种子押的是未知的天气，没法事后撤单。</li>
 <li><b>生态学 · 周期蝉的同步羽化</b>：周期蝉每 13 或 17 年成批同时破土，捕食者一下吃不完，损失被压进一个短窗口——和「让后台维护全体同时做」同构：错开等于天天挨打，对齐只痛一次。不像在：蝉靠同步稀释伤亡比例，集群靠同步缩短受害时长。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="40babeee02925cf9">十条要点</h2>
 <ol class="takeaways">
 <li>大规模扇出系统里，一次请求的响应时间取决于最慢的那台机器，而不是平均水平。</li>
 <li>单机只有 1% 概率超过一秒，并行等 100 台全部返回时，63% 的请求都会超过一秒。</li>
@@ -233,9 +233,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

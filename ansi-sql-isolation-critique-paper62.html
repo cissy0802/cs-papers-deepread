@@ -231,14 +231,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>快照隔离的危险被低估了。</strong>论文点出了写偏斜，但当年没人预料到「把 SI 标成 SERIALIZABLE 卖」会造成多少生产事故；真正的解法要等十多年后的 SSI。</li>
 <li><strong>覆盖面有限。</strong>全文只谈单机数据库里的读写事务，不涉及分布式一致性、会话保证（读己之写、单调读），也不涉及应用侧「拿快照算完再重试」这类模式的正确性。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="790b956c5e48e651">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>佛学 · 说一切有部「三世实有」</b>：有部主张过去、现在、未来的法都真实存在，差别只在「作用」已灭、正起还是未起；多版本存储同样让旧版本继续存在、可读，快照隔离读的正是一个「已经过去」的版本。不像在哪：数据库的旧版本终会被垃圾回收，倒是经量部「只有当下存在」更像普通的原地覆盖写。</li>
 <li><b>法哲学 · Hart 的「公园禁车」</b>：Hart 1958 年问，「禁止车辆入园」管不管自行车、玩具车？规则有清晰的核心，也有模糊的半影，SQL-92 的「脏读」散文正落在半影里。不像在哪：法律靠法官逐案裁量消化半影，这篇论文则干脆把散文换成可机械检验的事件模式。</li>
 <li><b>经济学 · 公地悲剧</b>：Hardin 1968 年写牧民各自理性地多放一头牛，合起来毁掉公共草场；写偏斜同样是每一步都合法、合起来破坏约束。不像在哪：公地悲剧源自各人的利益驱动，写偏斜里没人自私，只是每人依据的快照都已过期。</li>
 <li><b>生物进化 · 从阶梯到树</b>：旧观念把万物排成一条「存在巨链」，Darwin 1837 年在 Notebook B 写下「I think」并画出分叉的树，物种从此排不成一列；隔离级别也从一条阶梯变成偏序的网。不像在哪：进化树只分不合，级别网里的两条支路最终在 SERIALIZABLE 重新汇合。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="3cac111c7fd2abf7">十条要点</h2>
 <ol class="takeaways">
 <li>SQL-92 用脏读、不可重复读、幻读三种现象定义四档隔离级别，这套定义既含糊又不完备。</li>
 <li>标准号称与实现无关，三种现象其实是从 Gray 1976 年的封锁级别倒推出来的。</li>
@@ -257,9 +257,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

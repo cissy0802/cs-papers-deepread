@@ -207,14 +207,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>SQL ≠ Codd 的纯关系模型</strong>：现实的 SQL 在几处背离了原始理论——它<strong>允许重复行</strong>（不是严格的集合）、<strong>NULL 与三值逻辑</strong>带来诸多语义争议。Codd 本人后来专门写了「十二条规则」并撰文批评 SQL 对模型的偏离。</li>
 <li><strong>1970 原文只是起点</strong>：论文本身简短而数学化，规范化理论（2NF/3NF/BCNF）、关系完备性、以及可用的查询语言，都是 Codd 与他人在其后多年逐步补全的——单看这一篇，离一个能用的系统还很远。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="64259602eee4a1a4">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · Hopfield 的内容可寻址记忆</b>：Hopfield 1982 年的网络按「内容」而不是「地址」取回记忆，给半截线索就能补全整个模式，和「按值找行、不顺指针跳」是同一个思路。不像在：Hopfield 网络容忍残缺、做近似匹配，关系连接要求值严格相等。</li>
 <li><b>生物 · 激素与受体</b>：激素（Starling 1905 年命名）被释放进血液，并不「接线」到某个细胞，谁身上有匹配的受体谁就响应，关联靠对上号而不靠专线，正像外键对上主键。不像在：受体结合是亲和力的连续程度，而且是广播；表连接是精确的、按查询发起的。</li>
 <li><b>经济学 · 哈耶克《知识在社会中的运用》</b>：哈耶克 1945 年论证，价格把散落各处的局部知识压缩成一个信号，人们不必知道背后原因就能行动，就像声明式查询让程序不必知道数据怎么存。方向却恰好相反：哈耶克借此反对中央计划，Codd 的声明式恰恰把「怎么找」交给一个中央计划者——查询优化器。</li>
 <li><b>复杂性科学 · 西蒙的近可分解性</b>：Herbert Simon 1962 年的《复杂性的架构》指出，复杂系统靠「子系统内部联系紧、之间联系松」才能稳定演化；数据独立性正是在逻辑层和物理层之间切出这样一道松耦合的缝。不像在：西蒙看重层级嵌套，Codd 却把层次模型的树压平成了表。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="3ec9d80537ffc481">十条要点</h2>
 <ol class="takeaways">
 <li>Codd 1970 年的《A Relational Model of Data》把数据统一表示成数学上的关系，也就是行列规整、每格单值的表。</li>
 <li>网状与层次数据库让程序背着排序、索引、存取路径三种依赖，存储一改，程序就得重写。</li>
@@ -233,9 +233,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

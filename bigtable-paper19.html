@@ -237,14 +237,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>调优是门手艺</strong>：局部性组怎么分、要不要压缩、布隆过滤器、内存组、行键怎么设计——用好 Bigtable 很吃经验，用不好性能差很多。</li>
 <li><strong>原版是单数据中心</strong>：论文里的 Bigtable 主要在单集群内工作，跨数据中心的复制与全球一致是后来（Megastore、Spanner）才补上的。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="5bfddd02649a428b">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 互补学习系统</b>：McClelland、McNaughton 与 O'Reilly 1995 年提出，海马体先快速记下新经历，再通过反复重放把它慢慢写进新皮层——和 memtable 先收、压实后固化成 SSTable 是同一种「快缓冲 + 慢长期库」的两级结构。不像在：大脑巩固时会提炼共性、丢掉细节，压实只是逐字誊写、清掉删除标记，不提炼任何规律。</li>
 <li><b>神经科学 · 躯体地形图</b>：Penfield 与 Boldrey 1937 年用术中电刺激画出「小人图」，身体上相邻的部位在皮层上也相邻。网址反转当行键是同一招：让逻辑相关的东西物理上挨着。不像在：皮层按用途放大手和嘴，行键只排序、不按热度分配空间。</li>
 <li><b>哲学 · 四维主义</b>：Sider 在 2001 年的《Four-Dimensionalism》里主张，物体在存在的每一刻都有一个「时间部分」。Bigtable 的单元格也是一摞带时间戳的版本，而不是一个被反复改写的值。不像在：哲学里过去的时间部分不会消失，Bigtable 会按策略回收旧版本。</li>
 <li><b>商业 · 会计账簿</b>：规范的账本不涂改已记的分录，记错了就补一笔冲销分录，原始记录始终留着。Bigtable 删除数据也只是写一个删除标记，旧数据要到主压实才真正消失。不像在：会计留痕是为了审计，Bigtable 不改旧文件是为了顺序写快、读免加锁。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="789588eb0241da6c">十条要点</h2>
 <ol class="takeaways">
 <li>Bigtable 是 Google 的分布式结构化存储，能把一张表摊到上千台廉价机器上、长到 PB 级。</li>
 <li>Bigtable 刻意放弃通用事务、SQL 和多表关联，只留按行读写与扫区间，换来近乎无限的横向扩展。</li>

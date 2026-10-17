@@ -231,14 +231,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>保证依赖假设</strong>：它建立在「哈希足够随机」与「视图不太偏斜」之上，视图高度失衡、或有人刻意构造 key 去撞同一段弧时，界就不成立了。</li>
 <li><strong>论文的另一半几乎被遗忘</strong>。随机树协议没被工业界照搬——真实 CDN 用的是 DNS 重定向、分层缓存、请求合并等更工程化的手段；今天提起这篇论文，绝大多数人只记得标题的前两个词。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="e48207d72c8893bb">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>经济学 · 谢林的聚焦点（Schelling point）</b>：谢林在《冲突的策略》（1960）里问学生：没法事先联络，要在纽约和陌生人碰头，去哪、几点？多数人答「中午，中央车站」。一致性哈希同样让互不通信的客户端落到同一个答案；不像在：聚焦点靠共享文化里的「显眼」，哈希靠人人算同一个确定函数，不需要任何默契。</li>
 <li><b>经济学 · 哈耶克《知识在社会中的运用》</b>：哈耶克 1945 年论证，没有哪颗头脑掌握全部信息，分散的局部知识照样能协调出秩序。「名单各不相同、分配大体一致」是同一个形状；不像在：价格靠持续反馈传递信息，环上的规则从不通信、也从不学习。</li>
 <li><b>神经科学 · 果蝇嗅觉的「哈希」</b>：Dasgupta、Stevens、Navlakha 2017 年在 Science 上论证，果蝇嗅觉回路用稀疏随机投影给气味编码，相当于一种局部敏感哈希。都是用随机映射来分工；不像在：果蝇要让相似气味得到相似编码，一致性哈希只求机器增减时归属不乱。</li>
 <li><b>行为生态学 · 罗非鱼的六边形领地</b>：Barlow 1974 年观察到莫桑比克罗非鱼雄鱼在沙底挖出近似蜂窝的领地，这类格局常用 Voronoi 剖分建模——新来者只从紧邻处分走地盘，远处不动，正像单调性。不像在：鱼靠打斗协商边界，环上的位置由哈希随机给定，且新桶只切一个邻居。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="78bc326d27ae45f2">十条要点</h2>
 <ol class="takeaways">
 <li>《一致性哈希与随机树》（STOC 1997）出自 MIT 理论组，次年由 Leighton 与 Lewin 落地成 Akamai。</li>
 <li>取模分桶 <code>hash mod n</code> 在机器数一变时几乎全盘重排，扩容那一刻全体缓存失效、请求涌回源站。</li>
@@ -257,9 +257,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

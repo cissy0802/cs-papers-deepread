@@ -211,14 +211,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>看聚合会淹没个体</strong>：把大量 trace 汇总成统计视图便于看全局，但也容易把单个诡异的离群请求平均掉；而排障时要的往往正是那一个离群点。</li>
 <li><strong>追踪 ≠ 自动诊断</strong>：Dapper 忠实地把「发生了什么、各段多久」摆出来，但「为什么慢、根因是什么」仍要人去解读——它是一副更好的眼镜，不是自动的医生。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="1cb4fd71bc43d2af">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生物化学 · Calvin 的碳-14 示踪</b>：1946 年起 Melvin Calvin 往小球藻里通入含碳-14 的 CO₂，在不同时刻叫停代谢、看标记落在哪些分子上，拼出光合作用的碳路径，获 1961 年诺贝尔化学奖。trace id 就是这枚同位素：对系统几乎「透明」，随物质一路流动。不像在：示踪看的是一大群分子的统计，Dapper 能还原单次请求的整棵调用树。</li>
 <li><b>神经科学 · Golgi 染色</b>：Golgi 1873 年发明的「黑色反应」只随机染上约 1–5% 的神经元，正因稀疏，Cajal 才看清单个神经元的完整枝杈。Dapper 约 1/1024 的抽样同理：少记反而看得清。不像在：Golgi 染上哪些至今说不清，Dapper 的抽样率可调。</li>
 <li><b>哲学 · 休谟论因果</b>：休谟说我们只看得到事件「恒常相随」，看不到因果本身。黑盒法从日志的先后共现推断谁调了谁，正是休谟式处境；标注法给每个 span 贴上父 span 的标签，等于把因果直接写进数据——自然界可不发这种标签。</li>
 <li><b>经济学 · 哈耶克的知识问题</b>：哈耶克 1945 年《知识在社会中的运用》指出，知识分散在无数人手里，没有谁掌握全貌；Google 里「没有任何工程师了解全部环节」是同一处境。不像在：哈耶克认为价格体系让人不必看全貌也能协调，Dapper 偏要把全貌拼出来给人看。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="f3a5e6fc7c09ab97">十条要点</h2>
 <ol class="takeaways">
 <li>Dapper 是 Google 的分布式追踪系统，从「单次请求」的视角串起横跨上千台机器的工作。</li>
 <li>一次搜索请求会扇出到上千台机器，按机器组织的日志拼不出单次请求的完整因果链。</li>
@@ -237,9 +237,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

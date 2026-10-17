@@ -163,14 +163,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>一封信不是完整方法论</strong>：如何真正写出可推理的程序，要靠之后 Dijkstra、Hoare 等人的不变式、前后断言、逐步求精等工作补齐；这封信只指出了方向。</li>
 <li><strong>现代仍有 goto 的正当用途</strong>：如 C 语言里集中做错误清理（跳到函数末尾统一释放资源），Linux 内核就大量这样用——一个受纪律约束的 goto 反而让资源管理更清晰。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="31f489735829f2e1">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>心理学 · Miller 的「组块」</b>：George Miller 1956 年发现，短时记忆装得下的是约七个「块」而不是七份信息，熟悉的模式能把许多细节压成一块。结构化控制流也在替读者组块：整个 while 块可以当一个单位来记。不像在：Miller 量的是记忆容量，Dijkstra 关心的是推理能不能落脚，不只是记不记得住。</li>
 <li><b>复杂性科学 · Simon 的两个钟表匠</b>：Herbert Simon 1962 年《复杂性的架构》里，Hora 用稳定的子组件层层组装，被打断只丢一小块；Tempus 一件件散装，一打断就全盘散架。嵌套块结构正是 Hora 的做法。不像在：Simon 问的是系统能否演化和存活，Dijkstra 问的是人能否看懂。</li>
 <li><b>生物进化 · 模块化与可演化性</b>：Wagner 与 Altenberg 1996 年指出，基因型到表型的映射若是模块化的（一处突变很少牵连别的功能），新适应更容易演化出来。goto 像四处牵连的多效性，改一处牵动全局。不像在：模块化是自然选择慢慢筛出来的，结构化编程是人主动立下的纪律。</li>
 <li><b>哲学 · 柏格森的「空间化时间」</b>：柏格森 1889 年的博士论文认为，理智习惯把流动的绵延（durée）摆成空间里的一条线来把握。Dijkstra 也是让时间里的执行过程落成纸上的静态排列。不像在：柏格森视这种空间化为扭曲、要靠直觉越过，Dijkstra 则正要借它来推理和证明。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="2e82e1753c95f2b9">十条要点</h2>
 <ol class="takeaways">
 <li>《GOTO 语句有害》是 Dijkstra 1968 年发在 CACM 上的一封两页短信，点燃了结构化编程运动。</li>
 <li>程序有两副面孔：纸上的静态文本和运行时的动态过程，读、写、调试都是在两者之间来回对应。</li>
@@ -189,9 +189,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

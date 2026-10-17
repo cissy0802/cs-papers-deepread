@@ -178,7 +178,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>归约口径之别</strong>：Cook 用的是较宽的多项式时间图灵归约；Karp 之后，学界多改用较严格的<em>多对一归约</em>，两种「完全性」定义在细节上不同。</li>
 <li><strong>独立发现与署名</strong>：Levin 在苏联几乎同时（甚至更早）得到「通用搜索问题」的等价结果，长期被西方忽视，故正名为 <strong>Cook–Levin 定理</strong>。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="3f45b2201251145b">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>统计物理 · 随机 3-SAT 的相变</b>：Kirkpatrick 与 Selman（1994，Science）借统计物理的有限尺寸标度研究随机 k-SAT：子句与变量之比越过临界值（3-SAT 约 4.2），公式从几乎都可满足骤变为几乎都不可满足，求解器最吃力的实例正挤在这道「相变」附近，像水在冰点结冰。不像在于：Cook 的难度是对最坏实例的判决，相变讲的是随机实例的统计行为，正对应「NP 完全 ≠ 实践中不可解」。</li>
 <li><b>量子力学 · 叠加与 Grover 搜索</b>：非确定机「同时分叉试遍所有可能」，乍看像量子叠加。但 Bennett、Bernstein、Brassard、Vazirani（1997）证明，黑箱搜索中量子机最多只把穷举省到平方根，Grover 算法恰好达到这一界。不像在于：叠加的分支一测量就随机坍缩，无法像非确定机那样「直接挑出接受的那条」。</li>
@@ -186,7 +186,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><b>科学哲学 · 发现的语境与辩护的语境</b>：Reichenbach（1938，《经验与预测》）把「假说怎么想出来」与「假说怎么被证成」分开。NP 正是这道分界的量化版：验证一份证据容易，找到它可能极难。不像在于：Reichenbach 把发现交给心理学、不做逻辑分析，复杂度理论却把「发现比验证难多少」变成可证明的数学问题。</li>
 <li><b>经济学 · 纳什均衡的计算复杂度</b>：Daskalakis、Goldberg、Papadimitriou（2006 年起）用同一套「归约 + 完全性」证明，求博弈的纳什均衡是 PPAD 完全的，这给「市场自然会算出均衡」的假设泼了冷水。不像在于：纳什定理保证均衡一定存在，问题不在「有没有」，所以它落在 PPAD，而不是 NP 完全。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="ce3fca7dcc204631">十条要点</h2>
 <ol class="takeaways">
 <li>Cook 1971 年的论文第一次给「难解」下了精确定义，把 P 是否等于 NP 变成严格的数学问题。</li>
 <li>到 1960 年代，可计算问题内部仍有天壤之别：有些问题只会穷举，却说不清「更难」指什么。</li>
@@ -205,9 +205,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

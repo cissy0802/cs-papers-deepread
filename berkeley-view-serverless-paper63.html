@@ -216,7 +216,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>反方的根本质疑没被真正回应。</strong>「数据运输架构逆转了数据局部性原则」是架构层面的批评，而这篇的回应本质上是「这些坑能填」，属于乐观预期而非论证；到今天数据密集型负载在纯 FaaS 上依然不划算，这一条基本是反方赢了。</li>
 <li><strong>被淡化的两笔账。</strong>serverless 的能力大半来自厂商专有的 BaaS，锁定成本远高于虚拟机；把一个请求拆成几十次短命调用之后，排查问题的难度也陡增。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="4c3741fa0a5e1f80">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>复杂性科学 · 环境媒介协调（stigmergy，Grassé 1959）</b>：Grassé 发现筑巢的白蚁并不彼此沟通，而是看已建成的结构决定下一步；函数「A 写存储、B 读存储」正是这种借环境协调。不像在于：白蚁的「存储」就在脚下、几乎免费，serverless 每次读写都要几十毫秒外加一笔账单。</li>
 <li><b>神经科学 · 病人 H.M.（Henry Molaison）</b>：1953 年双侧内侧颞叶切除后，他再也记不住新事，像调用结束就清空的无状态函数。不像在于：Brenda Milner 发现他仍能越练越会镜像描星，技能存进了别的脑区。</li>
@@ -224,7 +224,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><b>经济学 · 科斯《企业的性质》（1937）</b>：企业存在，是因为走市场有交易成本。serverless 把计算推回「按次购买」的市场，反方说的数据运输就是这笔成本。不像在于：科斯的成本是搜寻与签约，这里是物理的延迟和带宽。</li>
 <li><b>佛学 · 唯识的刹那与阿赖耶识</b>：唯识宗认为诸识刹那生灭，前后能接续，是因为业的「种子」熏习进阿赖耶识（藏识）里保存。像函数随生随灭、连续性全靠外部存储；不像在于：藏识属于每个有情自己，不是众生共用的储物柜。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="2d4de7b65bde3843">十条要点</h2>
 <ol class="takeaways">
 <li>伯克利 2019 年的 serverless 论文是立场论文：先下定义，再列出它的缺陷清单。</li>
 <li>serverful 的痛点在于猜规格的代价不对称：猜大了天天白烧钱，猜小了直接宕机。</li>
@@ -243,9 +243,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

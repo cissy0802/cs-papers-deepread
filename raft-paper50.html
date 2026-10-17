@@ -204,14 +204,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>Figure 8 的「只提交本任期条目」是易错点</strong>：这条反直觉细则若实现时漏掉，系统会在特定故障序列下丢失已提交数据——说明 Raft 也并非「照抄伪代码就一定对」。</li>
 <li><strong>超时需要调参</strong>：随机超时的取值要与部署环境的网络往返时延匹配，配错了会导致选举频繁或迟缓，运维上仍需经验。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="7fa9de3751a1585b">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生物进化 · 蜜蜂分群择巢（Thomas Seeley）</b>：侦察蜂各自为候选巢址招募同伴，某处聚集的侦察蜂达到法定数量（quorum），整群才动身——和 Raft「被多数派复制即提交」是同一种结构。不像在于：蜂群的门槛是一个数量阈值而非过半，也没有领导者，靠的是招募的正反馈竞争。</li>
 <li><b>发育生物学 · Notch–Delta 侧向抑制</b>：一片起初相同的细胞里，微小的随机差异被放大，抢先胜出的细胞抑制邻居走同一条路，最后只剩一个「领头」细胞——像随机超时打破对称、当选者靠心跳压住别人参选。不像的是，侧向抑制的结果基本不可逆，没有「领导者挂了就重选」这一步。</li>
 <li><b>神经科学 · 全局工作空间理论（Bernard Baars；Stanislas Dehaene 的神经版本）</b>：大脑里大量并行的无意识处理彼此竞争，只有一个内容胜出进入「工作空间」，再被广播给全脑各模块，很像强领导者把唯一一份日志单向铺给所有跟随者。不像在于：意识内容转瞬即逝、随时被下一个覆盖，而 Raft 已提交的条目永不改写。</li>
 <li><b>心理学 · 认知负荷理论（John Sweller）</b>：工作记忆一次能同时摆弄的相互依赖元素很少，所以拆分步骤、减少同时要考虑的情况，学得更快——Raft 的问题分解与压缩状态空间正是在给读者减负。不像的是，教学设计通常只改讲法，Raft 是真把算法本身的状态空间砍小了。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="b097673ad52abd68">十条要点</h2>
 <ol class="takeaways">
 <li>Raft 是一套多副本共识算法，让会宕机的服务器对同一份复制日志达成永不反悔的一致。</li>
 <li>Paxos 正确却出了名地难懂，从单决议拼成日志的部分讲得含糊，各家实现只好各自发挥。</li>
@@ -230,9 +230,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

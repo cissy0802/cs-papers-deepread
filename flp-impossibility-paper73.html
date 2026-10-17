@@ -210,14 +210,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>纯粹的最坏情况结论</strong>：不给任何概率刻画——不告诉你卡住的可能性多大、预期多久能决定。</li>
 <li><strong>极易被误引</strong>：常见误读是「异步系统无法达成共识」（正确说法是无法<strong>保证终止</strong>），以及与 CAP 混为一谈——CAP 讲分区时一致性与可用性的取舍，FLP 讲无时间假设下活性无法保证，关切相近但命题不同。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="e7482e5ce090eeb4">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>哲学 · 布里丹之驴（Buridan's ass）</b>：一头完全理性的驴站在两堆一样好的干草正中，找不到偏向任何一边的理由，于是饿死——这就是双价：0 和 1 都还可能，确定性的选择者没有理由迈步。不像在于，驴的对称是静止的，FLP 的对称是对手每一步主动重新摆平的；这则寓言其实不见于 Buridan 本人的著作，源头可追到亚里士多德《论天》。</li>
 <li><b>经济学 · 阿罗不可能定理（Kenneth Arrow，1951）</b>：帕累托、无关选项独立、非独裁，几条单看都很温和的要求凑在一起，就没有投票规则能全部满足；FLP 同样是把三条最弱的要求叠出不可能。不像的是，阿罗卡在偏好怎么聚合，FLP 卡在时间与信息。</li>
 <li><b>生物进化 · 蜜蜂分群的停止信号（Thomas Seeley 等，2012）</b>：两个同样好的巢址会让蜂群僵持，侦察蜂用头撞对方阵营舞者的「停止信号」做交叉抑制，才打破僵局。像在都要打破对称；不像在于蜂群靠噪声与群体阈值，等于同时用了随机化和时间，恰是 FLP 排除的两样。</li>
 <li><b>神经科学 · 紧迫性门控（Paul Cisek，2009）</b>：在 Cisek 的模型里，证据要乘上一个随时间增长的「紧迫性」信号，等得越久，越弱的证据也够拍板——这是把时间假设写进决策回路。不像的是，大脑宁可偶尔选错，Paxos 的超时只用来换主，安全性一步不让。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="3d226b41318b9c65">十条要点</h2>
 <ol class="takeaways">
 <li>FLP 定理：异步系统里只要允许一个进程崩溃，就没有确定性算法能保证共识终止。</li>
 <li>当时的协议普遍默认超时可信，可真实网络给不出延迟上界，2PC 会因协调者失联而无限阻塞。</li>
@@ -236,9 +236,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

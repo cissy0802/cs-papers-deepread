@@ -170,7 +170,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>只适合离散动作的反应式游戏</strong>：连续控制（如机械臂力矩）需要另一套方法（DDPG 等）。</li>
 <li><strong>没有收敛保证、对超参敏感</strong>：能 work 更多是工程与经验的胜利，而非理论上被证明稳定。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="2f5031d90457e6b3">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 海马体回放（Wilson &amp; McNaughton，1994）</b>：大鼠白天跑迷宫时一起放电的位置细胞，睡眠中会再次成对共振，像把白天的经历重播一遍来巩固记忆；经验回放就是这本「睡梦日记」的工程版。不像在于：大脑的重播有选择、会压缩时间，DQN 的回放池是均匀随机抽样。</li>
 <li><b>神经科学 · 多巴胺的奖励预测误差（Schultz、Dayan、Montague，1997）</b>：猴子意外拿到果汁时多巴胺神经元猛放电，等奖励变得可预期，放电就提前到预示信号上，正好对上时序差分里「实际减预期」的误差。不像的是，多巴胺是全脑广播的一个标量，DQN 的误差只回传给一个网络。</li>
@@ -178,7 +178,7 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><b>哲学 · 纽拉特之船（Otto Neurath）</b>：水手只能在海上一块块换船板，永远没法回船坞从龙骨重建；自举就是这样，用自己对未来的估计修正自己。不像在于：纽拉特的船不会因为换板而越修越歪，Q 网络会，所以需要回放和后来的目标网络来稳住船身。</li>
 <li><b>行为经济学 · 双曲贴现（George Ainslie，1975）</b>：人和鸽子给未来打的折扣近处陡、远处缓，于是会在临近时反悔、改选眼前的小奖励；DQN 的 γ=0.99 是指数贴现，偏好前后一致，不会临阵变卦，但也因此学不到人类那种「先给自己上锁」的预先承诺。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="beabf40791b2f0f1">十条要点</h2>
 <ol class="takeaways">
 <li>DQN 用卷积网络近似 Q-learning 的动作价值函数，只从屏幕像素和分数学会打雅达利游戏。</li>
 <li>强化学习的数据奖励滞后、前后强相关、分布还随策略漂移，深度学习的老假设一条都不满足。</li>
@@ -197,9 +197,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

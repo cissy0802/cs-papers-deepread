@@ -223,14 +223,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>结论的可移植性存疑</strong>：Borg 的收益高度依赖 Google 的<strong>同质化环境</strong>——统一的 RPC 框架、统一的监控与命名、软件栈可控、机器型号有限。换到软件栈五花八门、还得防着不同租户互相下手的公有云，「大胆混装」的安全边界要窄得多。</li>
 <li><strong>不可复现且偏向成功面</strong>：系统闭源，数据来自 Google 内部 cell，外界既无法验证也难以对照；论文给足了利用率与规模的漂亮数字，但对批处理任务的排队等待、被反复抢占造成的重复计算浪费，着墨相对克制。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="676642df5f70d0f5">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>生态学 · 时间生态位分化</b>：以色列的两种刺毛鼠同住一片岩坡：开罗刺毛鼠夜里活动，金刺毛鼠白天活动；实验中移走开罗刺毛鼠，金刺毛鼠就转去夜里觅食——这和在线服务与批处理按忙闲时段错开、共用同一批机器是同一个结构。不像在哪：鼠的分工是竞争慢慢压出来的、没有裁判，Borg 的让位则由主控按优先级明文裁决、几秒内生效。</li>
 <li><b>神经科学 · 皮层重映射</b>：Merzenich 等 1984 年报告：成年夜猴截掉一根手指后，原本负责它的感觉皮层区会被相邻手指的表征逐渐占用——闲置的地盘不空着，转给邻居用，正像 Borg 回收「申请了却没用」的资源。不像在哪：皮层接管要几周到几个月，Borg 用量一涨就立刻收回。</li>
 <li><b>经济学 · 航空超售</b>：航空公司按历史爽约率多卖票，和 Borg 按实测用量超卖资源是同一种赌法。Julian Simon 1968 年提议用出价征集自愿让座者、取代随意踢人，1978 年起落地；不像在哪：让座乘客拿到补偿，被抢占的批处理只换来便宜配额。</li>
 <li><b>经济学 · Hayek 的分散知识</b>：Hayek 1945 年在《知识在社会中的运用》里论证：中央计划者收不齐散在各处的局部知识。Borgmaster 是一个能运转的中央计划者，靠每几秒轮询每台机器把现状收上来；而且它同样不信各方自报的需求，只信实测值。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="74926111ff3bee2d">十条要点</h2>
 <ol class="takeaways">
 <li>Borg 把上万台机器的 cell 当一台机器分配：用户只交声明式规格，选机器、启动、监控和失败重启都交给它。</li>
 <li>旧做法按用途把机器切成互不相干的几摊，每摊按自己的峰值配容量，闲置的部分又借不出去。</li>
@@ -249,9 +249,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

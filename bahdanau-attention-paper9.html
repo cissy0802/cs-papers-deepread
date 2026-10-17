@@ -207,14 +207,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>软对齐 ≠ 语言学对齐</strong>：α 权重常常发散、并不总落在「正确」的词上，把它直接当「模型的解释」有风险——后来 NLP 界「attention is not explanation」之争即源于此。</li>
 <li><strong>词表问题没碰</strong>：生僻词仍是未知符号（UNK），上面「追平 Moses」只在不含生僻词的子集成立；这个坑后来由 BPE 子词切分（2016）填上。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="2f8b74a82fb55171">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 偏置竞争（Desimone &amp; Duncan 1995）</b>：视觉皮层里众多刺激争夺有限的表征，自上而下的任务信号给其中一个加码、让它胜出——和解码器状态给源句各位置打分、再由 softmax 定输赢是同一结构。不像在：大脑容量有硬上限，竞争常是赢者通吃；softmax 只重分比例，每个词都分到一点。</li>
 <li><b>哲学 · 延展心灵（Clark &amp; Chalmers 1998）</b>：失忆的 Otto 随身翻笔记本找地址，两位哲学家主张那本子就是他记忆的一部分；注意力同样把源句从「必须背下」变成「随手可查的外存」。不像在：Otto 的本子长期留存，这份外存翻完一句就清空。</li>
 <li><b>佛学 · 作意（manaskāra）</b>：唯识列作意为五遍行心所之一，每一念心都伴着它，把心引向所缘境；解码器每写一个词都重算注意力，正是「念念皆作意」。不像在：作意引心专注一境，softmax 却把目光同时撒向整句。</li>
 <li><b>经济学 · 注意力稀缺（Herbert Simon 1971）</b>：信息过剩时稀缺的是注意力，必须在众多来源间分配；softmax 把权重总和锁死为 1，正是一份必须分完的预算。不像在：人的注意力要花时间，这份预算每步免费重发。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="e7dfe10dee8061bc">十条要点</h2>
 <ol class="takeaways">
 <li>2014 年的神经翻译把整句压进一个固定长度向量，句子越长丢得越多，长句 BLEU 急坠。</li>
 <li>Bahdanau、Cho 与 Bengio 的 RNNsearch 让解码器每生成一个词，都动态回看整个源句。</li>

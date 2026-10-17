@@ -212,14 +212,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>作为工业论文不可复现</strong>：Lambda 真实的密度、超卖比例、槽位回收策略这些关键运营参数并未公开，外部研究者只能照论文的定性描述推测。</li>
 <li><strong>它解决的是隔离与密度，不是 serverless 的结构性问题</strong>：Berkeley View 与同年 Hellerstein 那篇指出的「函数之间无法直接通信、必须把数据运到代码那儿」依旧成立——砖烧得再好，也不改变房子的户型。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="2297eab83aa4d689">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>合成生物学 · JCVI-syn3.0 最小基因组</b>：2016 年 Venter 研究所把支原体基因组削到 473 个基因，细胞仍能复制；和 Firecracker 一样，「最小」只在营养齐全的培养基里成立。不像在哪：首版删过头、细胞活不成，才发现一批「准必需」基因。</li>
 <li><b>安全科学 · 瑞士奶酪模型</b>：James Reason 1990 年提出：每层防线都有洞，洞对齐才出事故；KVM 外再套 jailer 正是这种叠片。不像在哪：奶酪的洞随机分布，攻击者却专找对齐的路。</li>
 <li><b>神经科学 · 血脑屏障</b>：脑毛细血管靠紧密连接封住缝隙，营养只能经专门转运体进出，像 seccomp 白名单加 virtio 窄接口。不像在哪：脂溶性小分子能直接穿过，漏洞出自化学而非代码。</li>
 <li><b>经济学 · Diamond–Dybvig 挤兑模型</b>：1983 年的模型说明，银行拿活期存款做长期投资，大家同时取钱就崩；内存超卖赌的也是租户不会同时用满。不像在哪：挤兑靠恐慌自我实现，租户彼此看不见。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="1d1cb99c54f740d3">十条要点</h2>
 <ol class="takeaways">
 <li>Lambda 早期一个客户独占一台 EC2 实例，隔离干净，但密度低、开机以秒计。</li>
 <li>容器共用宿主内核，边界是三百多个系统调用，隔不开互不信任的租户。</li>
@@ -238,9 +238,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

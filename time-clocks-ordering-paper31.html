@@ -191,14 +191,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>全序在并发事件间是任意的</strong>：一致但不「有意义」——它只保证大家排得一样，不保证符合任何现实语义。</li>
 <li><strong>物理时钟一节偏理论</strong>：真正的工程化时钟同步（NTP、GPS、原子钟、TrueTime）是几十年后的后话。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="00da3fd6098db25c">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · Dennett 与 Kinsbourne 的「多重草稿」模型</b>：他们反对大脑里有一个「笛卡尔剧场」统一给体验盖时间戳，主张先后是各脑区从信号内容里推出来的。这和「没有全局时钟、顺序靠因果推出」是同一个结构；不像的是，大脑推出的顺序可以与事件真实到达顺序不同，Lamport 时钟则绝不违背因果。</li>
 <li><b>地质学 · Steno 的叠覆律</b>：同一处岩层下老上新，只给出相对先后、不给年份，正像进程内的事件顺序；异地岩层靠共有的标准化石对齐，好比靠消息连起两条时间线。后来的放射性定年像论文最后「物理时钟的回归」。不像的是，岩层不会互相捎时间戳。</li>
 <li><b>西方哲学 · Leibniz 的关系时间观</b>：与 Newton 的绝对时间相对，Leibniz 在与 Clarke 的通信里主张时间只是事物相继的次序，离开事件就无所谓时间。Lamport 把「时间」降格为事件的先后关系，恰是这种关系论的工程版；不像的是，Leibniz 的次序默认是全序，Lamport 承认大量事件根本不可比。</li>
 <li><b>佛学 · 缘起（pratītyasamutpāda）</b>：「此有故彼有，此生故彼生」——先后由条件依存来定，不靠外在的钟，这与 happens-before 用「能否影响」定义先后同构。不像的是，十二缘起是循环往复的，而 happens-before 是不允许成环的偏序。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="c698d633f7180087">十条要点</h2>
 <ol class="takeaways">
 <li>分布式系统里各机器的石英钟会漂移、网络延迟不定，单靠比物理时间无法判定事件先后。</li>
 <li>Lamport 把「谁先谁后」改问成「谁能影响谁」，用因果关系而非物理时间来定义顺序。</li>
@@ -217,9 +217,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

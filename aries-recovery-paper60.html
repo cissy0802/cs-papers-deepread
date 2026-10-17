@@ -225,14 +225,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>写放大与日志瓶颈</strong>：每笔改动通常既要 redo 又要 undo 信息，而日志是全系统唯一、必须串行化的共享资源。到多核内存数据库时代，日志争用与刷盘延迟成了扩展瓶颈，才有成组提交、可扩展日志等后续工作，以及<strong>命令日志（command logging）</strong>这类替代——只记「执行了哪个存储过程、参数是什么」，运行期极省，代价是恢复得把整段历史重算一遍。</li>
 <li><strong>前提假设正在被改写</strong>：ARIES 假定「页 + 磁盘 + 就地更新 + 单机」。LSM-tree、写时复制、MVCC、非易失内存，以及把日志本身当数据库主体、由存储层自行重放的云原生架构，都在不同程度上绕开了它的分工。而如 PostgreSQL 所示，换一套并发控制就能整条省掉撤销通道——ARIES 的完整形态与「就地更新 + 细粒度锁」绑定，不是恢复问题的唯一解。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="b2f7f3fe1e67351e">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 海马体回放</b>：Wilson 与 McNaughton 1994 年在《Science》报告，大鼠跑迷宫时一起放电的位置细胞，随后睡眠中会更频繁地一起重新放电——白天的经验被「重放」进记忆系统，很像日志被重做进数据页。不像在哪：大脑的重放有挑选、会逐渐衰减，ARIES 的重做要求一条不漏、原样照抄。</li>
 <li><b>会计 · 冲销分录</b>：复式记账记错了不涂改原账，而是补记一笔方向相反的冲销分录，错账和更正都留在账本上——CLR 就是数据库版的冲销分录。不像在哪：会计没有「冲销途中断电」的问题，也就不需要 UndoNxtLSN 这种「下一笔该冲谁」的指针。</li>
 <li><b>哲学 · Collingwood 的「重演」</b>：Collingwood 在《历史的观念》（1946）里主张，史家要理解过去，得先在自己心里重演当事人的思想。ARIES 也是先把全部历史重演一遍，才有资格判断哪些该撤销；不像在哪：Collingwood 重演的是理由与动机，ARIES 重演的是不带理解的字节。</li>
 <li><b>物理 · Bennett 的可逆计算</b>：Bennett 1973 年证明，计算可以先保留全部中间结果以免擦除，抄出答案后再倒着走一遍，把中间垃圾「撤算」掉；量子算法清理辅助比特也用这招。这和「先完整重演、再倒着撤销」同构；不像在哪：Bennett 撤算后不留痕迹，ARIES 每撤一步还要再记一笔 CLR。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="6e5891be1da3988f">十条要点</h2>
 <ol class="takeaways">
 <li>ARIES 用分析、重做、撤销三趟恢复收拾崩溃现场，全部建在预写日志（WAL）与日志序号（LSN）之上。</li>
 <li>为了性能必须允许 steal 与 no-force，代价是崩溃后重做和撤销一个都不能少。</li>
@@ -251,9 +251,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>

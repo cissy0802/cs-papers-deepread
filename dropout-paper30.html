@@ -341,14 +341,14 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <li><strong>适用区间有限</strong>：数据太少（欠拟合）或极多时收益都会消失。今天的大语言模型预训练常把 dropout 直接设为 0——数据近乎单遍过，根本不到过拟合那一步。</li>
 <li><strong>解释未有定论</strong>：「防共适应」与「指数集成」都是有说服力的直觉，却都不是严格证明；权重缩放的等价性只在单层 softmax 下精确，深层网络里为何仍好用，学界给的是互补解释而非定论。</li>
 </ul>
-<h2>越界 · 跨学科的联想</h2>
+<h2 data-tts="eccf92bbf9175361">越界 · 跨学科的联想</h2>
 <div class="crossx"><ul>
 <li><b>神经科学 · 不可靠的突触</b>：大脑本身就在「随机请假」——Allen 与 Stevens（1994）测得海马 CA1 单个突触上，过半的神经冲动传过去后没引起任何回应。像在哪：网络在部件随时缺席的条件下照样算得准；不像在哪：突触失败是生理代价、概率还随活动变化，dropout 是人为设计、训练完就关掉。</li>
 <li><b>生物学 · 简并性（Edelman &amp; Gally, 2001）</b>：他们把「结构不同的部件能完成同一功能」叫简并性，与「相同部件重复备份」的冗余区分开，认为这是生命系统鲁棒的来源。Dropout 逼出的正是简并：多组不同单元都能撑起同一判断。不像在哪：生物的简并由演化慢慢筛出，dropout 用一个超参数 p 当场强加。</li>
 <li><b>心理学 · 必要难度（Bjork, 1994）</b>：间隔练习、交错练习、变换呈现方式会让练习时表现变差，却让长期保持和迁移更好。Dropout 同构：训练曲线更吵、要多花两三倍时间，换来没见过的数据上更稳。不像在哪：人会误以为「练得顺 = 学得好」，网络没有这层元认知错觉。</li>
 <li><b>投资 · Markowitz 分散化（1952）</b>：组合风险取决于资产间的协方差，资产越不相关，平均下来波动越小；相关性高时，加再多也降不到零。Dropout 的指数个瘦网络共享同一套权重、高度相关，所以只能算「近似」集成——收益真实，但远不如真正独立的模型投票。</li>
 </ul></div>
-<h2>十条要点</h2>
+<h2 data-tts="cd02591d171ddfc4">十条要点</h2>
 <ol class="takeaways">
 <li>Dropout 论文（Srivastava、Hinton 等，JMLR 2014）要解决的是大网络参数多、数据少而必然过拟合的问题。</li>
 <li>集成多个模型能压住过拟合，但训练和推理成本都成倍增加，贝叶斯模型平均更是根本算不动。</li>
@@ -367,9 +367,9 @@ footer{margin-top:50px;padding-top:16px;border-top:1px solid rgba(240,180,41,0.1
 <script>
 (function(){var KEY='cspapers-mode';var bar=document.querySelector('.modebar');if(!bar)return;var pop=document.querySelector('.mode-pop'),deep=document.querySelector('.mode-deep');function set(m){var d=m==='deep';pop.hidden=d;deep.hidden=!d;bar.querySelectorAll('button').forEach(function(b){b.classList.toggle('active',(b.dataset.mode==='deep')===d);});try{localStorage.setItem(KEY,d?'deep':'pop');}catch(e){}window.scrollTo(0,0);}document.addEventListener('click',function(e){var t=e.target.closest('[data-mode]');if(t){e.preventDefault();set(t.dataset.mode);}});var s;try{s=localStorage.getItem(KEY);}catch(e){}set(s==='deep'?'deep':'pop');})();
 </script>
-<script src="https://hub.cissychen.com/comments.js" defer></script>
-<script src="https://hub.cissychen.com/search.js" defer></script>
-<script src="https://hub.cissychen.com/index-button.js" defer></script>
-<script src="https://hub.cissychen.com/i18n-tts.js" defer></script>
-<script src="https://hub.cissychen.com/lightbox.js" defer></script>
+<script defer="" src="https://hub.cissychen.com/comments.js"></script>
+<script defer="" src="https://hub.cissychen.com/search.js"></script>
+<script defer="" src="https://hub.cissychen.com/index-button.js"></script>
+<script defer="" src="https://hub.cissychen.com/i18n-tts.js"></script>
+<script defer="" src="https://hub.cissychen.com/lightbox.js"></script>
 </body></html>
